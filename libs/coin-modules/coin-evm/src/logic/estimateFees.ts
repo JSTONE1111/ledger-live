@@ -1,41 +1,60 @@
 import BigNumber from "bignumber.js";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
-import type { MemoNotSupported, TransactionIntent } from "@ledgerhq/coin-framework/api/index";
-import { getNodeApi } from "../network/node";
-import { EvmAsset, FeeData, isNative, Transaction } from "../types";
+import type {
+  BufferTxData,
+  FeeEstimation,
+  MemoNotSupported,
+  TransactionIntent,
+} from "@ledgerhq/coin-framework/api/index";
+import { ApiFeeData, ApiGasOptions, FeeData, GasOptions, TransactionTypes } from "../types";
+import { getGasTracker } from "../network/gasTracker";
+import { isEthAddress } from "../utils";
+import { prepareUnsignedTxParams, isEip55Address } from "./common";
+
+function toApiFeeData(feeData: FeeData): ApiFeeData {
+  return {
+    gasPrice: feeData.gasPrice && BigInt(feeData.gasPrice.toFixed()),
+    maxFeePerGas: feeData.maxFeePerGas && BigInt(feeData.maxFeePerGas.toFixed()),
+    maxPriorityFeePerGas:
+      feeData.maxPriorityFeePerGas && BigInt(feeData.maxPriorityFeePerGas.toFixed()),
+    nextBaseFee: feeData.nextBaseFee && BigInt(feeData.nextBaseFee.toFixed()),
+  };
+}
+
+function toApiGasOptions(options: GasOptions): ApiGasOptions {
+  return {
+    fast: toApiFeeData(options.fast),
+    medium: toApiFeeData(options.medium),
+    slow: toApiFeeData(options.slow),
+  };
+}
 
 export async function estimateFees(
   currency: CryptoCurrency,
-  transactionIntent: TransactionIntent<EvmAsset, MemoNotSupported>,
-): Promise<bigint> {
-  const { amount, asset, recipient, sender } = transactionIntent;
+  transactionIntent: TransactionIntent<MemoNotSupported, BufferTxData>,
+): Promise<FeeEstimation> {
+  if (!isEthAddress(transactionIntent.recipient) || !isEip55Address(transactionIntent.recipient)) {
+    return { value: 0n };
+  }
 
-  const node = getNodeApi(currency);
-  const gasLimit = await node.getGasEstimation(
-    { currency, freshAddress: sender },
-    {
-      amount: new BigNumber(amount.toString()),
-      recipient: recipient,
+  const { type, gasLimit, feeData } = await prepareUnsignedTxParams(currency, transactionIntent);
+
+  const gasTracker = getGasTracker(currency);
+  const gasOptions = await gasTracker?.getGasOptions({
+    currency,
+    options: { useEIP1559: type === TransactionTypes.eip1559 },
+  });
+  const gasPrice = type === TransactionTypes.legacy ? feeData.gasPrice : feeData.maxFeePerGas;
+  const fee = gasPrice?.multipliedBy(gasLimit) || new BigNumber(0);
+
+  return {
+    value: BigInt(fee.toString()),
+    parameters: {
+      ...toApiFeeData(feeData),
+      gasLimit: BigInt(gasLimit.toFixed()),
+      gasOptions: gasOptions && toApiGasOptions(gasOptions),
     },
-  );
-
-  const tx: Transaction = {
-    family: "evm",
-    mode: "send",
-    amount: new BigNumber(amount.toString()),
-    recipient: isNative(asset) ? recipient : asset.contractAddress,
-    gasPrice: new BigNumber(0),
-    gasLimit,
-    nonce: 0,
-    chainId: currency.ethereumLikeInfo?.chainId ?? 0,
-    feesStrategy: "medium",
-    type: 1, // legacy transaction by default
   };
-
-  const feeData: FeeData = await node.getFeeData(currency, tx);
-  const fee = feeData.gasPrice?.multipliedBy(gasLimit) || new BigNumber(0);
-
-  return BigInt(fee.toString());
 }
 
 export default estimateFees;

@@ -1,51 +1,43 @@
 import { useState, useCallback, useEffect } from "react";
-import { findCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
-import { getProvider } from "../utils/getProvider";
-import { CryptoOrTokenCurrency, CryptoCurrency } from "@ledgerhq/types-cryptoassets";
-import { CurrenciesByProviderId } from "@ledgerhq/live-common/deposit/type";
-import { AccountLike, Account } from "@ledgerhq/types-live";
+import { getAssetByCurrency } from "../utils/getAssetByCurrency";
+import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { ModularDrawerStep } from "../types";
 import { useModularDrawerAnalytics } from "../analytics/useModularDrawerAnalytics";
 import { MODULAR_DRAWER_PAGE_NAME } from "../analytics/modularDrawer.types";
-import { getTokenOrCryptoCurrencyById } from "@ledgerhq/live-common/deposit/helper";
 import uniqWith from "lodash/uniqWith";
 
-import {
-  getEffectiveCurrency,
-  isCorrespondingCurrency,
-} from "@ledgerhq/live-common/modularDrawer/utils/index";
+import { isCorrespondingCurrency } from "@ledgerhq/live-common/modularDrawer/utils/index";
+import { useSelector } from "react-redux";
+import { modularDrawerSearchedSelector } from "~/renderer/reducers/modularDrawer";
+import { AssetData } from "@ledgerhq/live-common/modularDrawer/utils/type";
+import { useCurrenciesUnderFeatureFlag } from "@ledgerhq/live-common/modularDrawer/hooks/useCurrenciesUnderFeatureFlag";
 
 type Props = {
-  currenciesByProvider: CurrenciesByProviderId[];
+  assets: AssetData[] | undefined;
   sortedCryptoCurrencies: CryptoOrTokenCurrency[];
   setNetworksToDisplay: (networks?: CryptoOrTokenCurrency[]) => void;
-  currenciesIdsArray: string[];
+  currencyIds: string[];
   goToStep: (nextStep: ModularDrawerStep) => void;
   isSelectAccountFlow?: boolean;
   onAssetSelected?: (asset: CryptoOrTokenCurrency) => void;
-  onAccountSelected?: (account: AccountLike, parentAccount?: Account) => void;
-  hasOneCurrency: boolean;
-  flow: string;
 };
 
 export function useModularDrawerFlowState({
-  currenciesByProvider,
+  assets,
   sortedCryptoCurrencies,
   setNetworksToDisplay,
-  currenciesIdsArray,
+  currencyIds,
   goToStep,
   isSelectAccountFlow,
   onAssetSelected,
-  onAccountSelected,
-  hasOneCurrency,
-  flow,
 }: Props) {
+  const { deactivatedCurrencyIds } = useCurrenciesUnderFeatureFlag();
   const { trackModularDrawerEvent } = useModularDrawerAnalytics();
+  const searchedValue = useSelector(modularDrawerSearchedSelector);
 
   const [selectedAsset, setSelectedAsset] = useState<CryptoOrTokenCurrency>();
   const [selectedNetwork, setSelectedNetwork] = useState<CryptoOrTokenCurrency>();
-  const [searchedValue, setSearchedValue] = useState<string>();
-  const [providers, setProviders] = useState<CurrenciesByProviderId>();
+  const [providers, setProviders] = useState<AssetData>();
 
   const goBackToAssetSelection = useCallback(() => {
     setSelectedAsset(undefined);
@@ -54,10 +46,9 @@ export function useModularDrawerFlowState({
     trackModularDrawerEvent("button_clicked", {
       button: "Back",
       page: MODULAR_DRAWER_PAGE_NAME.MODULAR_NETWORK_SELECTION,
-      flow: flow,
     });
     goToStep("ASSET_SELECTION");
-  }, [flow, goToStep, setNetworksToDisplay, trackModularDrawerEvent]);
+  }, [goToStep, setNetworksToDisplay, trackModularDrawerEvent]);
 
   const goBackToNetworkSelection = useCallback(() => {
     setSelectedNetwork(undefined);
@@ -86,8 +77,7 @@ export function useModularDrawerFlowState({
     (network: CryptoOrTokenCurrency) => {
       if (!providers) return;
       const correspondingCurrency =
-        providers.currenciesByNetwork.find(elem => isCorrespondingCurrency(elem, network)) ??
-        network;
+        providers.networks.find(elem => isCorrespondingCurrency(elem, network)) ?? network;
 
       if (!isSelectAccountFlow) {
         onAssetSelected?.(correspondingCurrency);
@@ -99,12 +89,17 @@ export function useModularDrawerFlowState({
   );
 
   const getNetworksFromProvider = useCallback(
-    (provider: CurrenciesByProviderId) => {
-      return provider.currenciesByNetwork
-        .filter(currencyByNetwork => currenciesIdsArray.includes(currencyByNetwork.id))
-        .map(elem => (elem.type === "TokenCurrency" ? elem.parentCurrency?.id : elem.id));
+    (provider: AssetData) => {
+      return provider.networks.filter(elem => {
+        const currencyId = elem.type === "CryptoCurrency" ? elem.id : elem.parentCurrency.id;
+
+        const isDeactivated = deactivatedCurrencyIds.has(currencyId);
+        const isAllowedByFilter = currencyIds.length === 0 || currencyIds.includes(elem.id);
+
+        return !isDeactivated && isAllowedByFilter;
+      });
     },
-    [currenciesIdsArray],
+    [deactivatedCurrencyIds, currencyIds],
   );
 
   const handleNoProvider = useCallback(
@@ -119,37 +114,26 @@ export function useModularDrawerFlowState({
   );
 
   const handleMultipleNetworks = useCallback(
-    (
-      currency: CryptoOrTokenCurrency,
-      provider: CurrenciesByProviderId,
-      networks: (string | undefined)[],
-    ) => {
-      const effectiveCurrency = getEffectiveCurrency(currency, provider, currenciesIdsArray);
-      const filteredCryptoCurrencies = networks
-        .filter((net): net is string => Boolean(net))
-        .map(net => findCryptoCurrencyById(net))
-        .filter((cur): cur is CryptoCurrency => Boolean(cur));
-
-      goToNetworkSelection(effectiveCurrency, filteredCryptoCurrencies);
+    (currency: CryptoOrTokenCurrency, networks: CryptoOrTokenCurrency[]) => {
+      goToNetworkSelection(currency, networks);
     },
-    [currenciesIdsArray, goToNetworkSelection],
+    [goToNetworkSelection],
   );
 
   const handleSingleNetwork = useCallback(
-    (currency: CryptoOrTokenCurrency, provider: CurrenciesByProviderId) => {
+    (currency: CryptoOrTokenCurrency) => {
       if (isSelectAccountFlow) {
-        const effectiveCurrency = getEffectiveCurrency(currency, provider, currenciesIdsArray);
-        goToAccountSelection(effectiveCurrency, effectiveCurrency);
+        goToAccountSelection(currency, currency);
       } else {
         onAssetSelected?.(currency);
       }
     },
-    [isSelectAccountFlow, currenciesIdsArray, goToAccountSelection, onAssetSelected],
+    [isSelectAccountFlow, goToAccountSelection, onAssetSelected],
   );
 
   const handleAssetSelected = useCallback(
     (currency: CryptoOrTokenCurrency) => {
-      const currentProvider = getProvider(currency, currenciesByProvider);
+      const currentProvider = getAssetByCurrency(currency, assets);
       setProviders(currentProvider);
 
       if (!currentProvider) {
@@ -159,15 +143,14 @@ export function useModularDrawerFlowState({
 
       const networks = getNetworksFromProvider(currentProvider);
       const hasMultipleNetworks = networks && networks.length > 1;
-
       if (hasMultipleNetworks) {
-        handleMultipleNetworks(currency, currentProvider, networks);
+        handleMultipleNetworks(currency, networks);
       } else {
-        handleSingleNetwork(currency, currentProvider);
+        handleSingleNetwork(currency);
       }
     },
     [
-      currenciesByProvider,
+      assets,
       handleNoProvider,
       getNetworksFromProvider,
       handleMultipleNetworks,
@@ -175,27 +158,25 @@ export function useModularDrawerFlowState({
     ],
   );
 
-  const handleAccountSelected = (account: AccountLike, parentAccount?: Account) => {
-    onAccountSelected?.(account, parentAccount);
-  };
-
   useEffect(() => {
-    if (hasOneCurrency && !selectedAsset) {
-      const currencyIdToFind = currenciesIdsArray[0];
-      const currency = getTokenOrCryptoCurrencyById(currencyIdToFind);
+    if (assets?.length === 1 && searchedValue === undefined && !selectedAsset) {
+      const assetItem = assets[0];
 
-      if (currency) {
+      if (assetItem.networks.length > 0) {
+        const currency = assetItem.networks[0];
+
         handleAssetSelected(currency);
       }
     }
   }, [
     sortedCryptoCurrencies,
-    currenciesIdsArray.length,
+    currencyIds.length,
     goToStep,
     handleAssetSelected,
-    hasOneCurrency,
     selectedAsset,
-    currenciesIdsArray,
+    currencyIds,
+    searchedValue,
+    assets,
   ]);
 
   return {
@@ -203,8 +184,6 @@ export function useModularDrawerFlowState({
     setSelectedAsset,
     selectedNetwork,
     setSelectedNetwork,
-    searchedValue,
-    setSearchedValue,
     providers,
     setProviders,
     goBackToAssetSelection,
@@ -213,6 +192,5 @@ export function useModularDrawerFlowState({
     goToAccountSelection,
     handleNetworkSelected,
     handleAssetSelected,
-    handleAccountSelected,
   };
 }

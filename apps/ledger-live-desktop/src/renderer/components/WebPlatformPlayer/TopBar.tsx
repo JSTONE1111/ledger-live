@@ -24,6 +24,10 @@ import { getDefaultAccountName } from "@ledgerhq/live-wallet/accountName";
 import CryptoCurrencyIcon from "../CryptoCurrencyIcon";
 import { walletSelector } from "~/renderer/reducers/wallet";
 import { accountNameSelector } from "@ledgerhq/live-wallet/store";
+import { Icons } from "@ledgerhq/react-ui/assets/index";
+import Switch from "~/renderer/components/Switch";
+import { MobileView } from "~/renderer/hooks/useMobileView";
+import Input from "~/renderer/components/Input";
 
 const Container = styled(Box).attrs(() => ({
   horizontal: true,
@@ -132,6 +136,8 @@ export type Props = {
   webviewAPIRef: RefObject<WebviewAPI>;
   webviewState: WebviewState;
   currentAccountHistDb?: CurrentAccountHistDB;
+  mobileView?: MobileView;
+  setMobileView?: React.Dispatch<React.SetStateAction<MobileView>>;
 };
 
 export const TopBar = ({
@@ -141,6 +147,8 @@ export const TopBar = ({
   config = {},
   webviewAPIRef,
   webviewState,
+  mobileView,
+  setMobileView,
 }: Props) => {
   const walletState = useSelector(walletSelector);
 
@@ -187,6 +195,31 @@ export const TopBar = ({
     webview.goForward();
   }, [webviewAPIRef]);
 
+  const toggleMobileView = useCallback(() => {
+    setMobileView?.(prev => ({ ...prev, display: !prev.display }));
+  }, [setMobileView]);
+
+  const updateMobileWidth = useCallback(
+    (width: number) => {
+      setMobileView?.(prev => ({ ...prev, width: width > 0 ? width : 355 }));
+    },
+    [setMobileView],
+  );
+
+  const setInpuMobileWidthChange = useCallback(
+    (width: string) => {
+      const value = parseInt(width, 10) || 0;
+      updateMobileWidth?.(value);
+    },
+    [updateMobileWidth],
+  );
+
+  const setIntutMobileWidthBlur = useCallback(() => {
+    if (mobileView && !mobileView.width) {
+      updateMobileWidth?.(355);
+    }
+  }, [mobileView, updateMobileWidth]);
+
   const { onSelectAccount, currentAccount } = useSelectAccount({ manifest, currentAccountHistDb });
   const currentAccountName =
     currentAccount &&
@@ -229,7 +262,7 @@ export const TopBar = ({
       {enablePlatformDevTools ? (
         <>
           <Separator />
-          <ItemContainer isInteractive onClick={onOpenDevTools}>
+          <ItemContainer data-testid="live-app-devtools" isInteractive onClick={onOpenDevTools}>
             <LightBulb size={16} />
             <ItemContent>
               <Trans i18nKey="common.sync.devTools" />
@@ -237,6 +270,36 @@ export const TopBar = ({
           </ItemContainer>
         </>
       ) : null}
+      {!!mobileView && (
+        <>
+          <Separator />
+          <ItemContainer
+            data-testid="mobile-view-toggle"
+            isInteractive
+            onClick={toggleMobileView}
+            style={{ marginRight: 0 }}
+          >
+            <Icons.Desktop size="S" />
+            <ItemContent>
+              <Switch isChecked={mobileView.display ?? false}></Switch>
+            </ItemContent>
+            <Icons.Mobile size="S" />
+          </ItemContainer>
+          {mobileView.display && (
+            <Box style={{ marginRight: 16 }}>
+              <Input
+                data-testid="mobile-view-width-input"
+                small
+                value={`${mobileView.width}` || ""}
+                onChange={setInpuMobileWidthChange}
+                onBlur={setIntutMobileWidthBlur}
+                style={{ width: 30, textAlign: "center" }}
+                maxLength={4}
+              />
+            </Box>
+          )}
+        </>
+      )}
       <RightContainer>
         <ItemContainer hidden={!isLoading}>
           <Spinner
@@ -280,7 +343,7 @@ export const TopBar = ({
         )}
 
         {shouldDisplayClose && (
-          <ItemContainer isInteractive onClick={onClose}>
+          <ItemContainer data-testid="live-app-close" isInteractive onClick={onClose}>
             <IconClose size={16} />
           </ItemContainer>
         )}

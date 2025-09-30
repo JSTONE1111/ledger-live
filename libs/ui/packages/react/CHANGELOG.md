@@ -1,5 +1,131 @@
 # @ledgerhq/react-ui
 
+## 0.38.0
+
+### Minor Changes
+
+- [#11803](https://github.com/LedgerHQ/ledger-live/pull/11803) [`94d91da`](https://github.com/LedgerHQ/ledger-live/commit/94d91da4e1b19dc5132e11b4c63b0d2cda87c71b) Thanks [@ooke-ledger](https://github.com/ooke-ledger)! - Add auto focus to asset search input
+
+- [#11829](https://github.com/LedgerHQ/ledger-live/pull/11829) [`e6de5d9`](https://github.com/LedgerHQ/ledger-live/commit/e6de5d906be3e33a1c62b6f80985eca53fae94f0) Thanks [@cgrellard-ledger](https://github.com/cgrellard-ledger)! - LLD - Implement marketTrend modular parameters for the left and right elements of the mad assets page
+
+- [#11893](https://github.com/LedgerHQ/ledger-live/pull/11893) [`ffd388f`](https://github.com/LedgerHQ/ledger-live/commit/ffd388fde99bda2079ed4a30f7816b614e29be79) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Add colored border on search focus
+
+- [#11843](https://github.com/LedgerHQ/ledger-live/pull/11843) [`4b7c1d3`](https://github.com/LedgerHQ/ledger-live/commit/4b7c1d37f2a11b5cf9ac40238e77f889d027c4ec) Thanks [@ooke-ledger](https://github.com/ooke-ledger)! - Add fix for layout shift
+
+- [#11868](https://github.com/LedgerHQ/ledger-live/pull/11868) [`f55291b`](https://github.com/LedgerHQ/ledger-live/commit/f55291b02f6a603e37eae2aee0c569e434982c21) Thanks [@cgrellard-ledger](https://github.com/cgrellard-ledger)! - LLD MAD - add a Debug Duplicates devtool
+
+- [#11777](https://github.com/LedgerHQ/ledger-live/pull/11777) [`3c11d8e`](https://github.com/LedgerHQ/ledger-live/commit/3c11d8e0ad901a25dfd63e93e332ad73707a58a1) Thanks [@ooke-ledger](https://github.com/ooke-ledger)! - Fix Tab Indicator Sync
+
+### Patch Changes
+
+- Updated dependencies [[`d56bebe`](https://github.com/LedgerHQ/ledger-live/commit/d56bebe672a1ed825697b371662dbff19dcc63d8), [`12909c4`](https://github.com/LedgerHQ/ledger-live/commit/12909c464d22e72d741262df106d0b3ce7f9130a), [`0108eaf`](https://github.com/LedgerHQ/ledger-live/commit/0108eafb64e36ce68f44e03cc3f66ccdb5ee5a92), [`aade218`](https://github.com/LedgerHQ/ledger-live/commit/aade21864a36bce4b81dcce7ae46fe73894f9d33)]:
+  - @ledgerhq/crypto-icons-ui@1.19.0
+  - @ledgerhq/icons-ui@0.14.0
+
+## 0.38.0-next.0
+
+### Minor Changes
+
+- [#11803](https://github.com/LedgerHQ/ledger-live/pull/11803) [`94d91da`](https://github.com/LedgerHQ/ledger-live/commit/94d91da4e1b19dc5132e11b4c63b0d2cda87c71b) Thanks [@ooke-ledger](https://github.com/ooke-ledger)! - Add auto focus to asset search input
+
+- [#11829](https://github.com/LedgerHQ/ledger-live/pull/11829) [`e6de5d9`](https://github.com/LedgerHQ/ledger-live/commit/e6de5d906be3e33a1c62b6f80985eca53fae94f0) Thanks [@cgrellard-ledger](https://github.com/cgrellard-ledger)! - LLD - Implement marketTrend modular parameters for the left and right elements of the mad assets page
+
+- [#11893](https://github.com/LedgerHQ/ledger-live/pull/11893) [`ffd388f`](https://github.com/LedgerHQ/ledger-live/commit/ffd388fde99bda2079ed4a30f7816b614e29be79) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Add colored border on search focus
+
+- [#11843](https://github.com/LedgerHQ/ledger-live/pull/11843) [`4b7c1d3`](https://github.com/LedgerHQ/ledger-live/commit/4b7c1d37f2a11b5cf9ac40238e77f889d027c4ec) Thanks [@ooke-ledger](https://github.com/ooke-ledger)! - Add fix for layout shift
+
+- [#11868](https://github.com/LedgerHQ/ledger-live/pull/11868) [`f55291b`](https://github.com/LedgerHQ/ledger-live/commit/f55291b02f6a603e37eae2aee0c569e434982c21) Thanks [@cgrellard-ledger](https://github.com/cgrellard-ledger)! - LLD MAD - add a Debug Duplicates devtool
+
+- [#11777](https://github.com/LedgerHQ/ledger-live/pull/11777) [`3c11d8e`](https://github.com/LedgerHQ/ledger-live/commit/3c11d8e0ad901a25dfd63e93e332ad73707a58a1) Thanks [@ooke-ledger](https://github.com/ooke-ledger)! - Fix Tab Indicator Sync
+
+### Patch Changes
+
+- Updated dependencies [[`d56bebe`](https://github.com/LedgerHQ/ledger-live/commit/d56bebe672a1ed825697b371662dbff19dcc63d8), [`12909c4`](https://github.com/LedgerHQ/ledger-live/commit/12909c464d22e72d741262df106d0b3ce7f9130a), [`0108eaf`](https://github.com/LedgerHQ/ledger-live/commit/0108eafb64e36ce68f44e03cc3f66ccdb5ee5a92), [`aade218`](https://github.com/LedgerHQ/ledger-live/commit/aade21864a36bce4b81dcce7ae46fe73894f9d33)]:
+  - @ledgerhq/crypto-icons-ui@1.19.0-next.0
+  - @ledgerhq/icons-ui@0.14.0-next.0
+
+## 0.37.0
+
+### Minor Changes
+
+- [#11537](https://github.com/LedgerHQ/ledger-live/pull/11537) [`b34a43c`](https://github.com/LedgerHQ/ledger-live/commit/b34a43c290929ccab9380c2c2853bd320d4630b9) Thanks [@ejaycoleman](https://github.com/ejaycoleman)! - MAD DADA pagination
+
+### Patch Changes
+
+- Updated dependencies [[`5336021`](https://github.com/LedgerHQ/ledger-live/commit/53360213fe1545cfac761d872c0bd7a592697279), [`222bd7b`](https://github.com/LedgerHQ/ledger-live/commit/222bd7b69d32fd93562e9cb4bc1cf2840d0a0620)]:
+  - @ledgerhq/ui-shared@0.4.0
+
+## 0.37.0-next.0
+
+### Minor Changes
+
+- [#11537](https://github.com/LedgerHQ/ledger-live/pull/11537) [`b34a43c`](https://github.com/LedgerHQ/ledger-live/commit/b34a43c290929ccab9380c2c2853bd320d4630b9) Thanks [@ejaycoleman](https://github.com/ejaycoleman)! - MAD DADA pagination
+
+### Patch Changes
+
+- Updated dependencies [[`5336021`](https://github.com/LedgerHQ/ledger-live/commit/53360213fe1545cfac761d872c0bd7a592697279), [`222bd7b`](https://github.com/LedgerHQ/ledger-live/commit/222bd7b69d32fd93562e9cb4bc1cf2840d0a0620)]:
+  - @ledgerhq/ui-shared@0.4.0-next.0
+
+## 0.36.0
+
+### Minor Changes
+
+- [#11493](https://github.com/LedgerHQ/ledger-live/pull/11493) [`d4c4029`](https://github.com/LedgerHQ/ledger-live/commit/d4c40293a4f5d70f2d6819532b51dff2a9d75809) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Add APYIndicator component for LLM to native-ui lib. Move from LLD to react-ui the APYIndicator to be iso
+
+### Patch Changes
+
+- Updated dependencies [[`7e4ac62`](https://github.com/LedgerHQ/ledger-live/commit/7e4ac62bd383f96e5649b225e0ff824fe7663695)]:
+  - @ledgerhq/crypto-icons-ui@1.18.0
+
+## 0.36.0-next.0
+
+### Minor Changes
+
+- [#11493](https://github.com/LedgerHQ/ledger-live/pull/11493) [`d4c4029`](https://github.com/LedgerHQ/ledger-live/commit/d4c40293a4f5d70f2d6819532b51dff2a9d75809) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Add APYIndicator component for LLM to native-ui lib. Move from LLD to react-ui the APYIndicator to be iso
+
+### Patch Changes
+
+- Updated dependencies [[`7e4ac62`](https://github.com/LedgerHQ/ledger-live/commit/7e4ac62bd383f96e5649b225e0ff824fe7663695)]:
+  - @ledgerhq/crypto-icons-ui@1.18.0-next.0
+
+## 0.35.1
+
+### Patch Changes
+
+- Updated dependencies [[`96654b0`](https://github.com/LedgerHQ/ledger-live/commit/96654b01611519901cb1957213c154f8bcda599c)]:
+  - @ledgerhq/crypto-icons-ui@1.17.0
+
+## 0.35.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`96654b0`](https://github.com/LedgerHQ/ledger-live/commit/96654b01611519901cb1957213c154f8bcda599c)]:
+  - @ledgerhq/crypto-icons-ui@1.17.0-next.0
+
+## 0.35.0
+
+### Minor Changes
+
+- [#11036](https://github.com/LedgerHQ/ledger-live/pull/11036) [`3bce0cd`](https://github.com/LedgerHQ/ledger-live/commit/3bce0cd5bb6d3a30157eae14fd327ad6fdd05f95) Thanks [@ejaycoleman](https://github.com/ejaycoleman)! - Add APY indicator
+
+- [#10968](https://github.com/LedgerHQ/ledger-live/pull/10968) [`3d957e9`](https://github.com/LedgerHQ/ledger-live/commit/3d957e9fac4f032d704af4a958aa9a863812fdb1) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Update chip design
+
+- [#10930](https://github.com/LedgerHQ/ledger-live/pull/10930) [`a617656`](https://github.com/LedgerHQ/ledger-live/commit/a617656473c34636ee8874742fcbb754670831d4) Thanks [@marcotoniut-ledger](https://github.com/marcotoniut-ledger)! - Adds a new page to the Add Account flow that lets the user edit the account name that they want to add.
+
+- [#11059](https://github.com/LedgerHQ/ledger-live/pull/11059) [`4c2e43f`](https://github.com/LedgerHQ/ledger-live/commit/4c2e43fe0239e662bc02e0b0b9ca542fa6068594) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Update swap ui to use the react ui Chip components
+
+## 0.35.0-next.0
+
+### Minor Changes
+
+- [#11036](https://github.com/LedgerHQ/ledger-live/pull/11036) [`3bce0cd`](https://github.com/LedgerHQ/ledger-live/commit/3bce0cd5bb6d3a30157eae14fd327ad6fdd05f95) Thanks [@ejaycoleman](https://github.com/ejaycoleman)! - Add APY indicator
+
+- [#10968](https://github.com/LedgerHQ/ledger-live/pull/10968) [`3d957e9`](https://github.com/LedgerHQ/ledger-live/commit/3d957e9fac4f032d704af4a958aa9a863812fdb1) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Update chip design
+
+- [#10930](https://github.com/LedgerHQ/ledger-live/pull/10930) [`a617656`](https://github.com/LedgerHQ/ledger-live/commit/a617656473c34636ee8874742fcbb754670831d4) Thanks [@marcotoniut-ledger](https://github.com/marcotoniut-ledger)! - Adds a new page to the Add Account flow that lets the user edit the account name that they want to add.
+
+- [#11059](https://github.com/LedgerHQ/ledger-live/pull/11059) [`4c2e43f`](https://github.com/LedgerHQ/ledger-live/commit/4c2e43fe0239e662bc02e0b0b9ca542fa6068594) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Update swap ui to use the react ui Chip components
+
 ## 0.34.0
 
 ### Minor Changes

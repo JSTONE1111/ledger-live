@@ -57,6 +57,11 @@ export const SWAP_DATA_CDN: Record<string, AdditionalProviderConfig> = {
     displayName: "CIC",
     type: "CEX",
     useInExchangeApp: true,
+    usefulUrls: [
+      "https://changelly.com/terms-of-use",
+      "https://changelly.com/aml-kyc",
+      "https://support.changelly.com/en/support/tickets/new",
+    ],
     termsOfUseUrl: "https://criptointercambio.com/terms-of-use",
     supportUrl: "https://criptointercambio.com/en/about",
     mainUrl: "https://criptointercambio.com/",
@@ -95,6 +100,15 @@ export const SWAP_DATA_CDN: Record<string, AdditionalProviderConfig> = {
     termsOfUseUrl: "https://docs.thorswap.finance/thorswap/resources/terms-of-service",
     supportUrl: "https://ledgerhelp.swapkit.dev/",
     mainUrl: "https://www.thorswap.finance/",
+    needsKYC: false,
+  },
+  nearintents: {
+    type: "CEX",
+    useInExchangeApp: true,
+    displayName: "Near Intents",
+    termsOfUseUrl: "https://swapkit.dev/terms-of-service/",
+    supportUrl: "https://ledgerhelp.swapkit.dev/",
+    mainUrl: "https://www.near.org/intents",
     needsKYC: false,
   },
   lifi: {

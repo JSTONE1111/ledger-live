@@ -1,5 +1,4 @@
 import { AppPage } from "./abstractClasses";
-import { waitFor } from "../utils/waitFor";
 import { step } from "../misc/reporters/step";
 import { ElectronApplication, expect } from "@playwright/test";
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
@@ -18,17 +17,13 @@ export class SwapPage extends AppPage {
   private fromAccountCoinSelector = "from-account-coin-selector";
   private fromAccountAmountInput = "from-account-amount-input";
   private toAccountCoinSelector = "to-account-coin-selector";
-  private quoteCardProviderName = "quote-card-provider-name";
+  private quoteCardProviderName = "compact-quote-card-provider-";
+  private specificQuoteCardProviderName = (provider: string) =>
+    `compact-quote-card-provider-name-${provider}`;
   private numberOfQuotes = "number-of-quotes";
-  private destinationCurrencyDropdown = this.page.getByTestId("destination-currency-dropdown");
-  private destinationCurrencyAmount = this.page.getByTestId("destination-currency-amount");
-  private feesValue = this.page.getByTestId("fees-value");
   private switchButton = "to-account-switch-accounts";
   private swapMaxToggle = "from-account-max-toggle";
   private quoteInfosFeesSelector = "QuoteCard-info-fees-selector";
-
-  // Exchange Button Component
-  private exchangeButton = this.page.getByTestId("exchange-button");
 
   // Exchange Drawer Components
   readonly swapId = this.page.getByTestId("swap-id");
@@ -68,11 +63,18 @@ export class SwapPage extends AppPage {
     const [, webview] = electronApp.windows();
     await expect(webview.getByTestId("number-of-quotes")).toBeVisible();
     await expect(webview.getByTestId("quotes-countdown")).toBeVisible();
-    return await webview.getByTestId(this.quoteCardProviderName).allTextContents();
+
+    return await webview
+      .locator(`[data-testid^='${this.quoteCardProviderName}']`)
+      .allTextContents();
   }
 
   @step("Check quotes container infos")
-  async checkQuotesContainerInfos(electronApp: ElectronApplication, providerList: string[]) {
+  async checkQuotesContainerInfos(
+    electronApp: ElectronApplication,
+    providerList: string[],
+    ticker: string,
+  ) {
     const [, webview] = electronApp.windows();
 
     const provider = Provider.getNameByUiName(providerList[0]);
@@ -82,35 +84,40 @@ export class SwapPage extends AppPage {
     await expect(webview.getByTestId(baseProviderLocator + "amount-label")).toBeVisible();
     await expect(webview.getByTestId(baseProviderLocator + "fiatAmount-label")).toBeVisible();
     await expect(webview.getByTestId(baseProviderLocator + "networkFees-heading")).toBeVisible();
+    await expect(
+      webview
+        .getByTestId(baseProviderLocator + "extraFeesContainer")
+        .getByText(/Floating rate|Fixed rate/),
+    ).toBeVisible();
     await expect(webview.getByTestId(baseProviderLocator + "rate-infoIcon")).toBeVisible();
-    await expect(webview.getByTestId(baseProviderLocator + "rate-heading")).toBeVisible();
-    await expect(webview.getByTestId(baseProviderLocator + "rate-value")).toBeVisible();
-    await expect(webview.getByTestId(baseProviderLocator + "rate-fiat-value")).toBeVisible();
-    await expect(webview.getByTestId(baseProviderLocator + "slippage-heading")).toBeVisible();
-    await expect(webview.getByTestId(baseProviderLocator + "slippage-infoIcon")).toBeVisible();
-    await expect(webview.getByTestId(baseProviderLocator + "slippage-value")).toBeVisible();
+    await expect(
+      webview.getByTestId(baseProviderLocator + "extraFeesContainer").getByText(ticker),
+    ).toBeVisible();
     if (
       provider === Provider.ONE_INCH.name ||
       provider === Provider.VELORA.name ||
       provider === Provider.UNISWAP.name ||
       provider === Provider.LIFI.name
     ) {
-      await expect(webview.getByTestId(baseProviderLocator + "slippage-heading")).toBeVisible();
-      await expect(webview.getByTestId(baseProviderLocator + "slippage-value")).toBeVisible();
+      await expect(
+        webview.getByTestId(baseProviderLocator + "extraFeesContainer").getByText("Max Slippage"),
+      ).toBeVisible();
+      await expect(
+        webview.getByTestId(baseProviderLocator + "extraFeesContainer").getByText("%"),
+      ).toBeVisible();
     }
     await this.checkExchangeButton(electronApp, providerList[0]);
   }
 
   @step("Select specific provider $0")
-  async selectSpecificProvider(provider: string, electronApp: ElectronApplication) {
+  async selectSpecificProvider(provider: Provider, electronApp: ElectronApplication) {
     const [, webview] = electronApp.windows();
 
     const providersList = await this.getProviderList(electronApp);
 
-    if (providersList.includes(provider)) {
+    if (providersList.includes(provider.uiName)) {
       const providerLocator = webview
-        .getByTestId(this.quoteCardProviderName)
-        .getByText(provider)
+        .getByTestId(this.specificQuoteCardProviderName(provider.name))
         .first();
 
       await providerLocator.isVisible();
@@ -138,8 +145,7 @@ export class SwapPage extends AppPage {
       const provider = Object.values(Provider).find(p => p.uiName === providerName);
       if (provider && provider.isNative) {
         const providerLocator = webview
-          .getByTestId(this.quoteCardProviderName)
-          .getByText(providerName)
+          .getByTestId(this.specificQuoteCardProviderName(provider.name.toLowerCase()))
           .first();
 
         await providerLocator.isVisible();
@@ -149,7 +155,7 @@ export class SwapPage extends AppPage {
       }
     }
 
-    throw new Error("No providers without KYC found");
+    throw new Error(`No providers without KYC found: ${providersList.join(", ")}`);
   }
 
   @step("Select available provider")
@@ -164,8 +170,7 @@ export class SwapPage extends AppPage {
 
     for (const providerName of providers) {
       const providerLocator = webview
-        .getByTestId(this.quoteCardProviderName)
-        .getByText(providerName)
+        .getByTestId(this.specificQuoteCardProviderName(providerName.toLowerCase()))
         .first();
 
       if (await providerLocator.isVisible()) {
@@ -179,7 +184,7 @@ export class SwapPage extends AppPage {
   @step("Tap quote infos fees selector")
   async tapQuoteInfosFeesSelector(electronApp: ElectronApplication) {
     const [, webview] = electronApp.windows();
-    await webview.getByTestId(this.quoteInfosFeesSelector).first().click();
+    await webview.getByTestId(this.quoteInfosFeesSelector).nth(1).click();
   }
 
   @step("Check drawer error message ($0)")
@@ -189,67 +194,46 @@ export class SwapPage extends AppPage {
     await this.drawerCloseButton.click();
   }
 
-  @step('Check "Best Offer" corresponds to the best quote')
-  async checkBestOffer(electronApp: ElectronApplication) {
-    const allQuoteTexts = await this.getAllSwapProviderTexts(electronApp);
-    const parsedQuotes = this.parseQuotes(allQuoteTexts);
-
-    const bestQuote = this.getBestQuote(parsedQuotes);
-    const bestOfferText = await this.getBestOfferQuoteText(electronApp);
-
-    expect(this.normalizeText(bestOfferText)).toContain(this.normalizeText(bestQuote.quote));
-  }
-
-  @step("Get all swap provider texts")
-  private async getAllSwapProviderTexts(electronApp: ElectronApplication) {
+  @step("Get all swap providers available")
+  async getAllSwapProviders(electronApp: ElectronApplication) {
     const [, webview] = electronApp.windows();
-    return webview
+    return await webview
       .locator(
         '[data-testid^="quote-container-"][data-testid$="-fixed"], [data-testid^="quote-container-"][data-testid$="-float"]',
       )
       .allTextContents();
   }
 
-  private parseQuotes(quotes: string[]) {
-    const parsed = quotes
+  @step("Extract quotes and fees")
+  async extractQuotesAndFees(quoteContainers: string[]) {
+    const quotes = quoteContainers
       .map(quote => {
-        const match = quote.match(/Network Fees\s*\$([\d.]+).*?\$(\d+\.\d+)/);
-        if (!match) return undefined;
-        const [, fees, rate] = match.map(Number);
-        return { rate, fees, quote };
+        const match = quote.match(/Network Fees \$(\d+\.\d+).*?[A-Z]{2,10}\$(\d+\.\d+)/);
+        if (match) {
+          const fees = parseFloat(match[1]);
+          const rate = parseFloat(match[2]);
+          return { rate, fees, quote };
+        }
+        return undefined;
       })
-      .filter((q): q is { rate: number; fees: number; quote: string } => q !== undefined);
+      .filter(quote => quote !== undefined);
 
-    if (parsed.length === 0) {
+    if (quotes.length === 0) {
       throw new Error("No quotes found");
     }
-
-    return parsed;
+    return quotes;
   }
 
-  private getBestQuote(quotes: { rate: number; fees: number; quote: string }[]) {
-    return quotes.reduce((best, current) =>
-      !best || current.rate - current.fees > best.rate - best.fees ? current : best,
+  @step('Check "Best Offer" corresponds to the best quote')
+  async checkBestOffer(electronApp: ElectronApplication) {
+    const quoteContainers = await this.getAllSwapProviders(electronApp);
+    const quotes = await this.extractQuotesAndFees(quoteContainers);
+    const bestOffer = quotes.reduce<{ rate: number; fees: number; quote: string } | null>(
+      (max, current) =>
+        current && (!max || current.rate - current.fees > max.rate - max.fees) ? current : max,
+      null,
     );
-  }
-
-  private async getBestOfferQuoteText(electronApp: ElectronApplication) {
-    const [, webview] = electronApp.windows();
-    return webview
-      .locator(
-        'section:has-text("Best offer") [data-testid^="quote-container-"][data-testid$="-fixed"], section:has-text("Best offer") [data-testid^="quote-container-"][data-testid$="-float"]',
-      )
-      .first()
-      .innerText();
-  }
-
-  private normalizeText(text: string) {
-    return text.replace(/\s+/g, "").trim();
-  }
-
-  @step("Wait for exchange to be available")
-  async waitForExchangeToBeAvailable() {
-    return waitFor(() => this.exchangeButton.isEnabled(), 250, 10000);
+    expect(bestOffer?.quote).toMatch(quoteContainers[0]);
   }
 
   @step("Check exchange button is visible and enabled")
@@ -287,39 +271,10 @@ export class SwapPage extends AppPage {
     await continueButton.click();
   }
 
-  @step("Select currency to swap to: $0")
-  async selectCurrencyToSwapTo(currencyToSwapTo: string) {
-    await this.waitForPageDomContentLoadedState();
-    await expect(this.destinationCurrencyDropdown).toBeEnabled();
-    await this.destinationCurrencyDropdown.click();
-    await this.page.keyboard.type(currencyToSwapTo);
-    await this.dropdownOptions.locator(this.optionWithText(currencyToSwapTo)).first().click();
-    const selectedCurrencyTo = this.destinationCurrencyDropdown.locator(this.dropdownSelectedValue);
-    await expect(selectedCurrencyTo).toHaveText(currencyToSwapTo);
-  }
-
-  @step("Retrieve destination currency amount value")
-  async getDestinationCurrencyAmountValue() {
-    return await this.destinationCurrencyAmount.inputValue();
-  }
-
   @step("Retrieve send currency amount value")
   async getAmountToSend(electronApp: ElectronApplication) {
     const [, webview] = electronApp.windows();
     return await webview.getByTestId(this.fromAccountAmountInput).inputValue();
-  }
-
-  @step("Retrieve fees amount value")
-  async getFeesValue() {
-    const text = await this.feesValue.textContent();
-    return text ? text?.split(" ")[0] : "";
-  }
-
-  @step("Select currency to swap from")
-  async selectAssetFrom(electronApp: ElectronApplication, accountToSwapFrom: Account) {
-    const [, webview] = electronApp.windows();
-    await webview.getByTestId(this.fromAccountCoinSelector).click();
-    await this.chooseAssetDrawer.chooseFromAsset(accountToSwapFrom.currency.name);
   }
 
   @step("Check currency to swap from is $0")
@@ -341,6 +296,23 @@ export class SwapPage extends AppPage {
     await expect(webview.getByTestId(this.fromAccountCoinSelector)).toContainText(asset);
   }
 
+  @step("Check if asset is already selected")
+  async checkIfAssetIsAlreadySelected(
+    asset: string,
+    electronApp: ElectronApplication,
+  ): Promise<boolean> {
+    const [, webview] = electronApp.windows();
+    const selector = webview.getByTestId(this.fromAccountCoinSelector);
+
+    await webview.waitForFunction(selectorTestId => {
+      const el = document.querySelector(`[data-testid='${selectorTestId}']`);
+      return el && el.textContent && el.textContent !== "Choose asset";
+    }, this.fromAccountCoinSelector);
+
+    const text = await selector.textContent();
+    return text?.includes(asset) ?? false;
+  }
+
   @step("Fill in amount: $1")
   async fillInOriginCurrencyAmount(electronApp: ElectronApplication, amount: string) {
     const [, webview] = electronApp.windows();
@@ -354,6 +326,23 @@ export class SwapPage extends AppPage {
     const [, webview] = electronApp.windows();
     await webview.getByTestId(this.toAccountCoinSelector).click();
     await this.chooseAssetDrawer.chooseFromAsset(currency);
+  }
+
+  @step("Choose from asset $0")
+  async chooseFromAsset(currency: string, networkName?: string) {
+    await this.chooseAssetDrawer.chooseFromAsset(currency, networkName);
+  }
+
+  @step("Select to account coin selector")
+  async selectToAccountCoinSelector(electronApp: ElectronApplication) {
+    const [, webview] = electronApp.windows();
+    await webview.getByTestId(this.toAccountCoinSelector).click();
+  }
+
+  @step("Select from account coin selector")
+  async selectFromAccountCoinSelector(electronApp: ElectronApplication) {
+    const [, webview] = electronApp.windows();
+    await webview.getByTestId(this.fromAccountCoinSelector).click();
   }
 
   @step("Check currency to swap to is $1")
@@ -511,9 +500,9 @@ export class SwapPage extends AppPage {
     expect(fileContents).toContain(swap.accountToCredit.address);
   }
 
-  @step("Check minimum amount for swap")
   async getMinimumAmount(accountFrom: Account, accountTo: Account) {
-    return (await getMinimumSwapAmount(accountFrom, accountTo))?.toString() ?? "";
+    const amount = (await getMinimumSwapAmount(accountFrom, accountTo))?.toFixed(6) ?? "";
+    return amount ? parseFloat(amount).toString() : "";
   }
 
   @step("Click on swap max")

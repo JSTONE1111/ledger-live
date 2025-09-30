@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/coin-sui",
-  "version": "0.7.0",
+  "version": "0.14.0",
   "description": "Ledger Sui Coin integration",
   "keywords": [
     "Ledger",
@@ -70,6 +70,10 @@
       "require": "./lib/bridge/preload.js",
       "default": "./lib-es/bridge/preload.js"
     },
+    "./getOperationExtra": {
+      "require": "./lib/bridge/getOperationExtra.js",
+      "default": "./lib-es/bridge/getOperationExtra.js"
+    },
     "./serialization": {
       "require": "./lib/bridge/serialization.js",
       "default": "./lib-es/bridge/serialization.js"
@@ -102,6 +106,10 @@
       "require": "./lib/bridge/utils.js",
       "default": "./lib-es/bridge/utils.js"
     },
+    "./constants": {
+      "require": "./lib/constants.js",
+      "default": "./lib-es/constants.js"
+    },
     ".": {
       "require": "./lib/index.js",
       "default": "./lib-es/index.js"
@@ -112,7 +120,7 @@
   "scripts": {
     "clean": "rimraf lib lib-es",
     "build": "tsc --outDir lib --module commonjs --moduleResolution node10 && tsc -m ES6 --outDir lib-es",
-    "coverage": "jest --coverage --passWithNoTests && mv coverage/coverage-final.json coverage/coverage-sui.json",
+    "coverage": "jest --coverage --passWithNoTests",
     "prewatch": "pnpm build",
     "watch": "tsc --watch",
     "watch:es": "tsc --watch -m ES6 --outDir lib-es",
@@ -122,9 +130,7 @@
     "test": "jest",
     "test-integ": "jest --config=jest.integ.config.js",
     "typecheck": "tsc --noEmit",
-    "unimported": "unimported",
-    "coin-tester:build": "make build -f src/test/coin-tester/Makefile",
-    "coin-tester": "DOTENV_CONFIG_PATH=src/test/coin-tester/.env pnpm jest --runTestsByPath src/test/coin-tester/*.test.ts --forceExit --runInBand"
+    "unimported": "unimported"
   },
   "dependencies": {
     "@ledgerhq/coin-framework": "workspace:^",
@@ -137,8 +143,8 @@
     "@ledgerhq/logs": "workspace:^",
     "@ledgerhq/types-cryptoassets": "workspace:^",
     "@ledgerhq/types-live": "workspace:^",
-    "@mysten/signers": "0.2.10",
-    "@mysten/sui": "1.30.1",
+    "@mysten/signers": "0.5.0",
+    "@mysten/sui": "1.38.0",
     "bignumber.js": "^9.1.2",
     "lodash": "4.17.21",
     "rxjs": "^7.8.1"

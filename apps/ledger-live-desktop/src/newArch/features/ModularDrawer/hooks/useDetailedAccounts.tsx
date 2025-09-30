@@ -6,11 +6,13 @@ import { WalletAPIAccount } from "@ledgerhq/live-common/wallet-api/types";
 import { useGetAccountIds } from "@ledgerhq/live-common/wallet-api/react";
 import { getTagDerivationMode } from "@ledgerhq/coin-framework/derivation";
 import { useCountervaluesState } from "@ledgerhq/live-countervalues-react";
-import { AccountTuple, getAccountTuplesForCurrency } from "../utils/getAccountTuplesForCurrency";
+import {
+  AccountTuple,
+  getAccountTuplesForCurrency,
+} from "@ledgerhq/live-common/utils/getAccountTuplesForCurrency";
 import { accountsSelector } from "~/renderer/reducers/accounts";
 import { counterValueCurrencySelector } from "~/renderer/reducers/settings";
 import { sortAccountsByFiatValue } from "../utils/sortAccountsByFiatValue";
-import BigNumber from "bignumber.js";
 import { formatDetailedAccount } from "../utils/formatDetailedAccount";
 import { isTokenCurrency } from "@ledgerhq/live-common/currencies/helpers";
 import { useDiscreetMode } from "~/renderer/components/Discreet";
@@ -22,28 +24,21 @@ import { Account } from "@ledgerhq/types-live";
 import { useBatchMaybeAccountName } from "~/renderer/reducers/wallet";
 import orderBy from "lodash/orderBy";
 import keyBy from "lodash/keyBy";
-
-export const sortAccountsByBalance = (
-  a: { balance: BigNumber } | undefined,
-  b: { balance: BigNumber } | undefined,
-) => {
-  if (a && b) return b.balance.comparedTo(a.balance);
-  if (a) return -1;
-  if (b) return 1;
-  return 0;
-};
+import { modularDrawerSourceSelector } from "~/renderer/reducers/modularDrawer";
 
 export const useDetailedAccounts = (
   asset: CryptoOrTokenCurrency,
-  flow: string,
-  source: string,
   accounts$?: Observable<WalletAPIAccount[]>,
   onAccountSelected?: (account: Account) => void,
 ) => {
   const discreet = useDiscreetMode();
   const state = useCountervaluesState();
   const { trackModularDrawerEvent } = useModularDrawerAnalytics();
-  const { openAddAccountFlow } = useOpenAssetFlow(ModularDrawerLocation.ADD_ACCOUNT, source);
+  const source = useSelector(modularDrawerSourceSelector);
+  const { openAddAccountFlow } = useOpenAssetFlow(
+    { location: ModularDrawerLocation.ADD_ACCOUNT },
+    source,
+  );
 
   const accountIds = useGetAccountIds(accounts$);
   const nestedAccounts = useSelector(accountsSelector);
@@ -110,11 +105,9 @@ export const useDetailedAccounts = (
     trackModularDrawerEvent("button_clicked", {
       button: "Add a new account",
       page: MODULAR_DRAWER_PAGE_NAME.MODULAR_ACCOUNT_SELECTION,
-      flow,
-      source,
     });
     openAddAccountFlow(asset, false, onAccountSelected);
-  }, [asset, flow, openAddAccountFlow, source, trackModularDrawerEvent, onAccountSelected]);
+  }, [asset, openAddAccountFlow, trackModularDrawerEvent, onAccountSelected]);
 
   return { detailedAccounts, accounts, onAddAccountClick };
 };

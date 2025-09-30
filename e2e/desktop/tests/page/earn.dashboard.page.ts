@@ -3,16 +3,15 @@ import { step } from "../misc/reporters/step";
 import { WebViewAppPage } from "./webViewApp.page";
 import { expect } from "@playwright/test";
 import { ChooseAssetDrawer } from "./drawer/choose.asset.drawer";
+import { ModularDrawer } from "./drawer/modular.drawer";
 
 export class EarnPage extends WebViewAppPage {
   private earnMoreRewardTabButton = "tab-earn-more";
-  private earnAppContainer = this.page.getByTestId("earn-app-container");
   private stakeCryptoAssetsButton = "stake-crypto-assets-button";
   private potentialRewardsBalanceCard = "Rewards you could earn-balance-card";
   private amountAvailableBalanceCard = "Amount available to earn-balance-card";
   private amountAvailableAssetsText = "  Amount available to earn";
   private rewardsPotentialText = "Rewards you could earn";
-  private availableAssetsText = "Available assets";
   private totalRewardsText = "Total rewards";
   private totalDepositedBalanceCard = "Total deposited-balance-card";
   private totalRewardsBalanceCard = "Total rewards-balance-card";
@@ -21,6 +20,7 @@ export class EarnPage extends WebViewAppPage {
   private learnMoreButton = (currency: string) => `get-${currency}-button`;
 
   private chooseAssetDrawer = new ChooseAssetDrawer(this.page);
+  private modularDrawer = new ModularDrawer(this.page);
 
   @step("Go and wait for Earn app to be ready")
   async goAndWaitForEarnToBeReady(earnFunction: () => Promise<void>) {
@@ -59,13 +59,6 @@ export class EarnPage extends WebViewAppPage {
     await row.getByRole("button", { name: "Earn" }).first().click();
   }
 
-  @step("Expect live App to be visible")
-  async expectLiveAppToBeVisible() {
-    const webview = await this.getWebView();
-    await expect(this.earnAppContainer).toBeVisible();
-    await expect(webview.locator(`[data-test-id="${this.stakeCryptoAssetsButton}"]`)).toBeVisible();
-  }
-
   @step("Verify rewards potential is visible")
   async verifyRewardsPotentials() {
     const webview = await this.getWebView();
@@ -98,13 +91,6 @@ export class EarnPage extends WebViewAppPage {
     await expect(row.getByRole("button", { name: "Earn" }).first()).toBeEnabled();
   }
 
-  @step("Verify eligible assets are visible")
-  async verifyEligibleAssets(account: Account) {
-    const webview = await this.getWebView();
-    await this.expectTextToBeVisible(this.availableAssetsText);
-    await expect(webview.getByTestId(this.learnMoreButton(account.currency.id))).toBeEnabled();
-  }
-
   @step("Verify earn by stacking button is visible")
   async verifyEarnByStackingButton() {
     const webview = await this.getWebView();
@@ -112,6 +98,10 @@ export class EarnPage extends WebViewAppPage {
     await expect(earnButton).toBeVisible();
     await expect(earnButton).toBeEnabled();
     await earnButton.click();
+    if (await this.modularDrawer.isModularAssetsDrawerVisible()) {
+      await this.modularDrawer.validateAssetsDrawerItems();
+      return;
+    }
     await this.chooseAssetDrawer.verifyChooseAssetDrawer();
   }
 
@@ -122,11 +112,11 @@ export class EarnPage extends WebViewAppPage {
 
     switch (selectedProvider) {
       case "Lido": {
-        this.expectUrlToContainAll(url, [account.currency.id, "stake.lido.fi"]);
+        await this.expectUrlToContainAll(url, [account.currency.id, "stake.lido.fi"]);
         break;
       }
       case "Stader Labs": {
-        this.expectUrlToContainAll(url, [
+        await this.expectUrlToContainAll(url, [
           account.currency.id,
           `staderlabs.com/${account.currency.ticker}`,
           account.address,
@@ -134,7 +124,7 @@ export class EarnPage extends WebViewAppPage {
         break;
       }
       case "Kiln staking Pool": {
-        this.expectUrlToContainAll(url, [account.currency.id, "kiln.fi%2F%3Ffocus%3Dpooled"]);
+        await this.expectUrlToContainAll(url, [account.currency.id, "kiln.fi%2F%3Ffocus%3Dpooled"]);
         break;
       }
       default:
@@ -142,7 +132,7 @@ export class EarnPage extends WebViewAppPage {
     }
   }
 
-  @step("Click on learn more button for $1")
+  @step("Click on learn more button for $0")
   async clickLearnMoreButton(currency: string) {
     await this.clickElement(this.learnMoreButton(currency));
   }

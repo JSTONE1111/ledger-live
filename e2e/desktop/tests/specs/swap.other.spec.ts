@@ -14,11 +14,11 @@ import { CLI } from "../utils/cliUtils";
 import {
   setupEnv,
   performSwapUntilQuoteSelectionStep,
-  performSwapUntilDeviceVerificationStep,
+  handleSwapErrorOrSuccess,
 } from "../utils/swapUtils";
+import { DeviceModelId } from "@ledgerhq/types-devices";
 import { getEnv } from "@ledgerhq/live-env";
 import { overrideNetworkPayload } from "../utils/networkUtils";
-
 const app: AppInfos = AppInfos.EXCHANGE;
 
 const liveDataCommand = (currencyApp: { name: string }, index: number) => (userdataPath?: string) =>
@@ -96,7 +96,7 @@ for (const { fromAccount, toAccount, xrayTicket, provider } of checkProviders) {
 
         await performSwapUntilQuoteSelectionStep(app, electronApp, swap, minAmount);
 
-        await app.swap.selectSpecificProvider(provider.uiName, electronApp);
+        await app.swap.selectSpecificProvider(provider, electronApp);
         await app.swap.goToProviderLiveApp(electronApp, provider.uiName);
         await app.swap.verifyProviderURL(electronApp, provider.uiName, swap);
         await app.liveApp.verifyLiveAppTitle(provider.uiName.toLowerCase());
@@ -269,13 +269,7 @@ test.describe("Swap - Rejected on device", () => {
       await performSwapUntilQuoteSelectionStep(app, electronApp, rejectedSwap, minAmount);
       const selectedProvider = await app.swap.selectExchangeWithoutKyc(electronApp);
 
-      await performSwapUntilDeviceVerificationStep(
-        app,
-        electronApp,
-        rejectedSwap,
-        selectedProvider,
-        minAmount,
-      );
+      await app.swap.clickExchangeButton(electronApp, selectedProvider);
       await app.speculos.verifyAmountsAndRejectSwap(rejectedSwap, minAmount);
       await app.swapDrawer.verifyExchangeErrorTextContent("Operation denied on device");
     },
@@ -328,60 +322,78 @@ test.describe("Swap - Landing page", () => {
 
       await performSwapUntilQuoteSelectionStep(app, electronApp, swap, minAmount);
       const providerList = await app.swap.getProviderList(electronApp);
-      await app.swap.checkQuotesContainerInfos(electronApp, providerList);
+      await app.swap.checkQuotesContainerInfos(
+        electronApp,
+        providerList,
+        toAccount.currency.ticker,
+      );
       await app.swap.checkBestOffer(electronApp);
     },
   );
 });
 
-const swapWithDifferentSeed = [
+interface SwapTestCase {
+  swap: Swap;
+  xrayTicket: string;
+  errorMessage?: string | null;
+  expectedErrorPerDevice?: {
+    [deviceId: string]: string;
+  };
+}
+
+const swapWithDifferentSeed: SwapTestCase[] = [
   {
     swap: new Swap(Account.ETH_1, Account.SOL_1, "0.03"),
     xrayTicket: "B2CQA-3089",
-    userData: "speculos-x-other-account",
     errorMessage:
-      "This receiving account does not belong to the device you have connected. Please change and retry",
+      "This sending account does not belong to the device you have connected. Please change and retry",
+    expectedErrorPerDevice: {
+      [DeviceModelId.nanoS]:
+        "This receiving account does not belong to the device you have connected. Please change and retry",
+    },
   },
   {
     swap: new Swap(Account.BTC_NATIVE_SEGWIT_1, Account.ETH_1, "0.002"),
     xrayTicket: "B2CQA-3090",
-    userData: "speculos-x-other-account",
-    errorMessage:
-      "This receiving account does not belong to the device you have connected. Please change and retry",
+    errorMessage: null,
   },
   {
     swap: new Swap(Account.ETH_1, Account.BTC_NATIVE_SEGWIT_1, "0.03"),
     xrayTicket: "B2CQA-3091",
-    userData: "speculos-x-other-account",
     errorMessage:
       "This sending account does not belong to the device you have connected. Please change and retry",
+    expectedErrorPerDevice: {
+      [DeviceModelId.nanoS]:
+        "This sending account does not belong to the device you have connected. Please change and retry",
+    },
   },
 ];
 
-for (const { swap, xrayTicket, userData, errorMessage } of swapWithDifferentSeed) {
-  test.describe("Swap - Using different seed", () => {
-    setupEnv(true);
+test.describe("Swap - Using different seed", () => {
+  setupEnv(true);
 
+  test.use({
+    userdata: "speculos-x-other-account",
+    speculosApp: app,
+  });
+
+  for (const { swap, xrayTicket, errorMessage, expectedErrorPerDevice } of swapWithDifferentSeed) {
     test.beforeEach(async () => {
-      const accountPair: string[] = [swap.accountToDebit, swap.accountToCredit].map(acc =>
-        acc.currency.speculosApp.name.replace(/ /g, "_"),
+      const accountPair = [swap.accountToDebit, swap.accountToCredit].map(acc =>
+        acc.currency.speculosApp.name.replaceAll(" ", "_"),
       );
       setExchangeDependencies(accountPair.map(name => ({ name })));
     });
 
-    test.use({
-      userdata: userData,
-      speculosApp: app,
-    });
-
     test(
-      `Swap using a different seed - ${swap.accountToDebit.currency.name} to ${swap.accountToCredit.currency.name}`,
+      `Swap using a different seed - ${swap.accountToDebit.currency.name} → ${swap.accountToCredit.currency.name}`,
       {
         tag: ["@NanoSP", "@LNS", "@NanoX"],
         annotation: { type: "TMS", description: xrayTicket },
       },
       async ({ app, electronApp }) => {
-        await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
+        const tmsDescription = getDescription(test.info().annotations, "TMS");
+        await addTmsLink(tmsDescription.split(", "));
 
         const minAmount = await app.swap.getMinimumAmount(
           swap.accountToDebit,
@@ -389,15 +401,19 @@ for (const { swap, xrayTicket, userData, errorMessage } of swapWithDifferentSeed
         );
 
         await performSwapUntilQuoteSelectionStep(app, electronApp, swap, minAmount);
-        const selectedProvider = await app.swap.selectExchangeWithoutKyc(electronApp);
 
-        await app.swap.clickExchangeButton(electronApp, selectedProvider);
-
-        await app.swapDrawer.checkErrorMessage(errorMessage);
+        await handleSwapErrorOrSuccess(
+          app,
+          electronApp,
+          swap,
+          minAmount,
+          errorMessage ?? null,
+          expectedErrorPerDevice,
+        );
       },
     );
-  });
-}
+  }
+});
 
 const swapWithoutAccount = [
   {
@@ -445,15 +461,33 @@ for (const { account1, account2, xrayTicket, testTitle } of swapWithoutAccount) 
         const debitAccount = speculosApp ? account1 : account2;
         const creditAccount = speculosApp ? account2 : account1;
 
-        await app.swap.selectAssetFrom(electronApp, debitAccount);
-        await app.swapDrawer.selectAccountByName(debitAccount);
+        await app.swap.selectFromAccountCoinSelector(electronApp);
 
-        await app.swap.selectAssetTo(electronApp, creditAccount.currency.name);
-        await app.swapDrawer.clickOnAddAccountButton();
+        const isModularDrawer = await app.modularDrawer.isModularAssetsDrawerVisible();
+        if (isModularDrawer) {
+          await app.modularDrawer.selectAssetByTickerAndName(debitAccount.currency);
+          await app.modularDrawer.selectNetwork(debitAccount.currency);
+          await app.modularDrawer.selectAccountByName(debitAccount);
 
-        await app.addAccount.addAccounts();
-        await app.addAccount.done();
-        await app.swapDrawer.selectAccountByName(creditAccount);
+          await app.swap.selectToAccountCoinSelector(electronApp);
+          await app.modularDrawer.selectAssetByTickerAndName(creditAccount.currency);
+          await app.modularDrawer.selectNetwork(creditAccount.currency);
+          await app.modularDrawer.clickOnAddAndExistingAccountButton();
+
+          await app.addAccount.addAccounts();
+          await app.addAccount.done();
+          await app.modularDrawer.selectAccountByName(creditAccount);
+        } else {
+          await app.swap.chooseFromAsset(account1.currency.name);
+          await app.swapDrawer.selectAccountByName(debitAccount);
+
+          await app.swap.selectAssetTo(electronApp, creditAccount.currency.name);
+          await app.swapDrawer.clickOnAddAccountButton();
+
+          await app.addAccount.addAccounts();
+          await app.addAccount.done();
+          await app.swapDrawer.selectAccountByName(creditAccount);
+        }
       },
     );
   });
@@ -462,7 +496,7 @@ for (const { account1, account2, xrayTicket, testTitle } of swapWithoutAccount) 
 test.describe("Swap a coin for which you have no account yet", () => {
   const account1 = Account.ETH_1;
   const account2 = Account.BSC_1;
-  const xrayTicket = "B2CQA-3355";
+  const xrayTicket = "B2CQA-3355, B2CQA-3282, B2CQA-3288";
 
   setupEnv(true);
 
@@ -481,17 +515,39 @@ test.describe("Swap a coin for which you have no account yet", () => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
       await app.swap.goAndWaitForSwapToBeReady(() => app.layout.goToSwap());
 
-      await app.swap.selectAssetFrom(electronApp, account1);
-      await app.swapDrawer.clickOnAddAccountButton();
-      await app.addAccount.addAccounts();
-      await app.addAccount.done();
-      await app.swapDrawer.selectAccountByName(account1);
+      await app.swap.selectFromAccountCoinSelector(electronApp);
 
-      await app.swap.selectAssetTo(electronApp, account2.currency.name);
-      await app.swapDrawer.clickOnAddAccountButton();
-      await app.addAccount.addAccounts();
-      await app.addAccount.done();
-      await app.swapDrawer.selectAccountByName(account2);
+      const isModularDrawer = await app.modularDrawer.isModularAssetsDrawerVisible();
+      if (isModularDrawer) {
+        await app.modularDrawer.selectAssetByTickerAndName(account1.currency);
+        await app.modularDrawer.selectNetwork(account1.currency);
+        await app.modularDrawer.clickOnAddAndExistingAccountButton();
+
+        await app.addAccount.addAccounts();
+        await app.addAccount.done();
+        await app.modularDrawer.selectAccountByName(account1);
+
+        await app.swap.selectToAccountCoinSelector(electronApp);
+        await app.modularDrawer.selectAssetByTickerAndName(account2.currency);
+        await app.modularDrawer.selectNetwork(account2.currency);
+        await app.modularDrawer.clickOnAddAndExistingAccountButton();
+
+        await app.addAccount.addAccounts();
+        await app.addAccount.done();
+        await app.modularDrawer.selectAccountByName(account2);
+      } else {
+        await app.swap.chooseFromAsset(account1.currency.name);
+        await app.swapDrawer.clickOnAddAccountButton();
+        await app.addAccount.addAccounts();
+        await app.addAccount.done();
+        await app.swapDrawer.selectAccountByName(account1);
+
+        await app.swap.selectAssetTo(electronApp, account2.currency.name);
+        await app.swapDrawer.clickOnAddAccountButton();
+        await app.addAccount.addAccounts();
+        await app.addAccount.done();
+        await app.swapDrawer.selectAccountByName(account2);
+      }
     },
   );
 });
@@ -882,12 +938,12 @@ const swapMax = [
   {
     fromAccount: Account.ETH_1,
     toAccount: Account.BTC_NATIVE_SEGWIT_1,
-    xrayTicket: "B2CQA-3365",
+    xrayTicket: "B2CQA-3365, B2CQA-3450, B2CQA-3281",
   },
   {
     fromAccount: TokenAccount.ETH_USDT_1,
     toAccount: Account.BTC_NATIVE_SEGWIT_1,
-    xrayTicket: "B2CQA-3366",
+    xrayTicket: "B2CQA-3366, B2CQA-3450, B2CQA-3281",
   },
 ];
 
@@ -939,10 +995,25 @@ for (const { fromAccount, toAccount, xrayTicket } of swapMax) {
         await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
         await app.swap.goAndWaitForSwapToBeReady(() => app.layout.goToSwap());
 
-        await app.swap.selectAssetFrom(electronApp, fromAccount);
-        await app.swapDrawer.selectAccountByName(fromAccount);
-        await app.swap.selectAssetTo(electronApp, toAccount.currency.name);
-        await app.swapDrawer.selectAccountByName(toAccount);
+        await app.swap.selectFromAccountCoinSelector(electronApp);
+
+        const isModularDrawer = await app.modularDrawer.isModularAssetsDrawerVisible();
+        if (isModularDrawer) {
+          await app.modularDrawer.selectAssetByTickerAndName(fromAccount.currency);
+          await app.modularDrawer.selectNetwork(fromAccount.currency);
+          await app.modularDrawer.selectAccountByName(fromAccount);
+
+          await app.swap.selectToAccountCoinSelector(electronApp);
+          await app.modularDrawer.selectAssetByTickerAndName(toAccount.currency);
+          await app.modularDrawer.selectNetwork(toAccount.currency);
+          await app.modularDrawer.selectAccountByName(toAccount);
+        } else {
+          const networkName = fromAccount.parentAccount?.currency.name;
+          await app.swap.chooseFromAsset(fromAccount.currency.name, networkName);
+          await app.swapDrawer.selectAccountByName(fromAccount);
+          await app.swap.selectAssetTo(electronApp, toAccount.currency.name);
+          await app.swapDrawer.selectAccountByName(toAccount);
+        }
 
         await app.swap.clickSwapMax(electronApp);
 
@@ -950,13 +1021,7 @@ for (const { fromAccount, toAccount, xrayTicket } of swapMax) {
         const selectedProvider = await app.swap.selectExchangeWithoutKyc(electronApp);
         const swap = new Swap(fromAccount, toAccount, amountToSend);
 
-        await performSwapUntilDeviceVerificationStep(
-          app,
-          electronApp,
-          swap,
-          selectedProvider,
-          amountToSend,
-        );
+        await app.swap.clickExchangeButton(electronApp, selectedProvider);
         await app.speculos.verifyAmountsAndAcceptSwap(swap, amountToSend);
         await app.swapDrawer.verifyExchangeCompletedTextContent(swap.accountToCredit.currency.name);
       },

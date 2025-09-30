@@ -27,6 +27,8 @@ import {
 } from "LLD/features/ModularDrawer";
 import { currentRouteNameRef } from "~/renderer/analytics/screenRefs";
 import { AccountLike } from "@ledgerhq/types-live";
+import { useDispatch } from "react-redux";
+import { setFlowValue, setSourceValue } from "~/renderer/reducers/modularDrawer";
 
 export const initialWebviewState: WebviewState = {
   url: "",
@@ -306,7 +308,10 @@ export function useSelectAccount({
     modularDrawerFeatureFlagKey: "lldModularDrawer",
   });
 
-  const modularDrawerVisible = isModularDrawerVisible(ModularDrawerLocation.LIVE_APP);
+  const modularDrawerVisible = isModularDrawerVisible({
+    location: ModularDrawerLocation.LIVE_APP,
+    liveAppId: manifest.id,
+  });
 
   const currencies = useManifestCurrencies(manifest);
   const { setCurrentAccountHist, setCurrentAccount, currentAccount } =
@@ -325,29 +330,50 @@ export function useSelectAccount({
     setDrawer();
   }, []);
 
+  const source =
+    currentRouteNameRef.current === "Platform Catalog"
+      ? "Discover"
+      : currentRouteNameRef.current ?? "Unknown";
+
+  const flow = manifest.name;
+
+  const dispatch = useDispatch();
+
   const onSelectAccount = useCallback(() => {
-    modularDrawerVisible
-      ? openAssetAndAccountDrawer({
-          currencies,
-          onSuccess,
-          onCancel,
-          flow: manifest.name,
-          source:
-            currentRouteNameRef.current === "Platform Catalog"
-              ? "Discover"
-              : currentRouteNameRef.current ?? "Unknown",
-        })
-      : setDrawer(
-          SelectAccountAndCurrencyDrawer,
-          {
-            currencies: currencies,
-            onAccountSelected: onSuccess,
-          },
-          {
-            onRequestClose: onCancel,
-          },
-        );
-  }, [currencies, manifest.name, modularDrawerVisible, onCancel, onSuccess]);
+    if (modularDrawerVisible) {
+      dispatch(setFlowValue(flow));
+      dispatch(setSourceValue(source));
+
+      openAssetAndAccountDrawer({
+        currencies: currencies.map(currency => currency.id),
+        onSuccess,
+        onCancel,
+        areCurrenciesFiltered: manifest.currencies !== "*",
+      });
+    } else {
+      setDrawer(
+        SelectAccountAndCurrencyDrawer,
+        {
+          flow,
+          source,
+          currencies: currencies,
+          onAccountSelected: onSuccess,
+        },
+        {
+          onRequestClose: onCancel,
+        },
+      );
+    }
+  }, [
+    currencies,
+    flow,
+    manifest.currencies,
+    modularDrawerVisible,
+    onCancel,
+    onSuccess,
+    source,
+    dispatch,
+  ]);
 
   return { onSelectAccount, currentAccount };
 }

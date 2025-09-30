@@ -99,12 +99,6 @@ export class AddAccountModal extends Modal {
     await this.loadingSpinner.waitFor({ state: "hidden" });
   }
 
-  @step("click `Add Accounts` button - mocked tests")
-  async addAccountsMocked() {
-    await this.addAccountsButton.click();
-    await expect(this.successAddLabel).toBeVisible();
-  }
-
   @step("Click `Add Accounts` button")
   async addAccounts() {
     if (await this.deselectAllButton.isVisible()) {
@@ -133,8 +127,13 @@ export class AddAccountModal extends Modal {
   }
 
   @step("Check that add account modal elements are visible")
-  async expectModalVisiblity() {
+  async expectModalVisibility() {
     expect(await this.title.textContent()).toBe("Add accounts");
     await expect(this.selectAccount).toBeVisible();
+  }
+
+  @step("Check that add account modal to be visible")
+  async expectAccountModalToBeVisible() {
+    expect(await this.title.textContent()).toBe("Add accounts");
   }
 }

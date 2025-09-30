@@ -6,6 +6,7 @@ import {
   baseCurrency,
   bitcoinCurrency,
   ethereumCurrency,
+  hederaCurrency,
   scrollCurrency,
 } from "./useSelectAssetFlow.mock";
 
@@ -61,6 +62,10 @@ export const SCROLL_ACCOUNT = genAccount("scroll-1", {
   currency: scrollCurrency,
   operationsSize: 100,
 });
+export const HEDERA_ACCOUNT = genAccount("hedera-1", {
+  currency: hederaCurrency,
+  operationsSize: 100,
+});
 
 export const useCountervaluesPolling = () => ({
   wipe: () => {},
@@ -71,7 +76,7 @@ export const useCountervaluesPolling = () => ({
   error: null,
 });
 
-export const useCountervaluesUserSettingsContext = () => ({ trackingPairs: [] });
+export const useCountervaluesUserSettings = () => ({ trackingPairs: [] });
 
 export const userThemeSelector = () => "light";
 

@@ -1,11 +1,16 @@
 import {
-  AlpacaApi,
+  Api,
   Block,
   BlockInfo,
+  Cursor,
+  Page,
   FeeEstimation,
   Operation,
   Pagination,
+  Stake,
+  Reward,
   TransactionIntent,
+  CraftedTransaction,
 } from "@ledgerhq/coin-framework/api/index";
 import coinConfig, { type StellarConfig } from "../config";
 import {
@@ -14,15 +19,21 @@ import {
   craftTransaction,
   estimateFees,
   getBalance,
+  validateIntent,
   lastBlock,
   listOperations,
+  STELLAR_BURN_ADDRESS,
+  getTokenFromAsset,
+  getAssetFromToken,
 } from "../logic";
 import { ListOperationsOptions } from "../logic/listOperations";
-import { StellarAsset, StellarMemo } from "../types";
+import { StellarBurnAddressError, StellarMemo } from "../types";
 import { LedgerAPI4xx } from "@ledgerhq/errors";
 import { log } from "@ledgerhq/logs";
 import { xdr } from "@stellar/stellar-sdk";
-export function createApi(config: StellarConfig): AlpacaApi<StellarAsset, StellarMemo> {
+import { fetchSequence } from "../network";
+import { getEnv } from "@ledgerhq/live-env";
+export function createApi(config: StellarConfig): Api<StellarMemo> {
   coinConfig.setCoinConfig(() => ({ ...config, status: { type: "active" } }));
 
   return {
@@ -33,20 +44,45 @@ export function createApi(config: StellarConfig): AlpacaApi<StellarAsset, Stella
     getBalance,
     lastBlock,
     listOperations: operations,
-    getBlock(_height): Promise<Block<StellarAsset>> {
+    getBlock(_height): Promise<Block> {
       throw new Error("getBlock is not supported");
     },
     getBlockInfo(_height: number): Promise<BlockInfo> {
       throw new Error("getBlockInfo is not supported");
     },
+    getStakes(_address: string, _cursor?: Cursor): Promise<Page<Stake>> {
+      throw new Error("getStakes is not supported");
+    },
+    getRewards(_address: string, _cursor?: Cursor): Promise<Page<Reward>> {
+      throw new Error("getRewards is not supported");
+    },
+    validateIntent,
+    getSequence: async (address: string) => {
+      const sequence = await fetchSequence(address);
+      // NOTE: might not do plus one here, or if we do, rename to getNextValidSequence
+      return sequence.plus(1).toNumber();
+    },
+    getTokenFromAsset,
+    getAssetFromToken,
+    getChainSpecificRules: () => ({
+      getAccountShape: (address: string) => {
+        // NOTE: https://github.com/LedgerHQ/ledger-live/pull/2058
+        if (address === STELLAR_BURN_ADDRESS) {
+          throw new StellarBurnAddressError();
+        }
+      },
+      getTransactionStatus: {
+        throwIfPendingOperation: true,
+      },
+    }),
   };
 }
 
 async function craft(
-  transactionIntent: TransactionIntent<StellarAsset, StellarMemo>,
-  customFees?: bigint,
-): Promise<string> {
-  const fees = customFees !== undefined ? customFees : await estimateFees();
+  transactionIntent: TransactionIntent<StellarMemo>,
+  customFees?: FeeEstimation,
+): Promise<CraftedTransaction> {
+  const fees = customFees?.value || (await estimateFees());
 
   // NOTE: check how many memos, throw if more than one?
   // if (transactionIntent.memos && transactionIntent.memos.length > 1) {
@@ -54,7 +90,6 @@ async function craft(
   // }
   const memo = "memo" in transactionIntent ? transactionIntent.memo : undefined;
   const hasMemoValue = memo && memo.type !== "NO_MEMO";
-
   const tx = await craftTransaction(
     { address: transactionIntent.sender },
     {
@@ -62,10 +97,10 @@ async function craft(
       recipient: transactionIntent.recipient,
       amount: transactionIntent.amount,
       fee: fees,
-      ...(transactionIntent.asset.type === "token"
+      ...(transactionIntent.asset.type !== "native" && "assetReference" in transactionIntent.asset
         ? {
-            assetCode: transactionIntent.asset.assetCode,
-            assetIssuer: transactionIntent.asset.assetIssuer,
+            assetCode: transactionIntent.asset.assetReference,
+            assetIssuer: transactionIntent.asset.assetOwner,
           }
         : {}),
       memoType: memo?.type,
@@ -74,7 +109,7 @@ async function craft(
   );
 
   // Note: the API returns the signature base, not the full XDR, see BACK-8727 for more context
-  return tx.signatureBase;
+  return { transaction: tx.signatureBase };
 }
 
 function compose(tx: string, signature: string, pubkey?: string): string {
@@ -85,16 +120,23 @@ function compose(tx: string, signature: string, pubkey?: string): string {
   return combine(envelopeFromAnyXDR(tx, "base64"), signature, pubkey);
 }
 
-async function estimate(): Promise<FeeEstimation> {
+async function estimate(_transactionIntent: TransactionIntent): Promise<FeeEstimation> {
   const value = await estimateFees();
   return { value };
 }
 
-async function operations(
-  address: string,
-  { minHeight }: Pagination,
-): Promise<[Operation<StellarAsset>[], string]> {
-  return operationsFromHeight(address, minHeight);
+async function operations(address: string, pagination: Pagination): Promise<[Operation[], string]> {
+  const minHeight = pagination.minHeight;
+  const lastPagingToken = pagination.lastPagingToken ?? "";
+  if (minHeight) {
+    return operationsFromHeight(address, minHeight);
+  }
+  const isInitSync = lastPagingToken === "";
+  // FIXME: why bother creating limit and pagingToken here, something is off?!
+  const newPagination = isInitSync
+    ? { limit: getEnv("API_STELLAR_HORIZON_INITIAL_FETCH_MAX_OPERATIONS"), minHeight: 0 }
+    : { pagingToken: lastPagingToken, minHeight: 0 };
+  return operationsFromHeight(address, newPagination.minHeight);
 }
 
 type PaginationState = {
@@ -102,13 +144,13 @@ type PaginationState = {
   readonly heightLimit: number;
   continueIterations: boolean;
   apiNextCursor?: string;
-  accumulator: Operation<StellarAsset>[];
+  accumulator: Operation[];
 };
 
 async function operationsFromHeight(
   address: string,
   minHeight: number,
-): Promise<[Operation<StellarAsset>[], string]> {
+): Promise<[Operation[], string]> {
   const state: PaginationState = {
     pageSize: 200,
     heightLimit: minHeight,

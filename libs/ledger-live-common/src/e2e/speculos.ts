@@ -1,10 +1,10 @@
 import invariant from "invariant";
 import { log } from "@ledgerhq/logs";
 import {
-  listAppCandidates,
   createSpeculosDevice,
-  releaseSpeculosDevice,
   findLatestAppCandidate,
+  listAppCandidates,
+  releaseSpeculosDevice,
   SpeculosTransport,
 } from "../load/speculos";
 import { createSpeculosDeviceCI, releaseSpeculosDeviceCI } from "./speculosCI";
@@ -14,31 +14,35 @@ import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { getEnv } from "@ledgerhq/live-env";
 import { getCryptoCurrencyById } from "../currencies";
-import { DeviceLabels } from "../e2e/enum/DeviceLabels";
+import { DeviceLabels } from "./enum/DeviceLabels";
 import { Account } from "./enum/Account";
 import { Device as CryptoWallet } from "./enum/Device";
 import { Currency } from "./enum/Currency";
 import expect from "expect";
-import { sendBTCBasedCoin } from "./families/bitcoin";
-import { sendEVM, sendEvmNFT } from ".//families/evm";
+import { sendBTC, sendBTCBasedCoin } from "./families/bitcoin";
+import { sendEVM, sendEvmNFT } from "./families/evm";
 import { sendPolkadot } from "./families/polkadot";
 import { sendAlgorand } from "./families/algorand";
 import { sendTron } from "./families/tron";
 import { sendStellar } from "./families/stellar";
-import { sendCardano, delegateCardano } from "./families/cardano";
+import { delegateCardano, sendCardano } from "./families/cardano";
 import { sendXRP } from "./families/xrp";
-import { sendAptos } from "./families/aptos";
+import { delegateAptos, sendAptos } from "./families/aptos";
+import { sendHedera } from "./families/hedera";
 import { delegateNear } from "./families/near";
 import { delegateCosmos, sendCosmos } from "./families/cosmos";
+import { sendKaspa } from "./families/kaspa";
 import { delegateSolana, sendSolana } from "./families/solana";
 import { delegateTezos } from "./families/tezos";
 import { delegateCelo } from "./families/celo";
-import { delegateAptos } from "./families/aptos";
 import { delegateMultiversX } from "./families/multiversX";
 import { NFTTransaction, Transaction } from "./models/Transaction";
 import { Delegate } from "./models/Delegate";
 import { Swap } from "./models/Swap";
 import { delegateOsmosis } from "./families/osmosis";
+import { AppInfos } from "./enum/AppInfos";
+import { DEVICE_LABELS_CONFIG } from "./data/deviceLabelsData";
+import { sendSui } from "./families/sui";
 
 const isSpeculosRemote = process.env.REMOTE_SPECULOS === "true";
 
@@ -220,6 +224,14 @@ export const specs: Specs = {
     },
     dependency: "",
   },
+  Sui: {
+    currency: getCryptoCurrencyById("sui"),
+    appQuery: {
+      model: getSpeculosModel(),
+      appName: "Sui",
+    },
+    dependency: "",
+  },
   Bitcoin_Cash: {
     currency: getCryptoCurrencyById("bitcoin_cash"),
     appQuery: {
@@ -260,7 +272,7 @@ export const specs: Specs = {
     },
     dependency: "",
   },
-  Binance_Smart_Chain: {
+  BNB_Chain: {
     currency: getCryptoCurrencyById("bsc"),
     appQuery: {
       model: getSpeculosModel(),
@@ -325,6 +337,22 @@ export const specs: Specs = {
     },
     dependency: "",
   },
+  Kaspa: {
+    currency: getCryptoCurrencyById("kaspa"),
+    appQuery: {
+      model: getSpeculosModel(),
+      appName: "Kaspa",
+    },
+    dependency: "",
+  },
+  Hedera: {
+    currency: getCryptoCurrencyById("hedera"),
+    appQuery: {
+      model: getSpeculosModel(),
+      appName: "Hedera",
+    },
+    dependency: "",
+  },
 };
 
 export async function startSpeculos(
@@ -385,13 +413,12 @@ export async function startSpeculos(
     onSpeculosDeviceCreated,
   };
   try {
-    const device = isSpeculosRemote
+    return isSpeculosRemote
       ? await createSpeculosDeviceCI(deviceParams)
       : await createSpeculosDevice(deviceParams).then(device => {
           invariant(device.ports.apiPort, "[E2E] Speculos apiPort is not defined");
           return { id: device.id, port: device.ports.apiPort };
         });
-    return device;
   } catch (e: unknown) {
     console.error(e);
     log("engine", `test ${testName} failed with ${String(e)}`);
@@ -461,23 +488,22 @@ async function retryAxiosRequest<T>(
   throw lastError!;
 }
 
-export async function waitFor(text: string, maxAttempts = 15): Promise<string[]> {
+export async function waitFor(text: string, maxAttempts = 60): Promise<string> {
   const port = getEnv("SPECULOS_API_PORT");
-  const address = getSpeculosAddress();
-  const url = `${address}:${port}/events?stream=false&currentscreenonly=true`;
-
+  let texts = "";
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const { data } = await retryAxiosRequest(() => axios.get<ResponseData>(url));
-    const texts = data.events.map(event => event.text);
+    texts = await fetchCurrentScreenTexts(port);
 
-    if (texts?.some(t => t?.toLowerCase().includes(text.toLowerCase()))) {
+    if (texts.toLowerCase().includes(text.toLowerCase())) {
       return texts;
     }
 
     await waitForTimeOut(500);
   }
 
-  throw new Error(`Text "${text}" not found on device screen after ${maxAttempts} attempts.`);
+  throw new Error(
+    `Text "${text}" not found on device screen after ${maxAttempts} attempts. Last screen text: "${texts}"`,
+  );
 }
 
 export async function pressBoth() {
@@ -492,14 +518,14 @@ export async function pressBoth() {
 
 export async function pressUntilTextFound(
   targetText: string,
-  maxAttempts: number = 15,
+  strictMatch: boolean = false,
 ): Promise<string[]> {
+  const maxAttempts = 18;
   const speculosApiPort = getEnv("SPECULOS_API_PORT");
 
   for (let attempts = 0; attempts < maxAttempts; attempts++) {
     const texts = await fetchCurrentScreenTexts(speculosApiPort);
-
-    if (texts.includes(targetText)) {
+    if (strictMatch ? texts === targetText : texts.includes(targetText)) {
       return await fetchAllEvents(speculosApiPort);
     }
 
@@ -519,7 +545,7 @@ async function fetchCurrentScreenTexts(speculosApiPort: number): Promise<string>
       `${speculosAddress}:${speculosApiPort}/events?stream=false&currentscreenonly=true`,
     ),
   );
-  return response.data.events.map(event => event.text).join("");
+  return response.data.events.map(event => event.text).join(" ");
 }
 
 async function fetchAllEvents(speculosApiPort: number): Promise<string[]> {
@@ -576,28 +602,25 @@ export async function waitForTimeOut(ms: number) {
 }
 
 export async function removeMemberLedgerSync() {
-  await waitFor(DeviceLabels.CONNECT_WITH);
-  await pressUntilTextFound(DeviceLabels.MAKE_SURE_TO_USE);
-  await pressUntilTextFound(DeviceLabels.CONNECT_WITH);
+  await waitFor(DeviceLabels.CONNECT_TO);
+  await pressUntilTextFound(DeviceLabels.CONNECT, true);
   await pressBoth();
-  await waitFor(DeviceLabels.REMOVE_PHONE_OR_COMPUTER);
-  await pressUntilTextFound(DeviceLabels.AFTER_REMOVING);
-  await pressUntilTextFound(DeviceLabels.REMOVE_PHONE_OR_COMPUTER);
+  await waitFor(DeviceLabels.REMOVE_FROM_LEDGER_SYNC);
+  await pressUntilTextFound(DeviceLabels.REMOVE, true);
   await pressBoth();
   await waitFor(DeviceLabels.TURN_ON_SYNC);
-  await pressUntilTextFound(DeviceLabels.YOUR_CRYPTO_ACCOUNTS);
-  await pressUntilTextFound(DeviceLabels.TURN_ON_SYNC);
+  await pressUntilTextFound(DeviceLabels.LEDGER_LIVE_WILL_BE);
+  await pressUntilTextFound(DeviceLabels.TURN_ON_SYNC2);
   await pressBoth();
 }
 
 export async function activateLedgerSync() {
-  await waitFor(DeviceLabels.CONNECT_WITH);
-  await pressUntilTextFound(DeviceLabels.MAKE_SURE_TO_USE);
-  await pressUntilTextFound(DeviceLabels.CONNECT_WITH);
+  await waitFor(DeviceLabels.CONNECT_TO);
+  await pressUntilTextFound(DeviceLabels.CONNECT, true);
   await pressBoth();
   await waitFor(DeviceLabels.TURN_ON_SYNC);
-  await pressUntilTextFound(DeviceLabels.YOUR_CRYPTO_ACCOUNTS);
-  await pressUntilTextFound(DeviceLabels.TURN_ON_SYNC);
+  await pressUntilTextFound(DeviceLabels.LEDGER_LIVE_WILL_BE);
+  await pressUntilTextFound(DeviceLabels.TURN_ON_SYNC2);
   await pressBoth();
 }
 
@@ -618,31 +641,45 @@ export async function goToSettings() {
   await pressBoth();
 }
 
-export async function expectValidAddressDevice(account: Account, addressDisplayed: string) {
-  let deviceLabels: string[];
+export async function providePublicKey() {
+  await pressRightButton();
+}
 
-  switch (account.currency) {
-    case Currency.SOL:
-      deviceLabels = [DeviceLabels.PUBKEY, DeviceLabels.APPROVE, DeviceLabels.REJECT];
-      break;
-    case Currency.DOT:
-    case Currency.ATOM:
-      deviceLabels = [
-        DeviceLabels.PLEASE_REVIEW,
-        DeviceLabels.CAPS_APPROVE,
-        DeviceLabels.CAPS_REJECT,
-      ];
-      break;
-    case Currency.BTC:
-      deviceLabels = [DeviceLabels.ADDRESS, DeviceLabels.CONFIRM, DeviceLabels.CANCEL];
-      break;
-    default:
-      deviceLabels = [DeviceLabels.ADDRESS, DeviceLabels.APPROVE, DeviceLabels.REJECT];
-      break;
+type DeviceLabelsReturn = {
+  delegateConfirmLabel: string;
+  delegateVerifyLabel: string;
+  receiveConfirmLabel: string;
+  receiveVerifyLabel: string;
+};
+
+export function getDeviceLabels(appInfo: AppInfos): DeviceLabelsReturn {
+  const deviceModel = getSpeculosModel();
+  const deviceConfig = DEVICE_LABELS_CONFIG[deviceModel] ?? DEVICE_LABELS_CONFIG.default;
+
+  if (!deviceConfig) {
+    throw new Error(`No device configuration found for ${deviceModel}`);
   }
 
-  await waitFor(deviceLabels[0]);
-  const events = await pressUntilTextFound(deviceLabels[1]);
+  const receiveVerifyLabel =
+    deviceConfig.receiveVerify[appInfo.name] ?? deviceConfig.receiveVerify.default;
+  const receiveConfirmLabel =
+    deviceConfig.receiveConfirm[appInfo.name] ?? deviceConfig.receiveConfirm.default;
+  const delegateVerifyLabel =
+    deviceConfig.delegateVerify[appInfo.name] ?? deviceConfig.delegateVerify.default;
+  const delegateConfirmLabel =
+    deviceConfig.delegateConfirm[appInfo.name] ?? deviceConfig.delegateConfirm.default;
+
+  return { receiveVerifyLabel, receiveConfirmLabel, delegateVerifyLabel, delegateConfirmLabel };
+}
+
+export async function expectValidAddressDevice(account: Account, addressDisplayed: string) {
+  if (account.currency === Currency.SUI_USDC) {
+    providePublicKey();
+  }
+  const { receiveVerifyLabel, receiveConfirmLabel } = getDeviceLabels(account.currency.speculosApp);
+
+  await waitFor(receiveVerifyLabel);
+  const events = await pressUntilTextFound(receiveConfirmLabel);
   const isAddressCorrect = containsSubstringInEvent(addressDisplayed, events);
   expect(isAddressCorrect).toBeTruthy();
   await pressBoth();
@@ -654,6 +691,12 @@ export async function signSendTransaction(tx: Transaction) {
     case Currency.sepETH:
     case Currency.POL:
     case Currency.ETH:
+      await sendEVM(tx);
+      break;
+    case Currency.BTC:
+      await sendBTC(tx);
+      break;
+    case Currency.ETH_USDT:
       await sendEVM(tx);
       break;
     case Currency.DOGE:
@@ -688,6 +731,18 @@ export async function signSendTransaction(tx: Transaction) {
     case Currency.APT:
       await sendAptos();
       break;
+    case Currency.KAS:
+      await sendKaspa();
+      break;
+    case Currency.HBAR:
+      await sendHedera();
+      break;
+    case Currency.SUI:
+      await sendSui();
+      break;
+    case Currency.SUI_USDC:
+      await sendSui();
+      break;
     default:
       throw new Error(`Unsupported currency: ${currencyName.ticker}`);
   }
@@ -706,7 +761,7 @@ export async function signDelegationTransaction(delegatingAccount: Delegate) {
   const currencyName = delegatingAccount.account.currency.name;
   switch (currencyName) {
     case Account.SOL_1.currency.name:
-      await delegateSolana();
+      await delegateSolana(delegatingAccount);
       break;
     case Account.NEAR_1.currency.name:
       await delegateNear(delegatingAccount);
@@ -719,13 +774,13 @@ export async function signDelegationTransaction(delegatingAccount: Delegate) {
       await delegateOsmosis(delegatingAccount);
       break;
     case Account.MULTIVERS_X_1.currency.name:
-      await delegateMultiversX();
+      await delegateMultiversX(delegatingAccount);
       break;
     case Account.ADA_1.currency.name:
       await delegateCardano();
       break;
     case Account.XTZ_1.currency.name:
-      await delegateTezos();
+      await delegateTezos(delegatingAccount);
       break;
     case Account.CELO_1.currency.name:
       await delegateCelo(delegatingAccount);
@@ -738,48 +793,54 @@ export async function signDelegationTransaction(delegatingAccount: Delegate) {
   }
 }
 
+export async function getDelegateEvents(delegatingAccount: Delegate): Promise<string[]> {
+  const { delegateVerifyLabel, delegateConfirmLabel } = getDeviceLabels(
+    delegatingAccount.account.currency.speculosApp,
+  );
+
+  await waitFor(delegateVerifyLabel);
+
+  return await pressUntilTextFound(delegateConfirmLabel);
+}
+
 export async function verifyAmountsAndAcceptSwap(swap: Swap, amount: string) {
-  await waitFor(DeviceLabels.REVIEW_OPERATION);
-  const events = await pressUntilTextFound(DeviceLabels.ACCEPT);
-  await verifySwapData(swap, events, amount);
+  await waitFor(DeviceLabels.REVIEW_TRANSACTION);
+  const events =
+    getSpeculosModel() === DeviceModelId.nanoS
+      ? await pressUntilTextFound(DeviceLabels.ACCEPT_AND_SEND)
+      : await pressUntilTextFound(DeviceLabels.SIGN_TRANSACTION);
+  verifySwapData(swap, events, amount);
+  await pressBoth();
+}
+
+export async function verifyAmountsAndAcceptSwapForDifferentSeed(swap: Swap, amount: string) {
+  await waitFor(DeviceLabels.REVIEW_TRANSACTION);
+  const events = await pressUntilTextFound(DeviceLabels.SIGN_TRANSACTION);
+  verifySwapData(swap, events, amount);
   await pressBoth();
 }
 
 export async function verifyAmountsAndRejectSwap(swap: Swap, amount: string) {
-  await waitFor(DeviceLabels.REVIEW_OPERATION);
+  await waitFor(DeviceLabels.REVIEW_TRANSACTION);
   const events = await pressUntilTextFound(DeviceLabels.REJECT);
-  await verifySwapData(swap, events, amount);
+  verifySwapData(swap, events, amount);
   await pressBoth();
 }
 
-async function verifySwapData(swap: Swap, events: string[], amount: string) {
-  const sendAmountScreen = containsSubstringInEvent(amount, events);
-  expect(sendAmountScreen).toBeTruthy();
-  verifySwapGetAmountScreen(swap, events);
-  verifySwapFeesAmountScreen(swap, events);
+function verifySwapData(swap: Swap, events: string[], amount: string) {
+  const swapPair = `swap ${swap.getAccountToDebit.currency.ticker} to ${swap.getAccountToCredit.currency.ticker}`;
+
+  if (getSpeculosModel() !== DeviceModelId.nanoS) {
+    expectDeviceScreenContains(swapPair, events, "Swap pair not found on the device screen");
+  }
+  expectDeviceScreenContains(amount, events, `Amount ${amount} not found on the device screen`);
 }
 
-function verifySwapGetAmountScreen(swap: Swap, events: string[]) {
-  const parsedAmountToReceive = extractNumberFromString(swap.amountToReceive);
-  swap.amountToReceive =
-    parsedAmountToReceive.length < 19
-      ? parsedAmountToReceive
-      : parsedAmountToReceive.substring(0, 18);
-
-  const receivedGetAmount = containsSubstringInEvent(`${swap.amountToReceive}`, events);
-  expect(receivedGetAmount).toBeTruthy();
+function expectDeviceScreenContains(substring: string, events: string[], message: string) {
+  const found = containsSubstringInEvent(substring, events);
+  if (!found) {
+    throw new Error(
+      `${message}. Expected events to contain "${substring}". Got: ${JSON.stringify(events)}`,
+    );
+  }
 }
-
-function verifySwapFeesAmountScreen(swap: Swap, events: string[]) {
-  const parsedFeesAmount = extractNumberFromString(swap.feesAmount);
-  swap.feesAmount =
-    parsedFeesAmount.length < 19 ? parsedFeesAmount : parsedFeesAmount.substring(0, 18);
-
-  const receivedFeesAmount = containsSubstringInEvent(swap.feesAmount, events);
-  expect(receivedFeesAmount).toBeTruthy();
-}
-
-const extractNumberFromString = (input: string | undefined): string => {
-  const match = input?.match(/[\d.]+/);
-  return match ? match[0] : "";
-};

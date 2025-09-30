@@ -14,7 +14,6 @@ import {
 import network from "@ledgerhq/live-network";
 import BigNumber from "bignumber.js";
 import { AptosAPI } from "../../network";
-import { AptosAsset } from "../../types/assets";
 import { Pagination, TransactionIntent } from "@ledgerhq/coin-framework/api/types";
 import { APTOS_ASSET_ID } from "../../constants";
 import { AptosBalance, AptosTransaction } from "../../types";
@@ -622,7 +621,7 @@ describe("Aptos API", () => {
       const recipient = "address2";
 
       const api = new AptosAPI("aptos");
-      const transactionIntent: TransactionIntent<AptosAsset> = {
+      const transactionIntent: TransactionIntent = {
         asset: {
           type: "native",
         },
@@ -687,11 +686,10 @@ describe("Aptos API", () => {
       const recipient = "address2";
 
       const api = new AptosAPI("aptos");
-      const transactionIntent: TransactionIntent<AptosAsset> = {
+      const transactionIntent: TransactionIntent = {
         asset: {
-          type: "token",
-          standard: "coin",
-          contractAddress: "0x111",
+          type: "coin",
+          assetReference: "0x111",
         },
         type: "send",
         sender: sender.freshAddress,
@@ -753,11 +751,10 @@ describe("Aptos API", () => {
       const recipient = "address2";
 
       const api = new AptosAPI("aptos");
-      const transactionIntent: TransactionIntent<AptosAsset> = {
+      const transactionIntent: TransactionIntent = {
         asset: {
-          type: "token",
-          standard: "fungible_asset",
-          contractAddress: "0x111",
+          type: "fungible_asset",
+          assetReference: "0x111",
         },
         type: "send",
         sender: sender.freshAddress,
@@ -863,11 +860,12 @@ describe("Aptos API", () => {
     it("list of operations", async () => {
       const api = new AptosAPI("aptos");
       const address = "0x12345";
-      const pagination: Pagination = { minHeight: 0 };
+      const pagination: Pagination = { minHeight: 0, order: "asc" };
 
       const txs: AptosTransaction[] = [
         {
           version: "2532591427",
+          replay_protection_nonce: "replay_protection_nonce",
           hash: "0x3f35",
           state_change_hash: "0xb480",
           event_root_hash: "0x3fa1",
@@ -1081,6 +1079,7 @@ describe("Aptos API", () => {
         },
         {
           version: "2532549325",
+          replay_protection_nonce: "replay_protection_nonce",
           hash: "0x9a6b",
           state_change_hash: "0xa424",
           event_root_hash: "0x0321",
@@ -1298,7 +1297,7 @@ describe("Aptos API", () => {
 
       api.getAccountInfo = jest.fn().mockResolvedValue({ transactions });
 
-      const ops = await api.listOperations(address, pagination);
+      const ops = await api.listOperations(address, pagination.minHeight);
 
       expect(ops[0]).toHaveLength(2);
       expect(ops[1]).toBe("");

@@ -1,5 +1,49 @@
 # @ledgerhq/icons-ui
 
+## 1.19.0
+
+### Minor Changes
+
+- [#11672](https://github.com/LedgerHQ/ledger-live/pull/11672) [`d56bebe`](https://github.com/LedgerHQ/ledger-live/commit/d56bebe672a1ed825697b371662dbff19dcc63d8) Thanks [@semeano](https://github.com/semeano)! - Kaspa commons libs
+
+- [#11727](https://github.com/LedgerHQ/ledger-live/pull/11727) [`12909c4`](https://github.com/LedgerHQ/ledger-live/commit/12909c464d22e72d741262df106d0b3ce7f9130a) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - Add canton devnet icon
+
+- [#11747](https://github.com/LedgerHQ/ledger-live/pull/11747) [`0108eaf`](https://github.com/LedgerHQ/ledger-live/commit/0108eafb64e36ce68f44e03cc3f66ccdb5ee5a92) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - Update IOTA ticker
+
+## 1.19.0-next.0
+
+### Minor Changes
+
+- [#11672](https://github.com/LedgerHQ/ledger-live/pull/11672) [`d56bebe`](https://github.com/LedgerHQ/ledger-live/commit/d56bebe672a1ed825697b371662dbff19dcc63d8) Thanks [@semeano](https://github.com/semeano)! - Kaspa commons libs
+
+- [#11727](https://github.com/LedgerHQ/ledger-live/pull/11727) [`12909c4`](https://github.com/LedgerHQ/ledger-live/commit/12909c464d22e72d741262df106d0b3ce7f9130a) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - Add canton devnet icon
+
+- [#11747](https://github.com/LedgerHQ/ledger-live/pull/11747) [`0108eaf`](https://github.com/LedgerHQ/ledger-live/commit/0108eafb64e36ce68f44e03cc3f66ccdb5ee5a92) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - Update IOTA ticker
+
+## 1.18.0
+
+### Minor Changes
+
+- [#11463](https://github.com/LedgerHQ/ledger-live/pull/11463) [`7e4ac62`](https://github.com/LedgerHQ/ledger-live/commit/7e4ac62bd383f96e5649b225e0ff824fe7663695) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Update World of Dypians (WoD) icon
+
+## 1.18.0-next.0
+
+### Minor Changes
+
+- [#11463](https://github.com/LedgerHQ/ledger-live/pull/11463) [`7e4ac62`](https://github.com/LedgerHQ/ledger-live/commit/7e4ac62bd383f96e5649b225e0ff824fe7663695) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Update World of Dypians (WoD) icon
+
+## 1.17.0
+
+### Minor Changes
+
+- [#11225](https://github.com/LedgerHQ/ledger-live/pull/11225) [`96654b0`](https://github.com/LedgerHQ/ledger-live/commit/96654b01611519901cb1957213c154f8bcda599c) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - add canton icon
+
+## 1.17.0-next.0
+
+### Minor Changes
+
+- [#11225](https://github.com/LedgerHQ/ledger-live/pull/11225) [`96654b0`](https://github.com/LedgerHQ/ledger-live/commit/96654b01611519901cb1957213c154f8bcda599c) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - add canton icon
+
 ## 1.16.0
 
 ### Minor Changes

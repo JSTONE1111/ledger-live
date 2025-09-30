@@ -11,8 +11,10 @@ import ErrorScreen from "~/screens/CustomImage/ErrorScreen";
 import Step0Welcome from "~/screens/CustomImage/Step0Welcome";
 import PreviewPreEdit from "~/screens/CustomImage/PreviewPreEdit";
 import PreviewPostEdit from "~/screens/CustomImage/PreviewPostEdit";
-import NFTGallerySelector from "~/screens/CustomImage/NFTGallerySelector";
+import { CustomImageRemoval } from "~/screens/CustomImage/CustomImageRemoval";
 import { CustomImageNavigatorParamList } from "./types/CustomImageNavigator";
+
+const emptyComponent = () => null;
 
 export default function CustomImageNavigator() {
   const { colors } = useTheme();
@@ -70,11 +72,12 @@ export default function CustomImageNavigator() {
         }}
       />
       <Stack.Screen
-        name={ScreenName.CustomImageNFTGallery}
-        component={NFTGallerySelector}
+        name={ScreenName.CustomImageRemoval}
+        component={CustomImageRemoval}
         options={{
-          title: t("customImage.nftGallery.title"),
-          headerRight: undefined,
+          title: "",
+          headerLeft: emptyComponent,
+          gestureEnabled: false,
         }}
       />
     </Stack.Navigator>

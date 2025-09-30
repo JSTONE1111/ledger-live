@@ -3,6 +3,7 @@ import { resolver as aptos } from "../families/aptos/setup";
 import { resolver as bitcoin } from "../families/bitcoin/setup";
 import { resolver as cardano } from "../families/cardano/setup";
 import { resolver as casper } from "../families/casper/setup";
+import { resolver as canton } from "../families/canton/setup";
 import { resolver as celo } from "../families/celo/setup";
 import { resolver as cosmos } from "../families/cosmos/setup";
 import { resolver as evm } from "../families/evm/setup";
@@ -10,6 +11,7 @@ import { resolver as hedera } from "../families/hedera/setup";
 import { resolver as filecoin } from "../families/filecoin/setup";
 import { resolver as internet_computer } from "../families/internet_computer/setup";
 import { resolver as icon } from "../families/icon/setup";
+import { resolver as kaspa } from "../families/kaspa/setup";
 import { resolver as multiversx } from "../families/multiversx/setup";
 import { resolver as near } from "../families/near/setup";
 import { resolver as polkadot } from "../families/polkadot/setup";
@@ -30,6 +32,7 @@ export default {
   bitcoin,
   cardano,
   casper,
+  canton,
   celo,
   cosmos,
   evm,
@@ -37,6 +40,7 @@ export default {
   filecoin,
   internet_computer,
   icon,
+  kaspa,
   multiversx,
   near,
   polkadot,

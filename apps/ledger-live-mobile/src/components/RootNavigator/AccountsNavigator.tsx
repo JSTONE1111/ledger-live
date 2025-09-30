@@ -6,11 +6,6 @@ import { readOnlyModeEnabledSelector } from "~/reducers/settings";
 import { ScreenName } from "~/const";
 import Accounts from "~/screens/Accounts";
 import Account from "~/screens/Account";
-import NftCollection from "~/screens/Nft/NftCollection";
-import NftGallery from "~/screens/Nft/NftGallery";
-import NftViewer from "../Nft/NftViewer";
-import NftCollectionHeaderTitle from "~/screens/Nft/NftCollection/NftCollectionHeaderTitle";
-import NftGalleryHeaderTitle from "~/screens/Nft/NftGallery/NftGalleryHeaderTitle";
 import { getStackNavigatorConfig } from "~/navigation/navigatorConfig";
 import ReadOnlyAccounts from "~/screens/Accounts/ReadOnly/ReadOnlyAccounts";
 import ReadOnlyAssets from "~/screens/Portfolio/ReadOnlyAssets";
@@ -42,6 +37,11 @@ type ParamsType = {
   params?: { specificAccounts?: object[] };
 };
 
+const isParamsType = (value: unknown): value is ParamsType =>
+  typeof value === "object" &&
+  value !== null &&
+  Object.prototype.hasOwnProperty.call(value, "params");
+
 export default function AccountsNavigator() {
   const { colors } = useTheme();
   const stackNavConfig = useMemo(() => getStackNavigatorConfig(colors), [colors]);
@@ -55,8 +55,10 @@ export default function AccountsNavigator() {
   const onPressBack = useCallback(
     (nav: NavType) => {
       // Needed since we use the same screen for different purposes
-      const params: ParamsType = navigation.getState()?.routes[1].params || {};
-      const screenName = params?.params?.specificAccounts
+      const maybeParams = navigation.getState()?.routes?.[1]?.params;
+      const hasSpecificAccounts =
+        isParamsType(maybeParams) && Boolean(maybeParams.params?.specificAccounts);
+      const screenName = hasSpecificAccounts
         ? TrackingEvent.AccountListSummary
         : TrackingEvent.AccountsList;
       track("button_clicked", {
@@ -81,27 +83,6 @@ export default function AccountsNavigator() {
         name={ScreenName.Account}
         component={readOnlyModeEnabled ? ReadOnlyAccount : Account}
         options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name={ScreenName.NftCollection}
-        component={NftCollection}
-        options={{
-          headerTitle: () => <NftCollectionHeaderTitle />,
-        }}
-      />
-      <Stack.Screen
-        name={ScreenName.NftGallery}
-        component={NftGallery}
-        options={{
-          headerTitle: () => <NftGalleryHeaderTitle />,
-        }}
-      />
-      <Stack.Screen
-        name={ScreenName.NftViewer}
-        component={NftViewer}
-        options={{
-          headerTitle: "",
-        }}
       />
       <Stack.Screen
         name={ScreenName.Assets}

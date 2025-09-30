@@ -19,24 +19,29 @@ import StepConnectDevice, { StepConnectDeviceFooter } from "./steps/StepConnectD
 import StepWarning, { StepWarningFooter } from "./steps/StepWarning";
 import StepReceiveFunds from "./steps/StepReceiveFunds";
 import StepReceiveStakingFlow, { StepReceiveStakingFooter } from "./steps/StepReceiveStakingFlow";
+import StepOptions from "./steps/StepOptions";
 import { isAddressSanctioned } from "@ledgerhq/coin-framework/sanction/index";
 import { AddressesSanctionedError } from "@ledgerhq/coin-framework/sanction/errors";
 import { getReceiveFlowError } from "@ledgerhq/live-common/account/index";
 
-export type StepId = "warning" | "account" | "device" | "receive" | "stakingFlow";
+export type StepId =
+  | "warning"
+  | "account"
+  | "device"
+  | "receive"
+  | "stakingFlow"
+  | "receiveOptions";
 
 export type Data = {
   account?: AccountLike | undefined | null;
   parentAccount?: Account | undefined | null;
   startWithWarning?: boolean;
   receiveTokenMode?: boolean;
-  receiveNFTMode?: boolean;
-  receiveOrdinalMode?: boolean;
   eventType?: string;
   isFromPostOnboardingEntryPoint?: boolean;
 };
 
-type OwnProps = {
+export type OwnProps = {
   stepId: StepId;
   onClose?: () => void | undefined;
   onChangeStepId: (a: StepId) => void;
@@ -45,7 +50,7 @@ type OwnProps = {
   onChangeAddressVerified: (isAddressVerified?: boolean | null, err?: Error | null) => void;
   params: Data;
 };
-type StateProps = {
+export type StateProps = {
   t: TFunction;
   accounts: Account[];
   device: Device | undefined | null;
@@ -61,8 +66,6 @@ export type StepProps = {
   parentAccount: Account | undefined | null;
   token: TokenCurrency | undefined | null;
   receiveTokenMode: boolean;
-  receiveNFTMode: boolean;
-  receiveOrdinalMode: boolean;
   closeModal: () => void;
   isAddressVerified: boolean | undefined | null;
   verifyAddressError: Error | undefined | null;
@@ -80,6 +83,11 @@ export type StepProps = {
 export type St = Step<StepId, StepProps>;
 const createSteps = (): Array<St> => [
   {
+    id: "receiveOptions",
+    excludeFromBreadcrumb: true,
+    component: StepOptions,
+  },
+  {
     id: "warning",
     excludeFromBreadcrumb: true,
     component: StepWarning,
@@ -89,7 +97,6 @@ const createSteps = (): Array<St> => [
     id: "account",
     label: <Trans i18nKey="receive.steps.chooseAccount.title" />,
     component: StepAccount,
-    noScroll: true,
     footer: StepAccountFooter,
   },
   {
@@ -243,8 +250,6 @@ const Body = ({
     errorSteps,
     disabledSteps,
     receiveTokenMode: !!params.receiveTokenMode,
-    receiveNFTMode: !!params.receiveNFTMode,
-    receiveOrdinalMode: !!params.receiveOrdinalMode,
     hideBreadcrumb,
     token,
     isAddressVerified,

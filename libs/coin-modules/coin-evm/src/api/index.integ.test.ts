@@ -1,6 +1,13 @@
-import { AlpacaApi, FeeEstimation } from "@ledgerhq/coin-framework/lib/api/types";
+import {
+  Api,
+  BufferTxData,
+  FeeEstimation,
+  MemoNotSupported,
+} from "@ledgerhq/coin-framework/api/types";
+import { ethers } from "ethers";
+import * as legacy from "@ledgerhq/cryptoassets/tokens";
 import { EvmConfig } from "../config";
-import { EvmAsset } from "../types";
+import { setCryptoAssetsStoreGetter } from "../cryptoAssetsStore";
 import { createApi } from "./index";
 
 describe.each([
@@ -25,10 +32,23 @@ describe.each([
     },
   ],
 ])("EVM Api (%s)", (_, config) => {
-  let module: AlpacaApi<EvmAsset>;
+  let module: Api<MemoNotSupported, BufferTxData>;
 
   beforeAll(() => {
+    setCryptoAssetsStoreGetter(() => legacy);
     module = createApi(config as EvmConfig, "ethereum");
+  });
+
+  describe("getSequence", () => {
+    it("returns 0 as next sequence for a pristine account", async () => {
+      expect(await module.getSequence("0x6895Df5ed013c85B3D9D2446c227C9AfC3813551")).toEqual(0);
+    });
+
+    it("returns next sequence for an address", async () => {
+      expect(
+        await module.getSequence("0xB69B37A4Fb4A18b3258f974ff6e9f529AD2647b1"),
+      ).toBeGreaterThanOrEqual(17);
+    });
   });
 
   describe("lastBlock", () => {
@@ -41,99 +61,195 @@ describe.each([
     });
   });
 
-  describe("craftTransaction", () => {
+  describe.each([
+    [
+      "legacy",
+      (transaction: ethers.Transaction): void => {
+        expect(transaction.type).toBe(0);
+        expect(typeof transaction.gasPrice).toBe("bigint");
+        expect(transaction.gasPrice).toBeGreaterThan(0);
+      },
+    ],
+    [
+      "eip1559",
+      (transaction: ethers.Transaction): void => {
+        expect(transaction.type).toBe(2);
+        expect(transaction.gasPrice).toBeNull();
+        expect(typeof transaction.maxFeePerGas).toBe("bigint");
+        expect(typeof transaction.maxPriorityFeePerGas).toBe("bigint");
+        expect(transaction.maxFeePerGas).toBeGreaterThan(0n);
+        expect(transaction.maxPriorityFeePerGas).toBeGreaterThan(0n);
+      },
+    ],
+  ])("craftTransaction", (mode, expectTransactionForMode) => {
     it("crafts a transaction with the native asset", async () => {
-      const result = await module.craftTransaction({
-        type: "send-legacy",
+      const { transaction: result } = await module.craftTransaction({
+        type: `send-${mode}`,
         amount: 10n,
         sender: "0x9bcd841436ef4f85dacefb1aec772af71619024e",
         recipient: "0x7b2c7232f9e38f30e2868f0e5bf311cd83554b5a",
+        data: { type: "buffer", value: Buffer.from([]) },
         asset: {
           type: "native",
         },
       });
 
-      expect(result).toMatch(/^0x[A-Fa-f0-9]{72}$/);
+      expect(result).toMatch(/^0x[A-Fa-f0-9]+$/);
+      expect(ethers.Transaction.from(result)).toMatchObject({
+        value: 10n,
+        to: "0x7b2C7232f9E38F30E2868f0E5Bf311Cd83554b5A",
+      });
+      expectTransactionForMode(ethers.Transaction.from(result));
     });
 
     it("crafts a transaction with the USDC asset", async () => {
-      const result = await module.craftTransaction({
-        type: "send-legacy",
+      const { transaction: result } = await module.craftTransaction({
+        type: `send-${mode}`,
         amount: 10n,
         sender: "0x9bcd841436ef4f85dacefb1aec772af71619024e",
         recipient: "0x7b2c7232f9e38f30e2868f0e5bf311cd83554b5a",
+        data: { type: "buffer", value: Buffer.from([]) },
         asset: {
-          type: "token",
-          standard: "erc",
-          contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          type: "erc20",
+          assetReference: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
         },
       });
 
-      expect(result).toMatch(/^0x[A-Fa-f0-9]{212}$/);
+      expect(result).toMatch(/^0x[A-Fa-f0-9]+$/);
+      expect(ethers.Transaction.from(result)).toMatchObject({
+        value: 0n,
+        to: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      });
+      expectTransactionForMode(ethers.Transaction.from(result));
     });
   });
 
   describe("getBalance", () => {
+    it("returns empty balance for a pristine account", async () => {
+      const result = await module.getBalance("0x6895Df5ed013c85B3D9D2446c227C9AfC3813551");
+
+      expect(result).toEqual([
+        {
+          value: 0n,
+          asset: { type: "native" },
+        },
+      ]);
+    });
+
     it("returns balance for an address", async () => {
       const result = await module.getBalance("0x9bcd841436ef4f85dacefb1aec772af71619024e");
 
       expect(result).toBeInstanceOf(Array);
-      expect(result.length).toBeGreaterThan(0);
-      expect(result[0]).toMatchObject({
+      expect(result[0]).toEqual({
         value: expect.any(BigInt),
         asset: { type: "native" },
+      });
+      expect(result[0].value).toBeGreaterThan(0);
+      result.slice(1).forEach(balance => {
+        expect(balance.asset.type).not.toEqual("native");
+        expect(balance.value).toBeGreaterThanOrEqual(0);
       });
     });
   });
 
   describe("listOperations", () => {
-    it("list operations for an address", async () => {
+    it("returns empty operation list for a pristine account", async () => {
+      expect(
+        await module.listOperations("0x6895Df5ed013c85B3D9D2446c227C9AfC3813551", {
+          minHeight: 200,
+          order: "asc",
+        }),
+      ).toEqual([[], ""]);
+    });
+
+    it("lists operations for an address", async () => {
       const [result] = await module.listOperations("0xB69B37A4Fb4A18b3258f974ff6e9f529AD2647b1", {
         minHeight: 200,
+        order: "asc",
       });
       expect(result.length).toBeGreaterThanOrEqual(52);
       result.forEach(op => {
-        expect(["FEES", "IN", "OUT"]).toContainEqual(op.type);
+        expect(["NONE", "FEES", "IN", "OUT"]).toContainEqual(op.type);
         expect(op.senders.concat(op.recipients)).toContain(
           "0xB69B37A4Fb4A18b3258f974ff6e9f529AD2647b1",
         );
         expect(op.value).toBeGreaterThanOrEqual(0n);
+        expect(op.tx.hash).toMatch(/^0x[A-Fa-f0-9]{64}$/);
+        expect(op.tx.block.hash).toMatch(/^0x[A-Fa-f0-9]{64}$/);
         expect(op.tx.block.height).toBeGreaterThanOrEqual(200);
+        expect(op.tx.fees).toBeGreaterThan(0);
+        expect(op.tx.date).toBeInstanceOf(Date);
       });
     });
   });
 
-  describe("estimateFees", () => {
+  describe.each([
+    [
+      "legacy",
+      (estimation: FeeEstimation): void => {
+        expect(estimation).toEqual({
+          value: expect.any(BigInt),
+          parameters: {
+            gasPrice: expect.any(BigInt),
+            gasLimit: expect.any(BigInt),
+            maxFeePerGas: null,
+            maxPriorityFeePerGas: null,
+            nextBaseFee: null,
+          },
+        });
+        expect(estimation.value).toBeGreaterThan(0);
+        expect(estimation.parameters?.gasPrice).toBeGreaterThan(0);
+      },
+    ],
+    [
+      "eip1559",
+      (estimation: FeeEstimation): void => {
+        expect(estimation).toEqual({
+          value: expect.any(BigInt),
+          parameters: {
+            gasPrice: null,
+            gasLimit: expect.any(BigInt),
+            maxFeePerGas: expect.any(BigInt),
+            maxPriorityFeePerGas: expect.any(BigInt),
+            nextBaseFee: expect.any(BigInt),
+          },
+        });
+        expect(estimation.value).toBeGreaterThan(0);
+        expect(estimation.parameters?.maxFeePerGas).toBeGreaterThan(0);
+        expect(estimation.parameters?.maxPriorityFeePerGas).toBeGreaterThan(0);
+        expect(estimation.parameters?.nextBaseFee).toBeGreaterThan(0);
+      },
+    ],
+  ])("estimateFees for %s transaction", (mode, expectEstimationForMode) => {
     it("estimates fees for native asset transfer", async () => {
-      const result: FeeEstimation = await module.estimateFees({
-        type: "send",
+      const result = await module.estimateFees({
+        type: `send-${mode}`,
         amount: 100000000000000n, // 0.0001 ETH (smaller amount)
         sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-        recipient: "0x7b2c7232f9e38f30e2868f0e5bf311cd83554b5a",
+        recipient: "0x7b2C7232f9E38F30E2868f0E5Bf311Cd83554b5A",
+        data: { type: "buffer", value: Buffer.from([]) },
         asset: {
           type: "native",
         },
       });
 
-      expect(typeof result.value).toBe("bigint");
-      expect(result.value).toBeGreaterThan(0n);
+      expectEstimationForMode(result);
     });
 
     it("estimates fees for USDC token transfer", async () => {
       const result = await module.estimateFees({
-        type: "send",
+        type: `send-${mode}`,
         amount: 1000000n, // 1 USDC (6 decimals)
         sender: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-        recipient: "0x7b2c7232f9e38f30e2868f0e5bf311cd83554b5a",
+        recipient: "0x7b2C7232f9E38F30E2868f0E5Bf311Cd83554b5A",
+        data: { type: "buffer", value: Buffer.from([]) },
         asset: {
-          type: "token",
-          standard: "erc",
-          contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          type: "erc20",
+          assetReference: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
         },
       });
 
-      expect(typeof result.value).toBe("bigint");
-      expect(result.value).toBeGreaterThan(0n);
+      expectEstimationForMode(result);
     });
   });
 });

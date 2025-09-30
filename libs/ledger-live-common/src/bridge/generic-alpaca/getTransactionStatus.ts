@@ -1,38 +1,55 @@
-import { AccountBridge, TransactionCommon } from "@ledgerhq/types-live";
+import { AccountBridge } from "@ledgerhq/types-live";
+import { AccountAwaitingSendPendingOperations } from "@ledgerhq/errors";
 import BigNumber from "bignumber.js";
 import { getAlpacaApi } from "./alpaca";
+import { transactionToIntent } from "./utils";
+import { GenericTransaction } from "./types";
 
 // => alpaca validateIntent
 export function genericGetTransactionStatus(
-  network: string,
-  kind: "local" | "remote",
+  network,
+  kind,
 ): AccountBridge<any>["getTransactionStatus"] {
-  return async (account, transaction: TransactionCommon & { fees: BigNumber }) => {
-    const { freshAddress, balance, currency } = account;
-    const alpacaApi = getAlpacaApi(network, kind);
-    const { errors, warnings } = await alpacaApi.validateIntent(
-      {
-        currencyName: currency.name,
-        address: freshAddress,
-        balance: BigInt(balance.toString()),
-        currencyUnit: currency.units[0],
-      },
-      {
-        type: "PAYMENT", // NOTE: assuming payment by default here
-        recipient: transaction.recipient,
-        amount: BigInt(transaction.amount?.toString() ?? "0"),
-        fee: BigInt(transaction.fees?.toString() ?? "0"),
-      },
+  return async (account, transaction: GenericTransaction) => {
+    const alpacaApi = getAlpacaApi(account.currency.id, kind);
+    const draftTransaction = {
+      mode: transaction?.mode ?? "send",
+      recipient: transaction.recipient,
+      amount: transaction.amount ?? new BigNumber(0),
+      useAllAmount: !!transaction.useAllAmount,
+      assetReference: transaction.assetReference || "",
+      assetOwner: transaction.assetOwner || "",
+      subAccountId: transaction.subAccountId || "",
+      memoType: transaction.memoType || "",
+      memoValue: transaction.memoValue || "",
+      family: transaction.family,
+      feesStrategy: transaction.feesStrategy,
+      data: transaction.data,
+    };
+
+    if (alpacaApi.getChainSpecificRules) {
+      const chainSpecificValidation = alpacaApi.getChainSpecificRules();
+      if (chainSpecificValidation.getTransactionStatus.throwIfPendingOperation) {
+        if (account.pendingOperations.length > 0) {
+          throw new AccountAwaitingSendPendingOperations();
+        }
+      }
+    }
+
+    const { errors, warnings, estimatedFees, amount, totalSpent } = await alpacaApi.validateIntent(
+      transactionToIntent(account, draftTransaction, alpacaApi.computeIntentType),
+      { value: transaction.fees ? BigInt(transaction.fees.toString()) : 0n },
     );
 
-    const estimatedFees = transaction.fees || new BigNumber(0);
-
-    return Promise.resolve({
+    return {
       errors,
       warnings,
-      estimatedFees,
-      amount: transaction.amount,
-      totalSpent: transaction.amount.plus(transaction.fees),
-    });
+      estimatedFees:
+        !transaction.fees || transaction.fees.isZero()
+          ? new BigNumber(estimatedFees.toString())
+          : transaction.fees,
+      amount: transaction.amount.eq(0) ? new BigNumber(amount.toString()) : transaction.amount,
+      totalSpent: new BigNumber(totalSpent.toString()),
+    };
   };
 }

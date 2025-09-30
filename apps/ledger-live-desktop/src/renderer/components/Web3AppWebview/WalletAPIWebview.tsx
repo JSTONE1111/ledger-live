@@ -49,6 +49,7 @@ import {
   ModularDrawerLocation,
   openAssetAndAccountDrawer,
 } from "LLD/features/ModularDrawer";
+import { setFlowValue, setSourceValue } from "~/renderer/reducers/modularDrawer";
 
 const wallet = { name: "ledger-live-desktop", version: __APP_VERSION__ };
 
@@ -61,43 +62,64 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
     modularDrawerFeatureFlagKey: "lldModularDrawer",
   });
 
-  const modularDrawerVisible = isModularDrawerVisible(ModularDrawerLocation.LIVE_APP);
+  const modularDrawerVisible = isModularDrawerVisible({
+    location: ModularDrawerLocation.LIVE_APP,
+    liveAppId: manifest.id,
+  });
+
+  const source =
+    currentRouteNameRef.current === "Platform Catalog"
+      ? "Discover"
+      : currentRouteNameRef.current ?? "Unknown";
+
+  const flow = manifest.name;
 
   return useMemo(
     () => ({
-      "account.request": ({ accounts$, currencies, drawerConfiguration, onSuccess, onCancel }) => {
+      "account.request": ({
+        accounts$,
+        currencies,
+        drawerConfiguration,
+        areCurrenciesFiltered,
+        useCase,
+        onSuccess,
+        onCancel,
+      }) => {
         ipcRenderer.send("show-app", {});
 
-        modularDrawerVisible
-          ? openAssetAndAccountDrawer({
-              accounts$,
-              drawerConfiguration,
+        if (modularDrawerVisible) {
+          dispatch(setFlowValue(flow));
+          dispatch(setSourceValue(source));
+
+          openAssetAndAccountDrawer({
+            accounts$,
+            drawerConfiguration,
+            currencies: areCurrenciesFiltered && !useCase ? currencies.map(c => c.id) : undefined,
+            areCurrenciesFiltered,
+            useCase,
+            onSuccess,
+            onCancel,
+          });
+        } else {
+          setDrawer(
+            SelectAccountAndCurrencyDrawer,
+            {
               currencies,
-              onSuccess,
-              onCancel,
-              flow: manifest.name,
-              source:
-                currentRouteNameRef.current === "Platform Catalog"
-                  ? "Discover"
-                  : currentRouteNameRef.current ?? "Unknown",
-            })
-          : setDrawer(
-              SelectAccountAndCurrencyDrawer,
-              {
-                currencies,
-                onAccountSelected: (account, parentAccount) => {
-                  setDrawer();
-                  onSuccess(account, parentAccount);
-                },
-                accounts$,
+              onAccountSelected: (account, parentAccount) => {
+                setDrawer();
+                onSuccess(account, parentAccount);
               },
-              {
-                onRequestClose: () => {
-                  setDrawer();
-                  onCancel();
-                },
+              accounts$,
+              flow,
+            },
+            {
+              onRequestClose: () => {
+                setDrawer();
+                onCancel();
               },
-            );
+            },
+          );
+        }
       },
       "account.receive": ({
         account,
@@ -136,7 +158,7 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
         );
       },
       "storage.get": ({ key, storeId }) => {
-        return getStoreValue(key, storeId) as string | undefined;
+        return getStoreValue(key, storeId);
       },
       "storage.set": ({ key, value, storeId }) => {
         setStoreValue(key, value, storeId);
@@ -185,7 +207,7 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
             setDrawer(OperationDetails, {
               operationId: optimisticOperation.id,
               accountId: account.id,
-              parentId: parentAccount?.id as string | undefined | null,
+              parentId: parentAccount?.id,
             });
           },
         });
@@ -241,7 +263,7 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
         );
       },
     }),
-    [dispatch, manifest, modularDrawerVisible, pushToast, t, tracking],
+    [modularDrawerVisible, flow, dispatch, manifest, pushToast, t, tracking, source],
   );
 }
 

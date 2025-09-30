@@ -4,12 +4,23 @@ import { withTokens } from "../../libs";
 import { Text } from "../../../components";
 import { CryptoIcon } from "../CryptoIcon/CryptoIcon";
 
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    console.error("Failed to copy to clipboard:", err);
+  }
+};
+
 export type AssetType = {
   name: string;
   ticker: string;
   id: string;
   leftElement?: React.ReactNode;
   rightElement?: React.ReactNode;
+  numberOfNetworks?: number;
+  assetId?: string;
+  shouldDisplayId?: boolean;
 };
 
 type AssetItemProps = AssetType & {
@@ -59,19 +70,39 @@ const LeftElementWrapper = styled.div`
   gap: 4px;
 `;
 
+const TagWrapper = styled.div`
+  ${withTokens(
+    "colors-surface-transparent-subdued-default",
+    "colors-content-subdued-default-default",
+    "radius-xs",
+    "spacing-xxxs",
+  )}
+
+  padding: var(--spacing-xxxs);
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  background-color: var(--colors-surface-transparent-subdued-default);
+  flex-shrink: 0;
+  cursor: pointer;
+`;
+
 export const AssetItem = ({
   name,
   ticker,
+  numberOfNetworks,
   id,
+  assetId,
   onClick,
   leftElement,
   rightElement,
+  shouldDisplayId,
 }: AssetItemProps) => {
   return (
     <Wrapper onClick={() => onClick({ name, ticker, id })}>
       <CryptoIcon size="48px" ledgerId={id} ticker={ticker} />
       <InfoWrapper>
         <Text
+          data-testid={`asset-item-name-${name}`}
           fontSize="14px"
           variant="largeLineHeight"
           fontWeight="semiBold"
@@ -87,6 +118,7 @@ export const AssetItem = ({
         </Text>
         <LeftElementWrapper>
           <Text
+            data-testid={`asset-item-ticker-${ticker}`}
             fontSize="12px"
             lineHeight="16px"
             variant="bodyLineHeight"
@@ -96,6 +128,19 @@ export const AssetItem = ({
             {ticker}
           </Text>
           {leftElement}
+          {shouldDisplayId && assetId ? (
+            <TagWrapper
+              onClick={e => {
+                e.stopPropagation();
+                copyToClipboard(assetId);
+              }}
+            >
+              <Text
+                color="var(--colors-content-subdued-default-default)"
+                fontSize="12px"
+              >{`${assetId} (${numberOfNetworks} networks)`}</Text>
+            </TagWrapper>
+          ) : null}
         </LeftElementWrapper>
       </InfoWrapper>
       {rightElement}

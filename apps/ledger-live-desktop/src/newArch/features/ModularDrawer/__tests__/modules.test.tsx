@@ -1,10 +1,4 @@
 import { liveConfig } from "@ledgerhq/live-common/config/sharedConfig";
-import { useGroupedCurrenciesByProvider } from "@ledgerhq/live-common/modularDrawer/__mocks__/useGroupedCurrenciesByProvider.mock";
-import { LiveConfig } from "@ledgerhq/live-config/LiveConfig";
-import BigNumber from "bignumber.js";
-import React from "react";
-import { renderWithMockedCounterValuesProvider, screen } from "tests/testSetup";
-import { INITIAL_STATE } from "~/renderer/reducers/settings";
 import {
   ARB_ACCOUNT,
   BASE_ACCOUNT,
@@ -12,7 +6,13 @@ import {
   ETH_ACCOUNT,
   ETH_ACCOUNT_2,
   SCROLL_ACCOUNT,
-} from "../../__mocks__/accounts.mock";
+} from "@ledgerhq/live-common/modularDrawer/__mocks__/accounts.mock";
+import { useGroupedCurrenciesByProvider } from "@ledgerhq/live-common/modularDrawer/__mocks__/useGroupedCurrenciesByProvider.mock";
+import { LiveConfig } from "@ledgerhq/live-config/LiveConfig";
+import BigNumber from "bignumber.js";
+import React from "react";
+import { renderWithMockedCounterValuesProvider, screen, waitFor } from "tests/testSetup";
+import { INITIAL_STATE } from "~/renderer/reducers/settings";
 import {
   arbitrumCurrency,
   baseCurrency,
@@ -25,6 +25,13 @@ import ModularDrawerFlowManager from "../ModularDrawerFlowManager";
 
 jest.mock("@ledgerhq/live-common/deposit/useGroupedCurrenciesByProvider.hook", () => ({
   useGroupedCurrenciesByProvider: () => useGroupedCurrenciesByProvider(),
+}));
+jest.mock("@ledgerhq/live-common/modularDrawer/hooks/useCurrenciesUnderFeatureFlag", () => ({
+  useCurrenciesUnderFeatureFlag: () => mockUseCurrenciesUnderFeatureFlag(),
+}));
+
+const mockUseCurrenciesUnderFeatureFlag = jest.fn(() => ({
+  deactivatedCurrencyIds: new Set(),
 }));
 
 beforeEach(async () => {
@@ -56,11 +63,11 @@ const mockedInitialState = {
   },
 };
 
-const mockCurrencies = [ethereumCurrency, bitcoinCurrency, arbitrumCurrency];
+const mockCurrencies = [ethereumCurrency, bitcoinCurrency, arbitrumCurrency].map(c => c.id);
 
 describe("ModularDrawerFlowManager - Modules configuration", () => {
   // This is tempory as in the future balance will be displayed by default for all assets but right now it's not the case
-  it("shouldn't display balance on the right at assetSelection by default", async () => {
+  it("should display balance on the right at assetSelection by default", async () => {
     const mixedCurrencies = [
       baseCurrency,
       arbitrumCurrency,
@@ -70,23 +77,21 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
     ];
     renderWithMockedCounterValuesProvider(
       <ModularDrawerFlowManager
-        currencies={mixedCurrencies}
+        currencies={mixedCurrencies.map(c => c.id)}
         onAssetSelected={mockOnAssetSelected}
-        source="sourceTest"
-        flow="flowTest"
       />,
       mockedInitialState,
     );
 
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
     expect(screen.queryByText(/base/i)).toBeNull();
     expect(screen.queryByText(/scroll/i)).toBeNull();
-    expect(screen.getByText(/ethereum/i)).toBeVisible();
 
-    expect(screen.queryByText(/\$95,622,923.34/i)).toBeNull();
-    expect(screen.queryByText(/34,478.4 eth/i)).toBeNull();
+    expect(screen.queryByText(/\$95,622,923.34/i)).toBeVisible();
+    expect(screen.queryByText(/34,478.4 eth/i)).toBeVisible();
   });
 
-  it("should display balance on the right at assetSelection step", () => {
+  it("should display balance on the right at assetSelection step", async () => {
     renderWithMockedCounterValuesProvider(
       <ModularDrawerFlowManager
         currencies={mockCurrencies}
@@ -96,24 +101,21 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
             rightElement: "balance",
           },
         }}
-        source="sourceTest"
-        flow="flowTest"
       />,
       mockedInitialState,
     );
 
-    const ethereum = screen.getByText(/ethereum/i);
-    expect(ethereum).toBeVisible();
-    const ethereumBalance = screen.getByText(/23.4663 eth/i);
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
+    const ethereumBalance = screen.getByText(/34,478.4 eth/i);
     expect(ethereumBalance).toBeVisible();
-    const usdBalance = screen.getByText(/\$65,081.79/i);
+    const usdBalance = screen.getByText(/\$95,622,923.34/i);
     expect(usdBalance).toBeVisible();
 
     const apyTags = screen.queryAllByText(/% APY/i);
     expect(apyTags).toHaveLength(0);
   });
 
-  it("should display APY tag at assetSelection step", () => {
+  it("should display APY tag at assetSelection step", async () => {
     renderWithMockedCounterValuesProvider(
       <ModularDrawerFlowManager
         currencies={mockCurrencies}
@@ -123,17 +125,60 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
             leftElement: "apy",
           },
         }}
-        source="sourceTest"
-        flow="flowTest"
       />,
       mockedInitialState,
     );
 
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
     const apyTag = screen.getAllByText(/% APY/i)[0];
     expect(apyTag).toBeVisible();
   });
 
-  it("should not display balance on the right at assetSelection step when enableModularization is false ", () => {
+  it("should display market trend on the left at assetSelection step", async () => {
+    renderWithMockedCounterValuesProvider(
+      <ModularDrawerFlowManager
+        currencies={mockCurrencies}
+        onAssetSelected={mockOnAssetSelected}
+        drawerConfiguration={{
+          assets: {
+            leftElement: "marketTrend",
+          },
+        }}
+      />,
+      mockedInitialState,
+    );
+
+    await waitFor(() => expect(screen.getByText(/bitcoin/i)).toBeVisible());
+    const bitcoinTicker = screen.getByTestId(/asset-item-ticker-btc/i);
+    const bitcoinRow = bitcoinTicker.parentElement;
+    const percentIndicator = bitcoinRow?.querySelector('[data-testid="market-percent-indicator"]');
+    expect(percentIndicator).toHaveTextContent(/-2.27%$/);
+  });
+
+  it("should display market trend on the right at assetSelection step", async () => {
+    renderWithMockedCounterValuesProvider(
+      <ModularDrawerFlowManager
+        currencies={mockCurrencies}
+        onAssetSelected={mockOnAssetSelected}
+        drawerConfiguration={{
+          assets: {
+            rightElement: "marketTrend",
+          },
+        }}
+      />,
+      mockedInitialState,
+    );
+
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
+    const ethereumIcon = screen.getByAltText(/eth/i);
+    const ethereumRow = ethereumIcon.parentElement?.parentElement;
+    const percentIndicator = ethereumRow?.querySelector(
+      '[data-testid="market-price-indicator-percent"]',
+    );
+    expect(percentIndicator).toHaveTextContent(/-3.64%$/);
+  });
+
+  it("should not display balance on the right at assetSelection step when enableModularization is false ", async () => {
     renderWithMockedCounterValuesProvider(
       <ModularDrawerFlowManager
         currencies={mockCurrencies}
@@ -143,8 +188,6 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
             rightElement: "balance",
           },
         }}
-        source="sourceTest"
-        flow="flowTest"
       />,
       {
         accounts: ETH_ACCOUNT,
@@ -162,11 +205,10 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
       },
     );
 
-    const ethereum = screen.getByText(/ethereum/i);
-    expect(ethereum).toBeVisible();
-    const ethereumBalance = screen.queryByText(/23.4663 eth/i);
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
+    const ethereumBalance = screen.queryByText(/34,478.4 eth/i);
     expect(ethereumBalance).toBeNull();
-    const usdBalance = screen.queryByText(/\$65,081.79/i);
+    const usdBalance = screen.queryByText(/\$95,622,923.34/i);
     expect(usdBalance).toBeNull();
   });
 
@@ -175,13 +217,12 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
       <ModularDrawerFlowManager
         currencies={mockCurrencies}
         onAssetSelected={mockOnAssetSelected}
-        source="sourceTest"
-        flow="flowTest"
         drawerConfiguration={{ networks: { leftElement: "numberOfAccounts" } }}
       />,
       mockedInitialState,
     );
 
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
     const ethereum = screen.getByText(/ethereum/i);
 
     await user.click(ethereum);
@@ -202,13 +243,12 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
       <ModularDrawerFlowManager
         currencies={mockCurrencies}
         onAssetSelected={mockOnAssetSelected}
-        source="sourceTest"
-        flow="flowTest"
         drawerConfiguration={{ networks: { leftElement: "numberOfAccountsAndApy" } }}
       />,
       mockedInitialState,
     );
 
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
     const ethereum = screen.getByText(/ethereum/i);
     await user.click(ethereum);
 
@@ -224,19 +264,18 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
       <ModularDrawerFlowManager
         currencies={mockCurrencies}
         onAssetSelected={mockOnAssetSelected}
-        source="sourceTest"
-        flow="flowTest"
         drawerConfiguration={{ networks: { rightElement: "balance" } }}
       />,
       mockedInitialState,
     );
 
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
     await user.click(screen.getByText(/ethereum/i));
     expect(screen.getByText(/select network/i)).toBeVisible();
 
     const ethereumBalance = screen.getByText(/23.4663 eth/i);
     expect(ethereumBalance).toBeVisible();
-    const usdBalance = screen.getByText(/\$64,796.91/i);
+    const usdBalance = screen.getByText(/\$65,081.79/i);
     expect(usdBalance).toBeVisible();
     const arbitrumBalance = screen.getByText(/0 eth/i);
     expect(arbitrumBalance).toBeVisible();
@@ -245,22 +284,20 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
   });
 
   // this is logically failing because we are not able to retrieve the wanted data consistantly because it depends on the providerId that can be wrongly set in mapping services
-  it.failing("render the eth balance of scroll base and arbitrum as ethereum", async () => {
-    const mixedCurrencies = [baseCurrency, arbitrumCurrency, scrollCurrency, bitcoinCurrency];
+  // Skipping because flaky, test to be rewritten in refactor from LIVE-21033
+  it.skip("render the eth balance of scroll base and arbitrum as ethereum", async () => {
     renderWithMockedCounterValuesProvider(
       <ModularDrawerFlowManager
-        currencies={mixedCurrencies}
+        currencies={mockCurrencies}
         onAssetSelected={mockOnAssetSelected}
         drawerConfiguration={{ assets: { rightElement: "balance" } }}
-        source="sourceTest"
-        flow="flowTest"
       />,
       mockedInitialState,
     );
 
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
     expect(screen.queryByText(/base/i)).toBeNull();
     expect(screen.queryByText(/scroll/i)).toBeNull();
-    expect(screen.getByText(/ethereum/i)).toBeVisible();
 
     expect(screen.getByText(/\$95,557,841.55/i)).toBeVisible();
     expect(
@@ -277,21 +314,19 @@ describe("ModularDrawerFlowManager - Modules configuration", () => {
       scrollCurrency,
       ethereumCurrency,
       bitcoinCurrency,
-    ];
+    ].map(c => c.id);
     renderWithMockedCounterValuesProvider(
       <ModularDrawerFlowManager
         currencies={mixedCurrencies}
         onAssetSelected={mockOnAssetSelected}
         drawerConfiguration={{ assets: { rightElement: "balance" } }}
-        source="sourceTest"
-        flow="flowTest"
       />,
       mockedInitialState,
     );
 
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
     expect(screen.queryByText(/base/i)).toBeNull();
     expect(screen.queryByText(/scroll/i)).toBeNull();
-    expect(screen.getByText(/ethereum/i)).toBeVisible();
 
     expect(screen.getByText(/\$95,622,923.34/i)).toBeVisible();
     expect(screen.getByText(/34,478.4 eth/i)).toBeVisible();

@@ -271,6 +271,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     keywords: ["algo", "algorand"],
+    tokenTypes: ["asa"],
   },
   ark: {
     type: "CryptoCurrency",
@@ -565,7 +566,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     type: "CryptoCurrency",
     id: "bsc",
     coinType: CoinType.ETH,
-    name: "Binance Smart Chain",
+    name: "BNB Chain",
     managerAppName: "Ethereum",
     ticker: "BNB",
     scheme: "bsc",
@@ -584,6 +585,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     ],
     keywords: ["bsc", "bnb", "binance", "binance smart chain", "binance chain"],
     explorerId: "bnb",
+    tokenTypes: ["bep20"],
   },
   callisto: {
     type: "CryptoCurrency",
@@ -603,6 +605,101 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     explorerViews: [],
+  },
+  canton_network: {
+    type: "CryptoCurrency",
+    id: "canton_network",
+    coinType: CoinType.CANTON_NETWORK,
+    name: "Canton Network",
+    managerAppName: "Canton",
+    ticker: "CC",
+    scheme: "canton_network",
+    color: "#F8FFAE",
+    family: "canton",
+    blockAvgTime: 100,
+    units: [
+      {
+        name: "cc",
+        code: "CC",
+        magnitude: 38,
+      },
+      {
+        name: "ucc",
+        code: "ucc",
+        magnitude: 0,
+      },
+    ],
+    explorerViews: [
+      {
+        tx: "https://lighthouse.cantonloop.com/transactions/$hash",
+        address: "https://lighthouse.cantonloop.com/party/$address",
+      },
+    ],
+    keywords: ["canton_network"],
+  },
+  canton_network_localnet: {
+    type: "CryptoCurrency",
+    id: "canton_network_localnet",
+    coinType: CoinType.CANTON_NETWORK,
+    name: "Canton Network (Localnet)",
+    managerAppName: "Canton",
+    ticker: "CC",
+    scheme: "canton_network_localnet",
+    color: "#F8FFAE",
+    family: "canton",
+    blockAvgTime: 100,
+    isTestnetFor: "canton_network",
+    units: [
+      {
+        name: "cc",
+        code: "CC",
+        magnitude: 38,
+      },
+      {
+        name: "ucc",
+        code: "ucc",
+        magnitude: 0,
+      },
+    ],
+    explorerViews: [
+      {
+        tx: "https://explorer-to-define.io/transaction/$hash",
+        address: "https://explorer-to-define.io/address/$address",
+      },
+    ],
+    keywords: ["canton_network_localnet"],
+  },
+  canton_network_devnet: {
+    type: "CryptoCurrency",
+    id: "canton_network_devnet",
+    coinType: CoinType.CANTON_NETWORK,
+    name: "Canton Network (Devnet)",
+    managerAppName: "Canton",
+    ticker: "CC",
+    scheme: "canton_network_devnet",
+    color: "#F8FFAE",
+    family: "canton",
+    blockAvgTime: 100,
+    isTestnetFor: "canton_network",
+    units: [
+      {
+        name: "cc",
+        code: "CC",
+        magnitude: 38,
+      },
+      {
+        name: "ucc",
+        code: "ucc",
+        magnitude: 0,
+      },
+    ],
+    explorerViews: [
+      {
+        tx: "https://lighthouse.devnet.cantonloop.com/transactions/$hash",
+        address: "https://lighthouse.devnet.cantonloop.com/party/$address",
+      },
+    ],
+    keywords: ["canton_network_devnet"],
   },
   cardano: {
     type: "CryptoCurrency",
@@ -635,6 +732,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     keywords: ["ada", "cardano"],
+    tokenTypes: ["native"],
   },
   cardano_testnet: {
     type: "CryptoCurrency",
@@ -696,6 +794,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
         address: "https://explorer.celo.org/address/$address",
       },
     ],
+    tokenTypes: ["erc20"],
   },
   clubcoin: {
     terminated: {
@@ -1146,6 +1245,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     ],
     keywords: ["eth", "ethereum"],
     explorerId: "eth",
+    tokenTypes: ["erc20"],
   },
   ethereum_classic: {
     type: "CryptoCurrency",
@@ -1416,6 +1516,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
         address: "https://hashscan.io/mainnet/account/$address",
       },
     ],
+    tokenTypes: ["hts"],
   },
   helium: {
     type: "CryptoCurrency",
@@ -1550,7 +1651,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     coinType: CoinType.IOTA,
     name: "IOTA",
     managerAppName: "IOTA",
-    ticker: "MIOTA",
+    ticker: "IOTA",
     scheme: "iota",
     color: "#000000",
     family: "iota",
@@ -1581,6 +1682,36 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     explorerViews: [],
+  },
+  kaspa: {
+    type: "CryptoCurrency",
+    id: "kaspa",
+    coinType: CoinType.KASPA,
+    name: "KASPA",
+    managerAppName: "Kaspa",
+    ticker: "KAS",
+    scheme: "kaspa",
+    color: "#70C7BA",
+    family: "kaspa",
+    units: [
+      {
+        name: "KAS",
+        code: "KAS",
+        magnitude: 8,
+        showAllDigits: true,
+      },
+      {
+        name: "Sompis",
+        code: "Sompi",
+        magnitude: 0,
+      },
+    ],
+    explorerViews: [
+      {
+        address: "https://explorer.kaspa.org/addresses/$address",
+        tx: "https://explorer.kaspa.org/txs/$hash",
+      },
+    ],
   },
   kin: {
     type: "CryptoCurrency",
@@ -1815,6 +1946,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     keywords: ["multiversx"],
+    tokenTypes: ["esdt"],
   },
   musicoin: {
     type: "CryptoCurrency",
@@ -2240,6 +2372,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     ],
     keywords: ["matic", "polygon"],
     explorerId: "matic",
+    tokenTypes: ["erc20"],
   },
   poswallet: {
     type: "CryptoCurrency",
@@ -2575,6 +2708,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     keywords: ["sol", "solana"],
+    tokenTypes: ["spl"],
   },
   stakenet: {
     type: "CryptoCurrency",
@@ -2711,6 +2845,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     keywords: ["xlm", "stellar"],
+    tokenTypes: ["stellar"],
   },
   osmosis: {
     type: "CryptoCurrency",
@@ -2891,6 +3026,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
         address: "https://tonscan.org/address/$address",
       },
     ],
+    tokenTypes: ["jetton"],
   },
   tron: {
     type: "CryptoCurrency",
@@ -2917,6 +3053,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     keywords: ["trx", "tron"],
+    tokenTypes: ["trc10", "trc20"],
   },
   ubiq: {
     type: "CryptoCurrency",
@@ -3009,6 +3146,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
         address: "https://explore.vechain.org/accounts/$address",
       },
     ],
+    tokenTypes: ["vip180"],
   },
   wanchain: {
     type: "CryptoCurrency",
@@ -3319,6 +3457,32 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     ],
     explorerId: "eth_holesky",
   },
+  ethereum_hoodi: {
+    type: "CryptoCurrency",
+    id: "ethereum_hoodi",
+    coinType: CoinType.ETH,
+    name: "Ethereum Hoodi",
+    managerAppName: "Ethereum",
+    ticker: "ETH",
+    deviceTicker: "ETH",
+    scheme: "eth_hoodi",
+    color: "#0ebdcd",
+    units: ethereumUnits("ether", "ETH"),
+    isTestnetFor: "ethereum",
+    disableCountervalue: true,
+    family: "evm",
+    blockAvgTime: 15,
+    ethereumLikeInfo: {
+      chainId: 560048,
+    },
+    explorerViews: [
+      {
+        tx: "https://hoodi.etherscan.io/tx/$hash",
+        address: "https://hoodi.etherscan.io/address/$address",
+      },
+    ],
+    explorerId: "eth_hoodi",
+  },
   stacks: {
     type: "CryptoCurrency",
     id: "stacks",
@@ -3473,6 +3637,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
         address: "https://beryx.io/v1/explore/fil/mainnet/address/$address",
       },
     ],
+    tokenTypes: ["erc20"],
   },
   internet_computer: {
     type: "CryptoCurrency",
@@ -3587,7 +3752,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     id: "sonic",
     coinType: CoinType.ETH,
     name: "Sonic",
-    managerAppName: "Ethereum",
+    managerAppName: "Sonic",
     ticker: "S",
     scheme: "sonic",
     color: "#FFFFFF",
@@ -3603,6 +3768,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
         token: "https://sonicscan.org/token/$contractAddress?a=$address",
       },
     ],
+    tokenTypes: ["erc20"],
   },
   sonic_blaze: {
     type: "CryptoCurrency",
@@ -3610,7 +3776,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
     isTestnetFor: "sonic",
     coinType: CoinType.ETH,
     name: "Sonic Blaze",
-    managerAppName: "Ethereum",
+    managerAppName: "Sonic",
     ticker: "S",
     scheme: "sonic_blaze",
     color: "#FFFFFF",
@@ -3684,6 +3850,29 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     explorerViews: [blockscoutExplorerView("https://cronos.org/explorer")],
+  },
+  core: {
+    type: "CryptoCurrency",
+    id: "core",
+    coinType: CoinType.ETH,
+    name: "Core",
+    managerAppName: "Ethereum",
+    ticker: "CORE",
+    scheme: "core",
+    color: "#FF962B",
+    family: "evm",
+    units: ethereumUnits("CORE", "CORE"),
+    ethereumLikeInfo: {
+      chainId: 1116,
+    },
+    explorerViews: [
+      {
+        tx: "https://scan.coredao.org/tx/$hash",
+        address: "https://scan.coredao.org/address/$address",
+        token: "https://scan.coredao.org/token/$address",
+      },
+    ],
+    tokenTypes: ["erc20"],
   },
   fantom: {
     type: "CryptoCurrency",
@@ -4486,6 +4675,7 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
         address: "https://suivision.xyz/account/$address",
       },
     ],
+    tokenTypes: ["sui"],
   },
   babylon: {
     type: "CryptoCurrency",

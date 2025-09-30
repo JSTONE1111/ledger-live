@@ -15,6 +15,7 @@ export interface AccountListProps {
   accounts: Account[];
   formatAccount: (account: Account) => FormattedAccount;
   navigateToEditAccountName: (account: Account) => void;
+  isAccountSelectionFlow: boolean;
 }
 
 export interface AccountsAddedProps {
@@ -23,5 +24,4 @@ export interface AccountsAddedProps {
   navigateToEditAccountName: (account: Account) => void;
   navigateToFundAccount: (account: Account) => void;
   navigateToSelectAccount: () => void;
-  source: string;
 }

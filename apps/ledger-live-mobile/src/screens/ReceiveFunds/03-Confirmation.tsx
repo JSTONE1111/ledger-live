@@ -14,7 +14,6 @@ import {
 } from "@ledgerhq/live-common/account/index";
 import { getCurrencyColor } from "@ledgerhq/live-common/currencies/color";
 import FeatureToggle from "@ledgerhq/live-common/featureFlags/FeatureToggle";
-import { useToasts } from "@ledgerhq/live-common/notifications/ToastProvider/index";
 import { useTheme } from "styled-components/native";
 import { Flex, Text, IconsLegacy, Button, Box, BannerCard, Icons } from "@ledgerhq/native-ui";
 import { useRoute } from "@react-navigation/native";
@@ -29,6 +28,7 @@ import { ScreenName } from "~/const";
 import { track, TrackScreen } from "~/analytics";
 import byFamily from "../../generated/Confirmation";
 import byFamilyPostAlert from "../../generated/ReceiveConfirmationPostAlert";
+import byFamilyTokenAlert from "../../generated/ReceiveConfirmationTokenAlert";
 import { ReceiveFundsStackParamList } from "~/components/RootNavigator/types/ReceiveFundsNavigator";
 import { BaseComposite, StackNavigatorProps } from "~/components/RootNavigator/types/helpers";
 import styled, { BaseStyledProps } from "@ledgerhq/native-ui/components/styled";
@@ -52,6 +52,7 @@ import { isAddressSanctioned } from "@ledgerhq/coin-framework/sanction/index";
 import { NeedMemoTagModal } from "./NeedMemoTagModal";
 import { useLocalizedUrl } from "LLM/hooks/useLocalizedUrls";
 import SanctionedAccountModal from "./SanctionedAccountModal";
+import { useToastsActions } from "~/actions/toast";
 
 type ScreenProps = BaseComposite<
   StackNavigatorProps<ReceiveFundsStackParamList, ScreenName.ReceiveConfirmation>
@@ -83,7 +84,6 @@ export default function ReceiveConfirmation({ navigation }: Props) {
 function ReceiveConfirmationInner({ navigation, route, account, parentAccount }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const { pushToast } = useToasts();
   const verified = route.params?.verified ?? false;
   const [isModalOpened, setIsModalOpened] = useState(true);
   const [hasAddedTokenAccount, setHasAddedTokenAccount] = useState(false);
@@ -95,6 +95,7 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
 
   const hasClosedWithdrawBanner = useSelector(hasClosedWithdrawBannerSelector);
   const [displayBanner, setDisplayBanner] = useState(!hasClosedWithdrawBanner);
+  const { pushToast } = useToastsActions();
 
   const onClose = useCallback(() => {
     const mainAccount = account && getMainAccount(account, parentAccount);
@@ -252,14 +253,17 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
   const bannerHeight = useSharedValue(screenHeight * 0.23);
   const bannerOpacity = useSharedValue(1);
 
-  const animatedBannerStyle = useAnimatedStyle(() => ({
-    height: withTiming(bannerHeight.value, { duration: 200 }, onFinish => {
-      if (onFinish && bannerHeight.value === 0) {
-        runOnJS(hideBanner)();
-      }
+  const animatedBannerStyle = useAnimatedStyle(
+    () => ({
+      height: withTiming(bannerHeight.value, { duration: 200 }, onFinish => {
+        if (onFinish && bannerHeight.value === 0) {
+          runOnJS(hideBanner)();
+        }
+      }),
+      opacity: withTiming(bannerOpacity.value, { duration: 200 }),
     }),
-    opacity: withTiming(bannerOpacity.value, { duration: 200 }),
-  }));
+    [bannerHeight.value, bannerOpacity.value, hideBanner],
+  );
 
   const handleBannerClose = useCallback(() => {
     bannerHeight.value = 0;
@@ -308,12 +312,25 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
         : null;
   }
 
+  let CustomConfirmationTokenAlert;
+  if (
+    currency.type === "TokenCurrency" &&
+    Object.keys(byFamilyTokenAlert).includes(currency.parentCurrency.family)
+  ) {
+    CustomConfirmationTokenAlert =
+      byFamilyTokenAlert[currency.parentCurrency.family as keyof typeof byFamilyTokenAlert];
+  }
+
   const isAnAccount = account.type === "Account";
   const isUTXOCompliantCurrency = isAnAccount && isUTXOCompliant(account.currency.family);
 
   return (
     <Flex flex={1}>
-      <NavigationScrollView testID="receive-screen-scrollView" style={{ flex: 1 }}>
+      <NavigationScrollView
+        testID="receive-screen-scrollView"
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 80 }}
+      >
         <TrackScreen
           category="Deposit"
           name="Receive Account Qr Code"
@@ -354,6 +371,7 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
                 borderColor="neutral.c40"
                 alignItems="center"
                 justifyContent="center"
+                testID={"receive-qr-code-container-" + mainAccountName}
               >
                 <QRCode size={QRSize} value={mainAccount.freshAddress} ecl="H" />
                 <Flex
@@ -437,6 +455,13 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
             </Text>
           </Flex>
           {CustomConfirmationAlert && <CustomConfirmationAlert mainAccount={mainAccount} />}
+          {CustomConfirmationTokenAlert && currency.type === "TokenCurrency" && (
+            <CustomConfirmationTokenAlert
+              account={account}
+              mainAccount={mainAccount}
+              token={currency}
+            />
+          )}
         </Flex>
       </NavigationScrollView>
       {displayBanner && (

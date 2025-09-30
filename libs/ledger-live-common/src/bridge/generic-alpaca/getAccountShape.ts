@@ -1,62 +1,105 @@
 import { encodeAccountId } from "@ledgerhq/coin-framework/account/index";
 import { GetAccountShape, mergeOps } from "@ledgerhq/coin-framework/bridge/jsHelpers";
+import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
 import BigNumber from "bignumber.js";
 import { getAlpacaApi } from "./alpaca";
-import { adaptCoreOperationToLiveOperation } from "./utils";
+import { adaptCoreOperationToLiveOperation, extractBalance } from "./utils";
+import { inferSubOperations } from "@ledgerhq/coin-framework/serialization";
+import { buildSubAccounts, OperationCommon } from "./buildSubAccounts";
+import { Pagination } from "@ledgerhq/coin-framework/api/types";
 
-export function genericGetAccountShape(network: string, kind: "local" | "remote"): GetAccountShape {
-  return async info => {
-    try {
-      const { address, initialAccount, currency, derivationMode } = info;
-      const accountId = encodeAccountId({
-        type: "js",
-        version: "2",
-        currencyId: currency.id,
-        xpubOrAddress: address,
-        derivationMode,
-      });
+export function genericGetAccountShape(network: string, kind: string): GetAccountShape {
+  return async (info, syncConfig) => {
+    const { address, initialAccount, currency, derivationMode } = info;
+    const alpacaApi = getAlpacaApi(currency.id, kind);
 
-      const blockInfo = await getAlpacaApi(network, kind).lastBlock();
-
-      const balanceRes = await getAlpacaApi(network, kind).getBalance(address);
-      // FIXME: fix type Balance -> check "native" balance
-      // is balance[0] always the native ?
-      const balance = BigNumber(balanceRes[0].value.toString());
-
-      let spendableBalance: BigNumber;
-      if (balanceRes[0]?.locked) {
-        spendableBalance = BigNumber.max(
-          balance.minus(BigNumber(balanceRes[0].locked.toString())),
-          BigNumber(0),
-        );
-      } else {
-        spendableBalance = initialAccount?.spendableBalance || balance;
+    if (alpacaApi.getChainSpecificRules) {
+      const chainSpecificValidation = alpacaApi.getChainSpecificRules();
+      if (chainSpecificValidation.getAccountShape) {
+        chainSpecificValidation.getAccountShape(address);
       }
-      const oldOperations = initialAccount?.operations || [];
+    }
 
-      const blockHeight = oldOperations.length ? (oldOperations[0].blockHeight ?? 0) + 1 : 0;
+    const accountId = encodeAccountId({
+      type: "js",
+      version: "2",
+      currencyId: currency.id,
+      xpubOrAddress: address,
+      derivationMode,
+    });
 
-      const [newOperations] = await getAlpacaApi(network, kind).listOperations(address, {
-        minHeight: blockHeight,
-      });
+    const blockInfo = await alpacaApi.lastBlock();
+    const balanceRes = await alpacaApi.getBalance(address);
+    const nativeAsset = extractBalance(balanceRes, "native");
 
-      const operations = mergeOps(
-        oldOperations,
-        newOperations.map(op => adaptCoreOperationToLiveOperation(accountId, op)),
-      );
+    const allTokenAssetsBalances = balanceRes.filter(b => b.asset.type !== "native");
+    const nativeBalance = BigInt(nativeAsset?.value ?? "0");
+
+    const spendableBalance = BigInt(nativeBalance - BigInt(nativeAsset?.locked ?? "0"));
+
+    // Normalize pre-alpaca operations to the new accountId to keep UI rendering consistent
+    const oldOps = ((initialAccount?.operations || []) as OperationCommon[]).map(op =>
+      op.accountId === accountId
+        ? op
+        : { ...op, accountId, id: encodeOperationId(accountId, op.hash, op.type) },
+    );
+    const lastPagingToken = oldOps[0]?.extra?.pagingToken || "";
+
+    // Calculate minHeight for pagination
+    let minHeight: number = 0;
+    if (oldOps.length > 0 && initialAccount?.blockHeight !== 0) {
+      minHeight = (oldOps[0].blockHeight ?? 0) + 1;
+    }
+    const paginationParams: Pagination = { minHeight, order: "asc" };
+    if (lastPagingToken) {
+      paginationParams.lastPagingToken = lastPagingToken;
+    }
+
+    const [newCoreOps] = await alpacaApi.listOperations(address, paginationParams);
+    const newOps = newCoreOps.map(op =>
+      adaptCoreOperationToLiveOperation(accountId, op),
+    ) as OperationCommon[];
+    const mergedOps = mergeOps(oldOps, newOps) as OperationCommon[];
+
+    const assetOperations: OperationCommon[] = [];
+    mergedOps.forEach(operation => {
+      if (
+        operation?.extra?.assetReference &&
+        operation?.extra?.assetOwner &&
+        !["OPT_IN", "OPT_OUT"].includes(operation.type)
+      ) {
+        assetOperations.push(operation);
+      }
+    });
+
+    const subAccounts = await buildSubAccounts({
+      currency,
+      accountId,
+      allTokenAssetsBalances,
+      syncConfig,
+      operations: assetOperations,
+      getTokenFromAsset: alpacaApi.getTokenFromAsset,
+    });
+
+    const operations = mergedOps.map(op => {
+      const subOperations = inferSubOperations(op.hash, subAccounts);
 
       return {
-        id: accountId,
-        xpub: address,
-        blockHeight: operations.length === 0 ? 0 : blockInfo.height || initialAccount?.blockHeight,
-        balance,
-        spendableBalance,
-        operations,
-        operationsCount: operations.length,
+        ...op,
+        subOperations,
       };
-    } catch (e) {
-      console.error("Error in getAccountShape", e);
-      throw e;
-    }
+    });
+
+    const res = {
+      id: accountId,
+      xpub: address,
+      blockHeight: operations.length === 0 ? 0 : blockInfo.height || initialAccount?.blockHeight,
+      balance: new BigNumber(nativeBalance.toString()),
+      spendableBalance: new BigNumber(spendableBalance.toString()),
+      operations,
+      subAccounts,
+      operationsCount: operations.length,
+    };
+    return res;
   };
 }

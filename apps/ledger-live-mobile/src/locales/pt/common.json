@@ -49,6 +49,7 @@
     "transactionDate" : "Data da transação",
     "outdated" : "Desatualizado",
     "satPerByte" : "sat/bytes",
+    "sompiPerByte" : "sompi/bytes",
     "notAvailable" : "Indisponível",
     "import" : "Importar",
     "bluetooth" : "Bluetooth",
@@ -306,6 +307,10 @@
       "title" : "Conexão com o dispositivo perdida",
       "description" : "O Ledger Live não conseguiu se conectar ao seu dispositivo. Se o problema persistir, tente novamente ou contate o Suporte Ledger."
     },
+    "ReconnectionFailedError" : {
+      "title" : "Conexão com o dispositivo perdida",
+      "description" : "O Ledger Live não conseguiu se conectar ao seu dispositivo. Se o problema persistir, tente novamente ou contate o Suporte Ledger."
+    },
     "DeviceDisconnectedBeforeSendingApdu" : {
       "title" : "Conexão com o dispositivo perdida",
       "description" : "O Ledger Live não conseguiu se conectar ao seu dispositivo. Se o problema persistir, tente novamente ou contate o Suporte Ledger."
@@ -414,10 +419,6 @@
     "ETHAddressNonEIP" : {
       "title" : "Verificação automática indisponível: verifique o endereço com cuidado.",
       "description" : null
-    },
-    "EthAppNftNotSupported" : {
-      "title" : "Operação não disponível para este dispositivo",
-      "description" : "A função de enviar NFTs está disponível apenas para a Nano X e a Nano S+. Visite nossa plataforma de suporte ao cliente para saber como enviar um NFT com uma Nano S."
     },
     "Touch ID Error" : {
       "title" : "Falha na autenticação biométrica",
@@ -690,6 +691,15 @@
       "title" : "Emparelhamento sem sucesso",
       "description" : "Tente novamente ou consulte nosso artigo sobre solução de problemas com o Bluetooth."
     },
+    "OneSuiMinForStake" : {
+      "title" : "A quantia mínima é 1 SUI"
+    },
+    "OneSuiMinForUnstake" : {
+      "title" : "A quantia mínima é 1 SUI"
+    },
+    "OneSuiMinForUnstakeToBeLeft" : {
+      "title" : "Você deve aplicar pelo menos 1 SUI em staking"
+    },
     "PasswordIncorrect" : {
       "title" : "Senha incorreta",
       "description" : "Tente Novamente."
@@ -897,9 +907,6 @@
     "PolkadotAllFundsWarning" : {
       "title" : "Certifique-se de ter saldo suficiente para futuras taxas de transação"
     },
-    "PolkadotDoMaxSendInstead" : {
-      "title" : "O saldo não pode ser inferior a {{minimumBalance}}. Enviar máximo para conta vazia."
-    },
     "PolkadotBondMinimumAmount" : {
       "title" : "Você deve vincular pelo menos {{minimumBondAmount}}."
     },
@@ -914,9 +921,6 @@
     },
     "TaprootNotActivated" : {
       "title" : "A mainnet Taproot ainda não está ativada"
-    },
-    "NotEnoughNftOwned" : {
-      "title" : "Você excedeu o número de tokens disponíveis"
     },
     "generic" : {
       "title" : "{{message}}",
@@ -1042,10 +1046,6 @@
       "title" : "Falha ao baixar a imagem",
       "description" : "Tente novamente com uma imagem diferente."
     },
-    "NFTMetadataLoadingError" : {
-      "title" : "Problema ao carregar metadados do NFT",
-      "description" : "Tente novamente com um NFT diferente."
-    },
     "ImageSizeLoadingError" : {
       "title" : "Falha ao recuperar as dimensões da imagem",
       "description" : "Tente novamente com uma imagem diferente."
@@ -1072,6 +1072,18 @@
     },
     "HederaAddAccountError" : {
       "title" : "Sua conta não foi adicionada. Tente Novamente."
+    },
+    "HederaInsufficientFundsForAssociation" : {
+      "title" : "Saldo insuficiente",
+      "description" : "Não há HBAR suficiente para pagar pela associação do token. É necessário um mínimo de US${{requiredWorthInUSD}} em HBAR."
+    },
+    "HederaRecipientTokenAssociationRequired" : {
+      "title" : "Requer associação do token",
+      "description" : "O token que você está tentando enviar não está associado à conta de destino. É necessário que ele esteja associado à conta do destinatário para ser recebido."
+    },
+    "HederaRecipientTokenAssociationUnverified" : {
+      "title" : "Não foi possível verificar a associação do token",
+      "description" : "Não foi possível confirmar se a conta de destino pode receber este token. O endereço pode estar inválido ou pode haver um problema de rede ou serviço."
     },
     "NearNewAccountWarning" : {
       "title" : "A conta receptora ainda não foi criada. O protocolo requer uma transferência de {{formattedNewAccountStorageCost}} para criá-la."
@@ -1304,7 +1316,8 @@
     "estimatedTime" : {
       "slow" : "≈ 2-3 min",
       "medium" : "≈ 30 sec",
-      "fast" : "≈ 15 sec"
+      "fast" : "≈ 15 sec",
+      "custom" : ""
     }
   },
   "signout" : {
@@ -2133,27 +2146,6 @@
         "learnHowToUpdate" : "Aprenda como atualizar"
       }
     },
-    "stepImportAccounts" : {
-      "title" : "Sincronizar contas com o desktop",
-      "desc" : "Se você já configurou suas contas no aplicativo desktop, sincronize-as para gerenciá-las pelo smartphone.",
-      "cta" : "Tudo pronto para escanear",
-      "bullets" : {
-        "0" : {
-          "label" : "No aplicativo de desktop, selecione\n<1>Configurações > Contas > Exportar Contas</1>."
-        },
-        "1" : {
-          "label" : "Escaneie os QR codes com seu smartphone."
-        },
-        "2" : {
-          "label" : "Selecione quais contas cripto importar."
-        }
-      },
-      "warning" : {
-        "title" : "Aplicativos desktop e móvel devem ser manualmente sincronizados.",
-        "desc" : "O Ledger Live respeita sua privacidade e armazena seus dados localmente. Se você mudar contas e configurações no seu telefone, precisará fazer o mesmo em seu computador e vice-versa. Suas transações são sincronizadas com a blockchain.",
-        "cta" : "Entendi!"
-      }
-    },
     "stepSetupPin" : {
       "step1" : "Ligue sua {{fullDeviceName}} e siga as instruções.",
       "step1-nanoS" : "Conecte sua {{fullDeviceName}} ao seu telefone usando um cabo OTG.",
@@ -2690,9 +2682,7 @@
   "operations" : {
     "types" : {
       "IN" : "Recebido",
-      "NFT_IN" : "NFT recebido",
       "OUT" : "Enviado",
-      "NFT_OUT" : "NFT enviado",
       "CREATE" : "Criado",
       "REVEAL" : "Revelado",
       "DELEGATE" : "Delegado",
@@ -2726,7 +2716,8 @@
       "WITHDRAW" : "Sacado",
       "STAKE" : "Aplicado",
       "UNSTAKE" : "Desaplicado",
-      "WITHDRAW_UNSTAKED" : "Sacado"
+      "WITHDRAW_UNSTAKED" : "Sacado",
+      "ASSOCIATE_TOKEN" : "Associar token"
     }
   },
   "operationDetails" : {
@@ -2758,6 +2749,7 @@
     "extra" : {
       "transferId" : "ID da Transferência (Memo)",
       "resource" : "Recurso",
+      "validator" : "Validador",
       "frozenAmount" : "Quantia Congelada",
       "unfreezeAmount" : "Descongelar Quantia",
       "address" : "Endereço",
@@ -2795,11 +2787,7 @@
       "stakedAmount" : "Quantia aplicada",
       "accountCreationFee" : "Taxa de Criação de Conta"
     },
-    "multipleAddresses" : "Por que múltiplos endereços?",
-    "tokenName" : "Nome do token",
-    "collectionContract" : "Contrato do token",
-    "tokenId" : "ID do token (NFT)",
-    "quantity" : "Quantidade"
+    "multipleAddresses" : "Por que múltiplos endereços?"
   },
   "operationList" : {
     "noOperations" : "Sem operações",
@@ -2831,8 +2819,8 @@
       "contactSupport" : "Falar com o suporte"
     },
     "willBedeprecatedBanner" : {
-      "title" : "Para otimizar a eficiência, {{currencyName}} não será mais compatível com o Ledger Live a partir de {{deprecatedDate}}. No entanto, este ativo ainda será compatível com as carteiras hardware Ledger. Fale com o Suporte ao Cliente Ledger para obter ajuda com isso.",
-      "contactSupport" : "Falar com o suporte"
+      "title" : "{{currencyName}} não será compatível com o Ledger Live a partir de {{deprecatedDate}}. O ativo ainda estará protegido pela sua hard wallet Ledger. Para saber mais, leia o artigo completo do Centro de Ajuda no link abaixo.",
+      "learnMore" : "Saiba mais"
     },
     "tokens" : {
       "contractAddress" : "Endereço do contrato",
@@ -2968,10 +2956,6 @@
     },
     "undelegation" : {
       "sectionLabel" : "Remoções de delegação"
-    },
-    "nft" : {
-      "receiveNft" : "Receber NFT",
-      "howTo" : "Para adicionar NFTs, você precisa <0>recebê-los</0> usando seu <1>endereço {{currency}}</1>."
     },
     "readOnly" : {
       "noTransaction" : {
@@ -3183,11 +3167,6 @@
         "desc" : "Esta ação ocultará todas as contas <1><0>{tokenName}</0></1>, você pode mostrá-las novamente usando <3>Configurações > Contas</3>.",
         "confirm" : "Ocultar token"
       },
-      "hideNFTCollectionCTA" : "Ocultar coleção",
-      "hideNFTCollectionModal" : {
-        "title" : "Esconder coleção?",
-        "desc" : "Você pode desocultar a coleção nas opções de configuração."
-      },
       "cryptoAssets" : {
         "header" : "Criptoativos",
         "title" : "Criptoativos",
@@ -3241,7 +3220,7 @@
       },
       "transactionsAlerts" : {
         "title" : "Alertas de Transações (Beta)",
-        "desc" : "Receba notificações sobre suas transações na Ethereum, Polygon, Binance Smart Chain, Avalanche e Ethereum Classic"
+        "desc" : "Receba notificações sobre suas transações na Ethereum, Polygon, BNB Chain, Avalanche e Ethereum Classic"
       },
       "price" : {
         "title" : "Alertas de preço",
@@ -3659,7 +3638,8 @@
           "refunded" : "Para mais informações, contate o provedor da troca com sua Swap ID.",
           "pending" : "Aguarde enquanto o provedor da troca processa a transação.",
           "onhold" : "Para resolver a situação, contate o provedor da troca com sua Swap ID.",
-          "finished" : "Sua troca foi concluída com sucesso."
+          "finished" : "Sua troca foi concluída com sucesso.",
+          "unknown" : "Estamos aguardando informações do provedor."
         }
       },
       "missingApp" : {
@@ -3686,7 +3666,8 @@
         "empty" : {
           "title" : "O seu histórico de trocas aparecerá aqui",
           "desc" : "Você ainda não fez nenhuma troca ou o Ledger Live foi redefinido nesse meio tempo."
-        }
+        },
+        "feedback" : "Dê seu feedback"
       }
     },
     "swap2" : {
@@ -3720,6 +3701,7 @@
             "provider" : "Provedor",
             "rate" : "Taxa",
             "fees" : "Taxas de rede",
+            "feesDescription" : "Essa taxa é cobrada pela rede blockchain para processar a troca. Apenas a taxa de envio é cobrada em adição à cotação estimada. A taxa de recebimento está incluída",
             "target" : "Conta de destino"
           },
           "noAccount" : "Crie uma conta para receber {{name}}",
@@ -3742,6 +3724,10 @@
       },
       "twoStepApproval" : {
         "title" : "Complete as etapas"
+      },
+      "loader" : {
+        "title" : "Processando troca",
+        "description" : "Aguarde enquanto processamos sua solicitação."
       },
       "history" : {
         "title" : "Histórico de trocas"
@@ -4010,10 +3996,7 @@
       "summary" : "Resumo",
       "selectDevice" : "Selecione o dispositivo",
       "connectDevice" : "Conectar Dispositivo",
-      "stepRange" : "Etapa {{currentStep}} de {{totalSteps}}",
-      "quantity" : "Quantidade",
-      "selectCollection" : "Coleção",
-      "selectNft" : "NFT"
+      "stepRange" : "Etapa {{currentStep}} de {{totalSteps}}"
     },
     "recipient" : {
       "scan" : "Escanear QR Code",
@@ -4044,6 +4027,10 @@
       "quantityAvailable" : "Quantidade Disponível"
     },
     "summary" : {
+      "solanaRawTransaction" : {
+        "title" : "Assinatura cega necessária",
+        "description" : "Não é possível verificar os detalhes da transação em seu dispositivo Ledger. Se você assiná-la, poderá perder todos os ativos. Assine somente se você confiar neste site."
+      },
       "subaccountsWarning" : "Você precisará recarregar esta conta com {{ currency }} a fim de enviar os tokens desta conta",
       "tag" : "Tag (Opcional)",
       "validateTag" : "Validar Tag",
@@ -4346,7 +4333,7 @@
       "title" : "Selecione as contas que você deseja adicionar",
       "ctaStopScan" : "Interromper varredura",
       "confirm" : "Confirmar",
-      "scanningTitle" : "Procurando por contas existentes na blockchain...",
+      "scanningTitle" : "Verificando a blockchain…",
       "whichAddressType" : "Aprenda a escolher um tipo de endereço",
       "sections" : {
         "importable" : {
@@ -4411,7 +4398,7 @@
     "confirmSwap" : {
       "title" : "Confirmar a operação de troca no dispositivo",
       "alert" : {
-        "default" : "Verifique os detalhes da troca no seu dispositivo antes de enviá-la. Os endereços são comunicados com segurança para que você não precise verificá-los.",
+        "default" : "Verifique os detalhes da troca na sua Ledger antes de confirmá-la.",
         "provider" : "Verifique os detalhes da troca no seu dispositivo antes de enviá-la. {{providerName}} pode precisar fazer verificações adicionais para algumas transações, resultando em demora."
       },
       "acceptTerms" : "Ao validar esta transação, eu aceito\nos termos de uso da <0><0>{{provider}}</0></0>",
@@ -4825,7 +4812,7 @@
         "restoreLanguage" : "Restaurando o idioma",
         "imageLoadRequested" : "Clique em “Carregar imagem” para restaurar a imagem da tela de bloqueio",
         "imageCommitRequested" : "Clique em “manter” para confirmar a sua imagem da tela de bloqueio",
-        "allowLanguageInstallation" : "Clique em “Permitir” para restaurar o idioma",
+        "allowLanguageInstallation" : "Clique em “Install” para restaurar o idioma",
         "allowAppsRestoration" : "Clique em “Permitir” para restaurar os aplicativos",
         "errors" : {
           "description" : "Se isso foi um erro, tente novamente agora.",
@@ -6242,6 +6229,7 @@
       "iWithdraw" : "Eu saco",
       "totalStake" : "Aplicação Total",
       "commission" : "Comissão",
+      "netApy" : "APY líquido",
       "stakeActivationState" : "Estado",
       "stakeActivePercent" : "Ativo",
       "stakeAvailableBalance" : "Saldo Disponível",
@@ -6447,6 +6435,107 @@
       }
     }
   },
+  "sui" : {
+    "info" : {
+      "available" : {
+        "title" : "SUI disponível",
+        "description" : "Esta é a quantia disponível."
+      },
+      "storageUsage" : {
+        "title" : "Saldo mínimo",
+        "description" : "Esta quantia é reservada para armazenamento e transações, e é o saldo mínimo que sua conta deve manter para permanecer ativa."
+      },
+      "staked" : {
+        "title" : "Ativo delegado",
+        "description" : "O saldo que é delegado"
+      }
+    },
+    "unstaking" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "Quantia a desdelegar"
+      },
+      "flow" : {
+        "steps" : {
+          "amount" : {
+            "warning" : "Depois de cancelar a delegação, seu saldo e as recompensas acumuladas serão sacadas imediatamente"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "Você desdelegou seus ativos com sucesso"
+            }
+          }
+        }
+      }
+    },
+    "withdrawing" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "Quantia a sacar"
+      },
+      "flow" : {
+        "steps" : {
+          "verification" : {
+            "success" : {
+              "title" : "Você sacou seus ativos com sucesso."
+            }
+          }
+        }
+      }
+    },
+    "staking" : {
+      "sectionLabel" : "Posições delegadas",
+      "info" : "Como a Delegação Funciona",
+      "add" : "Adicionar",
+      "stakingEarn" : "Você pode ganhar recompensas em SUI delegando seus ativos.",
+      "totalStake" : "Total Aplicado",
+      "commission" : "Comissão",
+      "iStake" : "Eu delego",
+      "actions" : {
+        "unstake" : "Desdelegar"
+      },
+      "drawer" : {
+        "status" : "Status",
+        "active" : "Ativo",
+        "inactive" : "Inativo",
+        "pending" : "Pendente",
+        "available" : "Disponíveis para saque"
+      },
+      "stepperHeader" : {
+        "amountSubTitle" : "Quantia a delegar",
+        "selectDevice" : "Selecionar dispositivo",
+        "connectDevice" : "Conectar dispositivo",
+        "stepRange" : "Etapa {{currentStep}} de {{totalSteps}}"
+      },
+      "flow" : {
+        "steps" : {
+          "starter" : {
+            "description" : "Delegue seu SUI para ganhar recompensas de forma segura sem abrir mão do controle sobre seus ativos.",
+            "steps" : {
+              "0" : "Ativos delegados ainda são seus",
+              "1" : "Depois de cancelar a delegação, seu saldo e recompensas acumuladas serão sacados imediatamente.",
+              "2" : "Delegue com segurança usando seu dispositivo Ledger."
+            },
+            "warning" : {
+              "description" : "Escolha seu validador com sabedoria: parte dos seus ativos delegados pode ser irremediavelmente perdida se o validador não se comportar adequadamente."
+            },
+            "cta" : "Continuar"
+          },
+          "amount" : {
+            "assetsRemaining" : "Ativos restantes: <0>{{amount}}</0>",
+            "allAssetsUsed" : "Todos os ativos usados",
+            "minAmount" : "Quantia mínima: <0>{{min}}</0>",
+            "incorrectAmount" : "Quantia máxima: <0>{{max}}</0>",
+            "cta" : "Continuar"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "Você delegou seus ativos com sucesso",
+              "text" : "O saldo de sua conta será atualizado assim que a rede confirmar a transação."
+            }
+          }
+        }
+      }
+    }
+  },
   "aptos" : {
     "info" : {
       "available" : {
@@ -6634,6 +6723,7 @@
       "undelegate" : "Sua delegação de conta terminará quando a operação for confirmada. Você pode delegar sua conta novamente a qualquer momento."
     },
     "summaryTitle" : "Resumo",
+    "delegate" : "Delegar",
     "goToAccount" : "Ir para Contas",
     "howDelegationWorks" : "Como funciona a delegação",
     "actions" : {
@@ -6949,7 +7039,7 @@
         "desc" : "Posição desc. (valor de mercado)"
       },
       "currency" : "Moeda",
-      "time" : "Alteração",
+      "time" : "Tempo",
       "apply" : "Aplicar"
     },
     "marketList" : {
@@ -7009,47 +7099,6 @@
       }
     }
   },
-  "nft" : {
-    "account" : {
-      "seeAllNfts" : "Ver todas os NFT",
-      "seeFewerNfts" : "Veja menos NFT"
-    },
-    "gallery" : {
-      "allNft" : "Todos os NFT",
-      "addNew" : "Adicionar Novo"
-    },
-    "designedForStax" : {
-      "title" : "<0>Projetado para</0><1>Ledger</1><2>Stax</2>",
-      "drawer" : {
-        "description" : "Este NFT contém uma imagem adicional do NFT, especificamente projetada para a Tela E Ink da Ledger Stax.\n\nEsta imagem será usada quando você definir este NFT como sua tela de bloqueio.",
-        "cta" : "Entendi"
-      }
-    },
-    "viewer" : {
-      "properties" : "Propriedades",
-      "description" : "Descrição",
-      "tokenContract" : "Endereço do token",
-      "tokenContractCopied" : "Endereço do token copiado!",
-      "tokenId" : "ID do token",
-      "tokenIdCopied" : "ID do token copiado!",
-      "quantity" : "Quantidade",
-      "attributes" : {
-        "floorPrice" : "Preço Mínimo"
-      }
-    },
-    "viewerModal" : {
-      "viewOn" : "Ver em",
-      "viewInExplorer" : "Ver no explorer",
-      "hide" : "Ocultar coleção de NFT",
-      "txDetails" : "Detalhes da transação"
-    },
-    "modalDisabled" : {
-      "title" : "A função de Enviar não está disponível no iOS",
-      "body" : "A fim de cumprir com as recentes atualizações da Apple em sua App Store, o envio de NFTs está temporariamente indisponível. Você ainda pode usar o Ledger Live no desktop para enviar NFTs.",
-      "learnMore" : "Saiba mais",
-      "continue" : "Entendi!"
-    }
-  },
   "ApplicationVersion" : "v{{version}}",
   "analytics" : {
     "title" : "Métricas",
@@ -7070,6 +7119,55 @@
     },
     "currentAddress" : {
       "messageIfVirtual" : "Seu endereço {{name}} não pode ser confirmado no seu dispositivo Ledger. Use por sua própria conta e risco."
+    },
+    "receive" : {
+      "warnings" : {
+        "associationPrerequisite" : {
+          "text" : "Para receber tokens HTS, sua conta precisa estar associada. Se você ainda não associou sua conta ao token HTS que deseja receber, <0>clique aqui</0> para iniciar o processo de associação do token.",
+          "learnMore" : "Saiba mais"
+        }
+      }
+    },
+    "associate" : {
+      "selectToken" : {
+        "title" : "Selecione o token que você deseja receber"
+      },
+      "summary" : {
+        "title" : "Associar token",
+        "from" : "Token",
+        "to" : "Para",
+        "warning" : {
+          "text" : "Ao clicar em Continuar, você associará o token selecionado à sua conta Hedera.",
+          "learnMore" : "Saiba mais"
+        }
+      },
+      "selectDevice" : {
+        "title" : "Associar token"
+      },
+      "connectDevice" : {
+        "title" : "Associar token"
+      },
+      "validationSuccess" : {
+        "title" : "Transação enviada",
+        "text" : "Você poderá receber este token assim que a transação de associação do token for confirmada"
+      }
+    },
+    "send" : {
+      "warnings" : {
+        "missingAssociation" : {
+          "learnMore" : "Saiba mais"
+        },
+        "unverifiedAssociation" : {
+          "learnMore" : "Saiba mais"
+        }
+      }
+    },
+    "operationDetails" : {
+      "postAccountSection" : "Associar token",
+      "postAlert" : {
+        "text" : "Assim que esta transação for confirmada, você poderá receber seu token. <0>Clique aqui</0> para começar o fluxo de recebimento.",
+        "learnMore" : "Saiba mais"
+      }
     }
   },
   "asset" : {
@@ -7084,7 +7182,6 @@
     "drawer" : {
       "options" : {
         "uploadFromPhone" : "Escolher na minha galeria de imagens",
-        "selectFromNFTGallery" : "Escolher na galeria de NFTs",
         "remove" : "Remover a imagem atual"
       }
     },
@@ -7115,9 +7212,6 @@
       "setPicture" : "Definir como tela de bloqueio",
       "editPicture" : "Editar imagem",
       "pickDeviceModel" : "Escolha um dispositivo"
-    },
-    "nftGallery" : {
-      "title" : "Meus NFTs"
     }
   },
   "postOnboarding" : {
@@ -7162,50 +7256,7 @@
   "wallet" : {
     "tabs" : {
       "crypto" : "Cripto",
-      "nft" : "NFTs",
       "market" : "Mercado"
-    },
-    "nftGallery" : {
-      "filters" : {
-        "select" : "Selecionar",
-        "filter" : "Filtrar",
-        "blockchain" : "Blockchain",
-        "seeAll" : "Ver todos",
-        "selectAndHide" : "Selecionar e ocultar",
-        "hide" : "Ocultar {{count}} coleção",
-        "hiddenCollections" : "Coleções ocultas",
-        "hide_plural" : "Ocultar {{count}} coleções",
-        "empty" : "Não há coleções ocultas para mostrar",
-        "alertHide" : "1 coleção oculta. Você pode desoculta-las a qualquer momento no filtro da galeria.",
-        "alertHide_plural" : "{{count}} coleções ocultas. Você pode desoculta-las a qualquer momento no filtro da galeria."
-      },
-      "emptyFiltered" : {
-        "title" : "Não há NFTs que atendam aos seus critérios",
-        "button" : "Redefinir filtros"
-      },
-      "empty" : {
-        "title" : "Sem NFTs para mostrar ainda",
-        "subtitle" : "Comece adicionando NFTs à sua carteira.",
-        "receive" : "Receber NFT",
-        "supportLink" : "Como obter NFTs de outras carteiras?"
-      },
-      "receiveModal" : {
-        "title" : "Receba um NFT da mesma forma que qualquer outra criptomoeda",
-        "bullets" : {
-          "0" : "• Selecione a rede blockchain do NFT.",
-          "1" : "• Escolha a conta para receber o NFT"
-        },
-        "cta" : "Ok, entendi.",
-        "info" : "Eu gostaria de saber mais"
-      },
-      "hideNftModal" : {
-        "title" : "Ocultar coleção de NFT",
-        "desc" : "Esta ação ocultará todos os NFTs da coleção {{collectionName}}. Você pode desoculta-los no filtro da galeria",
-        "cta" : "Ocultar este NFT"
-      },
-      "media" : {
-        "tag" : "{{count}} NFTs"
-      }
     },
     "referralProgram" : "US$20"
   },
@@ -7763,7 +7814,7 @@
   },
   "geoBlocking" : {
     "title" : "Local indisponível",
-    "description" : "A carteira Ledger não está disponível neste local.",
+    "description" : "O Ledger Live não está disponível nesta localização.",
     "learnMore" : "Saiba mais"
   },
   "versionBlocking" : {
@@ -7775,6 +7826,97 @@
     "selectAsset" : "Selecionar ativo",
     "selectNetwork" : "Selecionar rede",
     "selectAccount" : "Selecionar conta",
-    "searchPlaceholder" : "Buscar"
+    "searchPlaceholder" : "Buscar",
+    "emptyAssetList" : "Nenhum ativo encontrado",
+    "accountCount" : "{{count}} conta",
+    "accountCount_plural" : "{{count}} contas",
+    "errors" : {
+      "title" : "Falha de conexão",
+      "backend" : "Algo deu errado. Tente novamente mais tarde",
+      "internet" : "Sem conexão de internet. Tente novamente",
+      "cta" : "Tente novamente"
+    }
+  },
+  "swapErrors" : {
+    "incorrectCommandData" : {
+      "title" : "Dados de comando incorretos",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "deserializationFailed" : {
+      "title" : "Falha na desserialização do payload",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "wrongTransactionId" : {
+      "title" : "ID de transação incorreto",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "invalidAddress" : {
+      "title" : "Endereço inválido",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "WrongDeviceForAccountPayout" : {
+      "title" : "Algo deu errado",
+      "description" : "Essa conta de recebimento não pertence ao dispositivo conectado. Mude e tente novamente."
+    },
+    "WrongDeviceForAccountRefund" : {
+      "title" : "Algo deu errado",
+      "description" : "Essa conta de recebimento não pertence ao dispositivo conectado. Mude e tente novamente."
+    },
+    "userRefused" : {
+      "title" : "Operação negada no dispositivo",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "internalError" : {
+      "title" : "Erro interno",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "wrongP1" : {
+      "title" : "P1 incorreto",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "wrongP2" : {
+      "title" : "P2 incorreto",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "wrongP2Extension" : {
+      "title" : "Extensão P2 incorreta",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "invalidP2Extension" : {
+      "title" : "Algo deu errado",
+      "description" : "Extensão P2 inválida"
+    },
+    "unexpectedInstruction" : {
+      "title" : "Algo deu errado",
+      "description" : "Instrução inesperada"
+    },
+    "classNotSupported" : {
+      "title" : "Algo deu errado",
+      "description" : "Classe não suportada"
+    },
+    "invalidInstruction" : {
+      "title" : "Instrução inválida",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "malformedApdu" : {
+      "title" : "Cabeçalho APDU mal formulado",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "invalidDataLength" : {
+      "title" : "Comprimento de dados inválido",
+      "description" : "Este comando não aceita dados com esse comprimento"
+    },
+    "signatureVerificationFail" : {
+      "title" : "Falha na verificação da assinatura",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    },
+    "transactionCannotBeCreated" : {
+      "title" : "Provedor indisponível",
+      "description" : "Não podemos concluir sua troca com este provedor. Tente novamente com outro provedor. Código do erro 8HBB{{errorCode}}"
+    },
+    "default" : {
+      "title" : "Algo deu errado",
+      "description" : "Tente novamente ou contate o Suporte Ledger em caso de dúvidas"
+    }
   }
 }

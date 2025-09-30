@@ -130,6 +130,8 @@ export interface UiHook {
   "account.request": (params: {
     accounts$?: Observable<WalletAPIAccount[]>;
     currencies: CryptoOrTokenCurrency[];
+    areCurrenciesFiltered?: boolean;
+    useCase?: string;
     drawerConfiguration?: ModularDrawerConfiguration;
     onSuccess: (account: AccountLike, parentAccount: Account | undefined) => void;
     onCancel: () => void;
@@ -358,7 +360,7 @@ export function useWalletAPIServer({
 
     server.setHandler(
       "account.request",
-      async ({ accounts$, currencies$, drawerConfiguration }) => {
+      async ({ accounts$, currencies$, drawerConfiguration, areCurrenciesFiltered, useCase }) => {
         tracking.requestAccountRequested(manifest);
         const currencies = await firstValueFrom(currencies$);
 
@@ -377,6 +379,8 @@ export function useWalletAPIServer({
             accounts$,
             currencies: currencyList,
             drawerConfiguration,
+            areCurrenciesFiltered,
+            useCase,
             onSuccess: (account: AccountLike, parentAccount: Account | undefined) => {
               if (done) return;
               done = true;
@@ -1006,11 +1010,11 @@ export interface RecentlyUsed {
 
 export type RecentlyUsedManifest = AppManifest & { usedAt: UsedAt };
 export type UsedAt = {
-  unit: Intl.RelativeTimeFormatUnit;
+  unit?: Intl.RelativeTimeFormatUnit;
   diff: number;
 };
 
-function calculateTimeDiff(usedAt: string) {
+function calculateTimeDiff(usedAt: string): UsedAt {
   const start = new Date();
   const end = new Date(usedAt);
   const interval = intervalToDuration({ start, end });
@@ -1023,7 +1027,7 @@ function calculateTimeDiff(usedAt: string) {
     "minutes",
     "seconds",
   ];
-  let timeDiff = { unit: units[-1], diff: 0 };
+  let timeDiff: UsedAt = { unit: undefined, diff: 0 };
 
   for (const unit of units) {
     if (interval[unit] > 0) {

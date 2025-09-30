@@ -1,8 +1,14 @@
 import BigNumber from "bignumber.js";
 import { getEnv, setEnv } from "@ledgerhq/live-env";
 import * as EVM_TOOLS from "@ledgerhq/evm-tools/message/EIP712/index";
-import { getCryptoCurrencyById, getTokenById } from "@ledgerhq/cryptoassets";
-import { CryptoCurrency, CryptoCurrencyId, Unit } from "@ledgerhq/types-cryptoassets";
+import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets";
+import {
+  CryptoCurrency,
+  CryptoCurrencyId,
+  TokenCurrency,
+  Unit,
+} from "@ledgerhq/types-cryptoassets";
+import type { CryptoAssetsStore } from "@ledgerhq/types-live";
 import * as RPC_API from "../../network/node/rpc.common";
 import { getCoinConfig } from "../../config";
 import {
@@ -30,6 +36,14 @@ import {
   Transaction as EvmTransaction,
 } from "../../types";
 import { getEstimatedFees, getGasLimit, padHexString, safeEncodeEIP55 } from "../../utils";
+import usdCoinTokenData from "../../__fixtures__/ethereum-erc20-usd__coin.json";
+import wethTokenData from "../../__fixtures__/ethereum-erc20-weth.json";
+import { getCryptoAssetsStore, setCryptoAssetsStoreGetter } from "../../cryptoAssetsStore";
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const USD_COIN_TOKEN = usdCoinTokenData as unknown as TokenCurrency;
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const WETH_TOKEN = wethTokenData as unknown as TokenCurrency;
 
 jest.mock("../../config");
 const mockGetConfig = jest.mocked(getCoinConfig);
@@ -347,12 +361,12 @@ describe("EVM Family", () => {
     describe("mergeSubAccounts", () => {
       it("should merge 2 different sub accounts", () => {
         const tokenAccount1 = {
-          ...makeTokenAccount("0xkvn", getTokenById("ethereum/erc20/usd__coin")),
+          ...makeTokenAccount("0xkvn", USD_COIN_TOKEN),
           balance: new BigNumber(1),
           operations: [],
         };
         const tokenAccount2 = {
-          ...makeTokenAccount("0xkvn", getTokenById("ethereum/erc20/weth")),
+          ...makeTokenAccount("0xkvn", WETH_TOKEN),
           balance: new BigNumber(2),
           operations: [],
         };
@@ -367,7 +381,7 @@ describe("EVM Family", () => {
 
       it("should merge 2 different sub accounts and update the first one", () => {
         const tokenAccount1 = {
-          ...makeTokenAccount("0xkvn", getTokenById("ethereum/erc20/usd__coin")),
+          ...makeTokenAccount("0xkvn", USD_COIN_TOKEN),
           balance: new BigNumber(1),
           operations: [],
         };
@@ -393,7 +407,7 @@ describe("EVM Family", () => {
           operations: [],
         };
         const tokenAccount2 = {
-          ...makeTokenAccount("0xkvn", getTokenById("ethereum/erc20/weth")),
+          ...makeTokenAccount("0xkvn", WETH_TOKEN),
           balance: new BigNumber(2),
           operations: [],
         };
@@ -415,7 +429,7 @@ describe("EVM Family", () => {
           hash: "0xAgAinAnotHeRH4sh",
         });
         const tokenAccount1 = {
-          ...makeTokenAccount("0xkvn", getTokenById("ethereum/erc20/usd__coin")),
+          ...makeTokenAccount("0xkvn", USD_COIN_TOKEN),
           balance: new BigNumber(1),
           operations: [op1, op2],
           operationsCount: 2,
@@ -438,7 +452,7 @@ describe("EVM Family", () => {
 
       it("should return only new sub accounts", () => {
         const tokenAccount = {
-          ...makeTokenAccount("0xkvn", getTokenById("ethereum/erc20/usd__coin")),
+          ...makeTokenAccount("0xkvn", USD_COIN_TOKEN),
           balance: new BigNumber(1),
         };
         const account = {
@@ -453,7 +467,7 @@ describe("EVM Family", () => {
 
       it("should dedup sub accounts", () => {
         const tokenAccount = {
-          ...makeTokenAccount("0xkvn", getTokenById("ethereum/erc20/usd__coin")),
+          ...makeTokenAccount("0xkvn", USD_COIN_TOKEN),
           balance: new BigNumber(1),
         };
         const account = makeAccount("0xkvn", getCryptoCurrencyById("ethereum"), [tokenAccount]);
@@ -480,7 +494,7 @@ describe("EVM Family", () => {
 
       it("maps TokenAccounts to their swapHistory", () => {
         const tokenAccount1 = {
-          ...makeTokenAccount("0xCrema1", getTokenById("ethereum/erc20/usd__coin")),
+          ...makeTokenAccount("0xCrema1", USD_COIN_TOKEN),
           swapHistory: [
             {
               status: "pending",
@@ -494,7 +508,7 @@ describe("EVM Family", () => {
           ],
         };
         const tokenAccount2 = {
-          ...makeTokenAccount("0xCrema2", getTokenById("ethereum/erc20/weth")),
+          ...makeTokenAccount("0xCrema2", WETH_TOKEN),
           swapHistory: [
             {
               status: "pending",
@@ -520,7 +534,7 @@ describe("EVM Family", () => {
       });
       it("should include correct swapHistory for a token account", () => {
         const tokenAccount = {
-          ...makeTokenAccount("0xCrema", getTokenById("ethereum/erc20/usd__coin")),
+          ...makeTokenAccount("0xCrema", USD_COIN_TOKEN),
           swapHistory: [
             {
               status: "pending",
@@ -627,13 +641,25 @@ describe("EVM Family", () => {
       });
 
       it("should provide a new hash if a token is added to the blacklistedTokenIds", () => {
-        const token = getTokenById("ethereum/erc20/usd__coin");
-        expect(getSyncHash(currency)).not.toEqual(getSyncHash(currency, [token.id]));
+        expect(getSyncHash(currency)).not.toEqual(getSyncHash(currency, [USD_COIN_TOKEN.id]));
       });
     });
 
     describe("attachOperations", () => {
-      it("should attach token & nft operations to coin operations and create 'NONE' coin operations in case of orphans child operations", () => {
+      it("should attach token & nft operations to coin operations and create 'NONE' coin operations in case of orphans child operations", async () => {
+        setCryptoAssetsStoreGetter(
+          () =>
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            ({
+              findTokenByAddressInCurrency: (address: string, currencyId: string) => {
+                if (address === "0xTokenContract" && currencyId === "ethereum")
+                  return { id: "ethereum/erc20/usd__coin" };
+                if (address === "0xOtherTokenContract" && currencyId === "ethereum")
+                  return { id: "ethereum/erc20/usd__coin" };
+                return undefined;
+              },
+            }) as CryptoAssetsStore,
+        );
         const coinOperation = makeOperation({
           hash: "0xCoinOp3Hash",
         });
@@ -692,7 +718,18 @@ describe("EVM Family", () => {
         ];
 
         expect(
-          attachOperations([coinOperation], tokenOperations, nftOperations, internalOperations),
+          await attachOperations(
+            "js:2:ethereum:0xkvn:",
+            [coinOperation],
+            tokenOperations,
+            nftOperations,
+            internalOperations,
+            {
+              blacklistedTokenIds: [],
+              findToken: async (contractAddress: string) =>
+                getCryptoAssetsStore().findTokenByAddressInCurrency(contractAddress, "ethereum"),
+            },
+          ),
         ).toEqual([
           {
             ...coinOperation,
@@ -759,13 +796,23 @@ describe("EVM Family", () => {
           }),
         ]);
         expect(() =>
-          // @ts-expect-error purposely ignore readonly ts issue for this
-          attachOperations(coinOperations, tokenOperations, nftOperations, internalOperations),
+          attachOperations(
+            "",
+            // @ts-expect-error purposely ignore readonly ts issue for this
+            coinOperations,
+            tokenOperations,
+            nftOperations,
+            internalOperations,
+            {
+              blacklistedTokenIds: [],
+              findToken: (contractAddress: string) =>
+                getCryptoAssetsStore().findTokenByAddressInCurrency(contractAddress, "ethereum"),
+            },
+          ),
         ).not.toThrow(); // mutation prevented by deepFreeze method
       });
 
-      it("should filter blacklisted tokens", () => {
-        const token = getTokenById("ethereum/erc20/usd__coin");
+      it("should filter blacklisted tokens", async () => {
         const coinOperation = makeOperation({
           hash: "0xCoinOp3Hash",
         });
@@ -824,9 +871,18 @@ describe("EVM Family", () => {
         ];
 
         expect(
-          attachOperations([coinOperation], tokenOperations, nftOperations, internalOperations, {
-            blacklistedTokenIds: [token.id],
-          }),
+          await attachOperations(
+            "",
+            [coinOperation],
+            tokenOperations,
+            nftOperations,
+            internalOperations,
+            {
+              blacklistedTokenIds: [USD_COIN_TOKEN.id],
+              findToken: async (contractAddress: string) =>
+                getCryptoAssetsStore().findTokenByAddressInCurrency(contractAddress, "ethereum"),
+            },
+          ),
         ).toEqual([
           {
             ...coinOperation,

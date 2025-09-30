@@ -1,10 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import styled, { useTheme } from "styled-components/native";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import styled from "styled-components/native";
 import { Flex, InfiniteLoader, Text } from "@ledgerhq/native-ui";
-import {
-  NFTMetadataLoadingError,
-  ImagePreviewError,
-} from "@ledgerhq/live-common/customImage/errors";
+import { ImagePreviewError } from "@ledgerhq/live-common/customImage/errors";
 import { NativeSyntheticEvent, ImageErrorEventData, Pressable } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,12 +12,12 @@ import {
 } from "@react-navigation/native";
 import { StackNavigationEventMap } from "@react-navigation/stack";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNftMetadata } from "@ledgerhq/live-nft-react";
-import { NFTResource } from "@ledgerhq/live-nft/types";
-import { NFTMetadata } from "@ledgerhq/types-live";
 import { Device, DeviceModelId } from "@ledgerhq/types-devices";
 import { getDeviceModel } from "@ledgerhq/devices";
-import { getScreenVisibleAreaDimensions } from "@ledgerhq/live-common/device/use-cases/screenSpecs";
+import {
+  getScreenSpecs,
+  getScreenVisibleAreaDimensions,
+} from "@ledgerhq/live-common/device/use-cases/screenSpecs";
 import {
   CLSSupportedDeviceModelId,
   supportedDeviceModelIds,
@@ -29,18 +26,16 @@ import {
 import { BaseComposite, StackNavigatorProps } from "~/components/RootNavigator/types/helpers";
 import { CustomImageNavigatorParamList } from "~/components/RootNavigator/types/CustomImageNavigator";
 import { NavigatorName, ScreenName } from "~/const";
-import {
-  downloadImageToFile,
-  extractImageUrlFromNftMetadata,
-  importImageFromPhoneGallery,
-} from "~/components/CustomImage/imageUtils";
+import { importImageFromPhoneGallery } from "~/components/CustomImage/imageUtils";
 import { ImageFileUri } from "~/components/CustomImage/types";
 import FramedPicture from "~/components/CustomImage/FramedPicture";
 import ImageProcessor, {
   Props as ImageProcessorProps,
+} from "~/components/CustomImage/dithering/ImageToDeviceProcessor";
+import {
   ProcessorPreviewResult,
   ProcessorRawResult,
-} from "~/components/CustomImage/ImageProcessor";
+} from "~/components/CustomImage/dithering/types";
 import useCenteredImage, {
   Params as ImageCentererParams,
   CenteredResult,
@@ -48,9 +43,10 @@ import useCenteredImage, {
 import Button from "~/components/wrappedUi/Button";
 import { TrackScreen } from "~/analytics";
 import Link from "~/components/wrappedUi/Link";
-import { getFramedPictureConfig } from "~/components/CustomImage/framedPictureConfigs";
-
-const DEFAULT_CONTRAST = 1;
+import {
+  getAvailableDitheringConfigKeys,
+  mapDitheringConfigKeyToConfig,
+} from "~/components/CustomImage/dithering/config";
 
 type NavigationProps = BaseComposite<
   StackNavigatorProps<CustomImageNavigatorParamList, ScreenName.CustomImagePreviewPreEdit>
@@ -103,9 +99,12 @@ function Tab({
 
 const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
   const { t } = useTranslation();
-  const [loadedImage, setLoadedImage] = useState<ImageFileUri | null>(null);
   const { params } = route;
-  const { isPictureFromGallery, device, isStaxEnabled } = params;
+
+  const [loadedImage, setLoadedImage] = useState<ImageFileUri | null>({
+    imageFileUri: params.imageFileUri,
+  });
+  const { device } = params;
   const [deviceModelId, setSelectedDeviceModelId] = useState<CLSSupportedDeviceModelId>(
     params.deviceModelId ?? DeviceModelId.stax,
   );
@@ -114,14 +113,6 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
     () => getScreenVisibleAreaDimensions(deviceModelId),
     [deviceModelId],
   );
-  const { colors } = useTheme();
-  const theme = colors.type as "light" | "dark";
-
-  const isNftMetadata = "nftMetadataParams" in params;
-  const isImageUrl = "imageUrl" in params;
-  const isImageFileUri = "imageFileUri" in params;
-
-  const nftMetadataParams = isNftMetadata ? params.nftMetadataParams : [];
 
   const forceDefaultNavigationBehaviour = useRef(false);
   const navigateToErrorScreen = useCallback(
@@ -140,62 +131,7 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
     [navigateToErrorScreen, device],
   );
 
-  const [contract, tokenId, currencyId] = nftMetadataParams;
-  const nftMetadata = useNftMetadata(contract, tokenId, currencyId);
-
-  const { status, metadata } = nftMetadata as NFTResource & {
-    metadata: NFTMetadata;
-  };
-
-  const isStaxEnabledImage = !!isStaxEnabled || !!metadata?.staxImage;
-  const imageType = isStaxEnabledImage
-    ? "staxEnabledImage"
-    : isNftMetadata
-      ? "originalNFTImage"
-      : "customImage";
-
-  const nftImageUri = extractImageUrlFromNftMetadata(metadata);
-
-  const imageFileUri = isImageFileUri ? params.imageFileUri : undefined;
-  const imageUrl = nftImageUri || (isImageUrl ? params.imageUrl : undefined);
-
-  useEffect(() => {
-    if (isNftMetadata && ["nodata", "error"].includes(status)) {
-      console.error("Nft metadata loading status", status);
-      navigateToErrorScreen(new NFTMetadataLoadingError(status), device);
-    }
-  }, [device, isNftMetadata, navigateToErrorScreen, navigation, status]);
-
-  /** LOAD SOURCE IMAGE FROM PARAMS */
-  useEffect(() => {
-    let dead = false;
-    if (imageFileUri) {
-      setLoadedImage({
-        imageFileUri,
-      });
-    } else if (imageUrl) {
-      if (isNftMetadata && ["loading", "queued"].includes(status)) {
-        return () => {
-          dead = true;
-        };
-      }
-      const { resultPromise, cancel } = downloadImageToFile({ imageUrl });
-      resultPromise
-        .then(res => {
-          if (!dead) setLoadedImage(res);
-        })
-        .catch(e => {
-          if (!dead) handleError(e);
-        });
-      return () => {
-        dead = true;
-        cancel();
-      };
-    }
-    return () => {
-      dead = true;
-    };
-  }, [handleError, imageFileUri, imageUrl, status, isNftMetadata]);
+  const imageType = "customImage";
 
   /** IMAGE RESIZING */
 
@@ -217,7 +153,7 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
 
   useCenteredImage({
     targetDimensions: targetDisplayDimensions,
-    imageUri: imageUrl || loadedImage?.imageFileUri,
+    imageUri: loadedImage?.imageFileUri,
     onError: handleResizeError,
     onResult: handleResizeResult,
   });
@@ -297,7 +233,7 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
         StackNavigationEventMap & EventMapCore<StackNavigationState<CustomImageNavigatorParamList>>,
         "beforeRemove"
       > = e => {
-        if (forceDefaultNavigationBehaviour.current || !isPictureFromGallery) {
+        if (forceDefaultNavigationBehaviour.current) {
           navigation.dispatch(e.data.action);
           return;
         }
@@ -325,7 +261,7 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
         dead = true;
         removeListener();
       };
-    }, [navigation, handleError, isPictureFromGallery]),
+    }, [navigation, handleError]),
   );
 
   const handleEditPicture = useCallback(() => {
@@ -362,6 +298,10 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
     [resetPreview],
   );
 
+  const ditheringConfig = useMemo(() => {
+    return getAvailableDitheringConfigKeys(getScreenSpecs(deviceModelId).bitsPerPixel)[0];
+  }, [deviceModelId]);
+
   if (!loadedImage || !loadedImage.imageFileUri) {
     return (
       <Flex flex={1} justifyContent="center" alignItems="center">
@@ -393,7 +333,9 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
           onPreviewResult={handlePreviewResult}
           onError={handleError}
           onRawResult={handleRawResult}
-          contrast={DEFAULT_CONTRAST}
+          contrast={mapDitheringConfigKeyToConfig[ditheringConfig].contrastValue}
+          ditheringAlgorithm={mapDitheringConfigKeyToConfig[ditheringConfig].algorithm}
+          bitsPerPixel={getScreenSpecs(deviceModelId).bitsPerPixel}
         />
       )}
       {previewLoading ? (
@@ -411,15 +353,14 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
                 onError={handlePreviewImageError}
                 fadeDuration={0}
                 source={{ uri: processorPreviewImage?.imageBase64DataUri }}
-                framedPictureConfig={getFramedPictureConfig("preview", deviceModelId, theme)}
+                deviceModelId={deviceModelId}
               />
             </Flex>
           </Flex>
-          <Flex pb={8} px={8}>
+          <Flex pb={8} px={6}>
             <Button
               type="main"
               size="large"
-              outline
               mb={7}
               disabled={previewLoading}
               pending={rawResultLoading}
@@ -433,7 +374,7 @@ const PreviewPreEdit = ({ navigation, route }: NavigationProps) => {
             <Link
               size="large"
               onPress={handleEditPicture}
-              disabled={!loadedImage || previewLoading || isStaxEnabledImage}
+              disabled={!loadedImage || previewLoading}
               event="button_clicked"
               eventProperties={analyticsEditEventProps}
             >

@@ -1,4 +1,5 @@
 import {
+  type Api,
   Balance,
   Block,
   BlockInfo,
@@ -7,10 +8,17 @@ import {
   Operation,
   Pagination,
   TransactionIntent,
-  type AlpacaApi,
+  Cursor,
+  Page,
+  Stake,
+  Reward,
+  TransactionValidation,
+  AssetInfo,
+  CraftedTransaction,
+  BufferTxData,
 } from "@ledgerhq/coin-framework/api/index";
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
-import { CryptoCurrency, CryptoCurrencyId } from "@ledgerhq/types-cryptoassets";
+import { TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { BroadcastConfig } from "@ledgerhq/types-live";
 import { setCoinConfig, type EvmConfig } from "../config";
 import {
@@ -21,10 +29,17 @@ import {
   lastBlock,
   listOperations,
   getBalance,
-} from "../logic/";
-import { EvmAsset } from "../types";
+  getSequence,
+  validateIntent,
+  getTokenFromAsset,
+  getAssetFromToken,
+  computeIntentType,
+} from "../logic/index";
 
-export function createApi(config: EvmConfig, currencyId: CryptoCurrencyId): AlpacaApi<EvmAsset> {
+export function createApi(
+  config: EvmConfig,
+  currencyId: string,
+): Api<MemoNotSupported, BufferTxData> {
   setCoinConfig(() => ({ info: { ...config, status: { type: "active" } } }));
   const currency = getCryptoCurrencyById(currencyId);
 
@@ -33,31 +48,39 @@ export function createApi(config: EvmConfig, currencyId: CryptoCurrencyId): Alpa
       broadcast(currency, { signature: tx, broadcastConfig }),
     combine,
     craftTransaction: (
-      transactionIntent: TransactionIntent<EvmAsset, MemoNotSupported>,
-    ): Promise<string> => craftTransaction(currency, { transactionIntent }),
+      transactionIntent: TransactionIntent<MemoNotSupported, BufferTxData>,
+      customFees?: FeeEstimation,
+    ): Promise<CraftedTransaction> => craftTransaction(currency, { transactionIntent, customFees }),
     estimateFees: (
-      transactionIntent: TransactionIntent<EvmAsset, MemoNotSupported>,
-    ): Promise<FeeEstimation> => estimate(currency, transactionIntent),
-    getBalance: (address: string): Promise<Balance<EvmAsset>[]> => getBalance(currency, address),
+      transactionIntent: TransactionIntent<MemoNotSupported, BufferTxData>,
+    ): Promise<FeeEstimation> => estimateFees(currency, transactionIntent),
+    getBalance: (address: string): Promise<Balance[]> => getBalance(currency, address),
     lastBlock: (): Promise<BlockInfo> => lastBlock(currency),
     listOperations: (
       address: string,
       pagination: Pagination,
-    ): Promise<[Operation<EvmAsset, MemoNotSupported>[], string]> =>
-      listOperations(currency, address, pagination),
-    getBlock(_height): Promise<Block<EvmAsset>> {
+    ): Promise<[Operation<MemoNotSupported>[], string]> =>
+      listOperations(currency, address, pagination.minHeight),
+    getBlock(_height): Promise<Block> {
       throw new Error("getBlock is not supported");
     },
     getBlockInfo(_height: number): Promise<BlockInfo> {
       throw new Error("getBlockInfo is not supported");
     },
+    getStakes(_address: string): Promise<Page<Stake>> {
+      throw new Error("getStakes is not supported");
+    },
+    getRewards(_address: string, _cursor?: Cursor): Promise<Page<Reward>> {
+      throw new Error("getRewards is not supported");
+    },
+    getSequence: (address: string): Promise<number> => getSequence(currency, address),
+    validateIntent: (
+      intent: TransactionIntent<MemoNotSupported, BufferTxData>,
+    ): Promise<TransactionValidation> => validateIntent(currency, intent),
+    getTokenFromAsset: (asset: AssetInfo): Promise<TokenCurrency | undefined> =>
+      getTokenFromAsset(currency, asset),
+    getAssetFromToken: (token: TokenCurrency, owner: string): AssetInfo =>
+      getAssetFromToken(currency, token, owner),
+    computeIntentType,
   };
-}
-
-async function estimate(
-  currency: CryptoCurrency,
-  transactionIntent: TransactionIntent<EvmAsset, MemoNotSupported>,
-): Promise<FeeEstimation> {
-  const fees = await estimateFees(currency, transactionIntent);
-  return { value: fees };
 }

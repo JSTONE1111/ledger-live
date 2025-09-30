@@ -3,6 +3,7 @@ import aptos from "@ledgerhq/coin-aptos/transaction";
 import bitcoin from "@ledgerhq/coin-bitcoin/transaction";
 import cardano from "@ledgerhq/coin-cardano/transaction";
 import casper from "@ledgerhq/coin-casper/transaction";
+import canton from "@ledgerhq/coin-canton/transaction";
 import celo from "@ledgerhq/coin-celo/transaction";
 import cosmos from "@ledgerhq/coin-cosmos/transaction";
 import evm from "@ledgerhq/coin-evm/transaction";
@@ -10,6 +11,7 @@ import hedera from "@ledgerhq/coin-hedera/transaction";
 import filecoin from "@ledgerhq/coin-filecoin/transaction";
 import internet_computer from "@ledgerhq/coin-internet_computer/transaction";
 import icon from "@ledgerhq/coin-icon/transaction";
+import kaspa from "@ledgerhq/coin-kaspa/transaction";
 import multiversx from "@ledgerhq/coin-multiversx/transaction";
 import near from "@ledgerhq/coin-near/transaction";
 import polkadot from "@ledgerhq/coin-polkadot/transaction";
@@ -30,6 +32,7 @@ export default {
   bitcoin,
   cardano,
   casper,
+  canton,
   celo,
   cosmos,
   evm,
@@ -37,6 +40,7 @@ export default {
   filecoin,
   internet_computer,
   icon,
+  kaspa,
   multiversx,
   near,
   polkadot,

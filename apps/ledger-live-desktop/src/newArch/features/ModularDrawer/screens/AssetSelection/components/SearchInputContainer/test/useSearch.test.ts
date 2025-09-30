@@ -1,106 +1,77 @@
-import { renderHook, act } from "tests/testSetup";
+import { renderHook } from "tests/testSetup";
+import { act } from "@testing-library/react";
 import { useSearch } from "../useSearch";
 import { track } from "~/renderer/analytics/segment";
-import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { jest } from "@jest/globals";
 
 describe("useSearch", () => {
-  const mockCurrencies = [
-    { name: "Bitcoin", ticker: "BTC", id: "bitcoin", type: "CryptoCurrency" },
-    { name: "Ethereum", ticker: "ETH", id: "ethereum", type: "CryptoCurrency" },
-    { name: "Solana", ticker: "SOL", id: "solana", type: "CryptoCurrency" },
-    { name: "Tether", ticker: "USDT", id: "tether", type: "TokenCurrency" },
-  ] as CryptoOrTokenCurrency[];
-
-  const mockAssetsToDisplay = [
-    { name: "Bitcoin", ticker: "BTC", id: "bitcoin", type: "CryptoCurrency" },
-    { name: "Ethereum", ticker: "ETH", id: "ethereum", type: "CryptoCurrency" },
-  ] as CryptoOrTokenCurrency[];
-
-  const mockSetItemsToDisplay = jest.fn();
-  const mockSetSearchedValue = jest.fn();
-  const defaultProps = {
-    setItemsToDisplay: mockSetItemsToDisplay,
-    setSearchedValue: mockSetSearchedValue,
-    assetsToDisplay: mockAssetsToDisplay,
-    originalAssets: mockAssetsToDisplay,
-    source: "test",
-    flow: "testing",
-    items: mockCurrencies,
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
   });
 
-  it("should initialize with default value if provided", () => {
-    const { result } = renderHook(() => useSearch({ ...defaultProps, defaultValue: "BTC" }));
+  it("should initialize with store value", () => {
+    const { result } = renderHook(() => useSearch(), {
+      initialState: {
+        modularDrawer: {
+          searchedValue: "BTC",
+        },
+      },
+    });
 
     expect(result.current.displayedValue).toBe("BTC");
-    expect(mockSetItemsToDisplay).not.toHaveBeenCalled();
   });
 
-  it("should not filter list when search query is less than 2 characters", () => {
-    const { result } = renderHook(() => useSearch(defaultProps));
+  it("should initialize with undefined value when no searchedValue provided", () => {
+    const { result } = renderHook(() => useSearch());
 
-    act(() => {
-      result.current.handleSearch("B");
-    });
-
-    expect(result.current.displayedValue).toBe("B");
-    expect(mockSetItemsToDisplay).not.toHaveBeenCalled();
-    expect(track).not.toHaveBeenCalled();
+    expect(result.current.displayedValue).toBeUndefined();
   });
 
-  it("should filter items based on search query from originalAssets", () => {
-    const { result } = renderHook(() => useSearch(defaultProps));
+  it("should handle search input changes", () => {
+    const { result } = renderHook(() => useSearch());
 
     act(() => {
-      result.current.handleSearch("Bit");
+      result.current.handleSearch("Bitcoin");
     });
 
-    act(() => {
-      result.current.handleDebouncedChange("Bit", "");
-    });
-
-    expect(result.current.displayedValue).toBe("Bit");
-    expect(mockSetItemsToDisplay).toHaveBeenCalledWith([
-      { name: "Bitcoin", ticker: "BTC", id: "bitcoin", type: "CryptoCurrency" },
-    ]);
-    expect(mockSetSearchedValue).toHaveBeenCalledWith("Bit");
+    expect(result.current.displayedValue).toBe("Bitcoin");
   });
 
-  it("should reset items to originalAssets when search query is cleared", () => {
-    const { result } = renderHook(() => useSearch(defaultProps));
+  it("should handle search input changes with string", () => {
+    const { result } = renderHook(() => useSearch());
 
     act(() => {
-      result.current.handleSearch("Bit");
+      result.current.handleSearch("Ethereum");
     });
+
+    expect(result.current.displayedValue).toBe("Ethereum");
+  });
+
+  it("should set redux value when handleDebouncedChange is called", () => {
+    const { result, store } = renderHook(() => useSearch());
 
     act(() => {
-      result.current.handleDebouncedChange("", "Bit");
+      result.current.handleDebouncedChange("Bitcoin", "");
     });
 
-    expect(result.current.displayedValue).toBe("Bit");
-    expect(mockSetItemsToDisplay).toHaveBeenCalledWith(mockAssetsToDisplay);
+    expect(store.getState().modularDrawer.searchedValue).toBe("Bitcoin");
   });
 
   it("should track search query when manually calling handleDebouncedChange", () => {
-    const { result } = renderHook(() => useSearch(defaultProps));
+    const { result } = renderHook(() => useSearch());
     const previousQuery = "";
     const currentQuery = "Bit";
 
     act(() => {
-      result.current.handleSearch(currentQuery);
       result.current.handleDebouncedChange(currentQuery, previousQuery);
     });
 
     expect(track).toHaveBeenCalledWith("asset_searched", {
       searched_value: "Bit",
-      source: "test",
+      source: "",
       page: "Asset Selection",
-      flow: "testing",
+      flow: "",
       asset_component_features: {
         apy: false,
         balance: false,
@@ -111,7 +82,7 @@ describe("useSearch", () => {
   });
 
   it("should not track search if current and previous queries are the same", () => {
-    const { result } = renderHook(() => useSearch(defaultProps));
+    const { result } = renderHook(() => useSearch());
     const sameQuery = "Bit";
 
     act(() => {
@@ -121,28 +92,26 @@ describe("useSearch", () => {
     expect(track).not.toHaveBeenCalled();
   });
 
-  it("should handle the workflow of typing, filtering, and tracking", () => {
-    const { result } = renderHook(() => useSearch(defaultProps));
+  it("should handle the workflow of typing and tracking", () => {
+    const { result, store } = renderHook(() => useSearch());
 
     act(() => {
       result.current.handleSearch("ET");
     });
 
     expect(result.current.displayedValue).toBe("ET");
-    expect(mockSetItemsToDisplay).not.toHaveBeenCalled();
-    expect(track).not.toHaveBeenCalled();
 
     act(() => {
       result.current.handleDebouncedChange("ET", "");
     });
 
-    expect(mockSetItemsToDisplay).toHaveBeenCalled();
+    expect(store.getState().modularDrawer.searchedValue).toBe("ET");
 
     expect(track).toHaveBeenCalledWith("asset_searched", {
       page: "Asset Selection",
       searched_value: "ET",
-      flow: "testing",
-      source: "test",
+      flow: "",
+      source: "",
       asset_component_features: {
         apy: false,
         balance: false,

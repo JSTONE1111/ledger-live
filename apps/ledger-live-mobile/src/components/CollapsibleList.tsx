@@ -40,8 +40,8 @@ const CollapsibleList = <T,>({
   title,
   containerStyle,
   data,
-  itemHeight,
-  renderItem,
+  itemHeight = 46,
+  renderItem = renderListItem as ListRenderItem<T>,
   ...props
 }: Props<T>) => {
   const { colors } = useTheme();
@@ -78,11 +78,14 @@ const CollapsibleList = <T,>({
     return {
       height: interpolate(openState.value, [0, 1], [itemHeight, 61 + itemHeight * data.length]),
     };
-  });
+  }, [openState, itemHeight, data]);
 
-  const opacityStyle = useAnimatedStyle(() => ({
-    opacity: openState.value,
-  }));
+  const opacityStyle = useAnimatedStyle(
+    () => ({
+      opacity: openState.value,
+    }),
+    [openState],
+  );
 
   // Animated style applying a rotate transform whose value depends on the opening anim state of the list container
   const rotateZStyle = useAnimatedStyle(() => {
@@ -95,7 +98,7 @@ const CollapsibleList = <T,>({
         },
       ],
     };
-  });
+  }, [openState]);
 
   const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -132,10 +135,6 @@ const CollapsibleList = <T,>({
   );
 };
 
-CollapsibleList.defaultProps = {
-  itemHeight: 46,
-  renderItem: renderListItem,
-};
 const styles = StyleSheet.create({
   root: {
     borderRadius: 3,

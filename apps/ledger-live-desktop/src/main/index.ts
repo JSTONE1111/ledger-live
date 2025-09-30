@@ -1,3 +1,4 @@
+import "./starts-console";
 import "./setup"; // Needs to be imported first
 import {
   app,
@@ -6,24 +7,33 @@ import {
   session,
   webContents,
   shell,
-  BrowserWindow,
+  type BrowserWindow,
   dialog,
   protocol,
 } from "electron";
 import Store from "electron-store";
 import menu from "./menu";
 import {
-  createMainWindow,
+  createEarlyMainWindow,
+  applyWindowParams,
   getMainWindow,
   getMainWindowAsync,
   loadWindow,
 } from "./window-lifecycle";
-import { getSentryEnabled, setUserId } from "./internal-lifecycle";
 import db from "./db";
 import debounce from "lodash/debounce";
-import sentry from "~/sentry/main";
-import { SettingsState } from "~/renderer/reducers/settings";
-import { User } from "~/renderer/storage";
+import sentry, { setTags } from "~/sentry/main";
+import type { SettingsState } from "~/renderer/reducers/settings";
+import type { User } from "~/renderer/storage";
+import {
+  installExtension,
+  REDUX_DEVTOOLS,
+  REACT_DEVELOPER_TOOLS,
+} from "electron-devtools-installer";
+import { setupTransportHandlers, cleanupTransports } from "./transportHandler";
+// End import timing, start initialization
+console.timeEnd("T-imports");
+console.time("T-init");
 
 Store.initRenderer();
 
@@ -76,23 +86,38 @@ app.on("will-finish-launching", () => {
       .catch((err: unknown) => console.log(err));
   });
 });
+
 app.on("ready", async () => {
+  console.timeEnd("T-init");
   app.dirname = __dirname;
-  if (__DEV__) {
-    await installExtensions();
-  }
+
+  // Measure window creation time
+  console.time("T-window");
+  const window = createEarlyMainWindow();
+  console.timeEnd("T-window");
+
+  // Initialize database
   db.init(userDataDirectory);
+
+  // Defer extension installation to not block startup
+  if (__DEV__) {
+    setImmediate(() => {
+      installExtensions().catch(console.error);
+    });
+  }
+
+  // Measure database initialization and first reads
+  console.time("T-db");
   const settings = (await db.getKey("app", "settings")) as SettingsState;
   const user: User = (await db.getKey("app", "user")) as User;
+  console.timeEnd("T-db");
   const userId = user?.id;
   if (userId) {
-    setUserId(userId);
-    sentry(() => {
-      const value = getSentryEnabled();
-      if (value === undefined) return settings?.sentryLogs;
-      return value;
-    }, userId);
+    sentry(() => settings?.sentryLogs, userId);
   }
+
+  // Set up transport handlers for Speculos and HTTP proxy in main process
+  setupTransportHandlers();
 
   /**
    * Clears the session’s HTTP cache
@@ -136,6 +161,9 @@ app.on("ready", async () => {
     console.log("reloading renderer ...");
     loadWindow();
   });
+  ipcMain.handle("set-sentry-tags", (event, tags) => {
+    setTags(tags);
+  });
 
   // To handle opening new windows from webview
   // cf. https://gist.github.com/codebytere/409738fcb7b774387b5287db2ead2ccb
@@ -152,10 +180,14 @@ app.on("ready", async () => {
     });
   });
   Menu.setApplicationMenu(menu);
+
+  // Apply window parameters now that we have DB data
   const windowParams = (await db.getKey("windowParams", "MainWindow", {})) as Parameters<
-    typeof createMainWindow
+    typeof applyWindowParams
   >[0];
-  const window = await createMainWindow(windowParams, settings);
+  await applyWindowParams(windowParams, settings);
+
+  // Setup window event handlers
   window.on(
     "resize",
     debounce(() => {
@@ -202,6 +234,17 @@ app.on("ready", async () => {
   await clearSessionCache(window.webContents.session);
 });
 
+// Cleanup transports on app shutdown
+app.on("before-quit", () => {
+  console.log("App shutting down, cleaning up transports...");
+  cleanupTransports();
+});
+
+app.on("window-all-closed", () => {
+  cleanupTransports();
+  app.quit();
+});
+
 ipcMain.on("set-background-color", (_, color) => {
   const w = getMainWindow();
   if (w) {
@@ -235,6 +278,9 @@ ipcMain.on("show-app", () => {
 });
 
 ipcMain.on("ready-to-show", () => {
+  console.timeEnd("T-ready");
+  const totalTime = process.uptime() * 1000;
+  console.log(`TOTAL BOOT TIME: ${totalTime.toFixed(0)}ms`);
   const w = getMainWindow();
   if (w) {
     show(w);
@@ -244,6 +290,7 @@ ipcMain.on("ready-to-show", () => {
       const { argv } = process;
       const uri = argv.filter(arg => arg.startsWith("ledgerlive://"));
       if (uri.length) {
+        show(w);
         if ("send" in w.webContents) {
           w.webContents.send("deep-linking", uri[0]);
         }
@@ -252,27 +299,16 @@ ipcMain.on("ready-to-show", () => {
   }
 });
 async function installExtensions() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const installer = require("electron-devtools-installer");
-  const forceDownload = true; // process.env.UPGRADE_EXTENSIONS
-  const extensions = ["REACT_DEVELOPER_TOOLS", "REDUX_DEVTOOLS"];
-  await Promise.all(
-    extensions.map(name =>
-      installer.default(installer[name], {
-        forceDownload,
-        loadExtensionOptions: {
-          allowFileAccess: true,
-        },
-      }),
-    ),
-  ).catch(console.error);
-  //Hack to load React devtools extension without a reload due to this issue: https://github.com/MarshallOfSound/electron-devtools-installer/issues/244
-  return session.defaultSession.getAllExtensions().map(e => {
-    if (e.name === "React Developer Tools") {
-      session.defaultSession.loadExtension(e.path);
-    }
+  // https://github.com/MarshallOfSound/electron-devtools-installer#usage
+  app.whenReady().then(() => {
+    installExtension([REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS], {
+      loadExtensionOptions: {
+        allowFileAccess: true,
+      },
+    }).catch(console.error);
   });
 }
+
 function clearSessionCache(session: Electron.Session): Promise<void> {
   return session.clearCache();
 }

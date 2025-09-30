@@ -49,6 +49,7 @@
     "transactionDate" : "تاريخ المعاملة",
     "outdated" : "قديم",
     "satPerByte" : "ساتوشي/بايت",
+    "sompiPerByte" : "sompi/بايت",
     "notAvailable" : "غير متاح",
     "import" : "استيراد",
     "bluetooth" : "بلوتوث",
@@ -306,6 +307,10 @@
       "title" : "انقطع اتصال الجهاز",
       "description" : "Ledger Live لم يتمكن من الاتصال بجهازك. يُرجى المحاولة مرةً أخرى أو التواصل مع دعم Ledger إذا استمرت المشكلة."
     },
+    "ReconnectionFailedError" : {
+      "title" : "انقطع اتصال الجهاز",
+      "description" : "Ledger Live لم يتمكن من الاتصال بجهازك. يُرجى المحاولة مرةً أخرى أو التواصل مع دعم Ledger إذا استمرت المشكلة."
+    },
     "DeviceDisconnectedBeforeSendingApdu" : {
       "title" : "انقطع اتصال الجهاز",
       "description" : "Ledger Live لم يتمكن من الاتصال بجهازك. يُرجى المحاولة مرةً أخرى أو التواصل مع دعم Ledger إذا استمرت المشكلة."
@@ -414,10 +419,6 @@
     "ETHAddressNonEIP" : {
       "title" : "التحقق التلقائي غير متاح: تحقق بعناية من العنوان.",
       "description" : null
-    },
-    "EthAppNftNotSupported" : {
-      "title" : "العملية غير متوفرة لهذا الجهاز",
-      "description" : "خاصية إرسال NFT متوفرة فقط لـ Nano X و +Nano S. يرجى زيارة منصة دعم العملاء لدينا لمعرفة كيفية إرسال NFT عن طريق Nano S."
     },
     "Touch ID Error" : {
       "title" : "فشل التوثيق البيومتري",
@@ -690,6 +691,15 @@
       "title" : "لم يتم إجراء الإقران بنجاح",
       "description" : "يرجى إعادة المحاولة مرة أخرى أو مراجعة مقالتنا عن استكشاف أخطاء البلوتوث وإصلاحها."
     },
+    "OneSuiMinForStake" : {
+      "title" : "الحد الأدنى هو 1 سوي (SUI)"
+    },
+    "OneSuiMinForUnstake" : {
+      "title" : "الحد الأدنى هو 1 سوي (SUI)"
+    },
+    "OneSuiMinForUnstakeToBeLeft" : {
+      "title" : "يجب ترك 1 سوي (SUI) على الأقل في التكديس"
+    },
     "PasswordIncorrect" : {
       "title" : "كلمة مرور غير صحيحة",
       "description" : "يرجى إعادة المحاولة."
@@ -897,9 +907,6 @@
     "PolkadotAllFundsWarning" : {
       "title" : "تأكد أن لديك رصيد كافي متبقي لرسوم المعاملات المستقبلية"
     },
-    "PolkadotDoMaxSendInstead" : {
-      "title" : "لا يمكن للرصيد أن يقل عن {{minimumBalance}} أرسل الحد الأقصى الى حساب خالي."
-    },
     "PolkadotBondMinimumAmount" : {
       "title" : "يجب عليك تقييد على الأقل {{minimumBondAmount}}."
     },
@@ -914,9 +921,6 @@
     },
     "TaprootNotActivated" : {
       "title" : "لم يتم تفعيل شبكة Taproot الرئيسية (mainnet) بعد"
-    },
-    "NotEnoughNftOwned" : {
-      "title" : "لقد تجاوزت عدد رموز التوكن المتاحة"
     },
     "generic" : {
       "title" : "{{message}}",
@@ -1042,10 +1046,6 @@
       "title" : "فشل تنزيل الصورة",
       "description" : "حاول مرة أخرى باستخدام صورة مختلفة."
     },
-    "NFTMetadataLoadingError" : {
-      "title" : "مشكلة تحميل البيانات الوصفية للرموز غير القابلة للاستبدال",
-      "description" : "حاول مرة أخرى برمز غير قابل للاستبدال مختلف."
-    },
     "ImageSizeLoadingError" : {
       "title" : "فشل تحديد أبعاد الصورة",
       "description" : "حاول مرة أخرى باستخدام صورة مختلفة."
@@ -1072,6 +1072,18 @@
     },
     "HederaAddAccountError" : {
       "title" : "لم تتم إضافة حسابك. يرجى إعادة المحاولة."
+    },
+    "HederaInsufficientFundsForAssociation" : {
+      "title" : "رصيد غير كافٍ",
+      "description" : "لا يوجد HBAR كافٍ للدفع مقابل ربط رمز التوكن. مطلوب على الأقل ما يساوي {{requiredWorthInUSD}}$ من HBAR."
+    },
+    "HederaRecipientTokenAssociationRequired" : {
+      "title" : "ربط رمز التوكن مطلوب",
+      "description" : "رمز التوكن الذي تحاول إرساله غير مرتبط بحساب الوجهة. يجب ربطه بالحساب المستلم حتى يتم تلقيه."
+    },
+    "HederaRecipientTokenAssociationUnverified" : {
+      "title" : "تعذّر التحقق من ربط رمز التوكن",
+      "description" : "لم نتمكن من تأكيد ما إذا كان بإمكان حساب الوجهة تلقي رمز التوكن هذا. ربما يكون العنوان غير صالح، أو قد يكون هناك مشكلةً في الشبكة أو الخدمة."
     },
     "NearNewAccountWarning" : {
       "title" : "حساب المُستلِم لم يتم إنشاؤه بعد. البروتوكول يتطلب تحويل {{formattedNewAccountStorageCost}} لإنشائه."
@@ -1304,7 +1316,8 @@
     "estimatedTime" : {
       "slow" : "≈ 2-3 دقائق",
       "medium" : "≈ 30 ثانية",
-      "fast" : "≈ 15 ثانية"
+      "fast" : "≈ 15 ثانية",
+      "custom" : ""
     }
   },
   "signout" : {
@@ -2133,27 +2146,6 @@
         "learnHowToUpdate" : "تعرف على كيفية التحديث"
       }
     },
-    "stepImportAccounts" : {
-      "title" : "مزامنة الأصول المشفرة من سطح المكتب",
-      "desc" : "إذا كنت قد قمت بالفعل بإعداد أصولك المشفرة في تطبيق Ledger لسطح المكتب، فيمكنك مزامنة التطبيق لإدارة تلك الأصول من هاتفك.",
-      "cta" : "أنا مستعد لإجراء المسح الضوئي",
-      "bullets" : {
-        "0" : {
-          "label" : "في تطبيق سطح المكتب، اختر\n<1>إعدادات > حسابات > تصدير الحساب</1>."
-        },
-        "1" : {
-          "label" : "قم بإجراء مسح ضوئي لكود LiveQR بهاتفك."
-        },
-        "2" : {
-          "label" : "اختر حسابات الأصول المشفرة المراد استيرادها."
-        }
-      },
-      "warning" : {
-        "title" : "يجب مزامنة تطبيقاتك لسطح المكتب والجوال يدوياً.",
-        "desc" : "Ledger Live يحترم خصوصيتك ويخزن بياناتك محلياً. إذا قمت بتغيير الحسابات والإعدادات على هاتفك، فستحتاج إلى القيام بنفس الشيء على الكمبيوتر الخاص بك، والعكس صحيح. تظل معاملاتك متزامنة مع سلسلة الكتل (blockchain).",
-        "cta" : "فهمت!"
-      }
-    },
     "stepSetupPin" : {
       "step1" : "قم بتشغيل {{fullDeviceName}} الخاصة بك واتبع التعليمات.",
       "step1-nanoS" : "قم بتوصيل {{fullDeviceName}} بهاتفك باستخدام كبل OTG.",
@@ -2690,9 +2682,7 @@
   "operations" : {
     "types" : {
       "IN" : "تم الاستلام",
-      "NFT_IN" : "تم تلقي NFT",
       "OUT" : "تم الإرسال",
-      "NFT_OUT" : "تم إرسال NFT",
       "CREATE" : "تم إنشاؤه",
       "REVEAL" : "تم الإظهار",
       "DELEGATE" : "تفويض",
@@ -2726,7 +2716,8 @@
       "WITHDRAW" : "مسحوب",
       "STAKE" : "مُكدَّس",
       "UNSTAKE" : "غير مُكدَّس",
-      "WITHDRAW_UNSTAKED" : "مسحوب"
+      "WITHDRAW_UNSTAKED" : "مسحوب",
+      "ASSOCIATE_TOKEN" : "ربط رمز التوكن"
     }
   },
   "operationDetails" : {
@@ -2758,6 +2749,7 @@
     "extra" : {
       "transferId" : "مُعرّف التحويل (ملاحظة)",
       "resource" : "مورد",
+      "validator" : "المدقق",
       "frozenAmount" : "المبلغ المُجمد",
       "unfreezeAmount" : "إزالة تجميد المبلغ",
       "address" : "عنوان",
@@ -2795,11 +2787,7 @@
       "stakedAmount" : "المبلغ المُكدَّس",
       "accountCreationFee" : "رسوم إنشاء الحساب"
     },
-    "multipleAddresses" : "لماذا عناوين متعددة؟",
-    "tokenName" : "اسم رمز التوكن",
-    "collectionContract" : "عقد رمز التوكن",
-    "tokenId" : "مُعرّف رمز التوكن (NFT)",
-    "quantity" : "الكمية"
+    "multipleAddresses" : "لماذا عناوين متعددة؟"
   },
   "operationList" : {
     "noOperations" : "لا توجد عمليات",
@@ -2831,8 +2819,8 @@
       "contactSupport" : "تواصل مع الدعم"
     },
     "willBedeprecatedBanner" : {
-      "title" : "لتحسين الكفاءة، {{currencyName}} لن تكون مدعومةً على Ledger Live بدءاً من {{deprecatedDate}}. مع ذلك، ستظل مدعومةً على محافظ أجهزة Ledger. يُرجى التواصل مع دعم عملاء Ledger إذا كنت ترغب في الحصول على مساعدة حول ذلك.",
-      "contactSupport" : "تواصل مع الدعم"
+      "title" : "{{currencyName}} لن تكون مدعومةً على Ledger Live بدءاً من {{deprecatedDate}}. ستظل مؤمّنةً بواسطة محفظة أجهزة Ledger الخاصة بك. لمعرفة المزيد، يُرجى قراءة مقالة مركز المساعدة الكاملة على الرابط أدناه.",
+      "learnMore" : "تعرّف على المزيد"
     },
     "tokens" : {
       "contractAddress" : "عنوان العَقد",
@@ -2968,10 +2956,6 @@
     },
     "undelegation" : {
       "sectionLabel" : "إلغاء التفويض (إلغاء التفويضات)"
-    },
-    "nft" : {
-      "receiveNft" : "تلقي NFT",
-      "howTo" : "لإضافة رموز غير قابلة للاستبدال، تحتاج الى <0>تلقيهم</0> باستخدام <1>عنوانك {{currency}}</1>."
     },
     "readOnly" : {
       "noTransaction" : {
@@ -3183,11 +3167,6 @@
         "desc" : "هذا الإجراء سيقوم بإخفاء جميع حسابات <1><0>{tokenName}</0></1>، يمكنك إظهارهم مرة أخرى باستخدام <3>الإعدادات > الحسابات</3>.",
         "confirm" : "إخفاء رمز التوكن"
       },
-      "hideNFTCollectionCTA" : "إخفاء المجموعة؟",
-      "hideNFTCollectionModal" : {
-        "title" : "إخفاء المجموعة؟",
-        "desc" : "يمكنك إلغاء إخفاء هذه المجموعة في خيارات الإعدادات."
-      },
       "cryptoAssets" : {
         "header" : "الأصول المشفرة",
         "title" : "الأصول المشفرة",
@@ -3241,7 +3220,7 @@
       },
       "transactionsAlerts" : {
         "title" : "تنبيهات المعاملات (بيتا)",
-        "desc" : "تلقى إشعارات بخصوص معاملاتك من إيثريوم و Polygon وسلسلة بينانس الذكية و Avalanche و Ethereum Classic"
+        "desc" : "تلقى إشعارات بخصوص معاملاتك لإيثريوم و Polygon وسلسلة BNB و Avalanche و Ethereum Classic"
       },
       "price" : {
         "title" : "تنبيهات الأسعار",
@@ -3659,7 +3638,8 @@
           "refunded" : "يرجى التواصل مع مزود المبادلة باستخدام مُعرف مبادلتك للمزيد من المعلومات.",
           "pending" : "يُرجى الانتظار بينما يقوم مزود المبادلة بمعالجة المعاملة.",
           "onhold" : "يرجى التواصل مع مزود المبادلة باستخدام مُعرف مبادلتك لحل المشكلة.",
-          "finished" : "تم تنفيذ مبادلتك بنجاح."
+          "finished" : "تم تنفيذ مبادلتك بنجاح.",
+          "unknown" : "نحن بانتظار معلومات من المزود."
         }
       },
       "missingApp" : {
@@ -3686,7 +3666,8 @@
         "empty" : {
           "title" : "ستظهر مبادلاتك السابقة هنا",
           "desc" : "إما أنك لم تقم بأي مبادلات بعد، أو تمت إعادة تعيين Ledger Live في هذه الأثناء."
-        }
+        },
+        "feedback" : "شاركنا ملاحظاتك"
       }
     },
     "swap2" : {
@@ -3720,6 +3701,7 @@
             "provider" : "المزود",
             "rate" : "مُعدل",
             "fees" : "رسوم الشبكة",
+            "feesDescription" : "يتم فرض هذه الرسوم من قِبل شبكة سلسلة الكتل (بلوكتشين) لمعالجة المبادلة. يتم فرض رسوم الإرسال فقط بالإضافة إلى عرض السعر المُقدّر. رسوم التلقي مشمولة",
             "target" : "الحساب المستهدف"
           },
           "noAccount" : "إنشاء حساب لتلقي {{name}}",
@@ -3742,6 +3724,10 @@
       },
       "twoStepApproval" : {
         "title" : "أكمل الخطوات"
+      },
+      "loader" : {
+        "title" : "المبادلة قيد المعالجة",
+        "description" : "يُرجى الانتظار بينما نقوم بمعالجة طلبك."
       },
       "history" : {
         "title" : "سجلّ المبادلة"
@@ -4010,10 +3996,7 @@
       "summary" : "الملخص",
       "selectDevice" : "اختر جهاز",
       "connectDevice" : "توصيل الجهاز",
-      "stepRange" : "خطوة {{currentStep}} من {{totalSteps}}",
-      "quantity" : "الكمية",
-      "selectCollection" : "مجموعة",
-      "selectNft" : "NFT"
+      "stepRange" : "خطوة {{currentStep}} من {{totalSteps}}"
     },
     "recipient" : {
       "scan" : "مسح ضوئي لكود QR",
@@ -4044,6 +4027,10 @@
       "quantityAvailable" : "الكمية المتاحة"
     },
     "summary" : {
+      "solanaRawTransaction" : {
+        "title" : "التوقيع بدون اطلاع مطلوب",
+        "description" : "لا يمكنك تأكيد صحة تفاصيل المعاملة على جهازك Ledger. إذا قمت بتوقيعها، فقد تخسر كل أصولك. قم بالتوقيع فقط إذا كنت تثق في هذا الموقع الإلكتروني."
+      },
       "subaccountsWarning" : "ستحتاج إلى إعادة شحن هذا الحساب بعملة {{ currency }} لتستطيع إرسال رموز التوكن من هذا الحساب",
       "tag" : "علامة (اختيارية)",
       "validateTag" : "التحقق من العلامة",
@@ -4346,7 +4333,7 @@
       "title" : "اختر الحسابات التي ترغب في إضافتها",
       "ctaStopScan" : "إيقاف المسح الضوئي",
       "confirm" : "تأكيد",
-      "scanningTitle" : "جارٍ البحث عن أي حسابات قائمة في سلسلة الكتل (Blockchain)...",
+      "scanningTitle" : "جارٍ التحقق من سلسلة الكتل (بلوكتشين)...",
       "whichAddressType" : "تعلّم كيفية اختيار نوع العنوان",
       "sections" : {
         "importable" : {
@@ -4411,7 +4398,7 @@
     "confirmSwap" : {
       "title" : "تأكيد عملية المبادلة على الجهاز",
       "alert" : {
-        "default" : "تحقق من تفاصيل المبادلة على جهازك قبل إرسالها. يتم تبادل العناوين بشكل آمن حتى لا تضطر إلى التحقق منهم.",
+        "default" : "تحقق من تفاصيل المبادلة على جهازك Ledger قبل إرسالها.",
         "provider" : "تحقق من تفاصيل المبادلة على جهازك قبل إرسالها. {{providerName}} قد يحتاج إلى إجراء تحقق إضافي لبعض المعاملات، ما يؤدي إلى تأخير."
       },
       "acceptTerms" : "بتأكيد صحة هذه المعاملة، أنا أقبل\n<0><0>شروط استخدام</0> {{provider}}</0>",
@@ -6242,6 +6229,7 @@
       "iWithdraw" : "أنا أسحب",
       "totalStake" : "إجمالي التكديس",
       "commission" : "العمولة",
+      "netApy" : "صافي المردود المئوي السنوي (APY)",
       "stakeActivationState" : "الولاية",
       "stakeActivePercent" : "نشِط",
       "stakeAvailableBalance" : "الرصيد المتاح",
@@ -6392,7 +6380,7 @@
       }
     },
     "staking" : {
-      "sectionLabel" : "موضع (أو مواضع) التكديس",
+      "sectionLabel" : "مركز (أو مراكز) التكديس",
       "info" : "كيف يعمل التكديس",
       "add" : "إضافة",
       "stakingEarn" : "يمكنك كسب مكافآت NEAR عن طريق تكديس أصولك.",
@@ -6440,6 +6428,107 @@
           "verification" : {
             "success" : {
               "title" : "لقد قمت بتكديس أصولك بنجاح",
+              "text" : "سيتم تحديث رصيد حسابك بمجرد أن تؤكد الشبكة المعاملة."
+            }
+          }
+        }
+      }
+    }
+  },
+  "sui" : {
+    "info" : {
+      "available" : {
+        "title" : "SUI متاحة",
+        "description" : "هذا المبلغ قابل للتصرف."
+      },
+      "storageUsage" : {
+        "title" : "الحد الأدنى للرصيد",
+        "description" : "هذا المبلغ محجوز للتخزين والمعاملات، وهو الحد الأدنى للرصيد الذي يجب أن يكون في حسابك لكي يظل نشطاً."
+      },
+      "staked" : {
+        "title" : "الأصل المفوض",
+        "description" : "الرصيد الذي تم تفويضه"
+      }
+    },
+    "unstaking" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "المبلغ المطلوب إلغاء تفويضه"
+      },
+      "flow" : {
+        "steps" : {
+          "amount" : {
+            "warning" : "بمجرد إلغاء تفويض رصيدك سيتم تحصيل رصيدك ومكافآتك المتراكمة على الفور"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "لقد قمت بإلغاء تفويض أصولك بنجاح"
+            }
+          }
+        }
+      }
+    },
+    "withdrawing" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "المبلغ المطلوب سحبه"
+      },
+      "flow" : {
+        "steps" : {
+          "verification" : {
+            "success" : {
+              "title" : "لقد قمت بسحب أصولك بنجاح"
+            }
+          }
+        }
+      }
+    },
+    "staking" : {
+      "sectionLabel" : "المركز (المراكز) المفوّض",
+      "info" : "كيف يعمل التفويض",
+      "add" : "إضافة",
+      "stakingEarn" : "يمكنك كسب مكافآت سوي (SUI) عن طريق تفويض أصولك.",
+      "totalStake" : "إجمالي التكديس",
+      "commission" : "العمولة",
+      "iStake" : "أنا أفوّض",
+      "actions" : {
+        "unstake" : "إلغاء التفويض"
+      },
+      "drawer" : {
+        "status" : "الحالة",
+        "active" : "نشِط",
+        "inactive" : "غير نشِط",
+        "pending" : "مُعلقّ",
+        "available" : "قابل للسحب"
+      },
+      "stepperHeader" : {
+        "amountSubTitle" : "المبلغ المطلوب تفويضه",
+        "selectDevice" : "اختر جهاز",
+        "connectDevice" : "توصيل الجهاز",
+        "stepRange" : "خطوة {{currentStep}} من {{totalSteps}}"
+      },
+      "flow" : {
+        "steps" : {
+          "starter" : {
+            "description" : "قم بتفويض سوي (SUI) خاصتك لكسب المكافآت بشكل آمن، مع الاحتفاظ بالسيطرة على أصولك.",
+            "steps" : {
+              "0" : "الأصول المفوضة تظل ملكك.",
+              "1" : "بمجرد إلغاء التفويض سيتم تحصيل رصيدك ومكافآتك المتراكمة على الفور.",
+              "2" : "قم بالتفويض بشكل آمن مع جهازك Ledger."
+            },
+            "warning" : {
+              "description" : "اختر المدقق بحكمة: فقد يتم فقدان جزء من أصولك المفوضة بشكل لا رجعة فيه إذا لم يتصرف المدقق بشكل لائق."
+            },
+            "cta" : "متابعة"
+          },
+          "amount" : {
+            "assetsRemaining" : "الأصول المتبقية : <0>{{amount}}</0>",
+            "allAssetsUsed" : "جميع الأصول المستخدمة",
+            "minAmount" : "الحد الأدنى للمبلغ : <0>{{min}}</0>",
+            "incorrectAmount" : "الحد الأقصى للمبلغ : <0>{{max}}</0>",
+            "cta" : "متابعة"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "لقد قمت بتفويض أصولك بنجاح",
               "text" : "سيتم تحديث رصيد حسابك بمجرد أن تؤكد الشبكة المعاملة."
             }
           }
@@ -6524,7 +6613,7 @@
       }
     },
     "staking" : {
-      "sectionLabel" : "موضع (أو مواضع) التكديس",
+      "sectionLabel" : "مركز (أو مراكز) التكديس",
       "info" : "كيف يعمل التكديس",
       "add" : "إضافة",
       "stakingEarn" : "يمكنك كسب مكافآت Aptos عن طريق تكديس أصولك.",
@@ -6634,6 +6723,7 @@
       "undelegate" : "سينتهي تفويض حسابك عندما يتم تأكيد العملية. يمكنك تفويض حسابك مرة أخرى في أي وقت."
     },
     "summaryTitle" : "الملخص",
+    "delegate" : "تفويض",
     "goToAccount" : "الذهاب إلى الحسابات",
     "howDelegationWorks" : "كيف يعمل التفويض",
     "actions" : {
@@ -7009,47 +7099,6 @@
       }
     }
   },
-  "nft" : {
-    "account" : {
-      "seeAllNfts" : "رؤية جميع NFT",
-      "seeFewerNfts" : "رؤية NFT أقل"
-    },
-    "gallery" : {
-      "allNft" : "جميع NFT",
-      "addNew" : "اضف جديد"
-    },
-    "designedForStax" : {
-      "title" : "<0>مُصمَّم من أجل</0><1>Ledger</1><2>Stax</2>",
-      "drawer" : {
-        "description" : "هذا الرمز غير القابل للاستبدال يحتوي على صورة إضافية للرمز غير القابل للاستبدال، مُصمَّمة خصيصاً لشاشة Ledger Stax بتقنية E Ink (الحبر الإلكتروني).\n\nهذه الصورة سيتم استخدامها عندما تقوم بتعيين هذا الرمز غير القابل للاستبدال كشاشة القَفل لديك.",
-        "cta" : "فهمت ذلك"
-      }
-    },
-    "viewer" : {
-      "properties" : "الخصائص",
-      "description" : "الوصف",
-      "tokenContract" : "عنوان رمز التوكن",
-      "tokenContractCopied" : "تم نسخ عنوان رمز التوكن !",
-      "tokenId" : "مُعرّف رمز التوكن",
-      "tokenIdCopied" : "تم نسخ مُعرف رمز التوكن !",
-      "quantity" : "الكمية",
-      "attributes" : {
-        "floorPrice" : "أقل سعر"
-      }
-    },
-    "viewerModal" : {
-      "viewOn" : "مشاهدة على",
-      "viewInExplorer" : "عرض في المتصفح",
-      "hide" : "إخفاء مجموعة NFT",
-      "txDetails" : "تفاصيل المعاملة"
-    },
-    "modalDisabled" : {
-      "title" : "وظيفة الإرسال غير متاحة على iOS",
-      "body" : "من أجل الامتثال لتحديثات Apple الأخيرة على App Store، فإن إرسال الرموز غير القابلة للاستبدال (NFTs) غير متاح مؤقتاً. لا يزال بوسعك استخدام Ledger Live على سطح المكتب لإرسال الرموز غير القابلة للاستبدال.",
-      "learnMore" : "تعرّف على المزيد",
-      "continue" : "فهمت ذلك!"
-    }
-  },
   "ApplicationVersion" : "إصدار {{version}}",
   "analytics" : {
     "title" : "التحليلات",
@@ -7070,6 +7119,55 @@
     },
     "currentAddress" : {
       "messageIfVirtual" : "عنوانك {{name}} لا يمكن تأكيده على جهازك Ledger. استخدمه على مسؤوليتك الخاصة."
+    },
+    "receive" : {
+      "warnings" : {
+        "associationPrerequisite" : {
+          "text" : "لتلقي رموز HTS، يجب أن يتم ربط حسابك. إذا لم تقم بربط حسابك بالفعل برمز HTS الذي ترغب في تلقيه، <0>انقر هنا</0> لبدء تدفق ربط رمز التوكن.",
+          "learnMore" : "تعرّف على المزيد"
+        }
+      }
+    },
+    "associate" : {
+      "selectToken" : {
+        "title" : "اختر رمز التوكن الذي تريد تلقيه"
+      },
+      "summary" : {
+        "title" : "ربط رمز التوكن",
+        "from" : "رمز توكن",
+        "to" : "إلى",
+        "warning" : {
+          "text" : "بالنقر على Continue (متابعة) ستقوم بربط رمز التوكن المختار بحساب Hedera الخاص بك.",
+          "learnMore" : "تعرّف على المزيد"
+        }
+      },
+      "selectDevice" : {
+        "title" : "ربط رمز التوكن"
+      },
+      "connectDevice" : {
+        "title" : "ربط رمز التوكن"
+      },
+      "validationSuccess" : {
+        "title" : "تم إرسال المعاملة",
+        "text" : "ستتمكن من تلقي رمز التوكن هذا بمجرد تأكيد معاملة ربط رمز التوكن"
+      }
+    },
+    "send" : {
+      "warnings" : {
+        "missingAssociation" : {
+          "learnMore" : "تعرّف على المزيد"
+        },
+        "unverifiedAssociation" : {
+          "learnMore" : "تعرّف على المزيد"
+        }
+      }
+    },
+    "operationDetails" : {
+      "postAccountSection" : "رمز التوكن المرتبط",
+      "postAlert" : {
+        "text" : "بمجرد أن يتم تأكيد هذه المعاملة ستتمكن من تلقي رمز التوكن. <0>انقر هنا</0> لبدء تدفق التلقي.",
+        "learnMore" : "تعرّف على المزيد"
+      }
     }
   },
   "asset" : {
@@ -7084,7 +7182,6 @@
     "drawer" : {
       "options" : {
         "uploadFromPhone" : "اختر من معرض الصور خاصتي",
-        "selectFromNFTGallery" : "اختر من معرض الرموز غير القابلة للاستبدال (NFT)",
         "remove" : "إزالة الصورة الحالية"
       }
     },
@@ -7115,9 +7212,6 @@
       "setPicture" : "تعيين كشاشة القَفل",
       "editPicture" : "تعديل الصورة",
       "pickDeviceModel" : "اختر جهازاً"
-    },
-    "nftGallery" : {
-      "title" : "رموزي غير القابلة للاستبدال"
     }
   },
   "postOnboarding" : {
@@ -7162,50 +7256,7 @@
   "wallet" : {
     "tabs" : {
       "crypto" : "الأصول المشفرة",
-      "nft" : "الرموز غير القابلة للاستبدال (NFTs)",
       "market" : "السوق"
-    },
-    "nftGallery" : {
-      "filters" : {
-        "select" : "اختر",
-        "filter" : "تصفية",
-        "blockchain" : "سلسلة الكتل (blockchain)",
-        "seeAll" : "رؤية الكل",
-        "selectAndHide" : "اختيار وإخفاء",
-        "hide" : "إخفاء {{count}} مجموعة",
-        "hiddenCollections" : "المجموعات المخفية",
-        "hide_plural" : "إخفاء {{count}} مجموعة",
-        "empty" : "ليس هناك مجموعات مخفية لعرضها",
-        "alertHide" : "تم إخفاء 1 مجموعة. يمكنك إلغاء إخفائها في أي وقت من تصفية المعرض.",
-        "alertHide_plural" : "تم إخفاء {{count}} مجموعة. يمكنك إلغاء إخفائها في أي وقت من تصفية المعرض."
-      },
-      "emptyFiltered" : {
-        "title" : "ليس هناك رموز غير قابلة للاستبدال تطابق المعايير الخاصة بك",
-        "button" : "إعادة تعيين التصفيات"
-      },
-      "empty" : {
-        "title" : "ليس هناك رموز غير قابلة للاستبدال بعد لعرضها",
-        "subtitle" : "ابدأ عن طريق إضافة رموز غير قابلة للاستبدال إلى محفظتك.",
-        "receive" : "تلقي الرموز غير القابلة للاستبدال",
-        "supportLink" : "كيف تحصل على رموز غير قابلة للاستبدال من محافظ أخرى؟"
-      },
-      "receiveModal" : {
-        "title" : "تلقى رمز غير قابل للاستبدال بنفس الطريقة مثل أصل مشفر آخر",
-        "bullets" : {
-          "0" : "• اختر سلسلة كتل الأصول المشفرة للرمز غير القابل للاستبدال.",
-          "1" : "• اختر حساب ليتم تلقي الرمز غير القابل للاستبدال عليه"
-        },
-        "cta" : "حسناً، فهمت.",
-        "info" : "أرغب في تعلم المزيد"
-      },
-      "hideNftModal" : {
-        "title" : "إخفاء مجموعة NFT",
-        "desc" : "هذا الإجراء سيُخفي جميع الرموز غير القابلة للاستبدال من مجموعة {{collectionName}}، يمكنك إلغاء الإخفاء من تصفية المعرض",
-        "cta" : "إخفاء هذا الرمز غير القابل للاستبدال"
-      },
-      "media" : {
-        "tag" : "{{count}} رمز غير قابل للاستبدال"
-      }
     },
     "referralProgram" : "$20"
   },
@@ -7763,7 +7814,7 @@
   },
   "geoBlocking" : {
     "title" : "الموقع غير متاح",
-    "description" : "محفظة Ledger غير متاحة في هذا الموقع.",
+    "description" : "Ledger Live غير متاح في هذا الموقع.",
     "learnMore" : "تعرّف على المزيد"
   },
   "versionBlocking" : {
@@ -7775,6 +7826,97 @@
     "selectAsset" : "اختر أصل",
     "selectNetwork" : "اختر شبكة",
     "selectAccount" : "اختر حساب",
-    "searchPlaceholder" : "بحث"
+    "searchPlaceholder" : "بحث",
+    "emptyAssetList" : "لم يتم العثور على أصول",
+    "accountCount" : "{{count}} حساب",
+    "accountCount_plural" : "{{count}} حساب",
+    "errors" : {
+      "title" : "فشل الاتصال",
+      "backend" : "حدث خطأ ما من جانبنا. يُرجى إعادة المحاولة لاحقاً",
+      "internet" : "ليس هناك اتصال بالإنترنت. يرجى إعادة المحاولة",
+      "cta" : "إعادة المحاولة"
+    }
+  },
+  "swapErrors" : {
+    "incorrectCommandData" : {
+      "title" : "بيانات أمر غير صحيحة",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "deserializationFailed" : {
+      "title" : "فشل إلغاء تسلسل الحمولة",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "wrongTransactionId" : {
+      "title" : "مُعرف معاملة خاطئ",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "invalidAddress" : {
+      "title" : "عنوان غير صحيح",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "WrongDeviceForAccountPayout" : {
+      "title" : "حدث خطأ ما",
+      "description" : "حساب التلقي هذا لا ينتمي إلى الجهاز المتصل. يُرجى تغييره وإعادة المحاولة."
+    },
+    "WrongDeviceForAccountRefund" : {
+      "title" : "حدث خطأ ما",
+      "description" : "حساب الإرسال هذا لا ينتمي إلى الجهاز المتصل. يُرجى تغييره وإعادة المحاولة."
+    },
+    "userRefused" : {
+      "title" : "تم رفض العملية على الجهاز",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "internalError" : {
+      "title" : "خطأ داخلي",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "wrongP1" : {
+      "title" : "P1 خاطئ",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "wrongP2" : {
+      "title" : "P2 خاطئ",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "wrongP2Extension" : {
+      "title" : "ملحق P2 خاطئ",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "invalidP2Extension" : {
+      "title" : "حدث خطأ ما",
+      "description" : "ملحق P2 غير صالح"
+    },
+    "unexpectedInstruction" : {
+      "title" : "حدث خطأ ما",
+      "description" : "تعليمات غير متوقعة"
+    },
+    "classNotSupported" : {
+      "title" : "حدث خطأ ما",
+      "description" : "الفئة غير مدعومة"
+    },
+    "invalidInstruction" : {
+      "title" : "تعليمات غير صالحة",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "malformedApdu" : {
+      "title" : "عنوان APDU مشوه",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "invalidDataLength" : {
+      "title" : "طول بيانات غير صالح",
+      "description" : "هذا الأمر لا يقبل بيانات بهذا الطول"
+    },
+    "signatureVerificationFail" : {
+      "title" : "فشل التحقق من التوقيع",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    },
+    "transactionCannotBeCreated" : {
+      "title" : "المزود غير متاح",
+      "description" : "لا يمكننا إتمام مبادلتك عن طريق هذا المزود. يُرجى المحاولة من خلال مزود آخر. كود الخطأ 8HBB{{errorCode}}"
+    },
+    "default" : {
+      "title" : "حدث خطأ ما",
+      "description" : "يرجى إعادة المحاولة أو التواصل مع دعم Ledger إذا كان لديك شك"
+    }
   }
 }

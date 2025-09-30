@@ -12,15 +12,17 @@ import { ScrollContainer } from "../../components/ScrollContainer";
 import { AccountList, ActionButtons, SuccessIcon, Title } from "./components";
 import { useAccountFormatter } from "./hooks";
 import { AccountsAddedProps } from "./types";
+import { useSelector } from "react-redux";
+import { modularDrawerSourceSelector } from "~/renderer/reducers/modularDrawer";
 
-export const AccountsAdded = ({
+const AccountsAdded = ({
   accounts,
   navigateToEditAccountName,
   navigateToFundAccount,
   navigateToSelectAccount,
   isAccountSelectionFlow,
-  source,
 }: Readonly<AccountsAddedProps>) => {
+  const source = useSelector(modularDrawerSourceSelector);
   const formatAccount = useAccountFormatter();
   const { trackAddAccountEvent } = useAddAccountAnalytics();
 
@@ -66,6 +68,7 @@ export const AccountsAdded = ({
           accounts={accounts}
           formatAccount={formatAccount}
           navigateToEditAccountName={navigateToEditAccountName}
+          isAccountSelectionFlow={isAccountSelectionFlow}
         />
       </ScrollContainer>
       <ActionButtons

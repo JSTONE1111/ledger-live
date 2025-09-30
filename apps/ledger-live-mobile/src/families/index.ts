@@ -1,5 +1,4 @@
 export * from "./algorand";
-export * from "./aptos";
 export * from "./bitcoin";
 export * from "./cardano";
 export * from "./celo";
@@ -8,6 +7,7 @@ export * from "./multiversx";
 export * from "./evm";
 export * from "./hedera";
 export * from "./internet_computer";
+export * from "./kaspa";
 export * from "./mina";
 export * from "./near";
 export * from "./polkadot";
@@ -19,3 +19,4 @@ export * from "./stellar";
 export * from "./tezos";
 export * from "./tron";
 export * from "./ton";
+export * from "./sui";

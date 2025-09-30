@@ -99,6 +99,10 @@ export class PortfolioPage extends AppPage {
   @step("Click stake button")
   async startStakeFlow() {
     await this.stakeEntryButton.click();
+  }
+
+  @step("Expect choose asset to be visible")
+  async expectChooseAssetToBeVisible() {
     await this.page.getByText("Choose Asset").waitFor({ state: "visible" });
   }
 
@@ -109,12 +113,6 @@ export class PortfolioPage extends AppPage {
       await this.showAllButton.click();
     }
     await assetRowLocator.click();
-  }
-
-  @step("Scroll to operations")
-  async scrollToOperations() {
-    await this.page.waitForTimeout(500);
-    await this.operationList.scrollIntoViewIfNeeded();
   }
 
   @step("check operation history")

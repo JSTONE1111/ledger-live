@@ -11,8 +11,16 @@ import { getDefaultAccountName } from "@ledgerhq/live-wallet/accountName";
 import { useStake } from "LLD/hooks/useStake";
 import { walletSelector } from "~/renderer/reducers/wallet";
 import { Account, AccountLike } from "@ledgerhq/types-live";
+import {
+  ModularDrawerLocation,
+  openAssetAndAccountDrawer,
+  useModularDrawerVisibility,
+} from "LLD/features/ModularDrawer";
+import { setFlowValue, setSourceValue } from "~/renderer/reducers/modularDrawer";
 
-type StakeFlowProps = {
+const DRAWER_FLOW = "stake";
+
+export type StakeFlowProps = {
   currencies?: string[];
   shouldRedirect?: boolean;
   alwaysShowNoFunds?: boolean;
@@ -28,6 +36,15 @@ const useStakeFlow = () => {
   const walletState = useSelector(walletSelector);
   const { enabledCurrencies, partnerSupportedAssets, getRouteToPlatformApp } = useStake();
   const list = enabledCurrencies.concat(partnerSupportedAssets);
+
+  const { isModularDrawerVisible } = useModularDrawerVisibility({
+    modularDrawerFeatureFlagKey: "lldModularDrawer",
+  });
+
+  const modularDrawerVisible = isModularDrawerVisible({
+    location: ModularDrawerLocation.LIVE_APP,
+    liveAppId: "earn",
+  });
 
   const handleAccountSelected = useCallback(
     (
@@ -108,6 +125,9 @@ const useStakeFlow = () => {
       entryPoint,
       returnTo,
     }: StakeFlowProps = {}) => {
+      dispatch(setFlowValue(DRAWER_FLOW));
+      dispatch(setSourceValue(source || ""));
+
       const cryptoCurrencies = filterCurrencies(listCurrencies(true), {
         currencies: currencies || list,
       });
@@ -117,27 +137,58 @@ const useStakeFlow = () => {
         page: history.location.pathname,
         type: "drawer",
       });
-      setDrawer(
-        SelectAccountAndCurrencyDrawer,
-        {
-          currencies: cryptoCurrencies,
-          onAccountSelected: (account, parentAccount) =>
-            handleAccountSelected(
-              account,
-              parentAccount,
-              alwaysShowNoFunds,
-              entryPoint,
-              source,
-              shouldRedirect,
-              returnTo,
-            ),
-        },
-        {
-          onRequestClose: handleRequestClose,
-        },
-      );
+
+      const onSuccess = (account: AccountLike, parentAccount?: Account) => {
+        handleAccountSelected(
+          account,
+          parentAccount,
+          alwaysShowNoFunds,
+          entryPoint,
+          source,
+          shouldRedirect,
+          returnTo,
+        );
+      };
+
+      if (modularDrawerVisible) {
+        openAssetAndAccountDrawer({
+          currencies: cryptoCurrencies.map(c => c.id),
+          useCase: "earn",
+          onSuccess,
+          onCancel: handleRequestClose,
+        });
+      } else {
+        setDrawer(
+          SelectAccountAndCurrencyDrawer,
+          {
+            currencies: cryptoCurrencies,
+            flow: DRAWER_FLOW,
+            source: source ?? "",
+            onAccountSelected: (account, parentAccount) =>
+              handleAccountSelected(
+                account,
+                parentAccount,
+                alwaysShowNoFunds,
+                entryPoint,
+                source,
+                shouldRedirect,
+                returnTo,
+              ),
+          },
+          {
+            onRequestClose: handleRequestClose,
+          },
+        );
+      }
     },
-    [handleAccountSelected, handleRequestClose, history.location.pathname, list],
+    [
+      dispatch,
+      handleAccountSelected,
+      handleRequestClose,
+      history.location.pathname,
+      list,
+      modularDrawerVisible,
+    ],
   );
 };
 

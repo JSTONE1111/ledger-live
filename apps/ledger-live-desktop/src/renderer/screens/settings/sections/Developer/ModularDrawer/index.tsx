@@ -11,11 +11,17 @@ import { DrawerConfiguration } from "./DrawerConfiguration";
 import { DevToolControls } from "./DevToolControls";
 import { useDrawerConfiguration, useDevToolState } from "./hooks";
 import { ModularDrawerDevToolContentProps } from "./types";
+import { useDispatch } from "react-redux";
+import {
+  setIsDebuggingDuplicates,
+  setFlowValue,
+  setSourceValue,
+} from "~/renderer/reducers/modularDrawer";
 
 export const ModularDrawerDevToolContent = (props: ModularDrawerDevToolContentProps) => {
   const { t } = useTranslation();
-  const { includeTokens, setIncludeTokens, openModal, setOpenModal, entryPoint, setEntryPoint } =
-    useDevToolState();
+  const { openModal, setOpenModal, location, setLocation, liveApp, setLiveApp } = useDevToolState();
+  const dispatch = useDispatch();
 
   const {
     assetsLeftElement,
@@ -30,23 +36,32 @@ export const ModularDrawerDevToolContent = (props: ModularDrawerDevToolContentPr
   } = useDrawerConfiguration();
 
   const { openAssetFlow } = useOpenAssetFlow(
-    entryPoint.value,
+    location.value === ModularDrawerLocation.LIVE_APP
+      ? { location: location.value, liveAppId: liveApp.value }
+      : { location: location.value },
     "receive",
     openModal ? "MODAL_RECEIVE" : undefined,
   );
 
+  const debugDuplicates = () => {
+    dispatch(setIsDebuggingDuplicates(true));
+    openAssetFlow({
+      assets: { leftElement: "undefined", rightElement: "undefined" },
+      networks: { leftElement: "undefined", rightElement: "undefined" },
+    });
+  };
+
   const openDrawerFunctions: Record<ModularDrawerLocation, () => void> = {
-    [ModularDrawerLocation.ADD_ACCOUNT]: () => openAssetFlow(includeTokens, drawerConfiguration),
-    [ModularDrawerLocation.LIVE_APP]: () =>
+    [ModularDrawerLocation.ADD_ACCOUNT]: () => openAssetFlow(drawerConfiguration),
+    [ModularDrawerLocation.LIVE_APP]: () => {
+      dispatch(setFlowValue("Dev Tool"));
+      dispatch(setSourceValue("Dev Tool"));
       openAssetAndAccountDrawer({
-        flow: "Dev Tool",
-        source: "Dev Tool",
-        includeTokens,
         drawerConfiguration,
-      }),
+      });
+    },
     [ModularDrawerLocation.RECEIVE_FLOW]: () => {},
     [ModularDrawerLocation.SEND_FLOW]: () => {},
-    [ModularDrawerLocation.EARN_FLOW]: () => {},
   };
 
   return (
@@ -56,10 +71,10 @@ export const ModularDrawerDevToolContent = (props: ModularDrawerDevToolContentPr
         <Flex flexDirection="column" rowGap={4} mt={2}>
           <FeatureFlags />
           <DevToolControls
-            entryPoint={entryPoint}
-            setEntryPoint={setEntryPoint}
-            includeTokens={includeTokens}
-            setIncludeTokens={setIncludeTokens}
+            location={location}
+            setLocation={setLocation}
+            liveApp={liveApp}
+            setLiveApp={setLiveApp}
             openModal={openModal}
             setOpenModal={setOpenModal}
           />
@@ -73,9 +88,12 @@ export const ModularDrawerDevToolContent = (props: ModularDrawerDevToolContentPr
             networksRightElement={networksRightElement}
             setNetworksRightElement={setNetworksRightElement}
           />
-          <Flex>
-            <Button variant="color" onClick={() => openDrawerFunctions[entryPoint.value]()}>
+          <Flex columnGap={"12px"}>
+            <Button variant="color" onClick={() => openDrawerFunctions[location.value]()}>
               Open Drawer
+            </Button>
+            <Button variant="color" onClick={debugDuplicates}>
+              Debug Duplicates
             </Button>
           </Flex>
         </Flex>

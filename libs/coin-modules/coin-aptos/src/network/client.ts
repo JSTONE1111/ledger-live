@@ -18,6 +18,7 @@ import {
   Hex,
   postAptosFullNode,
   type PendingTransactionResponse,
+  Network,
 } from "@aptos-labs/ts-sdk";
 import { getEnv } from "@ledgerhq/live-env";
 import network from "@ledgerhq/live-network";
@@ -45,10 +46,8 @@ import {
   BlockInfo,
   FeeEstimation,
   Operation,
-  Pagination,
   TransactionIntent,
 } from "@ledgerhq/coin-framework/api/types";
-import { AptosAsset } from "../types/assets";
 import { log } from "@ledgerhq/logs";
 import { transactionsToOperations } from "../logic/transactionsToOperations";
 import { isTestnet } from "../logic/isTestnet";
@@ -60,6 +59,8 @@ const getIndexerEndpoint = (currencyId: string) =>
   isTestnet(currencyId)
     ? getEnv("APTOS_TESTNET_INDEXER_ENDPOINT")
     : getEnv("APTOS_INDEXER_ENDPOINT");
+const getNetwork = (currencyId: string) =>
+  isTestnet(currencyId) ? Network.TESTNET : Network.MAINNET;
 
 export class AptosAPI {
   private readonly aptosConfig: AptosConfig;
@@ -68,13 +69,34 @@ export class AptosAPI {
   readonly apolloClient: ApolloClient<object>;
 
   constructor(currencyIdOrSettings: AptosSettings | string) {
+    const appVersion = getEnv("LEDGER_CLIENT_VERSION");
+
     if (typeof currencyIdOrSettings === "string") {
       this.aptosConfig = new AptosConfig({
+        network: getNetwork(currencyIdOrSettings),
         fullnode: getApiEndpoint(currencyIdOrSettings),
         indexer: getIndexerEndpoint(currencyIdOrSettings),
+        clientConfig: {
+          HEADERS: {
+            "X-Ledger-Client-Version": appVersion,
+          },
+        },
       });
     } else {
-      this.aptosConfig = new AptosConfig(currencyIdOrSettings);
+      // Ensure the header is present when custom settings are provided
+      const settings = { ...currencyIdOrSettings };
+      const existingHeaders = settings.clientConfig?.HEADERS ?? {};
+
+      settings.clientConfig = {
+        ...(settings.clientConfig ?? {}),
+        HEADERS: {
+          ...existingHeaders,
+          // don’t override if caller already provided it
+          "X-Ledger-Client-Version": existingHeaders["X-Ledger-Client-Version"] ?? appVersion,
+        },
+      };
+
+      this.aptosConfig = new AptosConfig(settings);
     }
 
     this.aptosClient = new Aptos(this.aptosConfig);
@@ -82,7 +104,7 @@ export class AptosAPI {
       uri: this.aptosConfig.indexer ?? "",
       cache: new InMemoryCache(),
       headers: {
-        "x-client": "ledger-live",
+        "X-Ledger-Client-Version": appVersion,
       },
     });
   }
@@ -181,7 +203,7 @@ export class AptosAPI {
     };
   }
 
-  async estimateFees(transactionIntent: TransactionIntent<AptosAsset>): Promise<FeeEstimation> {
+  async estimateFees(transactionIntent: TransactionIntent): Promise<FeeEstimation> {
     const publicKeyEd = new Ed25519PublicKey(transactionIntent?.senderPublicKey ?? "");
 
     const txPayload: InputEntryFunctionData = {
@@ -190,20 +212,21 @@ export class AptosAPI {
       functionArguments: [transactionIntent.recipient, transactionIntent.amount],
     };
 
-    if (transactionIntent.asset.type === "token") {
-      const { standard } = transactionIntent.asset;
+    // TODO: this should be looked over again, might be more precise in terms of types..
+    if (transactionIntent.asset.type !== "native") {
+      const { type } = transactionIntent.asset;
 
-      if (standard === TOKEN_TYPE.FUNGIBLE_ASSET) {
+      if (type === TOKEN_TYPE.FUNGIBLE_ASSET) {
         txPayload.function = "0x1::primary_fungible_store::transfer";
         txPayload.typeArguments = ["0x1::fungible_asset::Metadata"];
         txPayload.functionArguments = [
-          transactionIntent.asset.contractAddress,
+          transactionIntent.asset.assetReference,
           transactionIntent.recipient,
           transactionIntent.amount,
         ];
-      } else if (standard === TOKEN_TYPE.COIN) {
+      } else if (type === TOKEN_TYPE.COIN) {
         txPayload.function = "0x1::aptos_account::transfer_coins";
-        txPayload.typeArguments = [transactionIntent.asset.contractAddress];
+        txPayload.typeArguments = [transactionIntent.asset.assetReference as string];
       }
     }
 
@@ -266,12 +289,9 @@ export class AptosAPI {
     }
   }
 
-  async listOperations(
-    rawAddress: string,
-    pagination: Pagination,
-  ): Promise<[Operation<AptosAsset>[], string]> {
+  async listOperations(rawAddress: string, minHeight: number): Promise<[Operation[], string]> {
     const address = normalizeAddress(rawAddress);
-    const transactions = await this.getAccountInfo(address, pagination.minHeight.toString());
+    const transactions = await this.getAccountInfo(address, minHeight.toString());
     const newOperations = transactionsToOperations(address, transactions.transactions);
 
     return [newOperations, ""];
@@ -301,9 +321,12 @@ export class AptosAPI {
     });
 
     return Promise.all(
-      queryResponse.data.account_transactions.map(({ transaction_version }) => {
-        return this.richItemByVersion(transaction_version);
-      }),
+      queryResponse.data.account_transactions
+        .slice()
+        .sort((a, b) => b.transaction_version - a.transaction_version)
+        .map(({ transaction_version }) => {
+          return this.richItemByVersion(transaction_version);
+        }),
     );
   }
 

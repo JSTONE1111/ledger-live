@@ -99,21 +99,6 @@ platform :ios do
   desc "private: refresh profiles"
   private_lane :refresh_ios_profiles do
     match(
-      type: "development",
-      app_identifier: ["com.ledger.live", "com.ledger.live.dev"],
-      force: true,
-      force_for_new_devices: true,
-      include_all_certificates: true,
-      force_for_new_certificates: true,
-      generate_apple_certs: true,
-      git_url: ENV["GIT_REPO_URL"],
-      username: ENV["APPLE_ID"],
-      team_id: ENV["DEVELOPER_TEAM_ID"],
-      keychain_name: ENV["CI_KEYCHAIN_NAME"],
-      keychain_password: ENV["CI_KEYCHAIN_PASSWORD"],
-      git_basic_authorization: Base64.strict_encode64("#{ENV["GIT_REPO_USER"]}:#{ENV["GH_TOKEN"]}"),
-    )
-    match(
       type: "adhoc",
       app_identifier: ["com.ledger.live", "com.ledger.live.dev"],
       force: true,
@@ -286,9 +271,7 @@ platform :ios do
           export_options: {
             method: export_options_method,
             signingStyle: "manual",
-            provisioningProfiles: {
-                MY_APP_ID => MY_PROFILE
-            }
+            provisioningProfiles: ENV['MATCH_PROVISIONING_PROFILE_MAPPING']
           },
         )
       end
@@ -503,7 +486,7 @@ platform :android do
           "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASS"],
         },
         project_dir: 'android/',
-        flags: ' -Dorg.gradle.workers.max=3 -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g"'
+        flags: ' -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs="-XX:MaxRAMPercentage=15.0"'
       )
     end
   end

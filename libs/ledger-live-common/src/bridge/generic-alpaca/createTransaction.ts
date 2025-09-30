@@ -1,27 +1,57 @@
-import { Account, TransactionCommon } from "@ledgerhq/types-live";
+import { Account, TokenAccount } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
-import type { Unit } from "@ledgerhq/types-cryptoassets";
+import { GenericTransaction } from "./types";
 
-export type NetworkInfo = {
-  family: "xrp";
-  serverFee: BigNumber;
-  baseReserve: BigNumber;
-};
-
-export function createTransaction(account: Account): TransactionCommon & {
-  family: string;
-  fee: BigNumber | null | undefined;
-  networkInfo: NetworkInfo | null | undefined;
-  tag: number | null | undefined;
-  feeCustomUnit: Unit | null | undefined;
-} {
-  return {
-    family: account.currency.family,
-    amount: BigNumber(0),
-    recipient: "",
-    fee: null,
-    tag: undefined,
-    networkInfo: null,
-    feeCustomUnit: null,
-  };
+export function createTransaction(account: Account | TokenAccount): GenericTransaction {
+  const currency =
+    account.type === "TokenAccount" ? account.token.parentCurrency : account.currency;
+  switch (currency.family) {
+    case "xrp":
+    case "ripple":
+      return {
+        family: currency.family,
+        amount: BigNumber(0),
+        recipient: "",
+        fees: null,
+        tag: undefined,
+        feeCustomUnit: null, // NOTE: XRP does not use custom units for fees anymore
+      };
+    case "stellar":
+      return {
+        family: currency.family,
+        amount: new BigNumber(0),
+        fees: null,
+        recipient: "",
+        memoValue: null,
+        memoType: null,
+        useAllAmount: false,
+        mode: "send",
+        assetReference: "",
+        assetOwner: "",
+        networkInfo: null,
+      };
+    case "tezos":
+      // note: default transaction for tezos, mode will be set by UI (send, stake, unstake)
+      return {
+        family: currency.family,
+        amount: new BigNumber(0),
+        fees: null,
+        recipient: "",
+        useAllAmount: false,
+        mode: "send",
+        networkInfo: null,
+      };
+    case "evm": {
+      return {
+        mode: "send-eip1559",
+        family: currency.family,
+        amount: new BigNumber(0),
+        recipient: "",
+        useAllAmount: false,
+        feesStrategy: "medium",
+      };
+    }
+    default:
+      throw new Error(`Unsupported currency family: ${currency.family}`);
+  }
 }

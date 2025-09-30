@@ -16,17 +16,20 @@ describe("useOpenAssetFlow", () => {
   const modularDrawerLocation = ModularDrawerLocation.ADD_ACCOUNT;
 
   it("should dispatch openModal if the modular drawer is not visible", async () => {
-    const { result, store } = renderHook(() => useOpenAssetFlow(modularDrawerLocation, "test"), {
-      initialState: {
-        settings: {
-          overriddenFeatureFlags: {
-            lldModularDrawer: {
-              enabled: false,
+    const { result, store } = renderHook(
+      () => useOpenAssetFlow({ location: modularDrawerLocation }, "test"),
+      {
+        initialState: {
+          settings: {
+            overriddenFeatureFlags: {
+              lldModularDrawer: {
+                enabled: false,
+              },
             },
           },
         },
       },
-    });
+    );
 
     result.current.openAssetFlow(true);
 
@@ -38,23 +41,26 @@ describe("useOpenAssetFlow", () => {
   });
 
   it("should open the modular drawer if it is visible and open the legacy modal once a currency is chosen and the lldNetworkBasedAddAccount flag is off", () => {
-    const { result, store } = renderHook(() => useOpenAssetFlow(modularDrawerLocation, "test"), {
-      initialState: {
-        settings: {
-          overriddenFeatureFlags: {
-            lldNetworkBasedAddAccount: {
-              enabled: false,
-            },
-            lldModularDrawer: {
-              enabled: true,
-              params: {
-                [ModularDrawerLocation.ADD_ACCOUNT]: true,
+    const { result, store } = renderHook(
+      () => useOpenAssetFlow({ location: modularDrawerLocation }, "test"),
+      {
+        initialState: {
+          settings: {
+            overriddenFeatureFlags: {
+              lldNetworkBasedAddAccount: {
+                enabled: false,
+              },
+              lldModularDrawer: {
+                enabled: true,
+                params: {
+                  [ModularDrawerLocation.ADD_ACCOUNT]: true,
+                },
               },
             },
           },
         },
       },
-    });
+    );
 
     const selectAsset = jest.fn();
     (setDrawer as jest.Mock).mockImplementation((_, props) =>
@@ -62,7 +68,7 @@ describe("useOpenAssetFlow", () => {
     );
 
     // Should open the drawer
-    result.current.openAssetFlow(false);
+    result.current.openAssetFlow();
 
     expect(setDrawer).toHaveBeenCalledTimes(1);
     expect(setDrawer).toHaveBeenLastCalledWith(
@@ -70,12 +76,10 @@ describe("useOpenAssetFlow", () => {
       {
         currencies: [],
         drawerConfiguration: {
-          assets: { leftElement: "undefined", rightElement: "undefined" },
-          networks: { leftElement: "undefined", rightElement: "undefined" },
+          assets: { leftElement: "undefined", rightElement: "balance" },
+          networks: { leftElement: "numberOfAccounts", rightElement: "balance" },
         },
-        flow: "add_account",
         onAssetSelected: expect.any(Function),
-        source: "test",
       },
       {
         closeButtonComponent: expect.any(Function),

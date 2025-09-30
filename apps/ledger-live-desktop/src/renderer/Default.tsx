@@ -69,6 +69,7 @@ const Card = lazy(() => import("~/renderer/screens/card"));
 const Manager = lazy(() => import("~/renderer/screens/manager"));
 const Exchange = lazy(() => import("~/renderer/screens/exchange"));
 const Earn = lazy(() => import("~/renderer/screens/earn"));
+const Receive = lazy(() => import("~/renderer/screens/receive"));
 const SwapWeb = lazy(() => import("~/renderer/screens/swapWeb"));
 const Swap2 = lazy(() => import("~/renderer/screens/exchange/Swap2"));
 
@@ -80,10 +81,6 @@ const WelcomeScreenSettings = lazy(
 const SyncOnboarding = lazy(() => import("./components/SyncOnboarding"));
 const RecoverPlayer = lazy(() => import("~/renderer/screens/recover/Player"));
 
-const NFTGallery = lazy(() => import("~/renderer/screens/nft/Gallery"));
-const NFTGalleryNew = lazy(() => import("LLD/features/Collectibles/Nfts/screens/Gallery"));
-const NFTCollection = lazy(() => import("~/renderer/screens/nft/Gallery/Collection"));
-const NFTCollectionNew = lazy(() => import("LLD/features/Collectibles/Nfts/screens/Collection"));
 const RecoverRestore = lazy(() => import("~/renderer/components/RecoverRestore"));
 const Onboarding = lazy(() => import("~/renderer/components/Onboarding"));
 const PostOnboardingScreen = lazy(() => import("~/renderer/components/PostOnboardingScreen"));
@@ -197,7 +194,6 @@ export default function Default() {
   const accounts = useSelector(accountsSelector);
   const analyticsConsoleActive = useEnv("ANALYTICS_CONSOLE");
   const providerNumber = useEnv("FORCE_PROVIDER");
-  const ldmkFeatureFlag = useFeature("ldmkTransport");
   const dmk = useDeviceManagementKit();
 
   useAccountsWithFundsListener(accounts, updateIdentify);
@@ -212,18 +208,17 @@ export default function Default() {
 
   const analyticsFF = useFeature("lldAnalyticsOptInPrompt");
   const hasSeenAnalyticsOptInPrompt = useSelector(hasSeenAnalyticsOptInPromptSelector);
-  const nftReworked = useFeature("lldNftsGalleryNewArch");
   const isLocked = useSelector(isLockedSelector);
   const dispatch = useDispatch();
-  const isNftReworkedEnabled = nftReworked?.enabled;
 
   useEffect(() => {
-    if (providerNumber && ldmkFeatureFlag?.enabled) {
+    // WebHID is now always enabled, set provider if specified
+    if (providerNumber) {
       dmk?.setProvider(providerNumber);
     }
     // setting provider only at initialisation
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ldmkFeatureFlag, dmk]);
+  }, [dmk]);
 
   useEffect(() => {
     if (
@@ -368,20 +363,9 @@ export default function Default() {
                                     path="/exchange/:appId?"
                                     render={withSuspense(Exchange)}
                                   />
-                                  <Route
-                                    exact
-                                    path="/account/:id/nft-collection"
-                                    render={withSuspense(
-                                      isNftReworkedEnabled ? NFTGalleryNew : NFTGallery,
-                                    )}
-                                  />
+
                                   <Route path="/swap-web" render={withSuspense(SwapWeb)} />
-                                  <Route
-                                    path="/account/:id/nft-collection/:collectionAddress?"
-                                    render={withSuspense(
-                                      isNftReworkedEnabled ? NFTCollectionNew : NFTCollection,
-                                    )}
-                                  />
+
                                   <Route
                                     path="/account/:parentId/:id"
                                     render={withSuspense(Account)}
@@ -394,6 +378,7 @@ export default function Default() {
                                     render={withSuspense(MarketCoin)}
                                   />
                                   <Route path="/market" render={withSuspense(Market)} />
+                                  <Route path="/receive" render={withSuspense(Receive)} />
                                 </Switch>
                               </Page>
                               <Drawer />

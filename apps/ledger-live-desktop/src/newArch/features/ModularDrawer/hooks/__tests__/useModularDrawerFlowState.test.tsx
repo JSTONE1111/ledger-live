@@ -9,11 +9,11 @@ const mockOnAssetSelected = jest.fn();
 const mockOnAccountSelected = jest.fn();
 
 const defaultProps = {
-  currenciesByProvider: [],
+  assets: [],
   assetsToDisplay: [ethereumCurrency, bitcoinCurrency],
   sortedCryptoCurrencies: [bitcoinCurrency, ethereumCurrency],
   setNetworksToDisplay: mockSetNetworksToDisplay,
-  currenciesIdsArray: ["bitcoin", "ethereum"],
+  currencyIds: ["bitcoin", "ethereum"],
   goToStep: mockGoToStep,
   isSelectAccountFlow: false,
   onAssetSelected: mockOnAssetSelected,
@@ -32,7 +32,6 @@ describe("useModularDrawerFlowState", () => {
     const { result } = renderHook(() => useModularDrawerFlowState(defaultProps));
     expect(result.current.selectedAsset).toBeUndefined();
     expect(result.current.selectedNetwork).toBeUndefined();
-    expect(result.current.searchedValue).toBeUndefined();
     expect(result.current.providers).toBeUndefined();
   });
 
@@ -62,13 +61,5 @@ describe("useModularDrawerFlowState", () => {
     });
     expect(mockSetNetworksToDisplay).toHaveBeenCalledWith(filtered);
     expect(mockGoToStep).toHaveBeenCalledWith("NETWORK_SELECTION");
-  });
-
-  it("should set searched value", () => {
-    const { result } = renderHook(() => useModularDrawerFlowState(defaultProps));
-    act(() => {
-      result.current.setSearchedValue("btc");
-    });
-    expect(result.current.searchedValue).toBe("btc");
   });
 });

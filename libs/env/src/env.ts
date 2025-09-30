@@ -107,6 +107,11 @@ const envDefinitions = {
     parser: stringParser,
     desc: "Node endpoint for celo",
   },
+  ENABLE_CELO_TOKENS: {
+    def: true,
+    parser: boolParser,
+    desc: "Enable token send and receive for Celo",
+  },
   COSMOS_GAS_AMPLIFIER: {
     def: 1.3, // Same as Keplr
     parser: intParser,
@@ -151,6 +156,11 @@ const envDefinitions = {
     parser: stringParser,
     def: "https://delegations-elrond.coin.ledger.com",
     desc: "MultiversX DELEGATION API url",
+  },
+  API_KASPA_ENDPOINT: {
+    parser: stringParser,
+    def: "https://kaspa.coin.ledger.com",
+    desc: "Kaspa API url",
   },
   API_STELLAR_HORIZON: {
     parser: stringParser,
@@ -222,6 +232,11 @@ const envDefinitions = {
     def: "https://earn.api.live.ledger.com/v0/network/solana/validator-details",
     desc: "base url for validators.app validator list",
   },
+  SOLANA_VALIDATORS_SUMMARY_BASE_URL: {
+    parser: stringParser,
+    def: "https://earn-dashboard.aws.stg.ldg-tech.com/figment/solana/validators_summary",
+    desc: "base url for validators.app validator summary",
+  },
   SOLANA_TESTNET_VALIDATORS_APP_BASE_URL: {
     parser: stringParser,
     def: "https://validators-solana.coin.ledger.com/api/v1/validators",
@@ -231,6 +246,11 @@ const envDefinitions = {
     def: 100 * 1000,
     parser: intParser,
     desc: "solana transaction broadcast confirmation timeout",
+  },
+  HEDERA_TOKEN_ASSOCIATION_MIN_USD: {
+    def: 0.05,
+    parser: floatParser,
+    desc: "Minimum USD value an account must hold to perform a token association",
   },
   API_HEDERA_MIRROR: {
     def: "https://hedera.coin.ledger.com",
@@ -301,6 +321,11 @@ const envDefinitions = {
     parser: stringParser,
     def: "https://tracker.berlin.icon.community/api/v1",
     desc: "ICON Berlin Testnet API url",
+  },
+  CANTON_API_KEY: {
+    def: "",
+    parser: stringParser,
+    desc: "API key for Canton network gateway authentication",
   },
   COINAPPS: {
     def: "",
@@ -441,16 +466,6 @@ const envDefinitions = {
     def: "https://explorers.api.live.ledger.com",
     parser: stringParser,
     desc: "Ledger generic explorer API",
-  },
-  EXPLORER_STAGING: {
-    def: "https://explorers.api-01.live.ledger-stg.com",
-    parser: stringParser,
-    desc: "Ledger staging explorer API",
-  },
-  EXPLORER_BETA: {
-    def: "https://explorers.api.live.ledger.com",
-    parser: stringParser,
-    desc: "Ledger generic explorer beta API",
   },
   EXPLORER_SATSTACK: {
     def: "http://localhost:20000",
@@ -641,11 +656,6 @@ const envDefinitions = {
     parser: boolParser,
     desc: "allow the creation of legacy accounts",
   },
-  SIMPLE_HASH_API_BASE: {
-    def: "https://simplehash.api.live.ledger.com/api/v0",
-    parser: stringParser,
-    desc: "SimpleHash API base url",
-  },
   SKIP_ONBOARDING: {
     def: false,
     parser: boolParser,
@@ -655,6 +665,11 @@ const envDefinitions = {
     def: 0,
     parser: intParser,
     desc: "API port for speculos",
+  },
+  SPECULOS_DEVICE: {
+    def: "",
+    parser: stringParser,
+    desc: "Device model id for speculos",
   },
   SPECULOS_PID_OFFSET: {
     def: 0,
@@ -777,6 +792,16 @@ const envDefinitions = {
     def: "https://trustchain.api.live.ledger.com",
     parser: stringParser,
     desc: "Trustchain API Prod",
+  },
+  DADA_API_STAGING: {
+    def: "https://dada.api.ledger-test.com/v1/",
+    parser: stringParser,
+    desc: "Dynamic Assets Data Aggregator API Staging",
+  },
+  DADA_API_PROD: {
+    def: "https://dada.api.ledger.com/v1/",
+    parser: stringParser,
+    desc: "Dynamic Assets Data Aggregator API Prod",
   },
   PLATFORM_DEBUG: {
     def: false,

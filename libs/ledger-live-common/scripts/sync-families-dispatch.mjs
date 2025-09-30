@@ -30,6 +30,7 @@ const familiesWPackage = [
   "bitcoin",
   "cardano",
   "casper",
+  "canton",
   "celo",
   "cosmos",
   "evm",
@@ -37,6 +38,7 @@ const familiesWPackage = [
   "filecoin",
   "internet_computer",
   "icon",
+  "kaspa",
   "multiversx",
   "near",
   "polkadot",
@@ -54,6 +56,8 @@ const familiesWPackage = [
 
 const alpacaized = {
   xrp: true,
+  stellar: true,
+  tezos: true,
 };
 
 cd(path.join(__dirname, "..", "src"));

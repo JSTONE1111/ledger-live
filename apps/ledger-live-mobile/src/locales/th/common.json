@@ -49,6 +49,7 @@
     "transactionDate" : "วันที่ของธุรกรรม",
     "outdated" : "ล้าสมัย",
     "satPerByte" : "sat/ไบต์",
+    "sompiPerByte" : "sompi/ไบต์",
     "notAvailable" : "ไม่สามารถใช้ได้",
     "import" : "นำเข้า",
     "bluetooth" : "Bluetooth",
@@ -287,120 +288,124 @@
       "description" : "โปรดลองอีกครั้ง"
     },
     "DisconnectedDevice" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "ขาดการเชื่อมต่อกับอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่สามารถเชื่อมต่อกับอุปกรณ์ของคุณได้ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "DisconnectedDeviceDuringOperation" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "ขาดการเชื่อมต่อกับอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่สามารถเชื่อมต่อกับอุปกรณ์ของคุณได้ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "DeviceDisconnectedWhileSendingError" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "ขาดการเชื่อมต่อกับอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่สามารถเชื่อมต่อกับอุปกรณ์ของคุณได้ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "DisconnectError" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "ขาดการเชื่อมต่อกับอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่สามารถเชื่อมต่อกับอุปกรณ์ของคุณได้ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "DeviceSessionNotFound" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "ขาดการเชื่อมต่อกับอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่สามารถเชื่อมต่อกับอุปกรณ์ของคุณได้ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
+    },
+    "ReconnectionFailedError" : {
+      "title" : "ขาดการเชื่อมต่อกับอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่สามารถเชื่อมต่อกับอุปกรณ์ของคุณได้ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "DeviceDisconnectedBeforeSendingApdu" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "ขาดการเชื่อมต่อกับอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่สามารถเชื่อมต่อกับอุปกรณ์ของคุณได้ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "TransportNotSupportedError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดกับวิธีการเชื่อมต่อ",
+      "description" : "มีปัญหาเกี่ยวกับวิธีการที่ใช้เชื่อมต่อกับอุปกรณ์ โปรดลองอีกครั้งโดยใช้วิธีการเชื่อมต่ออื่น หรือติดต่อ Ledger Support หากยังพบปัญหาอยู่"
     },
     "TransportAlreadyExistsError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดกับวิธีการเชื่อมต่อ",
+      "description" : "มีปัญหาเกี่ยวกับวิธีการที่ใช้เชื่อมต่อกับอุปกรณ์ โปรดลองอีกครั้งโดยใช้วิธีการเชื่อมต่ออื่น หรือติดต่อ Ledger Support หากยังพบปัญหาอยู่"
     },
     "NoTransportProvidedError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดกับวิธีการเชื่อมต่อ",
+      "description" : "มีปัญหาเกี่ยวกับวิธีการที่ใช้เชื่อมต่อกับอุปกรณ์ โปรดลองอีกครั้งโดยใช้วิธีการเชื่อมต่ออื่น หรือติดต่อ Ledger Support หากยังพบปัญหาอยู่"
     },
     "NoAccessibleDeviceError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดกับวิธีการเชื่อมต่อ",
+      "description" : "มีปัญหาเกี่ยวกับวิธีการที่ใช้เชื่อมต่อกับอุปกรณ์ โปรดลองอีกครั้งโดยใช้วิธีการเชื่อมต่ออื่น หรือติดต่อ Ledger Support หากยังพบปัญหาอยู่"
     },
     "ConnectionOpeningError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดกับวิธีการเชื่อมต่อ",
+      "description" : "มีปัญหาเกี่ยวกับวิธีการที่ใช้เชื่อมต่อกับอุปกรณ์ โปรดลองอีกครั้งโดยใช้วิธีการเชื่อมต่ออื่น หรือติดต่อ Ledger Support หากยังพบปัญหาอยู่"
     },
     "DeviceNotInitializedError" : {
-      "title" : "Device not onboarded",
-      "description" : "Your device isn't ready for use. Please follow the setup instructions and try again once onboarded."
+      "title" : "ไม่มีอุปกรณ์ที่จะออนบอร์ด",
+      "description" : "อุปกรณ์ของคุณยังไม่พร้อมใช้งาน โปรดทำตามคำแนะนำในการติดตั้งและลองออนบอร์ดอีกครั้ง"
     },
     "DeviceNotOnboardedError" : {
-      "title" : "Device not onboarded",
-      "description" : "Your device isn't ready for use. Please follow the setup instructions and try again once onboarded."
+      "title" : "ไม่มีอุปกรณ์ที่จะออนบอร์ด",
+      "description" : "อุปกรณ์ของคุณยังไม่พร้อมใช้งาน โปรดทำตามคำแนะนำในการติดตั้งและลองออนบอร์ดอีกครั้ง"
     },
     "DeviceLockedError" : {
-      "title" : "Device locked",
-      "description" : "Your device is locked. Please unlock it and try again."
+      "title" : "อุปกรณ์ถูกล็อก",
+      "description" : "อุปกรณ์ของคุณถูกล็อก โปรดปลดล็อกและลองอีกครั้ง"
     },
     "OutOfMemoryDAError" : {
-      "title" : "Not enough memory",
-      "description" : "Your device doesn’t have enough memory. Please uninstall apps and try again."
+      "title" : "หน่วยความจำไม่เพียงพอ",
+      "description" : "อุปกรณ์ของคุณมีหน่วยความจำไม่เพียงพอ โปรดถอนการติดตั้งแอปและลองอีกครั้ง"
     },
     "UnsupportedFirmwareDAError" : {
-      "title" : "OS is unsupported",
-      "description" : "Your device's operating system is unsupported. Please update it through Ledger Live, or contact Ledger Support for assistance if you encounter difficulties."
+      "title" : "ไม่รองรับระบบปฏิบัติการ (OS) นี้",
+      "description" : "ระบบปฏิบัติการนี้ไม่สามารถใช้งานได้กับอุปกรณ์ของคุณ โปรดอัปเดตระบบปฏิบัติการนี้ผ่านแอป Ledger Live หรือติดต่อ Ledger Support เพื่อขอความช่วยเหลือหากคุณยังประสบปัญหา"
     },
     "InvalidBatteryStatusTypeError" : {
-      "title" : "Battery error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดด้านแบตเตอรี่",
+      "description" : "มีบางอย่างผิดปกติ โปรดลองใหม่หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "InvalidBatteryDataError" : {
-      "title" : "Battery error",
-      "description" : "Battery status error. Please contact Ledger Support."
+      "title" : "เกิดข้อผิดพลาดด้านแบตเตอรี่",
+      "description" : "เกิดข้อผิดพลาดด้านสถานะแบตเตอรี่ โปรดติดต่อ Ledger Support"
     },
     "InvalidStatusWordError" : {
-      "title" : "Device connection error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการเชื่อมต่อกับอุปกรณ์",
+      "description" : "มีบางอย่างผิดปกติ โปรดลองใหม่หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "InvalidResponseFormatError" : {
-      "title" : "Device connection error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการเชื่อมต่อกับอุปกรณ์",
+      "description" : "มีบางอย่างผิดปกติ โปรดลองใหม่หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "UnknownDAError" : {
-      "title" : "Device connection error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการเชื่อมต่อกับอุปกรณ์",
+      "description" : "มีบางอย่างผิดปกติ โปรดลองใหม่หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "DeviceNotRecognizedError" : {
-      "title" : "Device not recognised",
-      "description" : "Ledger Live couldn't recognise your device. Please try with a again or contact Ledger Support if the issue persists."
+      "title" : "ไม่รู้จักอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่รู้จักอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "DeviceAlreadyDiscoveredError" : {
-      "title" : "Device not recognised",
-      "description" : "Ledger Live couldn't recognise your device. Please try with a again or contact Ledger Support if the issue persists."
+      "title" : "ไม่รู้จักอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่รู้จักอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "UnknownDeviceError" : {
-      "title" : "Device not recognised",
-      "description" : "Ledger Live couldn't recognise your device. Please try with a again or contact Ledger Support if the issue persists."
+      "title" : "ไม่รู้จักอุปกรณ์",
+      "description" : "แอป Ledger Live ไม่รู้จักอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "ReceiverApduError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการสื่อสาร",
+      "description" : "มีข้อผิดพลาดในการส่งข้อมูลไปยังอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "FramerApduError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการสื่อสาร",
+      "description" : "มีข้อผิดพลาดในการส่งข้อมูลไปยังอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "SendApduTimeoutError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการสื่อสาร",
+      "description" : "มีข้อผิดพลาดในการส่งข้อมูลไปยังอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "AlreadySendingApduError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการสื่อสาร",
+      "description" : "มีข้อผิดพลาดในการส่งข้อมูลไปยังอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "UnknownDeviceExchangeError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "เกิดข้อผิดพลาดในการสื่อสาร",
+      "description" : "มีข้อผิดพลาดในการส่งข้อมูลไปยังอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "CasperInvalidTransferId" : {
       "title" : "ID การโอนควรเป็นจำนวนบวกที่น้อยกว่า {{maxTransferId}}"
@@ -414,10 +419,6 @@
     "ETHAddressNonEIP" : {
       "title" : "ไม่มีการยืนยันอัตโนมัติ: ตรวจสอบ Address อย่างรอบคอบ",
       "description" : null
-    },
-    "EthAppNftNotSupported" : {
-      "title" : "อุปกรณ์นี้ไม่สามารถดำเนินการได้",
-      "description" : "คุณสมบัติการส่ง NFT ใช้ได้กับ Nano X และ Nano S+ เท่านั้น โปรดไปที่แพลตฟอร์มการสนับสนุนลูกค้าของเราเพื่อดูวิธีส่ง NFT ด้วย Nano S"
     },
     "Touch ID Error" : {
       "title" : "การยืนยันตัวตนด้วยไบโอเมทริกซ์ล้มเหลว",
@@ -690,6 +691,15 @@
       "title" : "การจับคู่ไม่สำเร็จ",
       "description" : "โปรดลองอีกครั้ง หรืออ่านบทความการแก้ไขปัญหาบลูทูธของเรา"
     },
+    "OneSuiMinForStake" : {
+      "title" : "จำนวนขั้นต่ำคือ 1 SUI"
+    },
+    "OneSuiMinForUnstake" : {
+      "title" : "จำนวนขั้นต่ำคือ 1 SUI"
+    },
+    "OneSuiMinForUnstakeToBeLeft" : {
+      "title" : "ควรเหลืออย่างน้อย 1 SUI ไว้ในสเตค (Stake)"
+    },
     "PasswordIncorrect" : {
       "title" : "รหัสผ่านไม่ถูกต้อง",
       "description" : "โปรดลองอีกครั้ง"
@@ -897,9 +907,6 @@
     "PolkadotAllFundsWarning" : {
       "title" : "ตรวจสอบให้แน่ใจว่าคุณมียอดคงเหลือในบัญชีเพียงพอสำหรับค่าธรรมเนียมธุรกรรมในอนาคต"
     },
-    "PolkadotDoMaxSendInstead" : {
-      "title" : "ยอดคงเหลือในบัญชีต้องไม่ต่ำกว่า {{minimumBalance}} ส่งสูงสุดไปยังบัญชีที่ว่างเปล่า"
-    },
     "PolkadotBondMinimumAmount" : {
       "title" : "คุณต้องผูกมัดอย่างน้อย {{minimumBondAmount}}"
     },
@@ -914,9 +921,6 @@
     },
     "TaprootNotActivated" : {
       "title" : "Taproot Mainnet ยังไม่เปิดใช้งาน"
-    },
-    "NotEnoughNftOwned" : {
-      "title" : "คุณใช้มีจำนวนโทเคนเกินกว่าที่สามารถจัดเก็บได้"
     },
     "generic" : {
       "title" : "{{message}}",
@@ -1042,10 +1046,6 @@
       "title" : "ไม่สามารถดาวน์โหลดภาพได้",
       "description" : "ลองอีกครั้งโดยใช้ภาพอื่น"
     },
-    "NFTMetadataLoadingError" : {
-      "title" : "ปัญหาในการโหลด NFT Metadata",
-      "description" : "ลองอีกครั้งโดยใช้ NFT อื่น"
-    },
     "ImageSizeLoadingError" : {
       "title" : "เรียกดูขนาดภาพไม่สำเร็จ",
       "description" : "ลองอีกครั้งโดยใช้ภาพอื่น"
@@ -1072,6 +1072,18 @@
     },
     "HederaAddAccountError" : {
       "title" : "ยังไม่ได้เพิ่มบัญชีของคุณ โปรดลองอีกครั้ง"
+    },
+    "HederaInsufficientFundsForAssociation" : {
+      "title" : "ยอดคงเหลือในบัญชีไม่เพียงพอ",
+      "description" : "ยอด HBAR ในบัญชีไม่พอสำหรับการดำเนินการเชื่อมโยงโทเคน ต้องมี HBAR มูลค่าอย่างน้อย ${{requiredWorthInUSD}}"
+    },
+    "HederaRecipientTokenAssociationRequired" : {
+      "title" : "ต้องมีการเชื่อมโยงโทเคน",
+      "description" : "โทเคนที่คุณพยายามส่งไม่ได้เชื่อมโยงกับบัญชีปลายทาง ต้องมีการเชื่อมโยงจากบัญชีผู้รับเพื่อรับโทเคน"
+    },
+    "HederaRecipientTokenAssociationUnverified" : {
+      "title" : "ไม่สามารถตรวจสอบการเชื่อมโยงโทเคนได้",
+      "description" : "เราไม่สามารถยืนยันได้ว่าบัญชีปลายทางสามารถรับโทเคนนี้ได้หรือไม่ ที่อยู่อาจไม่ถูกต้อง หรืออาจมีปัญหาด้านเครือข่ายหรือบริการ"
     },
     "NearNewAccountWarning" : {
       "title" : "ยังไม่ได้สร้างบัญชีผู้รับ Protocol ต้องมีการโอน {{formattedNewAccountStorageCost}} เพื่อสร้าง"
@@ -1304,7 +1316,8 @@
     "estimatedTime" : {
       "slow" : "≈ 2-3 นาที",
       "medium" : "≈ 30 วินาที",
-      "fast" : "≈ 15 วินาที"
+      "fast" : "≈ 15 วินาที",
+      "custom" : ""
     }
   },
   "signout" : {
@@ -1448,7 +1461,7 @@
       "discoverWeb3" : {
         "title" : "ค้นพบ Web3",
         "description" : "ค้นพบทุกอย่างเกี่ยวกับ Web3 จนกว่าอุปกรณ์ของคุณจะมาถึง!",
-        "cta" : "Discover"
+        "cta" : "ผู้ให้บริการ"
       }
     }
   },
@@ -1549,7 +1562,7 @@
     "desc" : "คำสั่งซื้อของคุณอยู่ระหว่างดำเนินการ \nโปรดตรวจสอบอีเมลของคุณเพื่อดูการยืนยันคำสั่งซื้อ"
   },
   "discover" : {
-    "title" : "Discover",
+    "title" : "ผู้ให้บริการ",
     "desc" : "สำรวจโลกของ Web3 อย่างปลอดภัย",
     "link" : "ขอรายละเอียดเพิ่มเติม",
     "sections" : {
@@ -1570,7 +1583,7 @@
         "desc" : "สำรวจ Web3 ที่ผสานรวมกับ Ledger อย่างสมบูรณ์"
       },
       "earn" : {
-        "title" : "Earn",
+        "title" : "สร้างรายได้",
         "desc" : "ทำให้คริปโตของคุณเติบโตผ่านการ Stake และการให้ยืม"
       },
       "mint" : {
@@ -2133,27 +2146,6 @@
         "learnHowToUpdate" : "ศึกษาวิธีอัปเดต"
       }
     },
-    "stepImportAccounts" : {
-      "title" : "ซิงค์คริปโตจากเดสก์ท็อป",
-      "desc" : "หากคุณมีการตั้งค่าคริปโตในแอป Ledger บนเดสก์ท็อปอยู่แล้ว คุณสามารถซิงค์เพื่อจัดการได้จากโทรศัพท์ของคุณ",
-      "cta" : "ฉันพร้อมสแกนแล้ว",
-      "bullets" : {
-        "0" : {
-          "label" : "บนแอปเดสก์ท็อป เลือก\n<1>การตั้งค่า > บัญชี > ส่งออกบัญชี</1>"
-        },
-        "1" : {
-          "label" : "สแกน LiveQR Code ด้วยโทรศัพท์ของคุณ"
-        },
-        "2" : {
-          "label" : "เลือกบัญชีคริปโตเพื่อนำเข้า"
-        }
-      },
-      "warning" : {
-        "title" : "จะต้องซิงค์เดสก์ท็อปของคุณและแอปมือถือด้วยตัวเอง",
-        "desc" : "Ledger Live เคารพความเป็นส่วนตัวของคุณและจัดเก็บข้อมูลของคุณไว้ในเครื่อง หากคุณเปลี่ยนบัญชีและการตั้งค่าในโทรศัพท์ของคุณ คุณจะต้องทำเช่นเดียวกันในคอมพิวเตอร์ของคุณด้วย และในทางกลับกันด้วย ธุรกรรมของคุณจะซิงโครไนซ์กับบล็อกเชนเสมอ",
-        "cta" : "เข้าใจแล้ว!"
-      }
-    },
     "stepSetupPin" : {
       "step1" : "เปิด {{fullDeviceName}} ของคุณและทำตามคำแนะนำ",
       "step1-nanoS" : "เชื่อมต่อ {{fullDeviceName}} ของคุณกับโทรศัพท์โดยใช้สาย OTG",
@@ -2541,10 +2533,10 @@
     "manager" : "Ledger ของฉัน",
     "settings" : "การตั้งค่า",
     "platform" : "แอป Live",
-    "discover" : "Discover",
+    "discover" : "ผู้ให้บริการ",
     "nanoX" : "Nano X",
     "market" : "ตลาด",
-    "earn" : "Earn"
+    "earn" : "สร้างรายได้"
   },
   "portfolio" : {
     "totalBalance" : "ยอดคงเหลือทั้งหมด",
@@ -2690,9 +2682,7 @@
   "operations" : {
     "types" : {
       "IN" : "ได้รับแล้ว",
-      "NFT_IN" : "NFT ที่ได้รับ",
       "OUT" : "ส่งแล้ว",
-      "NFT_OUT" : "NFT ที่ส่งแล้ว",
       "CREATE" : "สร้างแล้ว",
       "REVEAL" : "เปิดเผยแล้ว",
       "DELEGATE" : "Delegate เรียบร้อยแล้ว",
@@ -2726,7 +2716,8 @@
       "WITHDRAW" : "ถอนแล้ว",
       "STAKE" : "Stake แล้ว",
       "UNSTAKE" : "ยังไม่ได้ Stake",
-      "WITHDRAW_UNSTAKED" : "ถอนแล้ว"
+      "WITHDRAW_UNSTAKED" : "ถอนแล้ว",
+      "ASSOCIATE_TOKEN" : "เชื่อมโยงโทเคน"
     }
   },
   "operationDetails" : {
@@ -2758,6 +2749,7 @@
     "extra" : {
       "transferId" : "ID การโอน (Memo)",
       "resource" : "ทรัพยากร",
+      "validator" : "ผู้ตรวจสอบ",
       "frozenAmount" : "จำนวนที่ถูก Freeze",
       "unfreezeAmount" : "จำนวนที่ Unfreeze",
       "address" : "Address",
@@ -2795,11 +2787,7 @@
       "stakedAmount" : "จำนวนที่ Stake แล้ว",
       "accountCreationFee" : "ค่าธรรมเนียมการสร้างบัญชี"
     },
-    "multipleAddresses" : "ทำไมต้องหลาย Address?",
-    "tokenName" : "ชื่อโทเคน",
-    "collectionContract" : "สัญญาโทเคน",
-    "tokenId" : "ID ของโทเคน (NFT)",
-    "quantity" : "ปริมาณ"
+    "multipleAddresses" : "ทำไมต้องหลาย Address?"
   },
   "operationList" : {
     "noOperations" : "ไม่มีการดำเนินการ",
@@ -2831,8 +2819,8 @@
       "contactSupport" : "ติดต่อฝ่ายสนับสนุน"
     },
     "willBedeprecatedBanner" : {
-      "title" : "เพื่อปรับปรุงประสิทธิภาพ จะไม่มีการรองรับ {{currencyName}} ใน Ledger Live ตั้งแต่วันที่ {{deprecatedDate}} อย่างไรก็ตาม สกุลเงินจะยังคงได้รับการสนับสนุนบน Hardware Wallet ของ Ledger โปรดติดต่อฝ่ายสนับสนุนลูกค้าของ Ledger หากคุณต้องการความช่วยเหลือในเรื่องนี้",
-      "contactSupport" : "ติดต่อฝ่ายสนับสนุน"
+      "title" : "{{currencyName}} จะไม่ได้รับการรองรับบนแอป Ledger Live ตั้งแต่วันที่ {{deprecatedDate}} เป็นต้นไป อย่างไรก็ตาม สินทรัพย์ของคุณจะยังคงได้รับการปกป้องโดยฮาร์ดแวร์วอลเล็ตของ Ledger หากต้องการเรียนรู้เพิ่มเติม โปรดอ่านบทความฉบับเต็มจากศูนย์ช่วยเหลือได้ที่ลิงก์ด้านล่างนี้",
+      "learnMore" : "เรียนรู้เพิ่มเติม"
     },
     "tokens" : {
       "contractAddress" : "Address ของสัญญา",
@@ -2969,10 +2957,6 @@
     "undelegation" : {
       "sectionLabel" : "การ Undelegate"
     },
-    "nft" : {
-      "receiveNft" : "รับ NFT",
-      "howTo" : "เพื่อเพิ่ม NFT คุณต้อง<0>รับ</0>โดยใช้ <1>{{currency}} Address</1> ของคุณ"
-    },
     "readOnly" : {
       "noTransaction" : {
         "title" : "คุณไม่มีธุรกรรมใด ๆ",
@@ -2986,7 +2970,7 @@
         "description" : "คุณต้องมี {{currencyTicker}} บางส่วนเพื่อ {{actionName}} ด้วยบัญชีนี้"
       }
     },
-    "earn" : "Earn",
+    "earn" : "สร้างรายได้",
     "quickActions" : "ดำเนินการอย่างรวดเร็ว",
     "referralProgram" : "แนะนำเพื่อนและรับ Bitcoin มูลค่า 20 USD",
     "banner" : {
@@ -3183,11 +3167,6 @@
         "desc" : "การดำเนินการนี้จะซ่อนบัญชี <1><0>{tokenName}</0></1> ทั้งหมด โดยคุณสามารถแสดงบัญชีอีกครั้งได้โดยใช้ <3>การตั้งค่า > บัญชี</3>",
         "confirm" : "ซ่อนโทเคน"
       },
-      "hideNFTCollectionCTA" : "ซ่อนคอลเลกชัน",
-      "hideNFTCollectionModal" : {
-        "title" : "ซ่อนคอลเลกชัน?",
-        "desc" : "คุณสามารถยกเลิกการซ่อนคอลเลกชันนี้ได้ในตัวเลือกการตั้งค่า"
-      },
       "cryptoAssets" : {
         "header" : "สินทรัพย์คริปโต",
         "title" : "สินทรัพย์คริปโต",
@@ -3237,11 +3216,11 @@
       },
       "largeMover" : {
         "title" : "การแจ้งเตือนราคา",
-        "desc" : "You’ll be notified of important price movements for popular tokens you own"
+        "desc" : "คุณจะได้รับการแจ้งเตือนเกี่ยวกับความเคลื่อนไหวของราคาที่สำคัญสำหรับโทเคนยอดนิยมที่คุณเป็นเจ้าของ"
       },
       "transactionsAlerts" : {
         "title" : "การแจ้งเตือนธุรกรรม (เบต้า)",
-        "desc" : "รับการแจ้งเตือนเกี่ยวกับธุรกรรมของคุณสำหรับ Ethereum, Polygon, Binance Smart Chain, Avalanche และ Ethereum Classic"
+        "desc" : "รับการแจ้งเตือนเกี่ยวกับธุรกรรมของคุณสำหรับ Ethereum, Polygon, BNB Chain, Avalanche และ Ethereum Classic"
       },
       "price" : {
         "title" : "การแจ้งเตือนราคา",
@@ -3597,7 +3576,7 @@
         "balance" : "ยอดคงเหลือในบัญชี <0>123</0>",
         "fromAccount" : "เลือกบัญชี",
         "toAccount" : "เลือกบัญชี",
-        "paraswapCTA" : "กำลังมองหา Paraswap หรือเปล่า? ตอนนี้ถูกย้ายไปยังแท็บ Discover แล้ว!",
+        "paraswapCTA" : "มองหา Paraswap อยู่หรือเปล่า? ตอนนี้ถูกย้ายไปยังแท็บ 'ผู้ให้บริการ' แล้ว!",
         "quote" : "โควตราคา",
         "receive" : "รับ",
         "amount" : {
@@ -3659,7 +3638,8 @@
           "refunded" : "โปรดติดต่อผู้ให้บริการ Swap พร้อม Swap ID ของคุณเพื่อขอข้อมูลเพิ่มเติม",
           "pending" : "โปรดรอสักครู่ ผู้ให้บริการ Swap กำลังประมวลผลธุรกรรม",
           "onhold" : "โปรดติดต่อผู้ให้บริการ Swap พร้อม Swap ID ของคุณเพื่อแก้ไขสถานการณ์",
-          "finished" : "การทำ Swap ของคุณเสร็จสมบูรณ์แล้ว"
+          "finished" : "การทำ Swap ของคุณเสร็จสมบูรณ์แล้ว",
+          "unknown" : "เรากำลังรอข้อมูลจากผู้ให้บริการ"
         }
       },
       "missingApp" : {
@@ -3686,7 +3666,8 @@
         "empty" : {
           "title" : "การ Swap ก่อนหน้านี้ของคุณจะปรากฏที่นี่",
           "desc" : "คุณยังไม่ได้ทำการ Swap หรือ Ledger Live กำลังถูกรีเซ็ตอยู่ในขณะนี้"
-        }
+        },
+        "feedback" : "ส่งความคิดเห็นของคุณ"
       }
     },
     "swap2" : {
@@ -3720,6 +3701,7 @@
             "provider" : "ผู้ให้บริการ",
             "rate" : "อัตรา",
             "fees" : "ค่าธรรมเนียมเครือข่าย",
+            "feesDescription" : "ค่าธรรมเนียมนี้ถูกเรียกเก็บโดยเครือข่ายบล็อกเชนเพื่อประมวลผลการสวอป โดยจะคิดค่าธรรมเนียม 'การส่ง' เพิ่มเติมจากโควตราคาที่ให้ ส่วนค่าธรรมเนียม 'การรับ' นั้นได้รวมอยู่ในโควตราคาแล้ว",
             "target" : "บัญชีเป้าหมาย"
           },
           "noAccount" : "สร้างบัญชีเพื่อรับ {{name}}",
@@ -3742,6 +3724,10 @@
       },
       "twoStepApproval" : {
         "title" : "ดำเนินการตามขั้นตอน"
+      },
+      "loader" : {
+        "title" : "กำลังประมวลผลการสวอป (Swap)",
+        "description" : "กรุณารอสักครู่ ระบบกำลังดำเนินการคำขอของคุณ"
       },
       "history" : {
         "title" : "ประวัติการสวอป"
@@ -3773,7 +3759,7 @@
     },
     "lending" : {
       "title" : "ให้ยืมคริปโต",
-      "titleTransferTab" : "Earn",
+      "titleTransferTab" : "สร้างรายได้",
       "descriptionTransferTab" : "รับ Passive Income",
       "actionTitle" : "ให้ยืม",
       "accountActions" : {
@@ -4010,10 +3996,7 @@
       "summary" : "สรุป",
       "selectDevice" : "เลือกอุปกรณ์",
       "connectDevice" : "เชื่อมต่ออุปกรณ์",
-      "stepRange" : "ขั้นตอนที่ {{currentStep}} จาก {{totalSteps}}",
-      "quantity" : "ปริมาณ",
-      "selectCollection" : "คอลเลกชัน",
-      "selectNft" : "NFT"
+      "stepRange" : "ขั้นตอนที่ {{currentStep}} จาก {{totalSteps}}"
     },
     "recipient" : {
       "scan" : "สแกน QR Code",
@@ -4044,6 +4027,10 @@
       "quantityAvailable" : "ปริมาณที่ใช้ได้"
     },
     "summary" : {
+      "solanaRawTransaction" : {
+        "title" : "จำเป็นต้องมีการ Blind Signing",
+        "description" : "คุณไม่สามารถตรวจสอบรายละเอียดธุรกรรมบนอุปกรณ์ Ledger ของคุณได้ หากคุณเซ็น คุณอาจสูญเสียสินทรัพย์ของคุณทั้งหมด เซ็นก็ต่อเมื่อคุณไว้ใจเว็บไซต์นี้เท่านั้น"
+      },
       "subaccountsWarning" : "คุณจะต้องเติมสกุลเงิน {{ currency }} ในบัญชีนี้เพื่อส่งโทเคนของบัญชีนี้",
       "tag" : "แท็ก (ใส่หรือไม่ก็ได้)",
       "validateTag" : "ตรวจสอบแท็ก",
@@ -4346,7 +4333,7 @@
       "title" : "เลือกบัญชีที่คุณต้องการเพิ่ม",
       "ctaStopScan" : "หยุดการสแกน",
       "confirm" : "ยืนยัน",
-      "scanningTitle" : "กำลังมองหาบัญชีที่มีอยู่บนบล็อกเชน...",
+      "scanningTitle" : "กำลังตรวจสอบบล็อกเชน...",
       "whichAddressType" : "เรียนรู้วิธีการเลือกประเภท Address",
       "sections" : {
         "importable" : {
@@ -4411,7 +4398,7 @@
     "confirmSwap" : {
       "title" : "ยืนยันการดำเนินการ Swap บนอุปกรณ์",
       "alert" : {
-        "default" : "ตรวจสอบรายละเอียดการ Swap บนอุปกรณ์ของคุณก่อนส่ง มีการแลกเปลี่ยน Address อย่างปลอดภัย ดังนั้นคุณไม่จำเป็นต้องตรวจสอบรายการเหล่านั้น",
+        "default" : "ตรวจสอบรายละเอียดการสวอป (Swap) บนอุปกรณ์ Ledger ของคุณก่อนส่งธุรกรรม",
         "provider" : "ตรวจสอบรายละเอียดการ Swap บนอุปกรณ์ของคุณก่อนส่ง {{providerName}} อาจต้องดำเนินการตรวจสอบเพิ่มเติมสำหรับบางธุรกรรม ส่งผลให้เกิดความล่าช้า"
       },
       "acceptTerms" : "ในการตรวจสอบธุรกรรมนี้ ฉันยอมรับ\n<0><0>เงื่อนไขการใช้งานของ </0>{{provider}}</0>",
@@ -6242,6 +6229,7 @@
       "iWithdraw" : "ฉันถอน",
       "totalStake" : "Stake ทั้งหมด",
       "commission" : "คอมมิชชัน",
+      "netApy" : "อัตราผลตอบแทนต่อปี (APY) สุทธิ",
       "stakeActivationState" : "State",
       "stakeActivePercent" : "ใช้งานอยู่",
       "stakeAvailableBalance" : "ยอดคงเหลือในบัญชีที่ใช้ได้",
@@ -6447,6 +6435,107 @@
       }
     }
   },
+  "sui" : {
+    "info" : {
+      "available" : {
+        "title" : "SUI ที่ใช้ได้",
+        "description" : "จำนวนที่สามารถใช้จ่ายได้"
+      },
+      "storageUsage" : {
+        "title" : "ยอดคงเหลือขั้นต่ำ",
+        "description" : "จำนวนนี้สงวนไว้สำหรับการจัดเก็บและการทำธุรกรรม และเป็นยอดคงเหลือขั้นต่ำที่บัญชีของคุณต้องรักษาไว้เพื่อให้ยังสามารถใช้งานได้อยู่"
+      },
+      "staked" : {
+        "title" : "สินทรัพย์ที่ Delegate",
+        "description" : "ยอดคงเหลือในบัญชีที่ทำการ Delegate ไปแล้ว"
+      }
+    },
+    "unstaking" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "จำนวนที่จะ Undelegate"
+      },
+      "flow" : {
+        "steps" : {
+          "amount" : {
+            "warning" : "เมื่อ Undelegate แล้ว ยอดคงเหลือในบัญชีและ Reward ที่สะสมจะถูกโอนเข้าบัญชีทันที"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "คุณได้ Undelegate สินทรัพย์ของคุณสำเร็จแล้ว"
+            }
+          }
+        }
+      }
+    },
+    "withdrawing" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "จำนวนที่จะถอน"
+      },
+      "flow" : {
+        "steps" : {
+          "verification" : {
+            "success" : {
+              "title" : "คุณได้ถอนสินทรัพย์ของคุณเรียบร้อยแล้ว"
+            }
+          }
+        }
+      }
+    },
+    "staking" : {
+      "sectionLabel" : "ตำแหน่งที่ Delegate",
+      "info" : "วิธีใช้งานการ Delegate?",
+      "add" : "เพิ่ม",
+      "stakingEarn" : "คุณสามารถรับ SUI Reward ได้ด้วยการ Delegate สินทรัพย์ของคุณ",
+      "totalStake" : "จำนวนที่สเตคแล้วทั้งหมด",
+      "commission" : "คอมมิชชัน",
+      "iStake" : "ฉันได้ Delegate",
+      "actions" : {
+        "unstake" : "Undelegate"
+      },
+      "drawer" : {
+        "status" : "สถานะ",
+        "active" : "ใช้งานอยู่",
+        "inactive" : "ไม่ได้เปิดใช้งาน",
+        "pending" : "รอดำเนินการ",
+        "available" : "สามารถถอนได้"
+      },
+      "stepperHeader" : {
+        "amountSubTitle" : "จำนวนที่จะ Delegate",
+        "selectDevice" : "เลือกอุปกรณ์",
+        "connectDevice" : "เชื่อมต่อกับอุปกรณ์",
+        "stepRange" : "ขั้นตอนที่ {{currentStep}} จาก {{totalSteps}}"
+      },
+      "flow" : {
+        "steps" : {
+          "starter" : {
+            "description" : "Delegate SUI ของคุณเพื่อรับ Reward อย่างปลอดภัย โดยยังคงควบคุมสินทรัพย์ของคุณเองได้",
+            "steps" : {
+              "0" : "สินทรัพย์ที่ทำการ Delegate ยังเป็นของคุณ",
+              "1" : "เมื่อ Undelegate แล้ว ยอดคงเหลือในบัญชีและ Reward ที่สะสมไว้ของคุณจะส่งให้ในทันที",
+              "2" : "Delegate ด้วยอุปกรณ์ Ledger ของคุณอย่างปลอดภัย"
+            },
+            "warning" : {
+              "description" : "เลือกผู้ตรวจสอบของคุณอย่างรอบคอบ: สินทรัพย์ที่คุณ Delegate บางส่วนอาจสูญหายไปอย่างถาวรหากผู้ตรวจสอบทำงานอย่างไม่เหมาะสม"
+            },
+            "cta" : "ดำเนินการต่อ"
+          },
+          "amount" : {
+            "assetsRemaining" : "สินทรัพย์ที่เหลือ: <0>{{amount}}</0>",
+            "allAssetsUsed" : "สินทรัพย์ทั้งหมดที่ใช้ไป",
+            "minAmount" : "จำนวนขั้นต่ำ: <0>{{min}}</0>",
+            "incorrectAmount" : "จำนวนสูงสุด: <0>{{max}}</0>",
+            "cta" : "ดำเนินการต่อ"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "คุณได้ Delegate สินทรัพย์ของคุณเรียบร้อยแล้ว",
+              "text" : "ยอดคงเหลือในบัญชีของคุณจะอัปเดตหลังจากที่เครือข่ายได้ยืนยันธุรกรรมของคุณแล้ว"
+            }
+          }
+        }
+      }
+    }
+  },
   "aptos" : {
     "info" : {
       "available" : {
@@ -6634,6 +6723,7 @@
       "undelegate" : "การ Delegate บัญชีของคุณจะยุติลงเมื่อได้รับการยืนยันการดำเนินการ โดยคุณสามารถ Delegate บัญชีอีกครั้งได้ทุกเมื่อ"
     },
     "summaryTitle" : "สรุป",
+    "delegate" : "Delegate",
     "goToAccount" : "ไปที่บัญชี",
     "howDelegationWorks" : "วิธีใช้งานการ Delegate",
     "actions" : {
@@ -6838,7 +6928,7 @@
   },
   "browseWeb3" : {
     "catalog" : {
-      "title" : "Discover",
+      "title" : "ผู้ให้บริการ",
       "subtitle" : "สำรวจ Web3 ที่ผสานรวมกับ Ledger อย่างสมบูรณ์",
       "section" : {
         "recentlyUsed" : "ใช้ล่าสุด",
@@ -7009,47 +7099,6 @@
       }
     }
   },
-  "nft" : {
-    "account" : {
-      "seeAllNfts" : "ดู NFT ทั้งหมด",
-      "seeFewerNfts" : "ดู NFT น้อยลง"
-    },
-    "gallery" : {
-      "allNft" : "NFT ทั้งหมด",
-      "addNew" : "เพิ่มใหม่"
-    },
-    "designedForStax" : {
-      "title" : "<0>ออกแบบมาสำหรับ</0><1>Ledger</1><2>Stax</2>",
-      "drawer" : {
-        "description" : "NFT นี้มีภาพเพิ่มเติมของ NFT ซึ่งออกแบบมาโดยเฉพาะสำหรับหน้าจอ E Ink  ของ Ledger Stax\n\nภาพนี้จะถูกใช้เมื่อคุณตั้งค่า NFT นี้เป็นหน้าจอล็อคของคุณ",
-        "cta" : "เข้าใจแล้ว"
-      }
-    },
-    "viewer" : {
-      "properties" : "คุณสมบัติ",
-      "description" : "คำอธิบาย",
-      "tokenContract" : "Address โทเคน",
-      "tokenContractCopied" : "คัดลอก Address โทเคนแล้ว!",
-      "tokenId" : "ID โทเคน",
-      "tokenIdCopied" : "คัดลอก ID โทเคนแล้ว!",
-      "quantity" : "ปริมาณ",
-      "attributes" : {
-        "floorPrice" : "ราคาฟลอร์"
-      }
-    },
-    "viewerModal" : {
-      "viewOn" : "ดูบน",
-      "viewInExplorer" : "ดูใน Explorer",
-      "hide" : "ซ่อน NFT Collection",
-      "txDetails" : "รายละเอียดธุรกรรม"
-    },
-    "modalDisabled" : {
-      "title" : "ฟังก์ชั่นการส่งไม่พร้อมใช้งานบน iOS",
-      "body" : "เพื่อให้สอดคล้องกับการอัปเดตล่าสุดของ Apple ใน App Store การส่ง NFT จะไม่สามารถใช้งานได้ชั่วคราว คุณยังสามารถใช้ Ledger Live บนเดสก์ท็อปเพื่อส่ง NFT ได้",
-      "learnMore" : "เรียนรู้เพิ่มเติม",
-      "continue" : "เข้าใจแล้ว!"
-    }
-  },
   "ApplicationVersion" : "v{{version}}",
   "analytics" : {
     "title" : "การวิเคราะห์",
@@ -7070,6 +7119,55 @@
     },
     "currentAddress" : {
       "messageIfVirtual" : "Address {{name}} ของคุณไม่สามารถยืนยันได้บนอุปกรณ์ Ledger ของคุณ ใช้งานโดยต้องยอมรับความเสี่ยงเอง"
+    },
+    "receive" : {
+      "warnings" : {
+        "associationPrerequisite" : {
+          "text" : "ต้องมีการเชื่อมโยงบัญชีของคุณเพื่อรับโทเคน HTS หากคุณยังไม่ได้ทำการเชื่อมโยงบัญชีกับโทเคน HTS ที่คุณต้องการรับ <0>คลิกที่นี่</0> เพื่อเริ่มขั้นตอนการเชื่อมโยงโทเคน",
+          "learnMore" : "เรียนรู้เพิ่มเติม"
+        }
+      }
+    },
+    "associate" : {
+      "selectToken" : {
+        "title" : "เลือกโทเคนที่คุณต้องการรับ"
+      },
+      "summary" : {
+        "title" : "เชื่อมโยงโทเคน",
+        "from" : "โทเคน",
+        "to" : "ไปยัง",
+        "warning" : {
+          "text" : "เมื่อคลิก 'ดำเนินการต่อ' คุณจะเชื่อมโยงโทเคนที่เลือกกับบัญชี Hedera ของคุณ",
+          "learnMore" : "เรียนรู้เพิ่มเติม"
+        }
+      },
+      "selectDevice" : {
+        "title" : "เชื่อมโยงโทเคน"
+      },
+      "connectDevice" : {
+        "title" : "เชื่อมโยงโทเคน"
+      },
+      "validationSuccess" : {
+        "title" : "ส่งธุรกรรมแล้ว",
+        "text" : "คุณจะได้รับโทเคนนี้เมื่อธุรกรรมการเชื่อมโยงโทเคนได้รับการยืนยันแล้ว"
+      }
+    },
+    "send" : {
+      "warnings" : {
+        "missingAssociation" : {
+          "learnMore" : "เรียนรู้เพิ่มเติม"
+        },
+        "unverifiedAssociation" : {
+          "learnMore" : "เรียนรู้เพิ่มเติม"
+        }
+      }
+    },
+    "operationDetails" : {
+      "postAccountSection" : "โทเคนที่เชื่อมโยงแล้ว",
+      "postAlert" : {
+        "text" : "เมื่อมีการยืนยันธุรกรรมนี้แล้ว คุณจะสามารถรับโทเคนของคุณได้ <0>คลิกที่นี่</0> เพื่อเริ่มขั้นตอนการรับ",
+        "learnMore" : "เรียนรู้เพิ่มเติม"
+      }
     }
   },
   "asset" : {
@@ -7084,7 +7182,6 @@
     "drawer" : {
       "options" : {
         "uploadFromPhone" : "เลือกจากแกลเลอรีรูปภาพของฉัน",
-        "selectFromNFTGallery" : "เลือกจากแกลเลอรี NFT",
         "remove" : "นำภาพปัจจุบันออก"
       }
     },
@@ -7115,9 +7212,6 @@
       "setPicture" : "ตั้งเป็นหน้าจอล็อค",
       "editPicture" : "แก้ไขภาพ",
       "pickDeviceModel" : "เลือกอุปกรณ์"
-    },
-    "nftGallery" : {
-      "title" : "NFT ของฉัน"
     }
   },
   "postOnboarding" : {
@@ -7162,50 +7256,7 @@
   "wallet" : {
     "tabs" : {
       "crypto" : "คริปโต",
-      "nft" : "NFT",
       "market" : "ตลาด"
-    },
-    "nftGallery" : {
-      "filters" : {
-        "select" : "เลือก",
-        "filter" : "ตัวกรอง",
-        "blockchain" : "บล็อกเชน",
-        "seeAll" : "ดูทั้งหมด",
-        "selectAndHide" : "เลือกและซ่อน",
-        "hide" : "ซ่อน {{count}} คอลเลกชัน",
-        "hiddenCollections" : "คอลเลกชันที่ซ่อนอยู่",
-        "hide_plural" : "ซ่อน {{count}} คอลเลกชัน",
-        "empty" : "ไม่มีคอลเลกชันที่ซ่อนอยู่ให้แสดง",
-        "alertHide" : "ซ่อนคอลเลกชัน 1 รายการ คุณสามารถยกเลิกการซ่อนได้ตลอดเวลาในตัวกรองแกลเลอรี",
-        "alertHide_plural" : "ซ่อนคอลเลกชัน {{count}} รายการ คุณสามารถยกเลิกการซ่อนได้ตลอดเวลาในตัวกรองแกลเลอรี"
-      },
-      "emptyFiltered" : {
-        "title" : "ไม่มี NFT ที่ตรงตามเกณฑ์ของคุณ",
-        "button" : "รีเซ็ตตัวกรอง"
-      },
-      "empty" : {
-        "title" : "ยังไม่มี NFT ที่จะแสดง",
-        "subtitle" : "เริ่มต้นด้วยการเพิ่ม NFT ลงใน Wallet ของคุณ",
-        "receive" : "รับ NFT",
-        "supportLink" : "จะรับ NFT จาก Wallet อื่นได้อย่างไร?"
-      },
-      "receiveModal" : {
-        "title" : "รับ NFT ในลักษณะเดียวกับคริปโตอื่น ๆ",
-        "bullets" : {
-          "0" : "• เลือกบล็อกเชนคริปโตของ NFT",
-          "1" : "• เลือกบัญชีเพื่อรับ NFT"
-        },
-        "cta" : "โอเค เข้าใจแล้ว",
-        "info" : "ฉันต้องการเรียนรู้เพิ่มเติม"
-      },
-      "hideNftModal" : {
-        "title" : "ซ่อน NFT Collection",
-        "desc" : "การกระทำนี้จะซ่อน NFT ทั้งหมดจากคอลเลกชัน {{collectionName}} คุณสามารถยกเลิกการซ่อนได้จากตัวกรองแกลเลอรี",
-        "cta" : "ซ่อน NFT นี้"
-      },
-      "media" : {
-        "tag" : "{{count}} NFT"
-      }
     },
     "referralProgram" : "$20"
   },
@@ -7668,7 +7719,7 @@
     },
     "main" : {
       "manifestsList" : {
-        "title" : "Discover"
+        "title" : "ผู้ให้บริการ"
       },
       "header" : {
         "title" : "สำรวจ Web3",
@@ -7763,7 +7814,7 @@
   },
   "geoBlocking" : {
     "title" : "ไม่พร้อมให้บริการตำแหน่งที่ตั้งนี้",
-    "description" : "Ledger Wallet ไม่สามารถใช้ได้ในพื้นที่นี้",
+    "description" : "แอป Ledger Live ไม่สามารถใช้ได้ในพื้นที่ของคุณ",
     "learnMore" : "เรียนรู้เพิ่มเติม"
   },
   "versionBlocking" : {
@@ -7775,6 +7826,97 @@
     "selectAsset" : "เลือกสินทรัพย์",
     "selectNetwork" : "เลือกเครือข่าย",
     "selectAccount" : "เลือกบัญชี",
-    "searchPlaceholder" : "ค้นหา"
+    "searchPlaceholder" : "ค้นหา",
+    "emptyAssetList" : "ไม่พบสินทรัพย์",
+    "accountCount" : "{{count}} บัญชี",
+    "accountCount_plural" : "{{count}} บัญชี",
+    "errors" : {
+      "title" : "การเชื่อมต่อล้มเหลว",
+      "backend" : "เกิดข้อผิดพลาดในระบบของเรา โปรดลองอีกครั้งในภายหลัง",
+      "internet" : "ไม่มีการเชื่อมต่ออินเทอร์เน็ต โปรดลองอีกครั้ง",
+      "cta" : "ลองอีกครั้ง"
+    }
+  },
+  "swapErrors" : {
+    "incorrectCommandData" : {
+      "title" : "ข้อมูลคำสั่งไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "deserializationFailed" : {
+      "title" : "การแปลงข้อมูลเพย์โหลดล้มเหลว",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "wrongTransactionId" : {
+      "title" : "ID ธุรกรรมไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "invalidAddress" : {
+      "title" : "Address ไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "WrongDeviceForAccountPayout" : {
+      "title" : "มีบางอย่างผิดปกติ",
+      "description" : "บัญชีรับนี้ไม่เชื่อมโยงกับอุปกรณ์ที่เชื่อมต่ออยู่ โปรดเปลี่ยนและลองอีกครั้ง"
+    },
+    "WrongDeviceForAccountRefund" : {
+      "title" : "มีบางอย่างผิดปกติ",
+      "description" : "บัญชีผู้ส่งนี้ไม่ใช่บัญชีที่เชื่อมต่อกับอุปกรณ์นี้ โปรดเปลี่ยนและลองอีกครั้ง"
+    },
+    "userRefused" : {
+      "title" : "การดำเนินการถูกปฏิเสธบนอุปกรณ์",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "internalError" : {
+      "title" : "ข้อผิดพลาดภายใน",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "wrongP1" : {
+      "title" : "P1 ไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "wrongP2" : {
+      "title" : "P2 ไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "wrongP2Extension" : {
+      "title" : "ส่วนขยาย P2 ไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "invalidP2Extension" : {
+      "title" : "มีบางอย่างผิดปกติ",
+      "description" : "ส่วนขยาย P2 ไม่สามารถใช้งานได้"
+    },
+    "unexpectedInstruction" : {
+      "title" : "มีบางอย่างผิดปกติ",
+      "description" : "คำสั่งไม่ตรงตามรูปแบบที่กำหนด"
+    },
+    "classNotSupported" : {
+      "title" : "มีบางอย่างผิดปกติ",
+      "description" : "ไม่รองรับคลาสนี้"
+    },
+    "invalidInstruction" : {
+      "title" : "คำสั่งไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "malformedApdu" : {
+      "title" : "APDU Header ไม่ถูกต้อง",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "invalidDataLength" : {
+      "title" : "ความยาวของข้อมูลไม่ถูกต้อง",
+      "description" : "คำสั่งนี้ไม่รองรับข้อมูลที่มีขนาดตามที่ส่งมา"
+    },
+    "signatureVerificationFail" : {
+      "title" : "การตรวจสอบลายเซ็นล้มเหลว",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    },
+    "transactionCannotBeCreated" : {
+      "title" : "ผู้ให้บริการไม่พร้อมใช้งาน",
+      "description" : "เราไม่สามารถดำเนินการสวอป (Swap) กับผู้ให้บริการรายนี้ได้ โปรดลองผู้บริการรายอื่น รหัสข้อผิดพลาด 8HBB{{errorCode}}"
+    },
+    "default" : {
+      "title" : "มีบางอย่างผิดปกติ",
+      "description" : "โปรดลองอีกครั้งหรือติดต่อ Ledger Support หากมีข้อสงสัย"
+    }
   }
 }

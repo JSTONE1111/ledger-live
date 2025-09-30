@@ -41,6 +41,7 @@ import { mevProtectionSelector } from "~/renderer/reducers/settings";
 import { walletSelector } from "~/renderer/reducers/wallet";
 import { HOOKS_TRACKING_LOCATIONS } from "~/renderer/analytics/hooks/variables";
 import { ModularDrawerLocation, useModularDrawerVisibility } from "LLD/features/ModularDrawer";
+import { setFlowValue, setSourceValue } from "~/renderer/reducers/modularDrawer";
 
 export const PlatformAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
   ({ manifest, inputs = {}, onStateChange }, ref) => {
@@ -93,13 +94,26 @@ export const PlatformAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
     const { isModularDrawerVisible } = useModularDrawerVisibility({
       modularDrawerFeatureFlagKey: "lldModularDrawer",
     });
-    const modularDrawerVisible = isModularDrawerVisible(ModularDrawerLocation.LIVE_APP);
+    const modularDrawerVisible = isModularDrawerVisible({
+      location: ModularDrawerLocation.LIVE_APP,
+      liveAppId: manifest.id,
+    });
 
     const requestAccount = useCallback(
       (request: RequestAccountParams) => {
+        const source =
+          currentRouteNameRef.current === "Platform Catalog"
+            ? "Discover"
+            : currentRouteNameRef.current ?? "Unknown";
+
+        const flow = manifest.name;
+
+        dispatch(setFlowValue(flow));
+        dispatch(setSourceValue(source));
+
         return requestAccountLogic(walletState, { manifest }, request, modularDrawerVisible);
       },
-      [walletState, manifest, modularDrawerVisible],
+      [manifest, dispatch, walletState, modularDrawerVisible],
     );
 
     const receiveOnAccount = useCallback(
@@ -119,7 +133,7 @@ export const PlatformAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
                     tracking.platformReceiveSuccess(manifest);
                     resolve(accountAddress);
                   },
-                  onCancel: error => {
+                  onCancel: (error: Error) => {
                     tracking.platformReceiveFail(manifest);
                     reject(error);
                   },
@@ -210,11 +224,11 @@ export const PlatformAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
           dispatch(
             openModal("MODAL_PLATFORM_EXCHANGE_START", {
               exchangeType,
-              onResult: result => {
+              onResult: (result: { nonce: string }) => {
                 tracking.platformStartExchangeSuccess(manifest);
                 resolve(result.nonce);
               },
-              onCancel: cancelResult => {
+              onCancel: (cancelResult: { error: Error }) => {
                 tracking.platformStartExchangeFail(manifest);
                 reject(cancelResult.error);
               },

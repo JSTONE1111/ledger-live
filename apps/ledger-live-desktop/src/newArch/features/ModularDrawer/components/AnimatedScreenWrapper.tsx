@@ -9,6 +9,7 @@ const AnimatedScreenWrapper = ({
   children,
   screenKey,
   direction,
+  ...props
 }: {
   children: React.ReactNode;
   screenKey: ModularDrawerStep | ModularDrawerAddAccountStep;
@@ -44,6 +45,8 @@ const AnimatedScreenWrapper = ({
         paddingLeft: "16px",
         paddingRight: "16px",
       }}
+      data-testid={`modular-drawer-screen-${screenKey}`}
+      {...props}
     >
       {children}
     </motion.div>

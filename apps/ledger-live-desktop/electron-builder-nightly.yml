@@ -5,7 +5,6 @@ protocols:
   schemes:
     - ledgerlive
 
-beforePack: scripts/beforePack.js
 afterSign: scripts/notarize.js
 
 directories:
@@ -43,9 +42,8 @@ linux:
 win:
   artifactName: ${name}-${version}-${os}-${arch}.${ext}
   icon: build-nightly/windows/app.ico
-  sign: scripts/sign-windows.js
-  signingHashAlgorithms:
-    - sha256
+  signtoolOptions:
+    sign: scripts/sign-windows.js
   target:
     - target: nsis
       arch:
@@ -60,7 +58,6 @@ nsis:
   uninstallerIcon: build-nightly/windows/uninstaller.ico
   uninstallerSidebar: build-nightly/windows/uninstallerSidebar.bmp
 
-includeSubNodeModules: true
 files:
   # Include files
   - .webpack/**/*
@@ -96,6 +93,10 @@ files:
       - "**/*.node"
   # Exclude files
   - "!node_modules"
+
+# Disable native module rebuilding since we removed all native dependencies (node-hid, usb)
+buildDependenciesFromSource: false
+npmRebuild: false
 
 publish:
   - provider: generic

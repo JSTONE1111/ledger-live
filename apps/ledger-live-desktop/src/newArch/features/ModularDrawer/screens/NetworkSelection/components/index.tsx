@@ -5,19 +5,19 @@ import { ListWrapper } from "../../../components/ListWrapper";
 import { useModularDrawerAnalytics } from "../../../analytics/useModularDrawerAnalytics";
 import { MODULAR_DRAWER_PAGE_NAME } from "../../../analytics/modularDrawer.types";
 import { EnhancedModularDrawerConfiguration } from "@ledgerhq/live-common/wallet-api/ModularDrawer/types";
-import createNetworkConfigurationHook from "../modules/createNetworkConfigurationHook";
-import { CurrenciesByProviderId } from "@ledgerhq/live-common/deposit/type";
+import { createNetworkConfigurationHook } from "@ledgerhq/live-common/modularDrawer/modules/createNetworkConfiguration";
 import { Observable } from "rxjs";
 import { WalletAPIAccount } from "@ledgerhq/live-common/wallet-api/types";
-import orderBy from "lodash/orderBy";
+import { accountsCount } from "../../../components/AccountCount";
+import { accountsCountAndApy } from "../../../components/AccountCountApy";
+import { balanceItem } from "../../../components/Balance";
+import { useAccountData } from "../../../hooks/useAccountData";
+import { useBalanceDeps } from "../../../hooks/useBalanceDeps";
 
 type SelectNetworkProps = {
   networks?: CryptoOrTokenCurrency[];
-  source: string;
-  flow: string;
   onNetworkSelected: (network: CryptoOrTokenCurrency) => void;
   networksConfig: EnhancedModularDrawerConfiguration["networks"];
-  currenciesByProvider: CurrenciesByProviderId[];
   selectedAssetId?: string;
   accounts$?: Observable<WalletAPIAccount[]>;
 };
@@ -25,10 +25,7 @@ type SelectNetworkProps = {
 export const SelectNetwork = ({
   networks,
   onNetworkSelected,
-  source,
-  flow,
   networksConfig,
-  currenciesByProvider,
   selectedAssetId,
   accounts$,
 }: SelectNetworkProps) => {
@@ -38,19 +35,28 @@ export const SelectNetwork = ({
     return null;
   }
 
-  const transformNetworks = createNetworkConfigurationHook({
+  const networkConfigurationDeps = {
+    useAccountData,
+    accountsCount,
+    accountsCountAndApy,
+    useBalanceDeps,
+    balanceItem,
+  };
+
+  const makeNetworkConfigurationHook = createNetworkConfigurationHook(networkConfigurationDeps);
+
+  const transformNetworks = makeNetworkConfigurationHook({
     networksConfig,
-    currenciesByProvider,
-    selectedAssetId,
     accounts$,
   });
+  const networksCryptoCurrencies = networks.map(n =>
+    n.type === "CryptoCurrency" ? n : n.parentCurrency,
+  );
 
-  const orderedNetworks = orderBy(networks, ["name"]);
-
-  const formattedNetworks = transformNetworks(orderedNetworks);
+  const formattedNetworks = transformNetworks(networksCryptoCurrencies, networks);
 
   const onClick = (networkId: string) => {
-    const network = networks.find(({ id }) => id === networkId);
+    const network = networksCryptoCurrencies.find(({ id }) => id === networkId);
     if (!network) return;
 
     trackModularDrawerEvent(
@@ -58,8 +64,6 @@ export const SelectNetwork = ({
       {
         network: network.name,
         page: MODULAR_DRAWER_PAGE_NAME.MODULAR_NETWORK_SELECTION,
-        flow,
-        source,
       },
       {
         formatNetworkConfig: true,

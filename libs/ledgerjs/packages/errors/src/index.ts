@@ -51,6 +51,9 @@ export const EnpointConfigError = createCustomErrorClass("EnpointConfig");
 export const EthAppPleaseEnableContractData = createCustomErrorClass(
   "EthAppPleaseEnableContractData",
 );
+export const CeloAppPleaseEnableContractData = createCustomErrorClass(
+  "CeloAppPleaseEnableContractData",
+);
 export const FeeEstimationFailed = createCustomErrorClass("FeeEstimationFailed");
 export const FirmwareNotRecognized = createCustomErrorClass("FirmwareNotRecognized");
 export const HardResetFail = createCustomErrorClass("HardResetFail");
@@ -197,6 +200,17 @@ export const ReplacementTransactionUnderpriced = createCustomErrorClass(
 // Bitcoin family
 export const OpReturnDataSizeLimit = createCustomErrorClass("OpReturnSizeLimit");
 export const DustLimit = createCustomErrorClass("DustLimit");
+
+// Hedera family
+export const HederaInsufficientFundsForAssociation = createCustomErrorClass(
+  "HederaInsufficientFundsForAssociation",
+);
+export const HederaRecipientTokenAssociationRequired = createCustomErrorClass(
+  "HederaRecipientTokenAssociationRequired",
+);
+export const HederaRecipientTokenAssociationUnverified = createCustomErrorClass(
+  "HederaRecipientTokenAssociationUnverified",
+);
 
 // Language
 export const LanguageNotFound = createCustomErrorClass("LanguageNotFound");

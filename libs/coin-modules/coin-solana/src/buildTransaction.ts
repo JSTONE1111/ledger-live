@@ -11,7 +11,7 @@ import {
   buildStakeWithdrawInstructions,
   buildStakeSplitInstructions,
 } from "./network/chain/web3";
-import { assertUnreachable } from "./utils";
+import { assertUnreachable, DUMMY_SIGNATURE } from "./utils";
 import {
   PublicKey,
   VersionedTransaction as OnChainTransaction,
@@ -39,6 +39,12 @@ export const buildTransactionWithAPI = async (
   let web3SolanaTransaction: VersionedTransaction;
   if (transaction.raw) {
     web3SolanaTransaction = OnChainTransaction.deserialize(Buffer.from(transaction.raw, "base64"));
+    // Update the recent blockhash if no real signatures are present
+    // This ensures the transaction uses a fresh blockhash for submission
+    // NOTE: we could also make use of the isBlockHashValid rpc method to check the validity
+    if (web3SolanaTransaction.signatures.every(sig => Buffer.from(sig).equals(DUMMY_SIGNATURE))) {
+      web3SolanaTransaction.message.recentBlockhash = recentBlockhash.blockhash;
+    }
   } else {
     const instructions = await buildInstructions(api, transaction);
     const transactionMessage = new TransactionMessage({
@@ -106,6 +112,8 @@ async function buildInstructionsForCommand(
       return buildStakeWithdrawInstructions(api, command);
     case "stake.split":
       return buildStakeSplitInstructions(api, command);
+    case "raw":
+      throw new Error("Raw transactions should not be built with this function");
     default:
       return assertUnreachable(command);
   }

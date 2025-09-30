@@ -8,21 +8,27 @@ import { track } from "~/analytics";
 import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
 import { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { AddAccountContexts } from "../../enums";
+import {
+  useModularDrawerController,
+  useModularDrawerVisibility,
+  ModularDrawerLocation,
+} from "LLM/features/ModularDrawer";
 
 type AddAccountMethodViewModelProps = {
   currency?: CryptoCurrency | TokenCurrency | null;
-  onClose?: () => void;
   onShowWalletSyncDrawer?: () => void;
-  onShowModularDrawer?: () => void;
+  onCloseAddAccountDrawer?: () => void;
 };
 
 const useSelectAddAccountMethodViewModel = ({
   currency,
-  onClose,
   onShowWalletSyncDrawer,
-  onShowModularDrawer,
+  onCloseAddAccountDrawer,
 }: AddAccountMethodViewModelProps) => {
   const navigation = useNavigation<BaseNavigation>();
+  const { isModularDrawerVisible } = useModularDrawerVisibility({
+    modularDrawerFeatureFlagKey: "llmModularDrawer",
+  });
   const walletSyncFeatureFlag = useFeature("llmWalletSync");
   const isReadOnlyModeEnabled = useSelector(readOnlyModeEnabledSelector);
   const isWalletSyncEnabled = walletSyncFeatureFlag?.enabled;
@@ -56,35 +62,50 @@ const useSelectAddAccountMethodViewModel = ({
     });
   }, []);
 
-  const handleImportAccounts = useCallback(() => {
-    trackButtonClick("Import via another Ledger Live app");
-    onClose?.();
-    navigation.navigate(NavigatorName.ImportAccounts);
-  }, [navigation, trackButtonClick, onClose]);
-
   const handleWalletSync = useCallback(() => {
     trackButtonClick("Account Use Ledger Sync");
     onShowWalletSyncDrawer?.();
   }, [trackButtonClick, onShowWalletSyncDrawer]);
 
+  const { openDrawer } = useModularDrawerController();
+
+  const handleOpenModularDrawer = useCallback(() => {
+    const currenciesToUse = currency ? [currency.id] : undefined;
+    return openDrawer({
+      currencies: currenciesToUse,
+      areCurrenciesFiltered: currenciesToUse?.length === 1 ? true : false,
+      enableAccountSelection: false,
+      flow: "add_account",
+      source: "add_account_button",
+    });
+  }, [currency, openDrawer]);
+
   const handleAddAccount = useCallback(() => {
     trackButtonClick("With your Ledger");
-    onClose?.();
-    if (onShowModularDrawer) {
-      onShowModularDrawer();
+
+    onCloseAddAccountDrawer?.();
+
+    if (isModularDrawerVisible({ location: ModularDrawerLocation.ADD_ACCOUNT })) {
+      handleOpenModularDrawer();
     } else {
       const entryNavigatorName = NavigatorName.AssetSelection;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       navigation.navigate(entryNavigatorName, navigationParams);
     }
-  }, [trackButtonClick, onClose, onShowModularDrawer, navigation, navigationParams]);
+  }, [
+    trackButtonClick,
+    onCloseAddAccountDrawer,
+    isModularDrawerVisible,
+    handleOpenModularDrawer,
+    navigation,
+    navigationParams,
+  ]);
 
   return {
     isWalletSyncEnabled,
     isReadOnlyModeEnabled,
     handleAddAccount,
-    handleImportAccounts,
     handleWalletSync,
   };
 };

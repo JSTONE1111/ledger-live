@@ -14,10 +14,10 @@ import HasOrderedNanoRow from "./HasOrderedNanoRow";
 import { StackNavigatorNavigation } from "~/components/RootNavigator/types/helpers";
 import { SettingsNavigatorStackParamList } from "~/components/RootNavigator/types/SettingsNavigator";
 import ResetOnboardingStateRow from "./ResetOnboardingStateRow";
-import NftMetadataServiceRow from "./NftMetadataServiceRow";
 import HasStaxEuropaRows from "./HasStaxEuropaRows";
 import SkipOnboardingRow from "./SkipOnboardingRow";
 import { RecoverUpsellRow } from "./RecoverUpsellRow";
+import RtkConsoleRow from "./RtkConsoleRow";
 
 export default function Configuration() {
   const navigation = useNavigation<StackNavigatorNavigation<SettingsNavigatorStackParamList>>();
@@ -47,7 +47,7 @@ export default function Configuration() {
       <HasStaxEuropaRows />
       <MockModeRow />
       <AnalyticsConsoleRow />
-      <NftMetadataServiceRow />
+      <RtkConsoleRow />
       <ThemeToggleRow />
       <SkipLock />
     </SettingsNavigationScrollView>

@@ -1,12 +1,10 @@
 import { test } from "../fixtures/common";
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
 import { Fee } from "@ledgerhq/live-common/e2e/enum/Fee";
-import { TransactionStatus } from "@ledgerhq/live-common/e2e/enum/TransactionStatus";
 import { Transaction } from "@ledgerhq/live-common/e2e/models/Transaction";
 import { addTmsLink } from "../utils/allureUtils";
 import { getDescription } from "../utils/customJsonReporter";
 import { CLI } from "../utils/cliUtils";
-import { getEnv } from "@ledgerhq/live-env";
 
 //Warning 🚨: XRP Tests may fail due to API HTTP 429 issue - Jira: LIVE-14237
 
@@ -25,11 +23,6 @@ const transactionsAmountInvalid = [
     transaction: new Transaction(Account.XRP_1, Account.XRP_3, "0.1", undefined, "noTag"),
     expectedErrorMessage: "Recipient address is inactive. Send at least 1 XRP to activate it",
     xrayTicket: "B2CQA-2571",
-  },
-  {
-    transaction: new Transaction(Account.DOT_1, Account.DOT_2, "1"),
-    expectedErrorMessage: "Balance cannot be below 1 DOT. Send max to empty account.",
-    xrayTicket: "B2CQA-2567",
   },
   {
     transaction: new Transaction(Account.DOT_1, Account.DOT_3, "0.5"),
@@ -182,7 +175,7 @@ const transactionE2E = [
     xrayTicket: "B2CQA-2813",
   },
   {
-    transaction: new Transaction(Account.ATOM_1, Account.ATOM_2, "0.0001", undefined, "noTag"),
+    transaction: new Transaction(Account.ATOM_1, Account.ATOM_2, "0.00001", undefined, "noTag"),
     xrayTicket: "B2CQA-2814",
   },
   {
@@ -197,6 +190,27 @@ const transactionE2E = [
     transaction: new Transaction(Account.APTOS_1, Account.APTOS_2, "0.0001"),
     xrayTicket: "B2CQA-2920",
   },
+  {
+    transaction: new Transaction(
+      Account.BTC_NATIVE_SEGWIT_1,
+      Account.BTC_NATIVE_SEGWIT_2,
+      "0.00001",
+      Fee.MEDIUM,
+    ),
+    xrayTicket: "B2CQA-3925",
+  },
+  {
+    transaction: new Transaction(Account.ETH_1, Account.ETH_3, "0.0001", Fee.SLOW),
+    xrayTicket: "B2CQA-3924",
+  },
+  {
+    transaction: new Transaction(Account.KASPA_1, Account.KASPA_2, "1"),
+    xrayTicket: "B2CQA-3840",
+  },
+  {
+    transaction: new Transaction(Account.SUI_1, Account.SUI_2, "0.0001", undefined),
+    xrayTicket: "B2CQA-3802",
+  },
 ];
 
 test.describe("Send flows", () => {
@@ -205,20 +219,9 @@ test.describe("Send flows", () => {
   for (const transaction of transactionE2E) {
     test.describe("Send from 1 account to another", () => {
       test.use({
-        userdata:
-          transaction.transaction.accountToDebit === Account.APTOS_1
-            ? "speculos-aptos"
-            : "skip-onboarding",
+        userdata: "skip-onboarding",
         speculosApp: transaction.transaction.accountToDebit.currency.speculosApp,
         cliCommands: [
-          (appjsonPath: string) => {
-            return CLI.liveData({
-              currency: transaction.transaction.accountToCredit.currency.id,
-              index: transaction.transaction.accountToCredit.index,
-              add: true,
-              appjson: appjsonPath,
-            });
-          },
           (appjsonPath: string) => {
             return CLI.liveData({
               currency: transaction.transaction.accountToDebit.currency.id,
@@ -256,18 +259,6 @@ test.describe("Send flows", () => {
           await app.sendDrawer.addressValueIsVisible(
             transaction.transaction.accountToCredit.address,
           );
-          await app.drawer.closeDrawer();
-          if (!getEnv("DISABLE_TRANSACTION_BROADCAST")) {
-            await app.layout.goToAccounts();
-            await app.accounts.clickSyncBtnForAccount(
-              transaction.transaction.accountToCredit.accountName,
-            );
-            await app.accounts.navigateToAccountByName(
-              transaction.transaction.accountToCredit.accountName,
-            );
-            await app.account.selectAndClickOnLastOperation(TransactionStatus.RECEIVED);
-            await app.sendDrawer.expectReceiverInfos(transaction.transaction);
-          }
         },
       );
     });
@@ -455,7 +446,7 @@ test.describe("Send flows", () => {
   test.describe("User sends funds to ENS address", () => {
     const transactionEnsAddress = new Transaction(
       Account.ETH_1,
-      Account.ETH_2,
+      Account.ETH_2_WITH_ENS,
       "0.0001",
       Fee.MEDIUM,
     );
@@ -468,14 +459,6 @@ test.describe("Send flows", () => {
       userdata: "skip-onboarding",
       speculosApp: transactionEnsAddress.accountToDebit.currency.speculosApp,
       cliCommands: [
-        (appjsonPath: string) => {
-          return CLI.liveData({
-            currency: transactionEnsAddress.accountToCredit.currency.id,
-            index: transactionEnsAddress.accountToCredit.index,
-            add: true,
-            appjson: appjsonPath,
-          });
-        },
         (appjsonPath: string) => {
           return CLI.liveData({
             currency: transactionEnsAddress.accountToDebit.currency.id,

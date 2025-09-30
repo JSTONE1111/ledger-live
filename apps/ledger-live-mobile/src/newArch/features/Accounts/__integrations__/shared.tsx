@@ -6,33 +6,39 @@ import { useTranslation } from "react-i18next";
 import AddAccountDrawer from "LLM/features/Accounts/screens/AddAccount";
 import { BaseNavigatorStackParamList } from "~/components/RootNavigator/types/BaseNavigator";
 import AssetSelectionNavigator from "LLM/features/AssetSelection/Navigator";
-import ImportAccountsNavigator from "~/components/RootNavigator/ImportAccountsNavigator";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ModularDrawer } from "../../ModularDrawer";
+import { ModularDrawer, useModularDrawerController } from "../../ModularDrawer";
+import { useCallback } from "react";
 import {
-  mockEthCryptoCurrency,
   mockBtcCryptoCurrency,
+  mockEthCryptoCurrency,
+  mockArbitrumCryptoCurrency,
+  mockBaseCryptoCurrency,
 } from "@ledgerhq/live-common/modularDrawer/__mocks__/currencies.mock";
 
-type Props = {
-  shouldShowModularDrawer?: boolean;
-};
+const currencies = [
+  mockBtcCryptoCurrency,
+  mockEthCryptoCurrency,
+  mockArbitrumCryptoCurrency,
+  mockBaseCryptoCurrency,
+];
 
-const MockComponent = ({ shouldShowModularDrawer }: Props) => {
+const MockComponent = () => {
   const { t } = useTranslation();
-  const [isAddModalOpened, setAddModalOpened] = React.useState<boolean>(false);
 
-  const openAddModal = () => setAddModalOpened(true);
-  const closeAddModal = () => setAddModalOpened(false);
+  const { openDrawer, closeDrawer, isOpen } = useModularDrawerController();
 
-  const [isModularDrawerVisible, setModularDrawerVisible] = React.useState<boolean>(false);
+  const handleOpenDrawer = useCallback(() => {
+    openDrawer({
+      currencies: currencies.map(c => c.id),
+      flow: "integration_test",
+      source: "accounts_shared",
+    });
+  }, [openDrawer]);
 
-  const handleOpenModularDrawer = () => setModularDrawerVisible(true);
-
-  const onShowModularDrawer = React.useCallback(() => {
-    closeAddModal();
-    handleOpenModularDrawer();
-  }, []);
+  const handleCloseDrawer = useCallback(() => {
+    closeDrawer();
+  }, [closeDrawer]);
 
   return (
     <>
@@ -44,36 +50,26 @@ const MockComponent = ({ shouldShowModularDrawer }: Props) => {
         mb={8}
         iconPosition="left"
         Icon={IconsLegacy.PlusMedium}
-        onPress={openAddModal}
+        onPress={handleOpenDrawer}
       >
         {t("portfolio.emptyState.buttons.import")}
       </Button>
-      <AddAccountDrawer
-        isOpened={isAddModalOpened}
-        onClose={closeAddModal}
-        onShowModularDrawer={shouldShowModularDrawer ? onShowModularDrawer : undefined}
-      />
-      <ModularDrawer
-        isOpen={isModularDrawerVisible}
-        currencies={[mockEthCryptoCurrency, mockBtcCryptoCurrency]}
-        flow="integration_test"
-        source="accounts_shared"
-      />
+      <AddAccountDrawer isOpened={isOpen} onClose={handleCloseDrawer} />
+      <ModularDrawer isOpen={isOpen} currencies={currencies.map(c => c.id)} />
     </>
   );
 };
 
 const Stack = createStackNavigator<BaseNavigatorStackParamList>();
 
-export function TestButtonPage(props: Props) {
+export function TestButtonPage() {
   return (
     <QueryClientProvider client={new QueryClient()}>
       <Stack.Navigator initialRouteName={ScreenName.MockedAddAssetButton}>
         <Stack.Screen name={ScreenName.MockedAddAssetButton}>
-          {() => <MockComponent shouldShowModularDrawer={props.shouldShowModularDrawer} />}
+          {() => <MockComponent />}
         </Stack.Screen>
         <Stack.Screen name={NavigatorName.AssetSelection} component={AssetSelectionNavigator} />
-        <Stack.Screen name={NavigatorName.ImportAccounts} component={ImportAccountsNavigator} />
       </Stack.Navigator>
     </QueryClientProvider>
   );

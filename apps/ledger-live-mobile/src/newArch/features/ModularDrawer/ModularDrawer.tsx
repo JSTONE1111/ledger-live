@@ -1,54 +1,54 @@
-import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import QueuedDrawer from "~/components/QueuedDrawer";
+import React from "react";
 import ModularDrawerFlowManager from "./ModularDrawerFlowManager";
-import { ModularDrawerStep } from "./types";
-import { useModularDrawerFlowStepManager } from "./hooks/useModularDrawerFlowStepManager";
 import { EnhancedModularDrawerConfiguration } from "@ledgerhq/live-common/wallet-api/ModularDrawer/types";
-
-import { useInitModularDrawer } from "./hooks/useInitModularDrawer";
 import { useAssets } from "./hooks/useAssets";
-import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { useModularDrawerState } from "./hooks/useModularDrawerState";
-import { haveOneCommonProvider } from "@ledgerhq/live-common/modularDrawer/utils/index";
-import { useModularDrawerAnalytics, EVENTS_NAME, MODULAR_DRAWER_PAGE_NAME } from "./analytics";
+
+import QueuedDrawerGorhom from "LLM/components/QueuedDrawer/temp/QueuedDrawerGorhom";
+
+import { AccountLike } from "@ledgerhq/types-live";
+import { WalletAPIAccount } from "@ledgerhq/live-common/wallet-api/types";
+import { Observable } from "rxjs";
+import { useSelector } from "react-redux";
+import {
+  modularDrawerEnableAccountSelectionSelector,
+  modularDrawerSearchValueSelector,
+} from "~/reducers/modularDrawer";
+
+import { useModularDrawerConfiguration } from "@ledgerhq/live-common/modularDrawer/hooks/useModularDrawerConfiguration";
+
+const SNAP_POINTS = ["70%", "92%"];
 
 /**
  * Props for the ModularDrawer component.
  */
 type ModularDrawerProps = {
-  /**
-   * The current step to display in the drawer navigation flow.
-   */
-  readonly selectedStep?: ModularDrawerStep;
-  /**
-   * Whether the drawer is open.
-   */
+  // Core drawer state
+  /** Whether the drawer is open */
   readonly isOpen: boolean;
-  /**
-   * Callback fired when the drawer is closed.
-   */
+  /** Callback fired when the drawer is closed */
   readonly onClose?: () => void;
-  /**
-   * List of currencies to display in the drawer.
-   */
-  readonly currencies: CryptoOrTokenCurrency[];
-  /**
-   * The flow identifier for analytics.
-   */
-  readonly flow: string;
-  /**
-   * The source identifier for analytics.
-   */
-  readonly source: string;
-  /**
-   * Configuration for assets display.
-   */
+
+  // Data and configuration
+  /** List of preselected currencies to display in the drawer */
+  readonly currencies?: string[];
+  /** Configuration for assets display */
   readonly assetsConfiguration?: EnhancedModularDrawerConfiguration["assets"];
-  /**
-   * Configuration for networks display.
-   */
+  /** Configuration for networks display */
   readonly networksConfiguration?: EnhancedModularDrawerConfiguration["networks"];
+
+  // Account selection
+  /** Callback fired when an account is selected */
+  readonly onAccountSelected?: (account: AccountLike, parentAccount?: AccountLike) => void;
+  /** Observable of accounts */
+  readonly accounts$?: Observable<WalletAPIAccount[]>;
+
+  /** The use case identifier for the drawer */
+  readonly useCase?: string;
+  /** Whether the currencies are filtered */
+  readonly areCurrenciesFiltered?: boolean;
 };
+
 /**
  * ModularDrawer is a generic drawer component for asset/network selection flows.
  * Handles navigation steps, asset/network selection, and drawer state.
@@ -59,123 +59,86 @@ export function ModularDrawer({
   isOpen,
   onClose,
   currencies,
-  selectedStep = ModularDrawerStep.Asset,
-  flow,
-  source,
   assetsConfiguration,
   networksConfiguration,
+  onAccountSelected,
+  accounts$,
+  useCase,
+  areCurrenciesFiltered,
 }: ModularDrawerProps) {
-  const navigationStepManager = useModularDrawerFlowStepManager({ selectedStep });
-  const [defaultSearchValue, setDefaultSearchValue] = useState("");
-  const [itemsToDisplay, setItemsToDisplay] = useState<CryptoOrTokenCurrency[]>([]);
-  const { trackModularDrawerEvent } = useModularDrawerAnalytics();
+  const {
+    assetsConfiguration: assetsConfigurationSanitized,
+    networkConfiguration: networkConfigurationSanitized,
+  } = useModularDrawerConfiguration("llmModularDrawer", {
+    assets: assetsConfiguration,
+    networks: networksConfiguration,
+  });
 
-  const { sortedCryptoCurrencies, isReadyToBeDisplayed, currenciesByProvider } =
-    useInitModularDrawer();
-
-  const { availableAssets, currencyIdsArray } = useAssets(currencies, sortedCryptoCurrencies);
-
-  const { handleAsset, handleNetwork, reset, handleBack, availableNetworks } =
-    useModularDrawerState({
-      goToStep: navigationStepManager.goToStep,
-      currenciesByProvider,
-      currencyIds: currencyIdsArray,
-      isDrawerOpen: isOpen,
-    });
-
-  /**
-   * Get the current page name for analytics based on the current step
-   */
-  const PAGE_NAME_MAP = useMemo(
-    () => ({
-      [ModularDrawerStep.Asset]: MODULAR_DRAWER_PAGE_NAME.MODULAR_ASSET_SELECTION,
-      [ModularDrawerStep.Network]: MODULAR_DRAWER_PAGE_NAME.MODULAR_NETWORK_SELECTION,
-      [ModularDrawerStep.Account]: MODULAR_DRAWER_PAGE_NAME.MODULAR_ACCOUNT_SELECTION,
-    }),
-    [],
+  const searchValue = useSelector(modularDrawerSearchValueSelector);
+  const enableAccountSelection = useSelector(modularDrawerEnableAccountSelectionSelector);
+  const { sortedCryptoCurrencies, assetsSorted, isLoading, isError, refetch, loadNext } = useAssets(
+    {
+      currencyIds: currencies,
+      searchedValue: searchValue,
+      useCase,
+      areCurrenciesFiltered,
+    },
   );
 
-  const getCurrentPageName = useCallback(() => {
-    return (
-      PAGE_NAME_MAP[navigationStepManager.currentStep] ??
-      MODULAR_DRAWER_PAGE_NAME.MODULAR_ASSET_SELECTION
-    );
-  }, [PAGE_NAME_MAP, navigationStepManager.currentStep]);
-
-  /**
-   * Handlers for the back & close button in the drawer.
-   */
-
-  const handleBackButton = () => {
-    trackModularDrawerEvent(EVENTS_NAME.BUTTON_CLICKED, {
-      button: "modularDrawer_backButton",
-      flow,
-      page: getCurrentPageName(),
-    });
-
-    handleBack(navigationStepManager.currentStep);
-  };
-
-  const hasClosedRef = useRef(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      hasClosedRef.current = false;
-    }
-  }, [isOpen]);
-
-  const handleDrawerClose = () => {
-    if (hasClosedRef.current) return;
-    hasClosedRef.current = true;
-
-    trackModularDrawerEvent(EVENTS_NAME.BUTTON_CLICKED, {
-      button: "Close",
-      flow,
-      page: getCurrentPageName(),
-    });
-
-    onClose?.();
-    navigationStepManager.reset();
-    reset();
-  };
-
-  const hasOneCurrency = useMemo(() => {
-    return haveOneCommonProvider(currencyIdsArray, currenciesByProvider);
-  }, [currencyIdsArray, currenciesByProvider]);
+  const {
+    accountCurrency,
+    handleAsset,
+    handleNetwork,
+    handleBackButton,
+    handleCloseButton,
+    availableNetworks,
+    shouldShowBackButton,
+    hasOneCurrency,
+    onAddNewAccount,
+  } = useModularDrawerState({
+    assetsSorted,
+    currencyIds: currencies ?? [],
+    isDrawerOpen: isOpen,
+    onClose,
+    hasSearchedValue: searchValue.length > 0,
+    onAccountSelected,
+  });
 
   return (
-    <QueuedDrawer
-      isRequestingToBeOpened={!hasOneCurrency && isOpen}
-      onClose={handleDrawerClose}
-      hasBackButton={navigationStepManager.hasBackButton}
+    <QueuedDrawerGorhom
+      isRequestingToBeOpened={(!hasOneCurrency || enableAccountSelection) && isOpen}
+      onClose={handleCloseButton}
+      enableBlurKeyboardOnGesture={true}
+      snapPoints={SNAP_POINTS}
+      hasBackButton={shouldShowBackButton}
       onBack={handleBackButton}
-      containerStyle={{
-        maxHeight: "90%",
-      }}
+      enablePanDownToClose
+      keyboardBehavior="extend"
     >
       <ModularDrawerFlowManager
-        navigationStepViewModel={navigationStepManager}
         assetsViewModel={{
-          availableAssets,
+          availableAssets: sortedCryptoCurrencies,
           onAssetSelected: handleAsset,
-          defaultSearchValue,
-          setDefaultSearchValue,
-          itemsToDisplay,
-          setItemsToDisplay,
-          flow,
-          source,
-          assetsConfiguration,
+          assetsConfiguration: assetsConfigurationSanitized,
           isOpen,
+          isLoading,
+          hasError: isError,
+          refetch,
+          loadNext,
+          assetsSorted,
         }}
         networksViewModel={{
           onNetworkSelected: handleNetwork,
           availableNetworks,
-          flow,
-          source,
-          networksConfiguration,
+          networksConfiguration: networkConfigurationSanitized,
         }}
-        isReadyToBeDisplayed={isReadyToBeDisplayed}
+        accountsViewModel={{
+          accounts$,
+          onAddNewAccount,
+          asset: accountCurrency,
+          onAccountSelected,
+        }}
       />
-    </QueuedDrawer>
+    </QueuedDrawerGorhom>
   );
 }

@@ -1,6 +1,7 @@
 import { createApi } from "./index";
 import * as logic from "../logic";
 import type { SuiCoinConfig } from "../config";
+import { Page, Stake, Reward } from "@ledgerhq/coin-framework/lib/api/types";
 
 jest.mock("../logic");
 jest.mock("../config", () => ({
@@ -59,9 +60,9 @@ describe("api/index", () => {
     const unsigned = Buffer.from("unsignedTx");
     jest.spyOn(logic, "craftTransaction").mockResolvedValue({ unsigned });
     const txIntent = { foo: "bar" } as any;
-    const result = await api.craftTransaction(txIntent);
+    const { transaction: result } = await api.craftTransaction(txIntent);
     expect(result).toBe(unsigned.toString("hex"));
-    expect(logic.craftTransaction).toHaveBeenCalledWith(txIntent);
+    expect(logic.craftTransaction).toHaveBeenCalledWith(txIntent, true);
   });
 
   it("should call estimateFees via estimate wrapper and return FeeEstimation", async () => {
@@ -110,9 +111,48 @@ describe("api/index", () => {
     const mockListOperations = jest
       .spyOn(logic, "listOperations")
       .mockResolvedValue([[minimalOperation], ""]); // Return empty string for cursor
-    const result = await api.listOperations("address", { minHeight: 0 });
-    expect(mockListOperations).toHaveBeenCalledWith("address", { minHeight: 0 });
+    const result = await api.listOperations("address", { minHeight: 0, order: "asc" });
+    expect(mockListOperations).toHaveBeenCalledWith("address", { minHeight: 0, order: "asc" });
     expect(result).toEqual([[minimalOperation], ""]);
+  });
+
+  it("should call getStakes from logic", async () => {
+    const value = {
+      items: [
+        {
+          uid: "stake-uid",
+          address: "stake-address",
+          delegate: "stake-delegate",
+          state: "activating",
+          asset: { type: "native" },
+          amount: 3n,
+          amountDeposited: 1n,
+          amountRewarded: 2n,
+          details: { foo: "bar" },
+        },
+      ],
+    } as Page<Stake>;
+    const mockGetStakes = jest.spyOn(logic, "getStakes").mockResolvedValue(value);
+    const result = await api.getStakes("address");
+    expect(mockGetStakes).toHaveBeenCalledWith("address");
+    expect(result).toEqual(value);
+  });
+
+  it("should call getRewards from logic", async () => {
+    const value = {
+      items: [
+        {
+          stake: "stake-uid",
+          asset: { type: "native" },
+          amount: 3n,
+          receivedAt: new Date(1337),
+        },
+      ],
+    } as Page<Reward>;
+    const mockGetRewards = jest.spyOn(logic, "getRewards").mockResolvedValue(value);
+    const result = await api.getRewards("address");
+    expect(mockGetRewards).toHaveBeenCalledWith("address");
+    expect(result).toEqual(value);
   });
 
   it("should throw if craftTransaction throws", async () => {

@@ -10,6 +10,7 @@ export type SellPayload = {
   outAmount: object;
   outCurrency: string;
   traderEmail: string;
+  inExtraId?: string;
 };
 
 export async function decodeSellPayload(payload: string): Promise<SellPayload> {

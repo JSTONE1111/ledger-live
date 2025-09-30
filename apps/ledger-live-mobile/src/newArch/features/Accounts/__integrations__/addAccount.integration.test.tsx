@@ -4,6 +4,11 @@ import { render } from "@tests/test-renderer";
 import { TestButtonPage } from "./shared";
 import { State } from "~/reducers/types";
 import { useGroupedCurrenciesByProvider } from "@ledgerhq/live-common/modularDrawer/__mocks__/useGroupedCurrenciesByProvider.mock";
+import {
+  mockBtcCryptoCurrency,
+  mockEthCryptoCurrency,
+} from "@ledgerhq/live-common/modularDrawer/__mocks__/currencies.mock";
+import { ModularDrawerLocation } from "../../ModularDrawer";
 
 jest.mock("@ledgerhq/live-common/deposit/useGroupedCurrenciesByProvider.hook", () => ({
   useGroupedCurrenciesByProvider: () => useGroupedCurrenciesByProvider(),
@@ -93,15 +98,28 @@ describe("AddAccount", () => {
     expect(await screen.findByText(/Scan QR code/i));
   });
 
-  /**====== Import from desktop Test =======*/
-  it("Should open select add account method drawer without WS feature flag and navigate to import from desktop", async () => {
+  /**====== use ModularDrawer Test =======*/
+  it("Should open ModularDrawer when selecting use Ledger device", async () => {
     const { user } = render(<TestButtonPage />, {
       overrideInitialState: (state: State) => ({
         ...state,
         settings: {
           ...state.settings,
           readOnlyModeEnabled: false,
-          overriddenFeatureFlags: { llmWalletSync: { enabled: false } },
+          overriddenFeatureFlags: {
+            llmWalletSync: { enabled: false },
+            llmModularDrawer: {
+              enabled: true,
+              params: {
+                [ModularDrawerLocation.ADD_ACCOUNT]: true,
+              },
+            },
+          },
+        },
+        modularDrawer: {
+          ...state.modularDrawer,
+          isOpen: false,
+          preselectedCurrencies: [mockEthCryptoCurrency.id, mockBtcCryptoCurrency.id],
         },
       }),
     });
@@ -114,37 +132,9 @@ describe("AddAccount", () => {
     // Wait for the drawer to open
     expect(await screen.findByText(/add another account/i));
     expect(await screen.findByText(/Use your Ledger device/i));
-    expect(await screen.findByText(/import from desktop/i));
-    // On press add from desktop
-    await user.press(screen.getByText(/import from desktop/i));
-    expect(await screen.findByText(/Scan and import your accounts from Ledger Live desktop/i));
-  });
-
-  /**====== use ModularDrawer Test =======*/
-  it("Should open ModularDrawer when selecting use Ledger device", async () => {
-    const { user } = render(<TestButtonPage shouldShowModularDrawer />, {
-      overrideInitialState: (state: State) => ({
-        ...state,
-        settings: {
-          ...state.settings,
-          readOnlyModeEnabled: false,
-          overriddenFeatureFlags: { llmWalletSync: { enabled: false } },
-        },
-      }),
-    });
-
-    const addAssetButton = await screen.findByText(/add asset/i);
-    // Check if the add asset button is visible
-    expect(addAssetButton).toBeVisible();
-    // Open drawer
-    await user.press(addAssetButton);
-    // Wait for the drawer to open
-    expect(await screen.findByText(/add another account/i));
-    expect(await screen.findByText(/Use your Ledger device/i));
-    expect(await screen.findByText(/import from desktop/i));
 
     // Press the "Use your Ledger device" button to trigger ModularDrawer
     await user.press(screen.getByText(/Use your Ledger device/i));
-    expect(await screen.findByText(/Bitcoin/i));
+    expect(screen.getByText(/Bitcoin/i)).toBeVisible();
   });
 });

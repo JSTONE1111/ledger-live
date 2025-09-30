@@ -6,22 +6,38 @@ import { transactionToIntent } from "./utils";
 import BigNumber from "bignumber.js";
 
 export function genericEstimateMaxSpendable(
-  network: string,
-  kind: "local" | "remote",
+  network,
+  kind,
 ): AccountBridge<any>["estimateMaxSpendable"] {
   return async ({ account, parentAccount, transaction }) => {
+    if (account.type === "TokenAccount") {
+      return account.spendableBalance;
+    }
     const mainAccount = getMainAccount(account, parentAccount);
-
+    const alpacaApi = getAlpacaApi(mainAccount.currency.id, kind);
     const draftTransaction = {
-      ...createTransaction(account as any),
+      ...createTransaction(account),
       ...transaction,
       amount: mainAccount.spendableBalance,
+      useAllAmount: true,
     };
-    const fees = await getAlpacaApi(network, kind).estimateFees(
-      transactionToIntent(mainAccount, draftTransaction),
-    );
 
-    const bnFee = BigNumber(fees.value.toString());
+    let fees = transaction?.fees;
+    if (transaction?.fees === null || transaction?.fees === undefined) {
+      fees = (
+        await alpacaApi.estimateFees(
+          transactionToIntent(mainAccount, draftTransaction, alpacaApi.computeIntentType),
+        )
+      ).value;
+    }
+    const { amount } = await alpacaApi.validateIntent(
+      transactionToIntent(account, { ...draftTransaction }, alpacaApi.computeIntentType),
+      { value: transaction?.fees ? BigInt(transaction.fees.toString()) : 0n },
+    );
+    if (network === "stellar") {
+      return amount > 0 ? new BigNumber(amount.toString()) : new BigNumber(0);
+    }
+    const bnFee = BigNumber(fees.toString());
     return BigNumber.max(0, account.spendableBalance.minus(bnFee));
   };
 }

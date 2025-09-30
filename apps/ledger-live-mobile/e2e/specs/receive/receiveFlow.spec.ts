@@ -67,8 +67,8 @@ describe("Receive Flow", () => {
   $TmsLink("B2CQA-650");
   it("Should access to receive after importing a cryptocurrency on a selected network", async () => {
     await openReceive();
-    await app.common.performSearch("Polygon");
-    await app.receive.selectAsset("POL");
+    await app.common.performSearch("Matic");
+    await app.receive.selectAsset("MATIC");
     await app.receive.selectNetwork("bsc");
     first && (await deviceAction.selectMockDevice(), (first = false));
     await deviceAction.openApp();
@@ -76,7 +76,7 @@ describe("Receive Flow", () => {
     await app.addAccount.tapAddFunds();
     await app.addAccount.tapReceiveinActionDrawer();
     await app.receive.doNotVerifyAddress();
-    await app.receive.expectReceivePageIsDisplayed("BNB", "Binance Smart Chain 1");
+    await app.receive.expectReceivePageIsDisplayed("BNB", "BNB Chain 1");
   });
 
   $TmsLink("B2CQA-1859");

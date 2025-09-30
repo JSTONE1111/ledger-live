@@ -16,7 +16,6 @@ import DebugCrash from "~/screens/Settings/Debug/Debugging/Crashes";
 import DebugCustomImageGraphics from "~/screens/Settings/Debug/Features/CustomImageGraphics";
 import DebugDebugging from "~/screens/Settings/Debug/Debugging";
 import DebugEnv from "~/screens/Settings/Debug/Configuration/DebugEnv";
-import DebugExport from "~/screens/Settings/Debug/Features/ExportAccounts";
 import DebugFeatureFlags from "~/screens/FeatureFlagsSettings";
 import DebugFeatures from "~/screens/Settings/Debug/Features";
 import DebugFetchCustomImage, {
@@ -81,8 +80,13 @@ import SwiperScreenDebug from "~/screens/Settings/Debug/Features/SwiperScreenDeb
 import { DebugStorageMigration } from "~/screens/Settings/Debug/Debugging/StorageMigration";
 import CustomCALRefInput from "~/screens/Settings/Developer/CustomCALRefInput";
 import ModularDrawerScreenDebug from "LLM/features/ModularDrawer/Debug";
+import { UnmountOnBlur } from "./utils/UnmountOnBlur";
 
 const Stack = createStackNavigator<SettingsNavigatorStackParamList>();
+
+const unmountOnBlur = ({ children }: { children: React.ReactNode }) => (
+  <UnmountOnBlur>{children}</UnmountOnBlur>
+);
 
 export default function SettingsNavigator() {
   const { t } = useTranslation();
@@ -118,6 +122,7 @@ export default function SettingsNavigator() {
       <Stack.Screen
         name={ScreenName.GeneralSettings}
         component={GeneralSettings}
+        layout={unmountOnBlur}
         options={{
           title: t("settings.display.title"),
         }}
@@ -292,13 +297,6 @@ export default function SettingsNavigator() {
         component={GenerateMockAccountSelectScreen}
         options={{
           title: "Generate mock accounts",
-        }}
-      />
-      <Stack.Screen
-        name={ScreenName.DebugExport}
-        component={DebugExport}
-        options={{
-          title: "Export Accounts and Settings",
         }}
       />
       <Stack.Screen

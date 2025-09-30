@@ -8,17 +8,21 @@ import PairDevices from "~/screens/PairDevices";
 import EditDeviceName from "~/screens/EditDeviceName";
 import OnboardingNavigator from "./OnboardingNavigator";
 import { SyncOnboardingNavigator } from "./SyncOnboardingNavigator";
-import ImportAccountsNavigator from "./ImportAccountsNavigator";
 import PasswordAddFlowNavigator from "./PasswordAddFlowNavigator";
 import PasswordModifyFlowNavigator from "./PasswordModifyFlowNavigator";
 import { getStackNavigatorConfig } from "~/navigation/navigatorConfig";
 import Question from "~/icons/Question";
 import BuyDeviceNavigator from "./BuyDeviceNavigator";
 import { BaseOnboardingNavigatorParamList } from "./types/BaseOnboardingNavigator";
-import { RootComposite, StackNavigatorProps } from "./types/helpers";
+import { StackNavigatorProps } from "./types/helpers";
 import { BaseNavigatorStackParamList } from "./types/BaseNavigator";
 import { NavigationHeaderBackButton } from "../NavigationHeaderBackButton";
 import WalletSyncNavigator from "LLM/features/WalletSync/WalletSyncNavigator";
+import ModularDrawerNavigator from "LLM/features/ModularDrawer/ModularDrawerNavigator";
+import ReceiveFundsNavigator from "./ReceiveFundsNavigator";
+import DeviceSelectionNavigator from "LLM/features/DeviceSelection/Navigator";
+import AddAccountsV2Navigator from "LLM/features/Accounts/Navigator";
+import AccountSettingsNavigator from "./AccountSettingsNavigator";
 
 const hitSlop = {
   bottom: 10,
@@ -27,9 +31,9 @@ const hitSlop = {
   top: 10,
 };
 
-type ErrorHeaderInfoNavigatorProps = RootComposite<
-  | StackNavigatorProps<BaseNavigatorStackParamList, ScreenName.PairDevices>
-  | StackNavigatorProps<BaseOnboardingNavigatorParamList, ScreenName.PairDevices>
+type ErrorHeaderInfoNavigatorProps = StackNavigatorProps<
+  BaseNavigatorStackParamList,
+  ScreenName.PairDevices
 >;
 
 export const ErrorHeaderInfo = ({ route, navigation }: ErrorHeaderInfoNavigatorProps) => {
@@ -68,7 +72,6 @@ export default function BaseOnboardingNavigator() {
     >
       <Stack.Screen name={NavigatorName.Onboarding} component={OnboardingNavigator} />
       <Stack.Screen name={NavigatorName.SyncOnboarding} component={SyncOnboardingNavigator} />
-      <Stack.Screen name={NavigatorName.ImportAccounts} component={ImportAccountsNavigator} />
       <Stack.Screen
         name={NavigatorName.BuyDevice}
         component={BuyDeviceNavigator}
@@ -76,6 +79,29 @@ export default function BaseOnboardingNavigator() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name={NavigatorName.ReceiveFunds}
+        component={ReceiveFundsNavigator}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name={NavigatorName.AccountSettings}
+        component={AccountSettingsNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={NavigatorName.AddAccounts}
+        component={AddAccountsV2Navigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={NavigatorName.DeviceSelection}
+        component={DeviceSelectionNavigator}
+        options={{ headerShown: false }}
+      />
+
       <Stack.Screen
         name={ScreenName.PairDevices}
         component={PairDevices}
@@ -103,6 +129,11 @@ export default function BaseOnboardingNavigator() {
       <Stack.Screen
         name={NavigatorName.WalletSync}
         component={WalletSyncNavigator}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name={NavigatorName.ModularDrawer}
+        component={ModularDrawerNavigator}
         options={{ headerShown: false, gestureEnabled: false }}
       />
     </Stack.Navigator>

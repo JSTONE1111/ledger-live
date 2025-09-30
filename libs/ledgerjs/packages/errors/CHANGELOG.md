@@ -1,5 +1,37 @@
 # @ledgerhq/errors
 
+## 6.25.0
+
+### Minor Changes
+
+- [#10672](https://github.com/LedgerHQ/ledger-live/pull/10672) [`8936f39`](https://github.com/LedgerHQ/ledger-live/commit/8936f390edbe9cbc36ac6590b01562daf5c580e1) Thanks [@may01](https://github.com/may01)! - added Hedera tokens to CAL
+  added send/receive support to Hedera in LLD & LLM
+  added support for HTS token association flow to LLD & LLM
+  added support for "Associate token" transaction type to Hedera
+  added test fixtures to coin-hedera
+
+## 6.25.0-next.0
+
+### Minor Changes
+
+- [#10672](https://github.com/LedgerHQ/ledger-live/pull/10672) [`8936f39`](https://github.com/LedgerHQ/ledger-live/commit/8936f390edbe9cbc36ac6590b01562daf5c580e1) Thanks [@may01](https://github.com/may01)! - added Hedera tokens to CAL
+  added send/receive support to Hedera in LLD & LLM
+  added support for HTS token association flow to LLD & LLM
+  added support for "Associate token" transaction type to Hedera
+  added test fixtures to coin-hedera
+
+## 6.24.0
+
+### Minor Changes
+
+- [#11252](https://github.com/LedgerHQ/ledger-live/pull/11252) [`354fa83`](https://github.com/LedgerHQ/ledger-live/commit/354fa83c8107cf8e6b56a8b306569ee65980e10c) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(errors): augment custom errors with metadata
+
+## 6.24.0-next.0
+
+### Minor Changes
+
+- [#11252](https://github.com/LedgerHQ/ledger-live/pull/11252) [`354fa83`](https://github.com/LedgerHQ/ledger-live/commit/354fa83c8107cf8e6b56a8b306569ee65980e10c) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(errors): augment custom errors with metadata
+
 ## 6.23.0
 
 ### Minor Changes

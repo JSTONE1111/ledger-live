@@ -4,7 +4,7 @@ import { Delegate } from "@ledgerhq/live-common/e2e/models/Delegate";
 import { CLI } from "../utils/cliUtils";
 import { Currency } from "@ledgerhq/live-common/e2e/enum/Currency";
 import { getEnv } from "@ledgerhq/live-env";
-import { addTmsLink } from "tests/utils/allureUtils";
+import { addBugLink, addTmsLink } from "tests/utils/allureUtils";
 import { getDescription } from "tests/utils/customJsonReporter";
 
 function setupEnv(disableBroadcast?: boolean) {
@@ -27,7 +27,7 @@ const e2eDelegationAccounts = [
     xrayTicket: "B2CQA-2740, B2CQA-2770",
   },
   {
-    delegate: new Delegate(Account.SOL_1, "0.001", "Ledger by Figment"),
+    delegate: new Delegate(Account.SOL_2, "0.001", "Ledger by Figment"),
     xrayTicket: "B2CQA-2742",
   },
   {
@@ -53,14 +53,6 @@ const e2eDelegationAccountsWithoutBroadcast = [
     delegate: new Delegate(Account.MULTIVERS_X_1, "1", "Ledger by Figment"),
     xrayTicket: "B2CQA-3020",
   },
-  {
-    delegate: new Delegate(
-      Account.APTOS_1,
-      "11.00000000",
-      "0xa651c7c52d64a2014379902bbc92439d196499bcc36d94ff0395aa45837c66db",
-    ),
-    xrayTicket: "B2CQA-3564",
-  },
 ];
 
 const validators = [
@@ -69,7 +61,7 @@ const validators = [
     xrayTicket: "B2CQA-2731, B2CQA-2763",
   },
   {
-    delegate: new Delegate(Account.SOL_2, "0.001", "Ledger by Figment"),
+    delegate: new Delegate(Account.SOL_3, "0.001", "Ledger by Figment"),
     xrayTicket: "B2CQA-2730, B2CQA-2764",
   },
   {
@@ -77,7 +69,7 @@ const validators = [
     xrayTicket: "B2CQA-2732, B2CQA-2765",
   },
   {
-    delegate: new Delegate(Account.ADA_2, "0.01", "Ledger by Figment 2"),
+    delegate: new Delegate(Account.ADA_2, "0.01", "Ledger by Figment 4"),
     xrayTicket: "B2CQA-2766",
   },
   {
@@ -96,11 +88,11 @@ const liveApps = [
     xrayTicket: "B2CQA-3024",
   },
   {
-    delegate: new Delegate(Account.TRX_1, "1", "stakekit"),
+    delegate: new Delegate(Account.TRX_1, "1", "yield.xyz"),
     xrayTicket: "B2CQA-3025", //todo: Add split from when parent ticket is available
   },
   {
-    delegate: new Delegate(Account.DOT_1, "1", "stakekit"),
+    delegate: new Delegate(Account.DOT_1, "1", "yield.xyz"),
     xrayTicket: "B2CQA-3026", //todo: Add split from when parent ticket is available
   },
 ];
@@ -331,9 +323,9 @@ test.describe("e2e delegation - Celo", () => {
     },
     async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
+      await addBugLink(["NAPPS-1128"]);
       await app.layout.goToAccounts();
       await app.accounts.navigateToAccountByName(account.account.accountName);
-      await app.speculos.activateContractData();
       await app.account.startStakingFlowFromMainStakeButton();
       await app.delegate.checkCeloManageAssetModal();
       await app.delegate.clickCeloLockButton();
@@ -424,7 +416,7 @@ test.describe("Staking flow from different entry point", () => {
       tag: ["@NanoSP", "@LNS", "@NanoX"],
       annotation: {
         type: "TMS",
-        description: "B2CQA-2769",
+        description: "B2CQA-2769, B2CQA-3281, B2CQA-3289",
       },
     },
     async ({ app }) => {
@@ -433,8 +425,17 @@ test.describe("Staking flow from different entry point", () => {
       await app.layout.goToPortfolio();
       await app.portfolio.startStakeFlow();
 
-      await app.assetDrawer.selectAsset(delegateAccount.account.currency);
-      await app.assetDrawer.selectAccountByIndex(delegateAccount.account);
+      const isModularDrawer = await app.modularDrawer.isModularAssetsDrawerVisible();
+      if (isModularDrawer) {
+        await app.modularDrawer.validateAssetsDrawerItems();
+        await app.modularDrawer.selectAssetByTickerAndName(delegateAccount.account.currency);
+        await app.modularDrawer.selectNetwork(delegateAccount.account.currency);
+        await app.modularDrawer.selectAccountByName(delegateAccount.account);
+      } else {
+        await app.portfolio.expectChooseAssetToBeVisible();
+        await app.assetDrawer.selectAsset(delegateAccount.account.currency);
+        await app.assetDrawer.selectAccountByIndex(delegateAccount.account);
+      }
 
       await app.delegate.verifyFirstProviderName(delegateAccount.provider);
       await app.delegate.continue();
@@ -447,7 +448,7 @@ test.describe("Staking flow from different entry point", () => {
       tag: ["@NanoSP", "@LNS", "@NanoX"],
       annotation: {
         type: "TMS",
-        description: "B2CQA-2771",
+        description: "B2CQA-2771, B2CQA-3289",
       },
     },
     async ({ app }) => {
@@ -457,7 +458,12 @@ test.describe("Staking flow from different entry point", () => {
       await app.market.search(delegateAccount.account.currency.name);
       await app.market.stakeButtonClick(delegateAccount.account.currency.ticker);
 
-      await app.assetDrawer.selectAccountByIndex(delegateAccount.account);
+      const modularDrawerVisible = await app.modularDrawer.isModularAccountDrawerVisible();
+      if (modularDrawerVisible) {
+        await app.modularDrawer.selectAccountByName(delegateAccount.account);
+      } else {
+        await app.assetDrawer.selectAccountByIndex(delegateAccount.account);
+      }
 
       await app.delegate.verifyFirstProviderName(delegateAccount.provider);
       await app.delegate.continue();

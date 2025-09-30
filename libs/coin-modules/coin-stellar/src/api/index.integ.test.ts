@@ -1,15 +1,13 @@
 import type { AlpacaApi, Operation } from "@ledgerhq/coin-framework/api/index";
 import { xdr } from "@stellar/stellar-sdk";
 import { createApi, envelopeFromAnyXDR } from ".";
-import { StellarAsset, StellarMemo } from "../types";
+import { StellarMemo } from "../types";
 
 /**
  * Testnet scan: https://testnet.lumenscan.io/
- *
- * Tests are skipped for the moment due to TooManyRequest errors
  */
-describe.skip("Stellar Api", () => {
-  let module: AlpacaApi<StellarAsset, StellarMemo>;
+describe("Stellar Api", () => {
+  let module: AlpacaApi<StellarMemo>;
   const ADDRESS = "GBAUZBDXMVV7HII4JWBGFMLVKVJ6OLQAKOCGXM5E2FM4TAZB6C7JO2L7";
 
   beforeAll(() => {
@@ -36,15 +34,15 @@ describe.skip("Stellar Api", () => {
       });
 
       // Then
-      expect(result).toEqual(BigInt(100));
+      expect(result).toEqual({ value: BigInt(100) });
     });
   });
 
   describe("listOperations", () => {
-    let txs: Operation<StellarAsset>[];
+    let txs: Operation[];
 
     beforeAll(async () => {
-      [txs] = await module.listOperations(ADDRESS, { minHeight: 0 });
+      [txs] = await module.listOperations(ADDRESS, { minHeight: 0, order: "asc" });
     });
 
     it("returns a list regarding address parameter", async () => {
@@ -60,6 +58,11 @@ describe.skip("Stellar Api", () => {
       expect(txs.length).toBeGreaterThanOrEqual(100);
       const checkSet = new Set(txs.map(elt => elt.tx.hash));
       expect(checkSet.size).toEqual(txs.length);
+    });
+
+    it("returns all operations from the latest, but in asc order", async () => {
+      const [txsDesc] = await module.listOperations(ADDRESS, { minHeight: 0, order: "desc" });
+      expect(txsDesc[0]).toStrictEqual(txs[0]);
     });
   });
 
@@ -81,7 +84,16 @@ describe.skip("Stellar Api", () => {
       const result = await module.getBalance(ADDRESS);
 
       // Then
-      expect(result).toBeGreaterThan(0);
+      expect(result).toBeInstanceOf(Array);
+      expect(result[0]).toMatchObject({
+        value: expect.any(BigInt),
+        asset: { type: "native" },
+      });
+      expect(result[0].value).toBeGreaterThan(0);
+      result.slice(1).forEach(balance => {
+        expect(balance.asset.type).not.toEqual("native");
+        expect(balance.value).toBeGreaterThanOrEqual(0);
+      });
     });
   });
 
@@ -101,7 +113,7 @@ describe.skip("Stellar Api", () => {
     }
 
     it("returns a raw transaction", async () => {
-      const result = await module.craftTransaction({
+      const { transaction: result } = await module.craftTransaction({
         asset: { type: "native" },
         type: TYPE,
         sender: ADDRESS,
@@ -116,7 +128,7 @@ describe.skip("Stellar Api", () => {
     });
 
     it("should use estimated fees when user does not provide them for crafting a transaction", async () => {
-      const transactionXdr = await module.craftTransaction({
+      const { transaction: transactionXdr } = await module.craftTransaction({
         asset: { type: "native" },
         type: TYPE,
         sender: ADDRESS,
@@ -131,7 +143,7 @@ describe.skip("Stellar Api", () => {
 
     it("should use custom user fees when user provides it for crafting a transaction", async () => {
       const customFees = 99n;
-      const transactionXdr = await module.craftTransaction(
+      const { transaction: transactionXdr } = await module.craftTransaction(
         {
           asset: { type: "native" },
           type: TYPE,
@@ -140,7 +152,7 @@ describe.skip("Stellar Api", () => {
           amount: AMOUNT,
           memo: { type: "NO_MEMO" },
         },
-        customFees,
+        { value: customFees },
       );
 
       const fees = readFees(transactionXdr);
@@ -148,7 +160,7 @@ describe.skip("Stellar Api", () => {
     });
 
     it("should have no memo when not provided by user", async () => {
-      const transactionXdr = await module.craftTransaction({
+      const { transaction: transactionXdr } = await module.craftTransaction({
         asset: { type: "native" },
         type: TYPE,
         sender: ADDRESS,
@@ -160,7 +172,7 @@ describe.skip("Stellar Api", () => {
     });
 
     it("should have a memo when provided by user", async () => {
-      const transactionXdr = await module.craftTransaction({
+      const { transaction: transactionXdr } = await module.craftTransaction({
         asset: { type: "native" },
         type: TYPE,
         sender: ADDRESS,

@@ -2,7 +2,7 @@ import { craftTransaction, rawEncode } from "./craftTransaction";
 import { getTezosToolkit } from "./tezosToolkit";
 import coinConfig from "../config";
 import { OpKind } from "@taquito/rpc";
-import { DEFAULT_FEE } from "@taquito/taquito";
+import { getRevealFee } from "@taquito/taquito";
 
 type TransactionType = "send" | "delegate" | "undelegate";
 
@@ -21,6 +21,7 @@ describe("craftTransaction", () => {
     estimate: {
       reveal: jest.fn(),
     },
+    setProvider: jest.fn(),
   };
 
   beforeEach(() => {
@@ -128,7 +129,7 @@ describe("craftTransaction", () => {
     expect(result.contents).toEqual([
       {
         kind: OpKind.REVEAL,
-        fee: DEFAULT_FEE.REVEAL.toString(),
+        fee: getRevealFee(account.address).toString(),
         gas_limit: "100",
         storage_limit: "0",
         source: publicKey.publicKeyHash,

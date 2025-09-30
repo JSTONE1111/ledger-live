@@ -1,46 +1,35 @@
-import React from "react";
-import { useSelector } from "react-redux";
 import { ServiceStatusProvider } from "@ledgerhq/live-common/notifications/ServiceStatusProvider/index";
-import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
-import Config from "react-native-config";
+import type { ServiceStatusApi } from "@ledgerhq/live-common/notifications/ServiceStatusProvider/types";
 import { getEnv } from "@ledgerhq/live-env";
+import { isEqual } from "lodash/fp";
+import React from "react";
+import Config from "react-native-config";
+import { useSelector } from "react-redux";
+import { createSelector } from "reselect";
 import { cryptoCurrenciesSelector } from "~/reducers/accounts";
-import networkApi from "../Settings/Debug/__mocks__/serviceStatus";
+import debugNetworkApi from "../Settings/Debug/__mocks__/serviceStatus";
+import mswNetworkApi from "../../mocks/status/networkApi";
 
-let serviceStatusApi: typeof networkApi;
-
-if (Config.MOCK || getEnv("MOCK")) {
-  serviceStatusApi = networkApi;
+let serviceStatusApi: ServiceStatusApi | undefined;
+if (process.env.MSW_ENABLED === "true") {
+  serviceStatusApi = mswNetworkApi;
+} else if (Config.MOCK || getEnv("MOCK")) {
+  serviceStatusApi = debugNetworkApi;
 }
 
-type Props = {
+interface Props {
   children: React.ReactNode;
-};
-export default function NotificationsProvider({ children }: Props) {
-  const currenciesRaw: CryptoCurrency[] = useSelector(cryptoCurrenciesSelector);
+}
 
-  const { tickers } = currenciesRaw.reduce<{
-    currencies: string[];
-    tickers: string[];
-  }>(
-    ({ currencies, tickers }, { id, ticker }) => ({
-      currencies: [...currencies, id],
-      tickers: [...tickers, ticker],
-    }),
-    {
-      currencies: [],
-      tickers: [],
-    },
-  );
+const selectContext = createSelector(cryptoCurrenciesSelector, xs => ({
+  tickers: xs.map(x => x.ticker),
+}));
+
+export default function NotificationsProvider({ children }: Props) {
+  const context = useSelector(selectContext, (a, b) => isEqual(a.tickers, b.tickers));
 
   return (
-    <ServiceStatusProvider
-      context={{
-        tickers,
-      }}
-      autoUpdateDelay={60000}
-      networkApi={serviceStatusApi}
-    >
+    <ServiceStatusProvider context={context} autoUpdateDelay={60000} networkApi={serviceStatusApi}>
       {children}
     </ServiceStatusProvider>
   );

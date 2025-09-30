@@ -15,13 +15,8 @@ export class LockscreenPage extends AppPage {
     await this.loginButton.click();
   }
 
-  @step("Check input error state visibibility: $0")
+  @step("Check input error state visibility: $0")
   async checkInputErrorVisibility(expectedState: "visible" | "hidden") {
     await this.inputError.waitFor({ state: expectedState });
-  }
-
-  @step("Expect Ledger Logo to be visible")
-  async expectLogoToBeVisible() {
-    await this.logo.waitFor({ state: "visible" });
   }
 }

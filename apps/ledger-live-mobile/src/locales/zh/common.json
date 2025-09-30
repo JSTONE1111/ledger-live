@@ -49,6 +49,7 @@
     "transactionDate" : "交易日期",
     "outdated" : "已过期",
     "satPerByte" : "聪/字节",
+    "sompiPerByte" : "sompi/字节",
     "notAvailable" : "缺货",
     "import" : "导入",
     "bluetooth" : "蓝牙",
@@ -287,120 +288,124 @@
       "description" : "请再次尝试。"
     },
     "DisconnectedDevice" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "设备连接中断",
+      "description" : "Ledger Live 无法连接到您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DisconnectedDeviceDuringOperation" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "设备连接中断",
+      "description" : "Ledger Live 无法连接到您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DeviceDisconnectedWhileSendingError" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "设备连接中断",
+      "description" : "Ledger Live 无法连接到您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DisconnectError" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "设备连接中断",
+      "description" : "Ledger Live 无法连接到您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DeviceSessionNotFound" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "设备连接中断",
+      "description" : "Ledger Live 无法连接到您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
+    },
+    "ReconnectionFailedError" : {
+      "title" : "设备连接中断",
+      "description" : "Ledger Live 无法连接到您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DeviceDisconnectedBeforeSendingApdu" : {
-      "title" : "Device connection lost",
-      "description" : "Ledger Live couldn't connect to your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "设备连接中断",
+      "description" : "Ledger Live 无法连接到您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "TransportNotSupportedError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "连接方式错误",
+      "description" : "所使用的设备连接方式存在问题。请尝试使用其他连接方式，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "TransportAlreadyExistsError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "连接方式错误",
+      "description" : "所使用的设备连接方式存在问题。请尝试使用其他连接方式，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "NoTransportProvidedError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "连接方式错误",
+      "description" : "所使用的设备连接方式存在问题。请尝试使用其他连接方式，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "NoAccessibleDeviceError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "连接方式错误",
+      "description" : "所使用的设备连接方式存在问题。请尝试使用其他连接方式，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "ConnectionOpeningError" : {
-      "title" : "Connection method error",
-      "description" : "There was an issue with the device connection method used. Please try with a different connection method or contact Ledger Support if the issue persists."
+      "title" : "连接方式错误",
+      "description" : "所使用的设备连接方式存在问题。请尝试使用其他连接方式，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DeviceNotInitializedError" : {
-      "title" : "Device not onboarded",
-      "description" : "Your device isn't ready for use. Please follow the setup instructions and try again once onboarded."
+      "title" : "设备未完成设置",
+      "description" : "您的设备尚未准备好使用。请按照设置说明操作，并在完成设置后重试。"
     },
     "DeviceNotOnboardedError" : {
-      "title" : "Device not onboarded",
-      "description" : "Your device isn't ready for use. Please follow the setup instructions and try again once onboarded."
+      "title" : "设备未完成设置",
+      "description" : "您的设备尚未准备好使用。请按照设置说明操作，并在完成设置后重试。"
     },
     "DeviceLockedError" : {
-      "title" : "Device locked",
-      "description" : "Your device is locked. Please unlock it and try again."
+      "title" : "设备已锁定",
+      "description" : "您的设备已锁定。请解锁设备并重试。"
     },
     "OutOfMemoryDAError" : {
-      "title" : "Not enough memory",
-      "description" : "Your device doesn’t have enough memory. Please uninstall apps and try again."
+      "title" : "内存不足",
+      "description" : "您的设备内存不足。请卸载应用程序并重试。"
     },
     "UnsupportedFirmwareDAError" : {
-      "title" : "OS is unsupported",
-      "description" : "Your device's operating system is unsupported. Please update it through Ledger Live, or contact Ledger Support for assistance if you encounter difficulties."
+      "title" : "操作系统不受支持",
+      "description" : "您的设备操作系统不受支持。请通过 Ledger Live 进行更新，如果遇到问题，请联系 Ledger 客服寻求帮助。"
     },
     "InvalidBatteryStatusTypeError" : {
-      "title" : "Battery error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "电池错误",
+      "description" : "出错了。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "InvalidBatteryDataError" : {
-      "title" : "Battery error",
-      "description" : "Battery status error. Please contact Ledger Support."
+      "title" : "电池错误",
+      "description" : "电池状态错误。请联系 Ledger 客服。"
     },
     "InvalidStatusWordError" : {
-      "title" : "Device connection error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "设备连接错误",
+      "description" : "出错了。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "InvalidResponseFormatError" : {
-      "title" : "Device connection error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "设备连接错误",
+      "description" : "出错了。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "UnknownDAError" : {
-      "title" : "Device connection error",
-      "description" : "Something went wrong. Please retry or contact Ledger Support if the issue persists."
+      "title" : "设备连接错误",
+      "description" : "出错了。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DeviceNotRecognizedError" : {
-      "title" : "Device not recognised",
-      "description" : "Ledger Live couldn't recognise your device. Please try with a again or contact Ledger Support if the issue persists."
+      "title" : "无法识别设备",
+      "description" : "Ledger Live 无法识别您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "DeviceAlreadyDiscoveredError" : {
-      "title" : "Device not recognised",
-      "description" : "Ledger Live couldn't recognise your device. Please try with a again or contact Ledger Support if the issue persists."
+      "title" : "无法识别设备",
+      "description" : "Ledger Live 无法识别您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "UnknownDeviceError" : {
-      "title" : "Device not recognised",
-      "description" : "Ledger Live couldn't recognise your device. Please try with a again or contact Ledger Support if the issue persists."
+      "title" : "无法识别设备",
+      "description" : "Ledger Live 无法识别您的设备。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "ReceiverApduError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "通信错误",
+      "description" : "与您的设备交换信息时出现问题。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "FramerApduError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "通信错误",
+      "description" : "与您的设备交换信息时出现问题。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "SendApduTimeoutError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "通信错误",
+      "description" : "与您的设备交换信息时出现问题。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "AlreadySendingApduError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "通信错误",
+      "description" : "与您的设备交换信息时出现问题。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "UnknownDeviceExchangeError" : {
-      "title" : "Communication error",
-      "description" : "There was a problem exchanging information with your device. Please try again or contact Ledger Support if the issue persists."
+      "title" : "通信错误",
+      "description" : "与您的设备交换信息时出现问题。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "CasperInvalidTransferId" : {
       "title" : "转账 ID 应为小于 {{maxTransferId}} 的正数"
@@ -414,10 +419,6 @@
     "ETHAddressNonEIP" : {
       "title" : "无法自动验证。请仔细核对该地址。",
       "description" : null
-    },
-    "EthAppNftNotSupported" : {
-      "title" : "操作不可用于此设备",
-      "description" : "仅 Nano X 和 Nano S Plus 提供发送 NFT 功能。请访问我们的客服平台，了解如何使用 Nano S 发送 NFT。"
     },
     "Touch ID Error" : {
       "title" : "生物特征认证失败",
@@ -690,6 +691,15 @@
       "title" : "配对不成功",
       "description" : "请重试或参阅我们的蓝牙故障排除文章。"
     },
+    "OneSuiMinForStake" : {
+      "title" : "最低数额为 1 SUI"
+    },
+    "OneSuiMinForUnstake" : {
+      "title" : "最低数额为 1 SUI"
+    },
+    "OneSuiMinForUnstakeToBeLeft" : {
+      "title" : "应保留至少 1 SUI 的质押余额"
+    },
     "PasswordIncorrect" : {
       "title" : "密码错误",
       "description" : "请再次尝试。"
@@ -897,9 +907,6 @@
     "PolkadotAllFundsWarning" : {
       "title" : "确保您留有足够的余额，以便缴纳未来的交易费"
     },
-    "PolkadotDoMaxSendInstead" : {
-      "title" : "余额不能少于 {{minimumBalance}}发送最大值以清空账户。"
-    },
     "PolkadotBondMinimumAmount" : {
       "title" : "您必须至少绑定 {{minimumBondAmount}}。"
     },
@@ -914,9 +921,6 @@
     },
     "TaprootNotActivated" : {
       "title" : "Taproot 主网尚未激活"
-    },
-    "NotEnoughNftOwned" : {
-      "title" : "您已超过可用代币的数量"
     },
     "generic" : {
       "title" : "{{message}}",
@@ -1042,10 +1046,6 @@
       "title" : "图片下载失败",
       "description" : "使用其他图片重试。"
     },
-    "NFTMetadataLoadingError" : {
-      "title" : "NFT 元数据加载问题",
-      "description" : "使用其他 NFT 重试。"
-    },
     "ImageSizeLoadingError" : {
       "title" : "未能检索图片尺寸",
       "description" : "使用其他图片重试。"
@@ -1072,6 +1072,18 @@
     },
     "HederaAddAccountError" : {
       "title" : "您的账户尚未添加。请再次尝试。"
+    },
+    "HederaInsufficientFundsForAssociation" : {
+      "title" : "余额不足",
+      "description" : "HBAR 数额不足以支付代币关联费用。至少需要价值 {{requiredWorthInUSD}} 美元的 HBAR。"
+    },
+    "HederaRecipientTokenAssociationRequired" : {
+      "title" : "需要关联代币",
+      "description" : "您尝试发送的代币未与目标账户关联。需要与接收方账户关联才能接收代币。"
+    },
+    "HederaRecipientTokenAssociationUnverified" : {
+      "title" : "无法验证代币关联",
+      "description" : "我们无法确认目标账户是否可以接收此代币。地址可能无效，或者存在网络或服务问题。"
     },
     "NearNewAccountWarning" : {
       "title" : "尚未创建接收人账户。该协议需要 {{formattedNewAccountStorageCost}} 转账才能创建账户。"
@@ -1304,7 +1316,8 @@
     "estimatedTime" : {
       "slow" : "约 2-3 分钟",
       "medium" : "约 30 秒",
-      "fast" : "约 15 秒"
+      "fast" : "约 15 秒",
+      "custom" : ""
     }
   },
   "signout" : {
@@ -2133,27 +2146,6 @@
         "learnHowToUpdate" : "了解如何更新"
       }
     },
-    "stepImportAccounts" : {
-      "title" : "通过桌面应用程序同步加密资产",
-      "desc" : "如果您已经在 Ledger 桌面应用程序设置好了您的加密资产，就可以通过您的手机完成同步并进行管理。",
-      "cta" : "我准备好扫描了",
-      "bullets" : {
-        "0" : {
-          "label" : "在桌面应用程序中，选择 <1>设置 > 账户 > 账户导出</1>。"
-        },
-        "1" : {
-          "label" : "使用您的手机扫描 LiveQR 二维码。"
-        },
-        "2" : {
-          "label" : "选择需要导入的加密资产账户。"
-        }
-      },
-      "warning" : {
-        "title" : "必须手动完成桌面应用程序和手机应用程序的同步。",
-        "desc" : "Ledger Live 尊重您的隐私，只会本地存储您的数据。如果您在手机上更改了账户和设置，那么也需要在电脑上做出同样的操作，反之亦然。您的交易数据会和区块链保持同步。",
-        "cta" : "知道了！"
-      }
-    },
     "stepSetupPin" : {
       "step1" : "启动您的 {{fullDeviceName}} 并按照说明操作。",
       "step1-nanoS" : "使用 OTG 数据线来将您的 {{fullDeviceName}} 连接到您的手机上。",
@@ -2690,9 +2682,7 @@
   "operations" : {
     "types" : {
       "IN" : "已接收",
-      "NFT_IN" : "已收到的 NFT",
       "OUT" : "已发送",
-      "NFT_OUT" : "已发送的 NFT",
       "CREATE" : "已创建",
       "REVEAL" : "已显示",
       "DELEGATE" : "已委托",
@@ -2726,7 +2716,8 @@
       "WITHDRAW" : "已提取",
       "STAKE" : "已权益质押",
       "UNSTAKE" : "已解除权益质押",
-      "WITHDRAW_UNSTAKED" : "已提取"
+      "WITHDRAW_UNSTAKED" : "已提取",
+      "ASSOCIATE_TOKEN" : "关联代币"
     }
   },
   "operationDetails" : {
@@ -2758,6 +2749,7 @@
     "extra" : {
       "transferId" : "转账 ID（备忘标签）",
       "resource" : "资源",
+      "validator" : "验证者",
       "frozenAmount" : "已冻结数额",
       "unfreezeAmount" : "解冻数额",
       "address" : "地址",
@@ -2795,11 +2787,7 @@
       "stakedAmount" : "权益质押数额",
       "accountCreationFee" : "账户创建费"
     },
-    "multipleAddresses" : "为什么有多个地址？",
-    "tokenName" : "代币名称",
-    "collectionContract" : "代币合约",
-    "tokenId" : "代币（NFT）ID",
-    "quantity" : "数量"
+    "multipleAddresses" : "为什么有多个地址？"
   },
   "operationList" : {
     "noOperations" : "不作操作",
@@ -2831,8 +2819,8 @@
       "contactSupport" : "联系客服"
     },
     "willBedeprecatedBanner" : {
-      "title" : "为了优化效率，自 {{deprecatedDate}} 起，Ledger Live 将不再支持 {{currencyName}}。但 Ledger 硬件钱包将继续支持该币种。如需这方面的帮助，请联系 Ledger 客服。",
-      "contactSupport" : "联系客服"
+      "title" : "自 {{deprecatedDate}} 起 Ledger Live 将不再支持 {{currencyName}}。但该币种仍会受到 Ledger 硬件钱包的保护。请访问下方链接，阅读完整的帮助中心文章，了解更多信息。",
+      "learnMore" : "了解更多"
     },
     "tokens" : {
       "contractAddress" : "合约地址",
@@ -2968,10 +2956,6 @@
     },
     "undelegation" : {
       "sectionLabel" : "解除委托"
-    },
-    "nft" : {
-      "receiveNft" : "接收 NFT",
-      "howTo" : "要添加 NFT，您需要使用您的 <1>{{currency}} 地址</1><0>来接收</0>。"
     },
     "readOnly" : {
       "noTransaction" : {
@@ -3183,11 +3167,6 @@
         "desc" : "此操作将隐藏全部 <1><0>{tokenName}</0></1> 账户，您可以使用 <3>设置</3> 再次显示这些账户。",
         "confirm" : "隐藏代币"
       },
-      "hideNFTCollectionCTA" : "隐藏收藏",
-      "hideNFTCollectionModal" : {
-        "title" : "隐藏收藏？",
-        "desc" : "您可以在设置选项中取消隐藏此收藏。"
-      },
       "cryptoAssets" : {
         "header" : "加密资产",
         "title" : "加密资产",
@@ -3241,7 +3220,7 @@
       },
       "transactionsAlerts" : {
         "title" : "交易提醒（测试版）",
-        "desc" : "获取以太坊、多边形、币安智能链、雪崩链和以太坊经典的交易通知"
+        "desc" : "获取以太坊、Polygon、BNB 链、雪崩链和以太坊经典的交易通知"
       },
       "price" : {
         "title" : "价格提醒",
@@ -3659,7 +3638,8 @@
           "refunded" : "请使用您的互换 ID 联系互换服务提供方以了解更多详情。",
           "pending" : "请稍候片刻，互换提供方正在处理该交易。",
           "onhold" : "请使用您的互换 ID 联系互换服务提供方以解决这一情况。",
-          "finished" : "您的互换已成功完成"
+          "finished" : "您的互换已成功完成",
+          "unknown" : "我们正在等待提供商的信息。"
         }
       },
       "missingApp" : {
@@ -3686,7 +3666,8 @@
         "empty" : {
           "title" : "您之前的互换会显示在这里",
           "desc" : "要么您还未进行过任何互换，亦或 Ledger Live 在此期间被重置了。"
-        }
+        },
+        "feedback" : "提供反馈意见"
       }
     },
     "swap2" : {
@@ -3720,6 +3701,7 @@
             "provider" : "提供方",
             "rate" : "汇率",
             "fees" : "网络费用",
+            "feesDescription" : "此费用由区块链网络收取，用于处理互换交易。除预估报价外，仅收取发送费用。已包含接收费用",
             "target" : "目标账户"
           },
           "noAccount" : "创建一个账户以接收 {{name}}",
@@ -3742,6 +3724,10 @@
       },
       "twoStepApproval" : {
         "title" : "完成步骤"
+      },
+      "loader" : {
+        "title" : "正在处理互换",
+        "description" : "我们正在处理您的请求，请稍候。"
       },
       "history" : {
         "title" : "互换历史记录"
@@ -4010,10 +3996,7 @@
       "summary" : "概要",
       "selectDevice" : "选择设备",
       "connectDevice" : "连接设备",
-      "stepRange" : "步骤 {{currentStep}} 之 {{totalSteps}}",
-      "quantity" : "数量",
-      "selectCollection" : "收藏",
-      "selectNft" : "NFT"
+      "stepRange" : "步骤 {{currentStep}} 之 {{totalSteps}}"
     },
     "recipient" : {
       "scan" : "扫描二维码",
@@ -4044,6 +4027,10 @@
       "quantityAvailable" : "可用数量"
     },
     "summary" : {
+      "solanaRawTransaction" : {
+        "title" : "需要盲签名",
+        "description" : "您无法在 Ledger 设备上验证交易详情。如果您签署此交易，可能会丢失所有资产。仅在您信任此网站的情况下才可签署。"
+      },
       "subaccountsWarning" : "您需要向此账户充值 {{ currency }} 才能发送此账户的代币",
       "tag" : "标签 (可选)",
       "validateTag" : "验证标签",
@@ -4346,7 +4333,7 @@
       "title" : "选择您要添加的账户",
       "ctaStopScan" : "停止扫描",
       "confirm" : "确认",
-      "scanningTitle" : "正在查找区块链上的现有账户……",
+      "scanningTitle" : "正在检查区块链……",
       "whichAddressType" : "了解如何选择地址类型",
       "sections" : {
         "importable" : {
@@ -4411,7 +4398,7 @@
     "confirmSwap" : {
       "title" : "在设备上确认互换操作",
       "alert" : {
-        "default" : "发送之前请在您的设备上验证互换详情。地址会被安全地交换因此您不必对其进行验证。",
+        "default" : "发送资金之前，请先在您的 Ledger 设备上核实互换详情。",
         "provider" : "发送资金之前，请先在您的设备上核实互换详情。{{providerName}} 可能需要对某些交易进行额外验证，因此导致延迟。"
       },
       "acceptTerms" : "验证此交易，即表示我接受\n<0><0>{{provider}}</0>的使用条款</0>",
@@ -6242,6 +6229,7 @@
       "iWithdraw" : "我提取",
       "totalStake" : "质押总额",
       "commission" : "佣金",
+      "netApy" : "净年收益率",
       "stakeActivationState" : "状态",
       "stakeActivePercent" : "活跃",
       "stakeAvailableBalance" : "可用余额",
@@ -6447,6 +6435,107 @@
       }
     }
   },
+  "sui" : {
+    "info" : {
+      "available" : {
+        "title" : "可用 SUI",
+        "description" : "该数额可自由支配。"
+      },
+      "storageUsage" : {
+        "title" : "最低余额",
+        "description" : "此数额是可用于存储和交易的账户保留数额，也是您的账户保持活跃所必须保有的最低余额。"
+      },
+      "staked" : {
+        "title" : "已委托资产",
+        "description" : "已委托余额"
+      }
+    },
+    "unstaking" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "要解除委托的数额"
+      },
+      "flow" : {
+        "steps" : {
+          "amount" : {
+            "warning" : "解除委托后，您的余额和累积奖励将立即兑现"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "您已经将资产成功解除委托"
+            }
+          }
+        }
+      }
+    },
+    "withdrawing" : {
+      "stepperHeader" : {
+        "amountSubTitle" : "要提取的数额"
+      },
+      "flow" : {
+        "steps" : {
+          "verification" : {
+            "success" : {
+              "title" : "您已成功提取资产"
+            }
+          }
+        }
+      }
+    },
+    "staking" : {
+      "sectionLabel" : "已委托持仓",
+      "info" : "委托机制如何运作",
+      "add" : "添加",
+      "stakingEarn" : "您可以通过委托资产赚取 SUI 奖励。",
+      "totalStake" : "质押总额",
+      "commission" : "佣金",
+      "iStake" : "我委托",
+      "actions" : {
+        "unstake" : "解除委托"
+      },
+      "drawer" : {
+        "status" : "状态",
+        "active" : "活跃",
+        "inactive" : "不活跃",
+        "pending" : "待处理",
+        "available" : "可提取"
+      },
+      "stepperHeader" : {
+        "amountSubTitle" : "要委托的数额",
+        "selectDevice" : "选择设备",
+        "connectDevice" : "连接设备",
+        "stepRange" : "步骤 {{currentStep}} 之 {{totalSteps}}"
+      },
+      "flow" : {
+        "steps" : {
+          "starter" : {
+            "description" : "委托 SUI 可安全赚取奖励，时刻掌控您的资产。",
+            "steps" : {
+              "0" : "委托出去的资产依旧为您所有。",
+              "1" : "解除委托后，您的余额和累积奖励将立即兑现。",
+              "2" : "使用您的 Ledger 设备安全地进行委托。"
+            },
+            "warning" : {
+              "description" : "请明智地选择验证者：如果验证者表现不当，您可能会不可挽回地损失部分已委托资产。"
+            },
+            "cta" : "继续"
+          },
+          "amount" : {
+            "assetsRemaining" : "剩余资产：<0>{{amount}}</0>",
+            "allAssetsUsed" : "已使用所有资产",
+            "minAmount" : "最小数额：<0>{{min}}</0>",
+            "incorrectAmount" : "最大数额：<0>{{max}}</0>",
+            "cta" : "继续"
+          },
+          "verification" : {
+            "success" : {
+              "title" : "您的资产已经成功委托。",
+              "text" : "交易一经网络确认，您的账户余额就会更新。"
+            }
+          }
+        }
+      }
+    }
+  },
   "aptos" : {
     "info" : {
       "available" : {
@@ -6634,6 +6723,7 @@
       "undelegate" : "操作一经确认，您的账户就会结束委托。您随时可以再次委托您的账户。"
     },
     "summaryTitle" : "概要",
+    "delegate" : "委托",
     "goToAccount" : "前往账户",
     "howDelegationWorks" : "委托机制如何运作",
     "actions" : {
@@ -7009,47 +7099,6 @@
       }
     }
   },
-  "nft" : {
-    "account" : {
-      "seeAllNfts" : "查看所有 NFT",
-      "seeFewerNfts" : "看到更少 NFT"
-    },
-    "gallery" : {
-      "allNft" : "所有 NFT",
-      "addNew" : "添加新的"
-    },
-    "designedForStax" : {
-      "title" : "<0>专为</0> <1>Ledger</1> <2>Stax</2> 设计",
-      "drawer" : {
-        "description" : "此 NFT 包含 NFT 的附加图片，专为 Ledger Stax 的 E Ink 屏幕设计。\n\n当您将此 NFT 设置为锁屏时，将使用此图片。",
-        "cta" : "知道了"
-      }
-    },
-    "viewer" : {
-      "properties" : "属性",
-      "description" : "描述",
-      "tokenContract" : "代币地址",
-      "tokenContractCopied" : "代币地址已复制！",
-      "tokenId" : "代币 ID",
-      "tokenIdCopied" : "代币 ID 已复制！",
-      "quantity" : "数量",
-      "attributes" : {
-        "floorPrice" : "底价"
-      }
-    },
-    "viewerModal" : {
-      "viewOn" : "查看",
-      "viewInExplorer" : "在浏览器中查看",
-      "hide" : "隐藏 NFT 藏品",
-      "txDetails" : "交易详情"
-    },
-    "modalDisabled" : {
-      "title" : "iOS 上不能使用发送功能",
-      "body" : "为了遵守 Apple 对 App Store 的最新更新，暂时无法发送 NFT。您仍然可以在桌面设备上使用 Ledger Live 发送 NFT。",
-      "learnMore" : "了解更多",
-      "continue" : "知道了！"
-    }
-  },
   "ApplicationVersion" : "{{version}}版本",
   "analytics" : {
     "title" : "数据分析",
@@ -7070,6 +7119,55 @@
     },
     "currentAddress" : {
       "messageIfVirtual" : "无法在 Ledger 设备上确认您的 {{name}} 地址。使用需自担风险。"
+    },
+    "receive" : {
+      "warnings" : {
+        "associationPrerequisite" : {
+          "text" : "如要接收 HTS 代币，您需要关联您的账户。如果您还未将您的账户与您要接收的 HTS 代币关联，请<0>点击此处</0>启动代币关联流程。",
+          "learnMore" : "了解更多"
+        }
+      }
+    },
+    "associate" : {
+      "selectToken" : {
+        "title" : "选择您要接收的代币"
+      },
+      "summary" : {
+        "title" : "关联代币",
+        "from" : "代币",
+        "to" : "到",
+        "warning" : {
+          "text" : "点击“继续”，即可将所选代币关联到您的 Hedera 账户。",
+          "learnMore" : "了解更多"
+        }
+      },
+      "selectDevice" : {
+        "title" : "关联代币"
+      },
+      "connectDevice" : {
+        "title" : "关联代币"
+      },
+      "validationSuccess" : {
+        "title" : "交易已发送",
+        "text" : "关联代币交易确认后，您便能够接收此代币。"
+      }
+    },
+    "send" : {
+      "warnings" : {
+        "missingAssociation" : {
+          "learnMore" : "了解更多"
+        },
+        "unverifiedAssociation" : {
+          "learnMore" : "了解更多"
+        }
+      }
+    },
+    "operationDetails" : {
+      "postAccountSection" : "已关联代币",
+      "postAlert" : {
+        "text" : "该交易确认后，您便能够接收您的代币。<0>点击此处</0>启动接收流程。",
+        "learnMore" : "了解更多"
+      }
     }
   },
   "asset" : {
@@ -7084,7 +7182,6 @@
     "drawer" : {
       "options" : {
         "uploadFromPhone" : "从我的图片库中选择",
-        "selectFromNFTGallery" : "从 NFT 库中选择",
         "remove" : "移除当前图片"
       }
     },
@@ -7115,9 +7212,6 @@
       "setPicture" : "设置为锁屏界面",
       "editPicture" : "编辑图片",
       "pickDeviceModel" : "选择设备"
-    },
-    "nftGallery" : {
-      "title" : "我的 NFT"
     }
   },
   "postOnboarding" : {
@@ -7162,50 +7256,7 @@
   "wallet" : {
     "tabs" : {
       "crypto" : "加密货币",
-      "nft" : "NFT",
       "market" : "市场"
-    },
-    "nftGallery" : {
-      "filters" : {
-        "select" : "选择",
-        "filter" : "筛选",
-        "blockchain" : "区块链",
-        "seeAll" : "显示全部",
-        "selectAndHide" : "选择并隐藏",
-        "hide" : "隐藏 {{count}} 件藏品",
-        "hiddenCollections" : "隐藏藏品",
-        "hide_plural" : "隐藏 {{count}} 件藏品",
-        "empty" : "没有可显示的隐藏藏品",
-        "alertHide" : "已隐藏 1 件藏品。您可以随时在藏品库筛选条件中取消隐藏。",
-        "alertHide_plural" : "已隐藏 {{count}} 件藏品。您可以随时在藏品库筛选条件中取消隐藏。"
-      },
-      "emptyFiltered" : {
-        "title" : "没有符合您的条件的 NFT",
-        "button" : "重置筛选条件"
-      },
-      "empty" : {
-        "title" : "暂时没有 NFT 可显示",
-        "subtitle" : "首先将 NFT 添加到您的钱包",
-        "receive" : "接收 NFT",
-        "supportLink" : "如何从其他钱包获取 NFT？"
-      },
-      "receiveModal" : {
-        "title" : "以与任何其他加密货币相同的方式接收 NFT",
-        "bullets" : {
-          "0" : "• 选择 NFT 的加密货币区块链。",
-          "1" : "• 选择接收 NFT 的账户"
-        },
-        "cta" : "好，知道了",
-        "info" : "我想了解更多"
-      },
-      "hideNftModal" : {
-        "title" : "隐藏 NFT 藏品",
-        "desc" : "此操作将隐藏{{collectionName}}藏品中的所有 NFT，您可以在藏品库筛选条件中取消隐藏",
-        "cta" : "隐藏此 NFT"
-      },
-      "media" : {
-        "tag" : "{{count}} 个 NFT"
-      }
     },
     "referralProgram" : "$20"
   },
@@ -7763,7 +7814,7 @@
   },
   "geoBlocking" : {
     "title" : "所在地区不可用",
-    "description" : "此地区无法使用 Ledger 钱包。",
+    "description" : "此地区无法使用 Ledger Live。",
     "learnMore" : "了解更多"
   },
   "versionBlocking" : {
@@ -7775,6 +7826,97 @@
     "selectAsset" : "选择资产",
     "selectNetwork" : "选择网络",
     "selectAccount" : "选择账户",
-    "searchPlaceholder" : "搜索"
+    "searchPlaceholder" : "搜索",
+    "emptyAssetList" : "未找到资产",
+    "accountCount" : "{{count}} 个账户",
+    "accountCount_plural" : "{{count}} 个账户",
+    "errors" : {
+      "title" : "连接失败",
+      "backend" : "我们这边出错了。请稍后重试",
+      "internet" : "无互联网连接。请重试",
+      "cta" : "请重试"
+    }
+  },
+  "swapErrors" : {
+    "incorrectCommandData" : {
+      "title" : "命令数据不正确",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "deserializationFailed" : {
+      "title" : "有效负载反序列化失败",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "wrongTransactionId" : {
+      "title" : "交易 ID 错误",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "invalidAddress" : {
+      "title" : "地址无效",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "WrongDeviceForAccountPayout" : {
+      "title" : "出错了",
+      "description" : "此接收账户不属于已连接的设备。请更改并重试。"
+    },
+    "WrongDeviceForAccountRefund" : {
+      "title" : "出错了",
+      "description" : "此发送账户不属于已连接的设备。请更改并重试。"
+    },
+    "userRefused" : {
+      "title" : "操作在设备上被拒绝",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "internalError" : {
+      "title" : "内部错误",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "wrongP1" : {
+      "title" : "P1 错误",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "wrongP2" : {
+      "title" : "P2 错误",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "wrongP2Extension" : {
+      "title" : "P2 扩展名错误",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "invalidP2Extension" : {
+      "title" : "出错了",
+      "description" : "P2 扩展名无效"
+    },
+    "unexpectedInstruction" : {
+      "title" : "出错了",
+      "description" : "指令异常"
+    },
+    "classNotSupported" : {
+      "title" : "出错了",
+      "description" : "不支持的类"
+    },
+    "invalidInstruction" : {
+      "title" : "指令无效",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "malformedApdu" : {
+      "title" : "APDU 标头格式错误",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "invalidDataLength" : {
+      "title" : "数据长度无效",
+      "description" : "此命令不接受该长度的数据"
+    },
+    "signatureVerificationFail" : {
+      "title" : "签名验证失败",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    },
+    "transactionCannotBeCreated" : {
+      "title" : "服务提供商不可用",
+      "description" : "我们无法完成您通过该服务提供商进行的互换。请尝试其他服务提供商。错误代码 8HBB{{errorCode}}"
+    },
+    "default" : {
+      "title" : "出错了",
+      "description" : "请重试，如有疑问，请联系 Ledger 客服。"
+    }
   }
 }

@@ -12,6 +12,7 @@
 .github/workflows/test-mobile-e2e-reusable.yml          @ledgerhq/wallet-ci  @ledgerhq/qaa
 .github/workflows/test-design-system-reusable.yml       @ledgerhq/wallet-ci  @ledgerhq/live-hub
 tools                                                   @ledgerhq/wallet-ci
+apps/ledger-live-mobile/fastlane/Fastfile               @ledgerhq/wallet-ci
 
 # Hub team
 ## by default, hub manage apps and libs related to it & then we overrides many exceptions
@@ -26,8 +27,6 @@ libs/ledger-live-common/src/                             @ledgerhq/live-hub
 libs/live-countervalues-react/                           @ledgerhq/live-hub
 libs/live-countervalues/                                 @ledgerhq/live-hub
 libs/live-hooks/                                         @ledgerhq/live-hub
-libs/live-nft-react/                                     @ledgerhq/live-hub
-libs/live-nft/                                           @ledgerhq/live-hub
 libs/promise/                                            @ledgerhq/live-hub
 libs/ui/                                                 @ledgerhq/live-hub
 libs/live-wallet/                                        @ledgerhq/live-hub
@@ -36,6 +35,7 @@ libs/hw-ledger-key-ring-protocol/                        @ledgerhq/live-hub
 
 # Coin integration team
 .github/**/bot-*.yml                                     @ledgerhq/coin-integration
+.github/workflows/coin-monitoring-*.yml                  @ledgerhq/coin-integration
 .github/workflows/import-cal-tokens.yml                  @ledgerhq/coin-integration
 .github/workflows/test-coin-tester.yml                   @ledgerhq/coin-integration
 .github/workflows/test-coin-modules-integ.yml            @ledgerhq/coin-integration
@@ -59,6 +59,7 @@ libs/live-config/                                        @ledgerhq/coin-integrat
 libs/live-network/                                       @ledgerhq/coin-integration
 tools/actions/composites/run-coin-tester/                @ledgerhq/coin-integration
 tools/actions/composites/setup-coin-tester-env/          @ledgerhq/coin-integration
+tools/actions/composites/monitor/                        @ledgerhq/coin-integration
 
 # Cloud Wallet team
 libs/coin-framework/src/api/                             @ledgerhq/cloud-wallet
@@ -69,6 +70,7 @@ libs/coin-modules/coin-aptos/                                            @ledger
 libs/coin-modules/coin-near/                                             @ledgerhq/coin-integration @ledgerhq/blockchain-support
 libs/coin-modules/coin-cardano/                                          @ledgerhq/coin-integration @ledgerhq/blockchain-support
 libs/coin-modules/coin-tezos/                                            @ledgerhq/coin-integration @ledgerhq/blockchain-support
+libs/coin-modules/coin-vechain/                                          @ledgerhq/coin-integration @ledgerhq/blockchain-support
 
 ## Zondax
 libs/coin-modules/coin-casper/                                           @ledgerhq/coin-integration @ledgerhq/blockchain-support @ledgerhq/ledger-partner-zondax
@@ -79,10 +81,11 @@ libs/coin-modules/coin-stacks/                                           @ledger
 libs/coin-modules/coin-ton/                                              @ledgerhq/coin-integration @ledgerhq/blockchain-support @ledgerhq/ledger-partner-zondax
 
 ## Hoodies
- libs/coin-modules/coin-sui/                                              @ledgerhq/coin-integration @ledgerhq/blockchain-support
+libs/coin-modules/coin-sui/                                              @ledgerhq/coin-integration @ledgerhq/blockchain-support @ledgerhq/ledger-partner-hoodies
+libs/coin-modules/coin-canton/                                           @ledgerhq/coin-integration @ledgerhq/blockchain-support @ledgerhq/ledger-partner-hoodies
 
 ## Blockydevs
- libs/coin-modules/coin-hedera/                                           @ledgerhq/coin-integration @ledgerhq/blockchain-support
+libs/coin-modules/coin-hedera/                                           @ledgerhq/coin-integration @ledgerhq/blockchain-support @ledgerhq/ledger-partner-blockydevs
 
 # PTX team
 apps/cli/src/commands/ptx                                            					@ledgerhq/ptx
@@ -114,6 +117,8 @@ libs/exchange-module/                                                					@ledge
 libs/wallet-api-acre-module/                                         					@ledgerhq/ptx
 libs/ledgerjs/packages/hw-app-exchange/                              					@ledgerhq/ptx
 libs/live-services/cal/src/partners/                                 					@ledgerhq/ptx
+libs/ledgerjs/packages/types-live/src/swap.ts                        					@ledgerhq/ptx
+
 
 
 # Wallet API team > coin-integration
@@ -167,6 +172,10 @@ libs/device-core/                                                  @ledgerhq/liv
 libs/device-react/                                                 @ledgerhq/live-devices
 libs/live-dmk/                                                     @ledgerhq/live-devices
 libs/speculos-transport/                                           @ledgerhq/live-devices @ledgerhq/qaa
+libs/live-dmk-mobile/                                              @ledgerhq/live-devices
+libs/live-dmk-desktop/                                             @ledgerhq/live-devices
+libs/live-dmk-shared/                                              @ledgerhq/live-devices
+libs/live-signer-evm/                                              @ledgerhq/live-devices
 
 # Recover team
 apps/ledger-live-desktop/src/renderer/components/RecoverBanner/         @ledgerhq/recover-software
@@ -179,14 +188,15 @@ apps/ledger-live-mobile/src/components/ServicesWidget/Protect/          @ledgerh
 apps/ledger-live-mobile/src/components/WebRecoverPlayer/                @ledgerhq/recover-software
 apps/ledger-live-mobile/src/screens/Protect/                            @ledgerhq/recover-software
 libs/ledger-live-common/src/hooks/recoverFeatureFlag.ts                 @ledgerhq/recover-software
+apps/ledger-live-mobile/src/screens/SyncOnboarding/TwoStepStepper/      @ledgerhq/recover-software
 
 # Live hub overrides
 
 apps/web-tools/trustchain/                               @ledgerhq/live-hub
 
 # UI tests
-apps/ledger-live-desktop/tests/                          @ledgerhq/live-hub @ledgerhq/qaa
-apps/ledger-live-mobile/e2e/                             @ledgerhq/live-hub @ledgerhq/qaa
+apps/ledger-live-desktop/tests/                                             @ledgerhq/live-hub
+apps/ledger-live-mobile/e2e/                                                @ledgerhq/live-hub
 e2e/                                                                        @ledgerhq/qaa
 
 # Cross-team generic files can be opted out (no strict ownership when it concerns everyone)

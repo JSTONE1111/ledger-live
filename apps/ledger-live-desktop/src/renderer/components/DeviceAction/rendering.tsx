@@ -10,6 +10,7 @@ import ProviderIcon from "~/renderer/components/ProviderIcon";
 import { Transaction } from "@ledgerhq/live-common/generated/types";
 import { ExchangeRate, ExchangeSwap } from "@ledgerhq/live-common/exchange/swap/types";
 import { getNoticeType, getProviderName } from "@ledgerhq/live-common/exchange/swap/utils/index";
+import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
 import {
   FirmwareNotRecognized,
   LockedDeviceError,
@@ -73,11 +74,14 @@ import { isSyncOnboardingSupported } from "@ledgerhq/live-common/device/use-case
 import NoSuchAppOnProviderErrorComponent from "./NoSuchAppOnProviderErrorComponent";
 import Image from "~/renderer/components/Image";
 import Nano from "~/renderer/images/nanoS.v4.svg";
+import { DmkError } from "@ledgerhq/live-dmk-desktop";
+import { isDmkError } from "@ledgerhq/live-common/deviceSDK/tasks/core";
 import { isDisconnectedWhileSendingApduError } from "@ledgerhq/live-dmk-desktop";
 
 export const AnimationWrapper = styled.div`
-  width: 600px;
-  max-width: 100%;
+  max-width: 600px;
+  width: fit-content;
+  overflow: hidden;
   padding-bottom: 12px;
   align-self: center;
   display: flex;
@@ -261,6 +265,14 @@ const DeviceSwapSummaryValueStyled = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[1]}px;
+`;
+
+const DeviceSwapSummaryContainer = styled(Flex)`
+  margin: ${({ theme }) => theme.space[3]}px;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space[4]}px;
+  padding: ${({ theme }) => theme.space[6]}px;
 `;
 
 const EllipsesTextStyled = styled(Text)`
@@ -709,8 +721,8 @@ export const DeviceNotOnboardedErrorComponent = withV3StyleProvider(
       <Wrapper id="error-device-not-onboarded">
         <ErrorBody
           top={device ? <DeviceIllustration size={120} deviceId={device.modelId} /> : null}
-          title={t("errors.DeviceNotOnboardedError.title")}
-          description={t("errors.DeviceNotOnboardedError.description")}
+          title={t("errors.DeviceNotOnboardedDAError.title")}
+          description={t("errors.DeviceNotOnboardedDAError.description")}
           buttons={
             <ButtonV3
               variant="main"
@@ -719,10 +731,10 @@ export const DeviceNotOnboardedErrorComponent = withV3StyleProvider(
               Icon={IconsLegacy.ArrowRightMedium}
             >
               {productName
-                ? t("errors.DeviceNotOnboardedError.goToOnboardingButtonWithProductName", {
+                ? t("errors.DeviceNotOnboardedDAError.goToOnboardingButtonWithProductName", {
                     productName,
                   })
-                : t("errors.DeviceNotOnboardedError.goToOnboardingButton")}
+                : t("errors.DeviceNotOnboardedDAError.goToOnboardingButton")}
             </ButtonV3>
           }
         />
@@ -786,7 +798,7 @@ export const renderError = ({
   Icon,
   stretch,
 }: {
-  error: Error | ErrorConstructor;
+  error: Error | ErrorConstructor | DmkError;
   t: TFunction;
   withOpenManager?: boolean;
   onRetry?: (() => void) | null | undefined;
@@ -834,10 +846,10 @@ export const renderError = ({
   }
   // if no supportLink is provided, we fallback on the related url linked to
   // tmpError name, if any
-  const supportLinkUrl = supportLink ?? urls.errors[error?.name];
+  const supportLinkUrl = supportLink ?? urls.errors[isDmkError(error) ? error._tag : error?.name];
 
   return (
-    <Wrapper id={`error-${error.name}`}>
+    <Wrapper id={`error-${isDmkError(error) ? error._tag : error.name}`}>
       <ErrorBody
         Icon={
           Icon
@@ -1086,18 +1098,7 @@ const renderFirmwareUpdatingBase = ({
 
 export const renderFirmwareUpdating = withV3StyleProvider(renderFirmwareUpdatingBase);
 
-export const renderSwapDeviceConfirmation = ({
-  modelId,
-  type,
-  transaction,
-  exchangeRate,
-  exchange,
-  amountExpectedTo,
-  estimatedFees,
-  swapDefaultTrack,
-  stateSettings,
-  walletState,
-}: {
+interface SwapConfirmationProps {
   modelId: DeviceModelId;
   type: Theme["theme"];
   transaction: Transaction;
@@ -1108,12 +1109,76 @@ export const renderSwapDeviceConfirmation = ({
   swapDefaultTrack: Record<string, string | boolean>;
   stateSettings: SettingsState;
   walletState: WalletState;
+}
+
+const SwapConfirmationDetailedView: React.FC<{
+  alertProperties: Record<string, unknown>;
+  noticeType: { message: string };
+  exchangeRate: { provider: string };
+  deviceSwapSummaryFields: [string, React.ReactNode][];
+  modelId: DeviceModelId;
+  type: Theme["theme"];
+}> = ({ alertProperties, noticeType, exchangeRate, deviceSwapSummaryFields, modelId, type }) => (
+  <>
+    <Box flex={0}>
+      <Alert type="primary" {...alertProperties} mb={5} mx={4}>
+        <Trans
+          i18nKey={`DeviceAction.swap.notice.${noticeType.message}`}
+          values={{ providerName: getProviderName(exchangeRate.provider) }}
+        />
+      </Alert>
+    </Box>
+    <DeviceSwapSummaryStyled data-testid="device-swap-summary">
+      {deviceSwapSummaryFields.map(([key, value]) => (
+        <Fragment key={key}>
+          <Text fontWeight="medium" color="palette.text.shade40" fontSize="14px">
+            <Trans i18nKey={`DeviceAction.swap2.${key}`} />
+          </Text>
+          <DeviceSwapSummaryValueStyled data-testid={key}>{value}</DeviceSwapSummaryValueStyled>
+        </Fragment>
+      ))}
+    </DeviceSwapSummaryStyled>
+    {renderVerifyUnwrapped({ modelId, type })}
+  </>
+);
+
+const SwapConfirmationSimpleView: React.FC<{
+  modelId: DeviceModelId;
+  type: Theme["theme"];
+  noticeType: { message: string };
+}> = ({ modelId, type, noticeType }) => (
+  <DeviceSwapSummaryContainer>
+    {renderVerifyUnwrapped({ modelId, type })}
+    <Text fontSize="24px" fontWeight="semiBold" textAlign="center">
+      <Trans i18nKey="DeviceAction.swap.confirmSwap" />
+    </Text>
+    <Text color="palette.text.shade60" fontSize="14px" textAlign="center">
+      <Trans i18nKey={`DeviceAction.swap.simpleViewNotice.${noticeType.message}`} />
+    </Text>
+  </DeviceSwapSummaryContainer>
+);
+
+const SwapDeviceConfirmation: React.FC<SwapConfirmationProps> = ({
+  modelId,
+  type,
+  transaction,
+  exchangeRate,
+  exchange,
+  amountExpectedTo,
+  estimatedFees,
+  swapDefaultTrack,
+  stateSettings,
+  walletState,
 }) => {
+  const isDetailedViewEnabled = useFeature("ptxSwapDetailedView")?.enabled;
   const sourceAccountCurrency = exchange.fromCurrency;
   const targetAccountCurrency = exchange.toCurrency;
   const sourceAccountName =
     accountNameSelector(walletState, {
-      accountId: exchange.fromAccount.id,
+      accountId:
+        "parentId" in exchange.fromAccount && exchange.fromAccount.parentId
+          ? exchange.fromAccount.parentId
+          : exchange.fromAccount.id,
     }) ?? sourceAccountCurrency.name;
 
   // If account exists already then grab the name set.
@@ -1121,7 +1186,10 @@ export const renderSwapDeviceConfirmation = ({
   // crypto/token currency name as the target account.
   const targetAccountName =
     accountNameSelector(walletState, {
-      accountId: exchange.toAccount.id,
+      accountId:
+        "parentId" in exchange.toAccount && exchange.toAccount.parentId
+          ? exchange.toAccount.parentId
+          : exchange.toAccount.id,
     }) ?? targetAccountCurrency.name;
 
   const providerName = getProviderName(exchangeRate.provider);
@@ -1217,32 +1285,28 @@ export const renderSwapDeviceConfirmation = ({
           provider={exchangeRate.provider}
           {...swapDefaultTrack}
         />
-        <Box flex={0}>
-          <Alert type="primary" {...alertProperties} mb={5} mx={4}>
-            <Trans
-              i18nKey={`DeviceAction.swap.notice.${noticeType.message}`}
-              values={{ providerName: getProviderName(exchangeRate.provider) }}
-            />
-          </Alert>
-        </Box>
-
-        <DeviceSwapSummaryStyled data-testid="device-swap-summary">
-          {deviceSwapSummaryFields.map(([key, value]) => (
-            <Fragment key={key}>
-              <Text fontWeight="medium" color="palette.text.shade40" fontSize="14px">
-                <Trans i18nKey={`DeviceAction.swap2.${key}`} />
-              </Text>
-              <DeviceSwapSummaryValueStyled data-testid={key}>{value}</DeviceSwapSummaryValueStyled>
-            </Fragment>
-          ))}
-        </DeviceSwapSummaryStyled>
-        {renderVerifyUnwrapped({ modelId, type })}
+        {isDetailedViewEnabled ? (
+          <SwapConfirmationDetailedView
+            alertProperties={alertProperties}
+            noticeType={noticeType}
+            exchangeRate={exchangeRate}
+            deviceSwapSummaryFields={deviceSwapSummaryFields}
+            modelId={modelId}
+            type={type}
+          />
+        ) : (
+          <SwapConfirmationSimpleView modelId={modelId} type={type} noticeType={noticeType} />
+        )}
       </ConfirmWrapper>
       <Separator />
       <DrawerFooter provider={exchangeRate.provider} />
     </>
   );
 };
+
+export const renderSwapDeviceConfirmation = (props: SwapConfirmationProps) => (
+  <SwapDeviceConfirmation {...props} />
+);
 
 export const renderSecureTransferDeviceConfirmation = ({
   exchangeType,

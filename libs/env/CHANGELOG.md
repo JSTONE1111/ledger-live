@@ -1,5 +1,93 @@
 # @ledgerhq/live-env
 
+## 2.17.0
+
+### Minor Changes
+
+- [#11717](https://github.com/LedgerHQ/ledger-live/pull/11717) [`aaa16b7`](https://github.com/LedgerHQ/ledger-live/commit/aaa16b718454dca51d59bb138ab1a638dc4b8243) Thanks [@ishaba](https://github.com/ishaba)! - add canton api key
+
+- [#11190](https://github.com/LedgerHQ/ledger-live/pull/11190) [`3b5576e`](https://github.com/LedgerHQ/ledger-live/commit/3b5576e0b67fedad0f5dbbd6b9546281af4e6111) Thanks [@semeano](https://github.com/semeano)! - [Kaspa] Coin support for LLD and LLM
+
+- [#11873](https://github.com/LedgerHQ/ledger-live/pull/11873) [`fe97131`](https://github.com/LedgerHQ/ledger-live/commit/fe971313776194e5942dfa9a95d6082950c3111e) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(env): remove EXPLORER_STAGING and EXPLORER_BETA
+
+- [#11841](https://github.com/LedgerHQ/ledger-live/pull/11841) [`2a58b72`](https://github.com/LedgerHQ/ledger-live/commit/2a58b720de42e63e59ea430bd03b2c95e903634c) Thanks [@mcayuelas-ledger](https://github.com/mcayuelas-ledger)! - Fix LLD translations
+
+## 2.17.0-next.0
+
+### Minor Changes
+
+- [#11717](https://github.com/LedgerHQ/ledger-live/pull/11717) [`aaa16b7`](https://github.com/LedgerHQ/ledger-live/commit/aaa16b718454dca51d59bb138ab1a638dc4b8243) Thanks [@ishaba](https://github.com/ishaba)! - add canton api key
+
+- [#11190](https://github.com/LedgerHQ/ledger-live/pull/11190) [`3b5576e`](https://github.com/LedgerHQ/ledger-live/commit/3b5576e0b67fedad0f5dbbd6b9546281af4e6111) Thanks [@semeano](https://github.com/semeano)! - [Kaspa] Coin support for LLD and LLM
+
+- [#11873](https://github.com/LedgerHQ/ledger-live/pull/11873) [`fe97131`](https://github.com/LedgerHQ/ledger-live/commit/fe971313776194e5942dfa9a95d6082950c3111e) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(env): remove EXPLORER_STAGING and EXPLORER_BETA
+
+- [#11841](https://github.com/LedgerHQ/ledger-live/pull/11841) [`2a58b72`](https://github.com/LedgerHQ/ledger-live/commit/2a58b720de42e63e59ea430bd03b2c95e903634c) Thanks [@mcayuelas-ledger](https://github.com/mcayuelas-ledger)! - Fix LLD translations
+
+## 2.16.0
+
+### Minor Changes
+
+- [#11562](https://github.com/LedgerHQ/ledger-live/pull/11562) [`e52268a`](https://github.com/LedgerHQ/ledger-live/commit/e52268a3bc7d97a7ed09ed082786a647e048a6e8) Thanks [@semeano](https://github.com/semeano)! - Kaspa coin integration (coin module)
+
+- [#11665](https://github.com/LedgerHQ/ledger-live/pull/11665) [`b27c96c`](https://github.com/LedgerHQ/ledger-live/commit/b27c96ccbcefb1982a40688a8385209eac99165a) Thanks [@semeano](https://github.com/semeano)! - Disable Celo tokens via env var
+
+## 2.16.0-next.0
+
+### Minor Changes
+
+- [#11562](https://github.com/LedgerHQ/ledger-live/pull/11562) [`e52268a`](https://github.com/LedgerHQ/ledger-live/commit/e52268a3bc7d97a7ed09ed082786a647e048a6e8) Thanks [@semeano](https://github.com/semeano)! - Kaspa coin integration (coin module)
+
+- [#11665](https://github.com/LedgerHQ/ledger-live/pull/11665) [`b27c96c`](https://github.com/LedgerHQ/ledger-live/commit/b27c96ccbcefb1982a40688a8385209eac99165a) Thanks [@semeano](https://github.com/semeano)! - Disable Celo tokens via env var
+
+## 2.15.0
+
+### Minor Changes
+
+- [#11385](https://github.com/LedgerHQ/ledger-live/pull/11385) [`87617a9`](https://github.com/LedgerHQ/ledger-live/commit/87617a9930be43a6cdbc5cc5711cc24b00309184) Thanks [@cgrellard-ledger](https://github.com/cgrellard-ledger)! - LLD - Modular Drawer is now leveraging the DADA service instead of local data
+
+- [#10672](https://github.com/LedgerHQ/ledger-live/pull/10672) [`8936f39`](https://github.com/LedgerHQ/ledger-live/commit/8936f390edbe9cbc36ac6590b01562daf5c580e1) Thanks [@may01](https://github.com/may01)! - added Hedera tokens to CAL
+  added send/receive support to Hedera in LLD & LLM
+  added support for HTS token association flow to LLD & LLM
+  added support for "Associate token" transaction type to Hedera
+  added test fixtures to coin-hedera
+
+## 2.15.0-next.0
+
+### Minor Changes
+
+- [#11385](https://github.com/LedgerHQ/ledger-live/pull/11385) [`87617a9`](https://github.com/LedgerHQ/ledger-live/commit/87617a9930be43a6cdbc5cc5711cc24b00309184) Thanks [@cgrellard-ledger](https://github.com/cgrellard-ledger)! - LLD - Modular Drawer is now leveraging the DADA service instead of local data
+
+- [#10672](https://github.com/LedgerHQ/ledger-live/pull/10672) [`8936f39`](https://github.com/LedgerHQ/ledger-live/commit/8936f390edbe9cbc36ac6590b01562daf5c580e1) Thanks [@may01](https://github.com/may01)! - added Hedera tokens to CAL
+  added send/receive support to Hedera in LLD & LLM
+  added support for HTS token association flow to LLD & LLM
+  added support for "Associate token" transaction type to Hedera
+  added test fixtures to coin-hedera
+
+## 2.14.0
+
+### Minor Changes
+
+- [#11214](https://github.com/LedgerHQ/ledger-live/pull/11214) [`75a08cc`](https://github.com/LedgerHQ/ledger-live/commit/75a08cc3061347bae98ddef7ac3cdcd6181ddab5) Thanks [@dilaouid](https://github.com/dilaouid)! - feat: Display APY for Solana validators
+
+## 2.14.0-next.0
+
+### Minor Changes
+
+- [#11214](https://github.com/LedgerHQ/ledger-live/pull/11214) [`75a08cc`](https://github.com/LedgerHQ/ledger-live/commit/75a08cc3061347bae98ddef7ac3cdcd6181ddab5) Thanks [@dilaouid](https://github.com/dilaouid)! - feat: Display APY for Solana validators
+
+## 2.13.0
+
+### Minor Changes
+
+- [#11048](https://github.com/LedgerHQ/ledger-live/pull/11048) [`b9debdf`](https://github.com/LedgerHQ/ledger-live/commit/b9debdfbc822e9f5dc0b26619208f94bbd788777) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - core(live-env): expose `SPECULOS_DEVICE`
+
+## 2.13.0-next.0
+
+### Minor Changes
+
+- [#11048](https://github.com/LedgerHQ/ledger-live/pull/11048) [`b9debdf`](https://github.com/LedgerHQ/ledger-live/commit/b9debdfbc822e9f5dc0b26619208f94bbd788777) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - core(live-env): expose `SPECULOS_DEVICE`
+
 ## 2.12.0
 
 ### Minor Changes

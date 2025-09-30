@@ -5,3 +5,8 @@ export * from "./getBalance";
 export * from "./estimateFees";
 export * from "./listOperations";
 export * from "./craftTransaction";
+export * from "./getSequence";
+export * from "./validateIntent";
+export * from "./getTokenFromAsset";
+export * from "./getStakes";
+export * from "./computeIntentType";

@@ -11,11 +11,13 @@
     "**/node_modules/**",
     "**/*.fixture.ts",
     "**/*.mock.ts",
+    "**/getOperationExtra.ts",
     "**/*.test.{js,jsx,ts,tsx}"
   ],
   "ignoreUnresolved": [],
   "ignoreUnimported": [
-    "src/api/index.ts"
+    "src/api/index.ts",
+    "src/test/testUtils.ts"
   ],
   "ignoreUnused": [
     "@ledgerhq/live-env",

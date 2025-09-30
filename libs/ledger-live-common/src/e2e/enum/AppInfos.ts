@@ -1,4 +1,4 @@
-export type AppInfosType = AppInfos;
+export type SpeculosAppType = AppInfos;
 
 export class AppInfos {
   constructor(public readonly name: string) {}
@@ -33,6 +33,8 @@ export class AppInfos {
 
   static readonly STELLAR = new AppInfos("Stellar");
 
+  static readonly SUI = new AppInfos("Sui");
+
   static readonly BITCOIN_CASH = new AppInfos("Bitcoin Cash");
 
   static readonly ALGORAND = new AppInfos("Algorand");
@@ -43,7 +45,7 @@ export class AppInfos {
 
   static readonly POLYGON = new AppInfos("Polygon");
 
-  static readonly BINANCE_SMART_CHAIN = new AppInfos("Binance Smart Chain");
+  static readonly BNB_CHAIN = new AppInfos("BNB Chain");
 
   static readonly TON = new AppInfos("Ton");
 
@@ -60,4 +62,8 @@ export class AppInfos {
   static readonly CELO = new AppInfos("Celo");
 
   static readonly LTC = new AppInfos("Litecoin");
+
+  static readonly KASPA = new AppInfos("Kaspa");
+
+  static readonly HEDERA = new AppInfos("Hedera");
 }

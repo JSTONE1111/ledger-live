@@ -34,13 +34,22 @@ type ConfigStatus =
   | {
       type: "will_be_deprecated";
       deprecated_date: string;
+      link: string;
     }
   | {
       type: "deprecated";
     };
 
+type Banner = {
+  isDisplay: boolean;
+  bannerText: string;
+  bannerLink?: string;
+  bannerLinkText?: string;
+};
+
 export type CurrencyConfig = {
   status: ConfigStatus;
+  customBanner?: Banner;
   [key: string]: unknown;
 };
 

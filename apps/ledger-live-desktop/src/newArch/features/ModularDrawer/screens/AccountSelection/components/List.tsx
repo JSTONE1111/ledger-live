@@ -1,16 +1,14 @@
 import React from "react";
 import { Account, AccountLike } from "@ledgerhq/types-live";
 import { AccountList, Account as DetailedAccount } from "@ledgerhq/react-ui/pre-ldls/index";
-import { AccountTuple } from "../../../utils/getAccountTuplesForCurrency";
 import { ListWrapper } from "../../../components/ListWrapper";
 import { useModularDrawerAnalytics } from "../../../analytics/useModularDrawerAnalytics";
 import { MODULAR_DRAWER_PAGE_NAME } from "../../../analytics/modularDrawer.types";
+import { AccountTuple } from "@ledgerhq/live-common/utils/getAccountTuplesForCurrency";
 
 type SelectAccountProps = {
   onAccountSelected: (account: AccountLike, parentAccount?: Account) => void;
   accounts: AccountTuple[];
-  source: string;
-  flow: string;
   detailedAccounts: DetailedAccount[];
   bottomComponent: React.ReactNode;
 };
@@ -21,8 +19,6 @@ const LIST_HEIGHT = `calc(100% - ${TITLE_HEIGHT}px)`;
 export const SelectAccountList = ({
   detailedAccounts,
   accounts,
-  source,
-  flow,
   onAccountSelected,
   bottomComponent,
 }: SelectAccountProps) => {
@@ -32,8 +28,6 @@ export const SelectAccountList = ({
     trackModularDrawerEvent("account_clicked", {
       currency: name,
       page: MODULAR_DRAWER_PAGE_NAME.MODULAR_ACCOUNT_SELECTION,
-      flow,
-      source,
     });
   };
 

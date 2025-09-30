@@ -1,7 +1,14 @@
+import { findSubAccountById } from "@ledgerhq/coin-framework/account/index";
 import { BigNumber } from "bignumber.js";
 import type { CeloAccount, Transaction } from "../types";
 import { celoKit } from "../network/sdk";
 import { getPendingStakingOperationAmounts, getVote } from "../logic";
+import buildTransaction from "./buildTransaction";
+import {
+  CELO_STABLE_TOKENS,
+  getStableTokenEnum,
+  MAX_FEES_THRESHOLD_MULTIPLIER,
+} from "../constants";
 
 const getFeesForTransaction = async ({
   account,
@@ -27,6 +34,10 @@ const getFeesForTransaction = async ({
   );
   // Deduct pending lock operations from the spendable balance
   const totalSpendableBalance = account.spendableBalance.minus(pendingOperationAmounts.lock);
+
+  const tokenAccount = findSubAccountById(account, transaction.subAccountId || "");
+  const isTokenTransaction = tokenAccount?.type === "TokenAccount";
+  const maxPriorityFeePerGas = await kit.connection.getMaxPriorityFeePerGas();
 
   if ((transaction.mode === "unlock" || transaction.mode === "vote") && account.celoResources) {
     value = transaction.useAllAmount
@@ -96,20 +107,49 @@ const getFeesForTransaction = async ({
     const accounts = await kit.contracts.getAccounts();
 
     gas = await accounts.createAccount().txo.estimateGas({ from: account.freshAddress });
-  } else {
-    const celoToken = await kit.contracts.getGoldToken();
+  } else if (isTokenTransaction) {
+    value = transaction.useAllAmount ? tokenAccount.balance : transaction.amount;
+
+    const block = await kit.connection.web3.eth.getBlock("latest");
+    const baseFee = BigInt(block.baseFeePerGas || maxPriorityFeePerGas);
+    const maxFeePerGas = baseFee + BigInt(maxPriorityFeePerGas);
+
+    let token;
+    if (CELO_STABLE_TOKENS.includes(tokenAccount.token.id)) {
+      token = await kit.contracts.getStableToken(getStableTokenEnum(tokenAccount.token.id));
+    } else {
+      token = await kit.contracts.getErc20(tokenAccount.token.contractAddress);
+    }
 
     const celoTransaction = {
       from: account.freshAddress,
-      to: celoToken.address,
-      data: celoToken.transfer(transaction.recipient, value.toFixed()).txo.encodeABI(),
+      to: transaction.recipient,
+      data: token.transfer(transaction.recipient, value.toFixed()).txo.encodeABI(),
+      maxFeePerGas: maxFeePerGas.toString(),
+      maxPriorityFeePerGas,
+      value: value.toFixed(),
     };
 
-    gas = await kit.connection.estimateGasWithInflationFactor(celoTransaction);
+    gas = Number(
+      (
+        (await kit.connection.estimateGasWithInflationFactor(celoTransaction)) *
+        MAX_FEES_THRESHOLD_MULTIPLIER
+      ).toFixed(),
+    );
+  } else {
+    // Send
+    const tx = await buildTransaction(account, transaction);
+    gas = tx.gas ? Number(tx.gas) : 0;
   }
 
-  const gasPrice = new BigNumber(await kit.connection.gasPrice());
-  return gasPrice.times(gas);
+  // TODO: Should implement more clear logic for all flows
+  // current FIX is to align with node_modules/.pnpm/@celo+connect@7.0.0/node_modules/@celo/connect/lib/connection.js : setFeeMarketGas
+  const gasPrice = await kit.connection.gasPrice();
+  const maxFeePerGas =
+    ((BigInt(gasPrice) - BigInt(maxPriorityFeePerGas)) * BigInt(120)) / BigInt(100) +
+    BigInt(maxPriorityFeePerGas);
+  const maxFeePerGasNumber = new BigNumber(maxFeePerGas.toString());
+  return maxFeePerGasNumber.times(gas);
 };
 
 export default getFeesForTransaction;

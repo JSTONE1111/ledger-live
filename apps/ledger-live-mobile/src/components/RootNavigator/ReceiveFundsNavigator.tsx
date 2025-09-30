@@ -30,8 +30,11 @@ import { useSelector } from "react-redux";
 import {
   hasClosedNetworkBannerSelector,
   hasClosedWithdrawBannerSelector,
+  isOnboardingFlowSelector,
 } from "~/reducers/settings";
 import { urls } from "~/utils/urls";
+import ReceiveProvider from "~/screens/ReceiveFunds/01b-ReceiveProvider.";
+import { useReceiveNoahEntry } from "~/hooks/useNoahEntryPoint";
 
 export default function ReceiveFundsNavigator() {
   const { colors } = useTheme();
@@ -39,6 +42,8 @@ export default function ReceiveFundsNavigator() {
   const route = useRoute();
   const hasClosedWithdrawBanner = useSelector(hasClosedWithdrawBannerSelector);
   const hasClosedNetworkBanner = useSelector(hasClosedNetworkBannerSelector);
+  const isOnboardingFlow = useSelector(isOnboardingFlowSelector);
+  const receiveNoahEntry = useReceiveNoahEntry();
 
   const onClose = useCallback(() => {
     track("button_clicked", {
@@ -50,9 +55,14 @@ export default function ReceiveFundsNavigator() {
   const stackNavigationConfig = useMemo(
     () => ({
       ...getStackNavigatorConfig(colors, true),
-      headerRight: () => <NavigationHeaderCloseButtonAdvanced onClose={onClose} />,
+      headerRight: () => (
+        <NavigationHeaderCloseButtonAdvanced
+          onClose={onClose}
+          isOnboardingFlow={isOnboardingFlow}
+        />
+      ),
     }),
-    [colors, onClose],
+    [colors, onClose, isOnboardingFlow],
   );
 
   const onConnectDeviceBack = useCallback((navigation: NavigationProp<Record<string, unknown>>) => {
@@ -84,6 +94,16 @@ export default function ReceiveFundsNavigator() {
         gestureEnabled: Platform.OS === "ios",
       }}
     >
+      <Stack.Screen
+        name={ScreenName.ReceiveProvider}
+        component={ReceiveProvider}
+        options={{
+          headerLeft: () => <NavigationHeaderBackButton />,
+          headerTitle: "",
+          headerRight: () => <NavigationHeaderCloseButtonAdvanced onClose={onClose} />,
+        }}
+      />
+
       {/* Select Crypto (see : apps/ledger-live-mobile/src/screens/AddAccounts/01-SelectCrypto.js) */}
       <Stack.Screen
         name={ScreenName.ReceiveSelectCrypto}
@@ -91,8 +111,14 @@ export default function ReceiveFundsNavigator() {
         options={{
           headerLeft: () => <NavigationHeaderBackButton />,
           headerTitle: "",
-          headerRight: () => <NavigationHeaderCloseButtonAdvanced onClose={onClose} />,
+          headerRight: () => (
+            <NavigationHeaderCloseButtonAdvanced
+              onClose={onClose}
+              isOnboardingFlow={isOnboardingFlow}
+            />
+          ),
         }}
+        {...receiveNoahEntry}
       />
 
       <Stack.Screen
@@ -106,7 +132,10 @@ export default function ReceiveFundsNavigator() {
               {hasClosedNetworkBanner && (
                 <HelpButton eventButton="Choose a network article" url={urls.chooseNetwork} />
               )}
-              <NavigationHeaderCloseButtonAdvanced onClose={onClose} />
+              <NavigationHeaderCloseButtonAdvanced
+                onClose={onClose}
+                isOnboardingFlow={isOnboardingFlow}
+              />
             </Flex>
           ),
         }}
@@ -119,6 +148,7 @@ export default function ReceiveFundsNavigator() {
         options={{
           headerTitle: "",
         }}
+        {...receiveNoahEntry}
       />
 
       {/* Select Account */}
@@ -135,7 +165,7 @@ export default function ReceiveFundsNavigator() {
               title={t("transfer.receive.stepperHeader.connectDevice")}
             />
           ),
-          ...addAccountsSelectDeviceHeaderOptions(onClose),
+          ...addAccountsSelectDeviceHeaderOptions(onClose, isOnboardingFlow),
         }}
       />
 
@@ -192,10 +222,13 @@ export default function ReceiveFundsNavigator() {
                 onClose={
                   route.params.verified ? onVerificationConfirmationClose : onConfirmationClose
                 }
+                isOnboardingFlow={isOnboardingFlow}
+                popToTop={isOnboardingFlow}
               />
             </Flex>
           ),
         })}
+        {...receiveNoahEntry}
       />
     </Stack.Navigator>
   );

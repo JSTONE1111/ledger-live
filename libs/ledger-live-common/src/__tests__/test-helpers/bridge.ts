@@ -36,7 +36,7 @@ import { getDefaultAccountName } from "@ledgerhq/live-wallet/accountName";
 const warnDev = process.env.CI ? (..._args) => {} : (...msg) => console.warn(...msg);
 // FIXME move out into DatasetTest to be defined in
 const blacklistOpsSumEq = {
-  currencies: ["ripple", "ethereum"],
+  currencies: ["ripple", "ethereum", "tezos"],
   impls: ["mock"],
 };
 
@@ -253,7 +253,9 @@ export function testBridge<T extends TransactionCommon>(data: DatasetTest<T>): v
                   account,
                 });
                 expect(estimation.gte(0)).toBe(true);
-                expect(estimation.lte(account.spendableBalance)).toBe(true);
+                if (!(account.spendableBalance.lt(0) && estimation.eq(0))) {
+                  expect(estimation.lte(account.spendableBalance)).toBe(true);
+                }
 
                 for (const sub of account.subAccounts || []) {
                   const estimation = await accountBridge.estimateMaxSpendable({

@@ -4,7 +4,10 @@ import { AdditionalProviderConfig } from "@ledgerhq/live-common/exchange/provide
 import { isSwapOperationPending } from "@ledgerhq/live-common/exchange/swap/index";
 import { MappedSwapOperation } from "@ledgerhq/live-common/exchange/swap/types";
 import { getProviderName } from "@ledgerhq/live-common/exchange/swap/utils/index";
-import { getDefaultExplorerView, getTransactionExplorer } from "@ledgerhq/live-common/explorers";
+import {
+  getDefaultExplorerView,
+  getTransactionExplorer as getDefaultTransactionExplorer,
+} from "@ledgerhq/live-common/explorers";
 import { Account, TokenAccount } from "@ledgerhq/types-live";
 import uniq from "lodash/uniq";
 import React, { useCallback, useEffect, useState } from "react";
@@ -30,6 +33,7 @@ import {
   OpDetailsSection,
   OpDetailsTitle,
 } from "~/renderer/drawers/OperationDetails/styledComponents";
+import { getLLDCoinFamily } from "~/renderer/families";
 import { useAccountUnit } from "~/renderer/hooks/useAccountUnit";
 import { dayFormat, useDateFormatted } from "~/renderer/hooks/useDateFormatter";
 import useTheme from "~/renderer/hooks/useTheme";
@@ -128,11 +132,28 @@ const SwapOperationDetails = ({
   const { t } = useTranslation();
   const mainCurrency =
     fromCurrency.type === "CryptoCurrency" ? fromCurrency : fromCurrency.parentCurrency;
+
+  const specific = mainCurrency ? getLLDCoinFamily(mainCurrency.family) : null;
+  const getTransactionExplorer = specific?.getTransactionExplorer;
+
+  let url: string | null | undefined;
   //Temporary feature before adding history to swap live app
-  const url =
-    provider === "lifi"
-      ? "https://scan.li.fi/tx/$hash".replace("$hash", operation.hash)
-      : getTransactionExplorer(getDefaultExplorerView(mainCurrency), operation.hash);
+  switch (provider) {
+    case "lifi":
+      url = "https://scan.li.fi/tx/$hash".replace("$hash", operation.hash);
+      break;
+    case "thorswap":
+      url = "https://runescan.io/tx/$hash".replace("$hash", operation.hash);
+      break;
+    case "nearintents":
+      url = "https://track.swapkit.dev/tx/$hash".replace("$hash", operation.hash);
+      break;
+    default:
+      url = getTransactionExplorer
+        ? getTransactionExplorer(getDefaultExplorerView(mainCurrency), operation)
+        : getDefaultTransactionExplorer(getDefaultExplorerView(mainCurrency), operation.hash);
+      break;
+  }
 
   useEffect(() => {
     const getProvideData = async () => {
@@ -317,7 +338,7 @@ const SwapOperationDetails = ({
           <Trans i18nKey="swap.operationDetailsModal.date" />
         </OpDetailsTitle>
         <OpDetailsData>
-          <Box data-testId="operation-date">{dateFormatted}</Box>
+          <Box data-testid="operation-date">{dateFormatted}</Box>
         </OpDetailsData>
       </OpDetailsSection>
       <B />

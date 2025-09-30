@@ -5,9 +5,7 @@ import SafeAreaView from "~/components/SafeAreaView";
 import { useSelector } from "react-redux";
 import { Trans } from "react-i18next";
 import { getMainAccount, getAccountCurrency } from "@ledgerhq/live-common/account/index";
-import type { Account } from "@ledgerhq/types-live";
 import type { TransactionStatus as BitcoinTransactionStatus } from "@ledgerhq/live-common/families/bitcoin/types";
-import { isNftTransaction } from "@ledgerhq/live-nft";
 import { NotEnoughGas } from "@ledgerhq/errors";
 import { useTheme } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -27,7 +25,6 @@ import SendRowsFee from "~/components/SendRowsFee";
 import SummaryFromSection from "./SummaryFromSection";
 import SummaryToSection from "./SummaryToSection";
 import SummaryAmountSection from "./SummaryAmountSection";
-import SummaryNft from "./SummaryNft";
 import SummaryTotalSection from "./SummaryTotalSection";
 import SectionSeparator from "~/components/SectionSeparator";
 import AlertTriangle from "~/icons/AlertTriangle";
@@ -67,7 +64,6 @@ function SendSummary({ navigation, route }: Props) {
   }));
   invariant(transaction, "transaction is missing");
 
-  const isNFTSend = isNftTransaction(transaction);
   // handle any edit screen changes like fees changes
   useTransactionChangeFromNavigation(setTransaction);
   const [continuing, setContinuing] = useState(false);
@@ -172,8 +168,9 @@ function SendSummary({ navigation, route }: Props) {
 
   const displayedError = mergeErrors();
 
-  // FIXME: why is recipient sometimes empty?
-  if (!account || !transaction || !transaction.recipient || !currencyOrToken) {
+  const isSolanaRawTransaction = "raw" in transaction && transaction.raw;
+
+  if (!account || !transaction || !currencyOrToken) {
     return null;
   }
 
@@ -211,7 +208,9 @@ function SendSummary({ navigation, route }: Props) {
             },
           ]}
         />
-        <SummaryToSection transaction={transaction} currency={mainAccount.currency} />
+        {transaction.recipient ? (
+          <SummaryToSection transaction={transaction} currency={mainAccount.currency} />
+        ) : null}
         {status.warnings.recipient ? (
           <LText style={styles.warning} color="orange" testID="send-summary-warning">
             <TranslatedError error={status.warnings.recipient} />
@@ -232,16 +231,14 @@ function SendSummary({ navigation, route }: Props) {
           route={route}
         />
         <SectionSeparator lineColor={colors.lightFog} />
-        {isNFTSend ? (
-          <SummaryNft transaction={transaction} currencyId={(account as Account).currency.id} />
-        ) : (
+        {!isSolanaRawTransaction ? (
           <SummaryAmountSection
             account={account}
             parentAccount={parentAccount}
             amount={amount}
             overrideAmountLabel={overrideAmountLabel}
           />
-        )}
+        ) : null}
         {displayedError ? (
           <NativeUiAlert type="error">
             <Flex width={"90%"}>
@@ -266,7 +263,7 @@ function SendSummary({ navigation, route }: Props) {
           route={route}
         />
 
-        {!amount.eq(totalSpent) && !hideTotal ? (
+        {!amount.eq(totalSpent) && !hideTotal && !isSolanaRawTransaction ? (
           <>
             <SectionSeparator lineColor={colors.lightFog} />
             <SummaryTotalSection
@@ -275,6 +272,25 @@ function SendSummary({ navigation, route }: Props) {
               amount={totalSpent}
             />
           </>
+        ) : null}
+
+        {isSolanaRawTransaction ? (
+          <NativeUiAlert type="warning">
+            <Flex>
+              <Text
+                color="neutral.c100"
+                flexShrink={1}
+                variant="bodyLineHeight"
+                fontWeight="semiBold"
+              >
+                <Trans i18nKey="send.summary.solanaRawTransaction.title" />{" "}
+              </Text>
+
+              <Text paddingTop={2}>
+                <Trans i18nKey="send.summary.solanaRawTransaction.description" />
+              </Text>
+            </Flex>
+          </NativeUiAlert>
         ) : null}
       </NavigationScrollView>
       <View style={styles.footer}>

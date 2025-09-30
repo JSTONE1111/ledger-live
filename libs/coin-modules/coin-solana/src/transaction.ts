@@ -22,10 +22,10 @@ import {
   toTransactionStatusRawCommon as toTransactionStatusRaw,
 } from "@ledgerhq/coin-framework/serialization";
 import type { Account } from "@ledgerhq/types-live";
-import { findTokenByAddressInCurrency } from "@ledgerhq/cryptoassets/index";
 import { findSubAccountById, getAccountCurrency } from "@ledgerhq/coin-framework/account";
 import { formatCurrencyUnit } from "@ledgerhq/coin-framework/currencies";
 import { assertUnreachable } from "./utils";
+import { getCryptoAssetsStore } from "./cryptoAssetsStore";
 
 export const fromTransactionRaw = (tr: TransactionRaw): Transaction => {
   const common = fromTransactionCommonRaw(tr);
@@ -88,6 +88,8 @@ function formatCommand(mainAccount: Account, tx: Transaction, command: Command) 
       return formatStakeWithdraw(mainAccount, tx, command);
     case "stake.split":
       return formatStakeSplit(mainAccount, tx, command);
+    case "raw":
+      return formatRaw(tx);
     default:
       return assertUnreachable(command);
   }
@@ -105,9 +107,7 @@ function formatStakeCreateAccount(
     `  AMOUNT: ${amount}${tx.useAllAmount ? " (ALL)" : ""}`,
     `  SEED: ${command.seed}`,
     `  VALIDATOR: ${command.delegate.voteAccAddress}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ].join("\n");
 
   return "\n" + str;
 }
@@ -153,11 +153,15 @@ function formatTokenTransfer(mainAccount: Account, tx: Transaction, command: Tok
 }
 
 function formatCreateATA(mainAccount: Account, command: TokenCreateATACommand) {
-  const token = findTokenByAddressInCurrency(command.mint, mainAccount.currency.id);
+  const token = getCryptoAssetsStore().findTokenByAddressInCurrency(
+    command.mint,
+    mainAccount.currency.id,
+  );
+
   if (!token) {
     throw new Error(`token for mint "${command.mint}" not found`);
   }
-  const str = [`  OPT IN TOKEN: ${token.ticker}`].filter(Boolean).join("\n");
+  const str = [`  OPT IN TOKEN: ${token.ticker}`].join("\n");
   return "\n" + str;
 }
 
@@ -186,9 +190,7 @@ function formatCreateApprove(
     `  APPROVE: ${command.account}`,
     `  DELEGATE: ${command.recipientDescriptor.walletAddress}`,
     `  AMOUNT: ${amount}${tx.useAllAmount ? " (ALL)" : ""}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ].join("\n");
   return "\n" + str;
 }
 
@@ -205,21 +207,17 @@ function formatCreateRevoke(
     throw new Error("token subaccount expected");
   }
 
-  const str = [`  OWNER: ${command.owner}`, `  REVOKE: ${command.account}`]
-    .filter(Boolean)
-    .join("\n");
+  const str = [`  OWNER: ${command.owner}`, `  REVOKE: ${command.account}`].join("\n");
   return "\n" + str;
 }
 
 function formatStakeDelegate(command: StakeDelegateCommand) {
-  const str = [`  DELEGATE: ${command.stakeAccAddr}`, `  TO: ${command.voteAccAddr}`]
-    .filter(Boolean)
-    .join("\n");
+  const str = [`  DELEGATE: ${command.stakeAccAddr}`, `  TO: ${command.voteAccAddr}`].join("\n");
   return "\n" + str;
 }
 
 function formatStakeUndelegate(command: StakeUndelegateCommand) {
-  const str = [`  UNDELEGATE: ${command.stakeAccAddr}`].filter(Boolean).join("\n");
+  const str = [`  UNDELEGATE: ${command.stakeAccAddr}`].join("\n");
   return "\n" + str;
 }
 
@@ -229,9 +227,7 @@ function formatStakeWithdraw(mainAccount: Account, tx: Transaction, command: Sta
     `  WITHDRAW FROM: ${command.stakeAccAddr}`,
     `  AMOUNT: ${amount}${tx.useAllAmount ? " (ALL)" : ""}`,
     `  TO: ${command.toAccAddr}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ].join("\n");
   return "\n" + str;
 }
 
@@ -241,9 +237,14 @@ function formatStakeSplit(mainAccount: Account, tx: Transaction, command: StakeS
     `  SPLIT: ${command.stakeAccAddr}`,
     `  AMOUNT: ${amount}${tx.useAllAmount ? " (ALL)" : ""}`,
     `  TO: ${command.splitStakeAccAddr}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ].join("\n");
+  return "\n" + str;
+}
+
+function formatRaw(tx: Transaction) {
+  const str = [`  SEND RAW: ${tx.useAllAmount ? " (ALL)" : ""}`, `  TO: ${tx.recipient}`].join(
+    "\n",
+  );
   return "\n" + str;
 }
 

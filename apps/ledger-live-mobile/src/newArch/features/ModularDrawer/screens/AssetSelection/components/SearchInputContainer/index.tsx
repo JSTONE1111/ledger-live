@@ -3,40 +3,40 @@ import { useTranslation } from "react-i18next";
 import { SearchProps, useSearch } from "./useSearch";
 import { Flex } from "@ledgerhq/native-ui";
 import { Search } from "@ledgerhq/native-ui/pre-ldls/index";
+import useFeature from "@ledgerhq/live-common/featureFlags/useFeature";
 
-type Props = SearchProps;
+type Props = SearchProps & {
+  onFocus: () => void;
+  onBlur: () => void;
+};
 
 const SearchInputContainer = ({
-  setItemsToDisplay,
-  assetsToDisplay,
-  setSearchedValue,
-  originalAssets,
-  defaultValue = "",
   source,
   flow,
-  items,
   assetsConfiguration,
   formatAssetConfig,
+  onPressIn,
+  onFocus,
+  onBlur,
 }: Props) => {
   const { t } = useTranslation();
+  const modularDrawer = useFeature("llmModularDrawer");
 
   const { handleDebouncedChange, handleSearch, displayedValue } = useSearch({
-    setItemsToDisplay,
-    setSearchedValue,
-    defaultValue,
-    items,
     source,
     flow,
-    assetsToDisplay,
-    originalAssets,
     assetsConfiguration,
     formatAssetConfig,
   });
 
   return (
-    <Flex paddingX="8px" mb={24}>
+    <Flex mb={4}>
       <Search
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onPressIn={onPressIn}
         value={displayedValue}
+        debounceTime={modularDrawer?.params?.searchDebounceTime}
         placeholder={t("modularDrawer.searchPlaceholder")}
         onDebouncedChange={handleDebouncedChange}
         onChange={e => handleSearch(e.nativeEvent.text)}

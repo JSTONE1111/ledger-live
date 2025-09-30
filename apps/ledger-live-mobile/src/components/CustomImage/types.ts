@@ -1,6 +1,4 @@
-import { useNftMetadata } from "@ledgerhq/live-nft-react";
-
-export type ImageType = "staxEnabledImage" | "originalNFTImage" | "customImage";
+export type ImageType = "staxEnabledImage" | "customImage";
 
 export type ImageDimensions = {
   /** pixel height of the image */
@@ -24,19 +22,4 @@ export type ImageFileUri = {
    * e.g "file://the_image_path
    */
   imageFileUri: string;
-};
-
-export type ImageUrl = {
-  /**
-   * Image URL locating an image on the internet.
-   * e.g: "https://example.com/an_image.png"
-   */
-  imageUrl: string;
-};
-
-export type GalleryNFT = {
-  /**
-   * NFT parameters that can be used to get its metadata using useNftMetadata
-   */
-  nftMetadataParams: Parameters<typeof useNftMetadata>;
 };

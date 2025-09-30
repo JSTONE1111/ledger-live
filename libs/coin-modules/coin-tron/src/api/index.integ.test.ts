@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import TronWeb from "tronweb";
 import { createApi } from ".";
 import { createTronWeb } from "../logic/utils";
-import { TronAsset } from "../types";
 
 const TRONGRID_URL = "https://api.shasta.trongrid.io";
 dotenv.config();
@@ -25,7 +24,7 @@ const wallet = {
  * Testnet faucet: https://shasta.tronex.io/
  */
 describe("API", () => {
-  let module: AlpacaApi<TronAsset>;
+  let module: AlpacaApi;
   let tronWeb: TronWeb;
 
   beforeAll(() => {
@@ -56,6 +55,20 @@ describe("API", () => {
 
     // THEN
     expect(txId).toEqual(expect.any(String));
+  });
+
+  it("returns operations from latest, but in asc order", async () => {
+    // When
+    const [txDesc] = await module.listOperations("TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1", {
+      minHeight: 0,
+      order: "desc",
+    });
+
+    // Then
+    // Check if the result is sorted in ascending order
+    expect(txDesc[0].tx.block.height).toBeGreaterThanOrEqual(
+      txDesc[txDesc.length - 1].tx.block.height,
+    );
   });
 });
 

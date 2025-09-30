@@ -1,7 +1,6 @@
 import BigNumber from "bignumber.js";
-import { encodeAccountId, encodeTokenAccountId } from "@ledgerhq/coin-framework/account/index";
+import { encodeAccountId } from "@ledgerhq/coin-framework/account/index";
 import { Operation } from "@ledgerhq/types-live";
-import { findTokenById } from "@ledgerhq/cryptoassets";
 import {
   etherscanERC1155EventToOperations,
   etherscanERC20EventToOperations,
@@ -500,40 +499,6 @@ describe("EVM Family", () => {
       });
 
       describe("etherscanERC20EventToOperations", () => {
-        it("should return an empty array for an unknown token", () => {
-          const etherscanOp: EtherscanERC20Event = {
-            blockNumber: "16240731",
-            timeStamp: "1671717983",
-            hash: "0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf",
-            nonce: "53",
-            blockHash: "0x58ee7556044cd139e569c87c173a6dedbfbeb9ada6693ee6090fd510acee9c21",
-            from: "0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d",
-            contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb41",
-            to: "0xc2907efcce4011c491bbeda8a0fa63ba7aab596c",
-            value: "2000000",
-            tokenName: "USD Coin",
-            tokenSymbol: "USDC",
-            tokenDecimal: "6",
-            transactionIndex: "65",
-            gas: "79381",
-            gasPrice: "24314367325",
-            gasUsed: "65613",
-            cumulativeGasUsed: "4557746",
-            input: "deprecated",
-            confirmations: "150032",
-          };
-
-          const accountId = encodeAccountId({
-            type: "js",
-            version: "2",
-            currencyId: "ethereum",
-            xpubOrAddress: "0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d",
-            derivationMode: "",
-          });
-
-          expect(etherscanERC20EventToOperations(accountId, etherscanOp)).toEqual([]);
-        });
-
         it("should convert an etherscan-like usdc out event (from their API) to a Ledger Live Operation", () => {
           const etherscanOp: EtherscanERC20Event = {
             blockNumber: "16240731",
@@ -564,13 +529,11 @@ describe("EVM Family", () => {
             xpubOrAddress: "0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d",
             derivationMode: "",
           });
-          const tokenCurrency = findTokenById("ethereum/erc20/usd__coin");
-          const tokenAccountId = encodeTokenAccountId(accountId, tokenCurrency!);
 
           const expectedOperation: Operation = {
-            id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:+ethereum%2Ferc20%2Fusd~!underscore!~~!underscore!~coin-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-OUT-i0",
+            id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-OUT-i0",
             hash: "0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf",
-            accountId: tokenAccountId,
+            accountId,
             blockHash: "0x58ee7556044cd139e569c87c173a6dedbfbeb9ada6693ee6090fd510acee9c21",
             blockHeight: 16240731,
             senders: ["0x6cBCD73CD8e8a42844662f0A0e76D7F79Afd933d"],
@@ -619,13 +582,11 @@ describe("EVM Family", () => {
             xpubOrAddress: "0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d",
             derivationMode: "",
           });
-          const tokenCurrency = findTokenById("ethereum/erc20/usd__coin");
-          const tokenAccountId = encodeTokenAccountId(accountId, tokenCurrency!);
 
           const expectedOperation: Operation = {
-            id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:+ethereum%2Ferc20%2Fusd~!underscore!~~!underscore!~coin-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-IN-i0",
+            id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-IN-i0",
             hash: "0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf",
-            accountId: tokenAccountId,
+            accountId,
             blockHash: "0x58ee7556044cd139e569c87c173a6dedbfbeb9ada6693ee6090fd510acee9c21",
             blockHeight: 16240731,
             senders: ["0xC2907EFccE4011C491BbedA8A0fA63BA7aab596C"],
@@ -708,14 +669,12 @@ describe("EVM Family", () => {
             xpubOrAddress: "0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d",
             derivationMode: "",
           });
-          const tokenCurrency = findTokenById("ethereum/erc20/usd__coin");
-          const tokenAccountId = encodeTokenAccountId(accountId, tokenCurrency!);
 
           const expectedOperations: Operation[] = [
             {
-              id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:+ethereum%2Ferc20%2Fusd~!underscore!~~!underscore!~coin-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-IN-i0",
+              id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-IN-i0",
               hash: "0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf",
-              accountId: tokenAccountId,
+              accountId,
               blockHash: "0x58ee7556044cd139e569c87c173a6dedbfbeb9ada6693ee6090fd510acee9c21",
               blockHeight: 16240731,
               senders: ["0x6cBCD73CD8e8a42844662f0A0e76D7F79Afd933d"],
@@ -729,9 +688,9 @@ describe("EVM Family", () => {
               extra: {},
             },
             {
-              id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:+ethereum%2Ferc20%2Fusd~!underscore!~~!underscore!~coin-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-OUT-i0",
+              id: "js:2:ethereum:0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d:-0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf-OUT-i0",
               hash: "0x02b972f304dc24c9bc362e6435c4ad654241f9af916689a4790145c9bcbdf4cf",
-              accountId: tokenAccountId,
+              accountId,
               blockHash: "0x58ee7556044cd139e569c87c173a6dedbfbeb9ada6693ee6090fd510acee9c21",
               blockHeight: 16240731,
               senders: ["0x6cBCD73CD8e8a42844662f0A0e76D7F79Afd933d"],

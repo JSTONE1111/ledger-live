@@ -25,7 +25,7 @@ describe("fromTrongridTxInfoToOperation", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (fromBigNumberToBigInt as jest.Mock).mockImplementation(
-      (value: string, defaultValue: bigint) => (value != null ? BigInt(value) : defaultValue),
+      (value: string, defaultValue: bigint) => (value ? BigInt(value) : defaultValue),
     );
   });
 
@@ -44,7 +44,7 @@ describe("fromTrongridTxInfoToOperation", () => {
       value: BigInt(5000),
       senders: ["from"],
       recipients: ["to"],
-      asset: { standard: "trc20", contractAddress: "boo", type: "token" },
+      asset: { type: "trc20", assetReference: "boo" },
     });
   });
 

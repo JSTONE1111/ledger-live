@@ -29,15 +29,18 @@ const targets = [
   "AccountSubHeader",
   "SendRowsCustom",
   "SendRowsFee",
+  "SendSelectRecipient",
   "AccountBalanceSummaryFooter",
   "SubAccountList",
   "Confirmation",
   "ReceiveConfirmationPostAlert",
+  "ReceiveConfirmationTokenAlert",
   "ConnectDevice",
   "NoAssociatedAccounts",
   "EditOperationPanel",
   "MemoTagInput",
   "MemoTagSummary",
+  "ShouldUseReceiveOptions",
 ];
 
 async function genTarget(target) {

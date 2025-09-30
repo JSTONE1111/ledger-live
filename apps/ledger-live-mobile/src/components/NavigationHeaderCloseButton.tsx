@@ -11,9 +11,6 @@ import { usePostOnboardingHubState } from "@ledgerhq/live-common/postOnboarding/
 import { useNavigateToPostOnboardingHubCallback } from "~/logic/postOnboarding/useNavigateToPostOnboardingHubCallback";
 import { StyleProp, ViewStyle } from "react-native";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const emptyFunction = () => {};
-
 type Props = {
   /**
    * Function called when user presses on the close button.
@@ -92,6 +89,8 @@ type AdvancedProps = {
   confirmCTAConfig?: Partial<CtaConfig>;
   confirmButtonText?: React.ReactNode;
   rejectButtonText?: React.ReactNode;
+  isOnboardingFlow?: boolean;
+  popToTop?: boolean;
 };
 
 /**
@@ -108,7 +107,7 @@ export const NavigationHeaderCloseButtonAdvanced: React.FC<AdvancedProps> = Reac
     withConfirmation,
     confirmationTitle,
     confirmationDesc,
-    onClose = emptyFunction,
+    onClose,
     rounded = false,
     showButton = false,
     buttonText,
@@ -117,6 +116,8 @@ export const NavigationHeaderCloseButtonAdvanced: React.FC<AdvancedProps> = Reac
     confirmCTAConfig,
     confirmButtonText,
     rejectButtonText,
+    isOnboardingFlow = false,
+    popToTop = false,
   }) => {
     const navigation = useNavigation();
     const [isConfirmationModalOpened, setIsConfirmationModalOpened] = useState(false);
@@ -125,7 +126,7 @@ export const NavigationHeaderCloseButtonAdvanced: React.FC<AdvancedProps> = Reac
     const navigateToPostOnboardingHub = useNavigateToPostOnboardingHubCallback();
 
     const close = useCallback(() => {
-      if (postOnboardingInProgress) {
+      if (postOnboardingInProgress && !isOnboardingFlow) {
         navigateToPostOnboardingHub();
         return;
       }
@@ -133,21 +134,31 @@ export const NavigationHeaderCloseButtonAdvanced: React.FC<AdvancedProps> = Reac
       if (skipNavigation) {
         // onClose should always be called at the end of the close method,
         // so the callback will not interfere with the expected behavior of this component
-        onClose && onClose();
+        onClose?.();
         return;
       }
 
-      if ((navigation.getParent() as { pop?: unknown }).pop && preferDismiss) {
-        navigation.getParent<StackNavigatorNavigation<BaseNavigatorStackParamList>>().pop();
+      const parent = navigation.getParent<StackNavigatorNavigation<BaseNavigatorStackParamList>>();
+      if (parent && "pop" in parent && preferDismiss) {
+        const parentNavigation = parent;
 
-        onClose && onClose();
-        return;
+        if (popToTop && "popToTop" in parentNavigation) {
+          parentNavigation.popToTop();
+          onClose?.();
+          return;
+        } else if ("canGoBack" in parentNavigation && parentNavigation.canGoBack()) {
+          parentNavigation.pop();
+          onClose?.();
+          return;
+        }
       }
-
-      if ((navigation as { closeDrawer?: unknown }).closeDrawer)
-        (navigation as unknown as { closeDrawer: () => void }).closeDrawer();
-      navigation.goBack();
-      onClose();
+      if ("closeDrawer" in navigation && typeof navigation.closeDrawer === "function") {
+        navigation.closeDrawer();
+      }
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
+      onClose?.();
     }, [
       navigateToPostOnboardingHub,
       navigation,
@@ -155,6 +166,8 @@ export const NavigationHeaderCloseButtonAdvanced: React.FC<AdvancedProps> = Reac
       postOnboardingInProgress,
       preferDismiss,
       skipNavigation,
+      isOnboardingFlow,
+      popToTop,
     ]);
 
     const openConfirmationModal = useCallback(() => {

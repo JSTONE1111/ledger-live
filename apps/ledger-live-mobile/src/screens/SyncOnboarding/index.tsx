@@ -18,6 +18,9 @@ import { NavigationHeaderCloseButton } from "~/components/NavigationHeaderCloseB
 import UnlockDeviceDrawer from "~/components/UnlockDeviceDrawer";
 import AutoRepairDrawer from "./AutoRepairDrawer";
 import { type SyncOnboardingScreenProps } from "./SyncOnboardingScreenProps";
+import { useIsFocused } from "@react-navigation/core";
+import { TwoStepSyncOnboardingCompanion } from "./TwoStepStepper/TwoStepSyncOnboardingCompanion";
+import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
 
 const POLLING_PERIOD_MS = 1000;
 const DESYNC_TIMEOUT_MS = 20000;
@@ -56,6 +59,10 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
     NORMAL_DESYNC_OVERLAY_DISPLAY_DELAY_MS,
   );
 
+  const isFocused = useIsFocused();
+
+  const isSyncIncr1Enabled = useFeature("llmSyncOnboardingIncr1")?.enabled || false;
+
   const productName = getDeviceModel(device.modelId).productName || device.modelId;
 
   // Depending on the current step, the close button triggers different paths
@@ -74,7 +81,12 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
       header: () => (
         <>
           <SafeAreaView edges={["top", "left", "right"]}>
-            <Flex my={5} flexDirection="row" justifyContent="flex-end" alignItems="center">
+            <Flex
+              my={isSyncIncr1Enabled ? 0 : 5}
+              flexDirection="row"
+              justifyContent="flex-end"
+              alignItems="center"
+            >
               <NavigationHeaderCloseButton onPress={onCloseButtonPress} />
             </Flex>
           </SafeAreaView>
@@ -82,7 +94,14 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
         </>
       ),
     });
-  }, [device, navigation, isHeaderOverlayOpen, headerOverlayDelayMs, onCloseButtonPress]);
+  }, [
+    device,
+    navigation,
+    isHeaderOverlayOpen,
+    headerOverlayDelayMs,
+    onCloseButtonPress,
+    isSyncIncr1Enabled,
+  ]);
 
   const {
     onboardingState,
@@ -157,7 +176,6 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
       setIsPollingOn(false);
       setToggleOnboardingEarlyCheckType("enter");
     } else if (!isOnboarded && currentOnboardingStep === OnboardingStep.OnboardingEarlyCheck) {
-      setIsPollingOn(false);
       // Resets the `useToggleOnboardingEarlyCheck` hook. Avoids having a case where for ex
       // check type == "exit" and toggle status still being == "success" from the previous toggle
       setToggleOnboardingEarlyCheckType(null);
@@ -170,8 +188,8 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
 
   // A fatal error during polling triggers directly an error message (or the auto repair)
   useEffect(() => {
-    if (fatalError) {
-      if ((fatalError as unknown) instanceof UnexpectedBootloader) {
+    if (isFocused && fatalError) {
+      if (fatalError instanceof UnexpectedBootloader) {
         log("SyncOnboardingIndex", "Device in bootloader mode. Trying to auto repair", {
           fatalError,
         });
@@ -183,13 +201,13 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
         setIsDesyncDrawerOpen(true);
       }
     }
-  }, [fatalError]);
+  }, [fatalError, isFocused]);
 
   // An allowed error during polling (which makes the polling retry) only triggers an error message after a timeout
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
 
-    if (allowedError && !(allowedError instanceof LockedDeviceError)) {
+    if (isFocused && allowedError && !(allowedError instanceof LockedDeviceError)) {
       log("SyncOnboardingIndex", "Polling allowed error", { allowedError });
 
       timeout = setTimeout(() => {
@@ -203,7 +221,7 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
         clearTimeout(timeout);
       }
     };
-  }, [allowedError]);
+  }, [allowedError, isFocused]);
 
   useEffect(() => {
     if (lockedDevice) {
@@ -281,7 +299,16 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
       />
     );
   } else if (currentStep === "companion") {
-    stepContent = (
+    stepContent = isSyncIncr1Enabled ? (
+      <TwoStepSyncOnboardingCompanion
+        navigation={navigation}
+        device={device}
+        notifyEarlySecurityCheckShouldReset={notifyEarlySecurityCheckShouldReset}
+        onLostDevice={onLostDevice}
+        onShouldHeaderBeOverlaid={setIsHeaderOverlayOpen}
+        updateHeaderOverlayDelay={setHeaderOverlayDelayMs}
+      />
+    ) : (
       <SyncOnboardingCompanion
         navigation={navigation}
         device={device}
@@ -296,7 +323,7 @@ export const SyncOnboarding = ({ navigation, route }: SyncOnboardingScreenProps)
   return (
     <>
       <DesyncDrawer
-        isOpen={isDesyncDrawerOpen}
+        isOpen={isDesyncDrawerOpen && isFocused}
         onClose={handleDesyncClose}
         onRetry={handleDesyncRetry}
         device={device}

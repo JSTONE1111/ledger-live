@@ -1,43 +1,60 @@
 import React from "react";
-import { Flex, Text } from "@ledgerhq/native-ui";
+import Animated from "react-native-reanimated";
+import { View, StyleSheet } from "react-native";
 import { ModularDrawerStep } from "../types";
 import { Title } from "../components/Title";
 import AssetSelection from "../screens/AssetSelection";
 import NetworkSelection from "../screens/NetworkSelection";
+import AccountSelection from "../screens/AccountSelection";
 import { ModularDrawerFlowProps } from ".";
-import SkeletonList from "../components/Skeleton/SkeletonList";
+import useScreenTransition from "./useScreenTransition";
+import { useSelector } from "react-redux";
+import { modularDrawerStepSelector } from "~/reducers/modularDrawer";
 
 export function ModularDrawerFlowView({
-  navigationStepViewModel,
   assetsViewModel,
   networksViewModel,
-  isReadyToBeDisplayed,
+  accountsViewModel,
 }: ModularDrawerFlowProps) {
-  const { currentStep } = navigationStepViewModel;
+  const currentStep = useSelector(modularDrawerStepSelector);
 
-  const renderStepContent = () => {
-    switch (currentStep) {
+  const { activeSteps, getStepAnimations } = useScreenTransition(currentStep);
+
+  const renderStepContent = (step: ModularDrawerStep) => {
+    switch (step) {
       case ModularDrawerStep.Asset:
         return <AssetSelection {...assetsViewModel} />;
       case ModularDrawerStep.Network:
         return <NetworkSelection {...networksViewModel} />;
       case ModularDrawerStep.Account:
-        return <Text>{"Account Selection Step Content"}</Text>;
+        return <AccountSelection {...accountsViewModel} />;
       default:
         return null;
     }
   };
 
-  return (
-    <Flex flexDirection="column" rowGap={5}>
-      {isReadyToBeDisplayed ? (
-        <>
-          <Title step={currentStep} />
-          {renderStepContent()}
-        </>
-      ) : (
-        <SkeletonList />
-      )}
-    </Flex>
-  );
+  const renderAnimatedStep = (step: ModularDrawerStep) => {
+    const stepAnimations = getStepAnimations(step);
+    if (!stepAnimations) return null;
+
+    return (
+      <Animated.View
+        key={`${step}`}
+        style={[{ flex: 1 }, stepAnimations.animatedStyle]}
+        testID={`${step}-screen`}
+      >
+        <Title step={step} />
+        {renderStepContent(step)}
+      </Animated.View>
+    );
+  };
+
+  return <View style={styles.container}>{activeSteps.map(renderAnimatedStep)}</View>;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: "relative",
+  },
+});

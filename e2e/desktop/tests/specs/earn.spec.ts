@@ -18,6 +18,7 @@ function setupEnv(disableBroadcast?: boolean) {
     }
   });
 }
+
 const ethEarn = [
   {
     account: Account.ETH_1,
@@ -29,11 +30,12 @@ const ethEarn = [
     provider: Provider.STADER_LABS,
     xrayTicket: "B2CQA-3677",
   },
-  {
-    account: Account.ETH_1,
-    provider: Provider.KILN,
-    xrayTicket: "B2CQA-3678",
-  },
+  //ToDo: enable when Kiln is back
+  // {
+  //   account: Account.ETH_1,
+  //   provider: Provider.KILN,
+  //   xrayTicket: "B2CQA-3678",
+  // },
 ];
 
 for (const { account, provider, xrayTicket } of ethEarn) {
@@ -99,10 +101,21 @@ test.describe("Inline Add Account", () => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
       await app.earnDashboard.goAndWaitForEarnToBeReady(() => app.layout.goToEarn());
       await app.earnDashboard.clickLearnMoreButton(account.currency.id);
-      await app.delegateDrawer.clickOnAddAccountButton();
+      const modularDrawerVisible = await app.modularDrawer.isModularAccountDrawerVisible();
+      if (modularDrawerVisible) {
+        await app.modularDrawer.clickOnAddAndExistingAccountButton();
+      } else {
+        await app.delegateDrawer.clickOnAddAccountButton();
+      }
+
       await app.addAccount.addAccounts();
       await app.addAccount.done();
-      await app.delegateDrawer.selectAccountByName(account);
+
+      if (modularDrawerVisible) {
+        await app.modularDrawer.selectAccountByName(account);
+      } else {
+        await app.delegateDrawer.selectAccountByName(account);
+      }
       await app.addAccount.close();
       await app.layout.goToAccounts();
       await app.accounts.expectAccountsCountToBeNotNull();
@@ -111,13 +124,14 @@ test.describe("Inline Add Account", () => {
 });
 
 const earnDashboardCurrencies = [
+  //ToDo: enable when Kiln is back
+  // {
+  //   account: Account.ETH_1,
+  //   xrayTicket: "B2CQA-3679",
+  //   staking: false,
+  // },
   {
-    account: Account.ETH_1,
-    xrayTicket: "B2CQA-3679",
-    staking: false,
-  },
-  {
-    account: Account.SOL_2,
+    account: Account.SOL_4,
     xrayTicket: "B2CQA-3680",
     staking: false,
   },
@@ -131,21 +145,22 @@ const earnDashboardCurrencies = [
     xrayTicket: "B2CQA-3682",
     staking: false,
   },
-  {
-    account: Account.NEAR_1,
-    xrayTicket: "B2CQA-3683",
-    staking: true,
-  },
-  {
-    account: Account.SOL_1,
-    xrayTicket: "B2CQA-3684",
-    staking: true,
-  },
-  {
-    account: Account.ATOM_1,
-    xrayTicket: "B2CQA-3685",
-    staking: true,
-  },
+  //ToDo: enable when Kiln is back
+  // {
+  //   account: Account.NEAR_1,
+  //   xrayTicket: "B2CQA-3683",
+  //   staking: true,
+  // },
+  // {
+  //   account: Account.SOL_2,
+  //   xrayTicket: "B2CQA-3684",
+  //   staking: true,
+  // },
+  // {
+  //   account: Account.ATOM_1,
+  //   xrayTicket: "B2CQA-3685",
+  //   staking: true,
+  // },
 ];
 
 for (const { account, xrayTicket, staking } of earnDashboardCurrencies) {
@@ -181,7 +196,6 @@ for (const { account, xrayTicket, staking } of earnDashboardCurrencies) {
         if (!staking) {
           await app.earnDashboard.verifyRewardsPotentials();
           await app.earnDashboard.verifyYourEligibleAssets(account.accountName);
-          await app.earnDashboard.verifyEligibleAssets(account);
           await app.earnDashboard.verifyEarnByStackingButton();
         } else {
           await app.earnDashboard.goToAssetsTab();

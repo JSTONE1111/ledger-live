@@ -1,26 +1,25 @@
-import { useMemo, useState } from "react";
-import { getCurrenciesIds } from "../utils/getCurrenciesIds";
+import { useMemo } from "react";
 import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
+import { useCurrenciesUnderFeatureFlag } from "@ledgerhq/live-common/modularDrawer/hooks/useCurrenciesUnderFeatureFlag";
 
 export function useAssetSelection(
-  currencies: CryptoOrTokenCurrency[],
+  currencyIds: string[],
   sortedCryptoCurrencies: CryptoOrTokenCurrency[],
 ) {
-  const currenciesIdsArray = useMemo(() => getCurrenciesIds(currencies), [currencies]);
-  const currencyIdsSet = useMemo(() => new Set(currenciesIdsArray), [currenciesIdsArray]);
+  const { deactivatedCurrencyIds } = useCurrenciesUnderFeatureFlag();
 
-  const filteredSortedCryptoCurrencies = useMemo(() => {
-    if (currencyIdsSet.size === 0) return sortedCryptoCurrencies;
-    return sortedCryptoCurrencies.filter(currency => currencyIdsSet.has(currency.id));
-  }, [sortedCryptoCurrencies, currencyIdsSet]);
+  const assetsToDisplay = useMemo(() => {
+    return sortedCryptoCurrencies.filter(
+      c =>
+        (c.type === "CryptoCurrency" && !deactivatedCurrencyIds.has(c.id)) ||
+        (c.type === "TokenCurrency" && !deactivatedCurrencyIds.has(c.parentCurrency.id)),
+    );
+  }, [sortedCryptoCurrencies, deactivatedCurrencyIds]);
 
-  const [assetsToDisplay, setAssetsToDisplay] = useState<CryptoOrTokenCurrency[] | null>(null);
+  const currencyIdsSet = useMemo(() => new Set(currencyIds), [currencyIds]);
 
   return {
-    assetsToDisplay: assetsToDisplay ?? filteredSortedCryptoCurrencies,
-    setAssetsToDisplay,
-    filteredSortedCryptoCurrencies,
-    currenciesIdsArray,
+    assetsToDisplay,
     currencyIdsSet,
   };
 }

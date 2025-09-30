@@ -165,9 +165,8 @@
     "type" : {
       "IN" : "Alındı",
       "OUT" : "Gönderildi",
-      "NFT_IN" : "NFT Alındı",
-      "NFT_OUT" : "NFT Gönderildi",
       "CREATE" : "Oluşturuldu",
+      "UNKNOWN" : "Bilinmiyor",
       "REVEAL" : "Adres gösterildi",
       "DELEGATE" : "Yetki devredildi",
       "REDELEGATE" : "Yetki yeniden devredildi",
@@ -202,7 +201,8 @@
       "UNSTAKE" : "Stake durdurma",
       "WITHDRAW_UNSTAKED" : "Çekildi",
       "SENDING" : "Gönderiliyor",
-      "BURN" : "Yakıldı"
+      "BURN" : "Yakıldı",
+      "ASSOCIATE_TOKEN" : "Token'ı ilişkilendirin"
     },
     "edit" : {
       "title" : "Hızlandırın veya İptal Edin",
@@ -344,6 +344,7 @@
           "provider" : "sağlayıcı",
           "rate" : "kur",
           "fees" : "Ağ Ücretleri",
+          "feesDescription" : "Bu ücret, blok zinciri ağı tarafından takasın işlenmesi için alınır. Tahminî fiyat teklifine ek olarak sadece gönderim ücreti alınır. Teslim alma ücreti dâhildir.",
           "target" : "hedef hesap"
         },
         "tooltip" : {
@@ -384,6 +385,7 @@
         "onhold" : "Durduruldu",
         "expired" : "Süresi doldu",
         "finished" : "Tamamlandı",
+        "unknown" : "İşleniyor",
         "refunded" : "Para iadesi yapıldı"
       }
     },
@@ -570,7 +572,7 @@
         "pending" : "Takas işlemi sağlayıcısı işleminizi yaparken lütfen bekleyin.",
         "onhold" : "Sorunu çözmek için lütfen takas işlemi sağlayıcısına Swap ID'niz ile başvurun.",
         "finished" : "Takas işleminiz başarıyla tamamlandı.",
-        "unknown" : "Daha fazla bilgi için lütfen takas işlemi sağlayıcısına Swap ID'niz ile başvurun."
+        "unknown" : "Sağlayıcıdan bilgi bekliyoruz."
       },
       "date" : "Tarih",
       "from" : "Gönderici",
@@ -799,8 +801,8 @@
       "support" : "destek bölümüne"
     },
     "willBeDeprecatedBanner" : {
-      "title" : "Verimliliği iyileştirmek için {{deprecatedDate}} tarihinden itibaren {{currencyName}} artık Ledger Live'da desteklenmeyecektir. Ancak Ledger donanım cüzdanlarında desteklenmeye devam edecektir. Bu konuda yardım almak isterseniz Ledger Müşteri Destek ekibiyle lütfen iletişime geçin.",
-      "contactSupport" : "Destek Al"
+      "title" : "{{deprecatedDate}} tarihinden itibaren {{currencyName}} artık Ledger Live’da desteklenmeyecektir. Ancak Ledger donanım cüzdanınızda güvenle tutulmaya devam edecektir. Daha fazla bilgi edinmek için aşağıda bağlantısı verilen Yardım Merkezi makalesini lütfen baştan sona okuyun.",
+      "learnMore" : "Daha fazla bilgi"
     },
     "lastOperations" : "Son işlemler",
     "contractAddress" : "Sözleşme:",
@@ -1434,11 +1436,6 @@
       }
     }
   },
-  "hideNftCollection" : {
-    "title" : "NFT Koleksiyonunu Gizleyin",
-    "desc" : "Bu eylem <1><0>{{collectionName}}</0></1> koleksiyonundaki tüm NFT'leri gizleyecek; <3>Ayarlar'ı</3> kullanarak onları tekrar görünür hale getirebilirsiniz",
-    "hideCTA" : "NFT Koleksiyonunu Gizleyin"
-  },
   "banners" : {
     "cleanCache" : {
       "title" : "Deneysel ayarların değiştirilmesi için önbellek temiz olmalıdır",
@@ -1705,50 +1702,6 @@
       "browseAssets" : "Varlıklara göz atın"
     }
   },
-  "NFT" : {
-    "viewer" : {
-      "actions" : {
-        "send" : "Gönder",
-        "open" : "{{viewer}} ile aç"
-      },
-      "attributes" : {
-        "properties" : "Özellikler",
-        "description" : "Açıklama",
-        "tokenAddress" : "Token Adresi",
-        "tokenId" : "Token Kimliği (Token ID)",
-        "quantity" : "Miktar",
-        "floorPrice" : "Taban Fiyat"
-      }
-    },
-    "collections" : {
-      "title" : "NFT (Non Fungible Token) Koleksiyonları",
-      "receiveCTA" : "NFT al",
-      "galleryCTA" : "Galeriyi gör",
-      "seeMore" : "Daha fazla koleksiyon gör",
-      "seeAll" : "Tüm koleksiyonları gör",
-      "seeLess" : "Daha az gör",
-      "placeholder" : "Bir token eklemek için onu {{currency}} adresinize göndermeniz yeterlidir."
-    },
-    "gallery" : {
-      "title" : "Tüm NFT'ler",
-      "collection" : {
-        "header" : {
-          "sendCTA" : "Gönder",
-          "contract" : "Sözleşme: {{contract}}"
-        },
-        "operationList" : {
-          "header" : "Son işlemler",
-          "OUT" : "Gönderildi",
-          "IN" : "Alındı"
-        }
-      },
-      "tokensList" : {
-        "item" : {
-          "tokenId" : "Kimlik (ID): {{tokenId}}"
-        }
-      }
-    }
-  },
   "tokensList" : {
     "title" : "Token'lar",
     "cta" : "Token ekle",
@@ -1860,12 +1813,6 @@
     "internalOpTooltip" : "Bu işlem, iç işlemlere sahiptir",
     "details" : "{{ currency }} ayrıntıları",
     "multipleAddresses" : "Neden birden fazla adres var?",
-    "nft" : {
-      "name" : "Token Adı",
-      "contract" : "Token Sözleşmesi",
-      "id" : "Token (NFT) Kimliği",
-      "quantity" : "Miktar"
-    },
     "extra" : {
       "frozenAmount" : "Dondurulan tutar",
       "unfreezeAmount" : "Çözülen tutar",
@@ -1937,7 +1884,8 @@
       "payoutNetworkFeesTooltip" : "Bu tutar cihazınızda gösterilmeyecektir",
       "acceptTerms" : "Bu işlemi onaylayarak,\n<0>{{provider}} kullanım koşullarını</0> kabul ediyorum.",
       "exodusAcceptTerms" : "Exodus, takas işlemlerini gerçekleştirmek için üçüncü tarafları kullanır.\nBu işlemi onaylayarak, <0>Exodus'un kullanım koşullarını</0> kabul ediyorum.",
-      "changellyAcceptTerms" : "“Changelly ile Takas Edin” seçeneğine tıkladığınızda Changelly'nin <0>Kullanım Koşulları</0>'nı\nve <1>Kara Paranın Aklanmasının Önlenmesi/KYC politikasını</1> kabul etmiş olursunuz. Changelly, işleminizin tamamlanmasını\nbazı durumlarda etkileyebilecek olan, Kara Paranın Aklanmasının Önlenmesi/KYC prosedürleri uygulayabilir. \nBöyle bir durumda Changelly'nin <2>müşteri destek</2> ekibi ile iletişime geçmeniz gerekir."
+      "changellyAcceptTerms" : "“Changelly ile Takas Edin” seçeneğine tıkladığınızda Changelly'nin <0>Kullanım Koşulları</0>'nı\nve <1>Kara Paranın Aklanmasının Önlenmesi/KYC politikasını</1> kabul etmiş olursunuz. Changelly, işleminizin tamamlanmasını\nbazı durumlarda etkileyebilecek olan, Kara Paranın Aklanmasının Önlenmesi/KYC prosedürleri uygulayabilir. \nBöyle bir durumda Changelly'nin <2>müşteri destek</2> ekibi ile iletişime geçmeniz gerekir.",
+      "cicAcceptTerms" : "“CIC ile Takas Edin” seçeneğine tıkladığınızda CIC’nin <0>Kullanım Koşulları</0>’nı ve <1>Kara Paranın Aklanmasının Önlenmesi/KYC politikasını</1> kabul etmiş olursunuz. CIC, bazı durumlarda işleminizin tamamlanmasını etkileyebilecek olan, Kara Paranın Aklanmasının Önlenmesi/KYC prosedürleri uygulayabilir. Böyle bir durumda CIC’nin <2>müşteri destek</2> ekibi ile iletişime geçmeniz gerekir."
     },
     "swap2" : {
       "amountSent" : "Gönderilecek tutar",
@@ -2278,6 +2226,16 @@
       }
     }
   },
+  "fund" : {
+    "title" : "Fon ekleyin",
+    "titleCrypto" : "{{currency}} ekleyin",
+    "exchangeDrawer" : {
+      "completed" : {
+        "title" : "İşlem başarıyla yayımlandı",
+        "description" : "İşleminiz onaylanmak üzere ağa gönderildi. Lütfen işleminizin onaylanmasını ve sağlayıcı tarafından işleme alınmasını bekleyin."
+      }
+    }
+  },
   "receive" : {
     "title" : "Al",
     "successTitle" : "Adres güvenli şekilde paylaşıldı",
@@ -2336,12 +2294,10 @@
   },
   "send" : {
     "title" : "Gönder",
-    "titleNft" : "NFT Gönderin",
     "totalSpent" : "Düşülecek tutar",
     "steps" : {
       "recipient" : {
         "title" : "Alıcı",
-        "nftRecipient" : "Gönderilecek NFT",
         "verifyAddress" : "Adresin, alıcıyla paylaşılan adres ile eşleştiğini doğrulayın.",
         "domainService" : {
           "resolve" : "Bu, aşağıdaki adrese bağlı olan geçerli bir ENS'dir:",
@@ -2366,8 +2322,7 @@
         "banner" : "Maksimum harcanabilir tutar",
         "fees" : "Ücretler hakkında daha fazla bilgi edinin",
         "standard" : "Standart",
-        "advanced" : "Gelişmiş",
-        "nftQuantity" : "Miktar"
+        "advanced" : "Gelişmiş"
       },
       "summary" : {
         "title" : "Özet"
@@ -2385,6 +2340,10 @@
         "title" : "Cihaz"
       },
       "details" : {
+        "solanaRawTransaction" : {
+          "title" : "Kör imzalama gerekir",
+          "description" : "İşlem ayrıntılarını Ledger cihazınızda doğrulayamazsınız. İşlemi imzalarsanız tüm varlıklarınızı kaybedebilirsiniz. Ancak ve ancak web sitesine güveniyorsanız imzalayın."
+        },
         "utxoLag" : "Hesapta yüksek miktarda coin bulunduğu için bu işlemin doğrulanması ve imzalanması uzun sürebilir.",
         "subaccountsWarning" : "Bu hesabın token'larını göndermek için bu hesabı {{ currency }} ile doldurmanız gerekir",
         "from" : "Gönderici",
@@ -2407,8 +2366,7 @@
         "nextBlock" : "Sonraki blok",
         "suggested" : "Önerilen",
         "unitVByte" : "{{unit}}/vbyte",
-        "nft" : "NFT",
-        "nftQuantity" : "Miktar",
+        "unitPerByte" : "{{unit}}/bayt",
         "splExtensionsWarning" : "Token Uzantıları (Token Extensions) olarak da bilinen Token-2022 programı kapsamındaki bir token’la etkileşime geçiyorsunuz. Bu token’ın belirli riskleri bulunmaktadır. Daha fazla bilgi edinmek için <0>buraya tıklayın</0>."
       },
       "verification" : {
@@ -3678,6 +3636,7 @@
     "delegation" : {
       "totalStake" : "Toplam stake",
       "commission" : "Komisyon",
+      "netApy" : "Net APY",
       "delegate" : "Ekle",
       "listHeader" : "Yetki Devirleri",
       "availableBalance" : "Çekilebilir bakiye",
@@ -4251,6 +4210,106 @@
       }
     }
   },
+  "sui" : {
+    "account" : {
+      "stakedBalance" : "Yetkisi devredilen varlık",
+      "stakedBalanceTooltip" : "Doğrulayıcılarla stake edilmiş olan güncel miktar.",
+      "availableBalance" : "Çekilebilir bakiye",
+      "availableBalanceTooltip" : "Stake’i durdurulmuş ve çekilebilecek olan güncel miktar.",
+      "pendingBalance" : "Bekleyen bakiye",
+      "pendingBalanceTooltip" : "Stake’i durdurulmuş ve müsait olması beklenen güncel miktar.",
+      "storageUsageBalance" : "Minimum bakiye",
+      "storageUsageBalanceTooltip" : "Saklama ve işlemler için rezerv edilen miktar; bu, hesabınızın aktif kalması için hesabınızda bulunması gereken minimum bakiyedir.",
+      "subHeader" : {
+        "cardTitle" : "Figment desteğiyle",
+        "moreInfo" : "Daha fazla bilgi",
+        "drawerTitle" : "Figment desteğiyle",
+        "title" : "SUI token artık Ledger Live’da",
+        "description" : "Artık SUI token’larınızı yönetmeye başlayabilir ve Ledger Live ile güvenceye alabilirsiniz.",
+        "description2" : "SUI token, SUI zincirinin native token’ıdır ve ağ üzerinde işlem yapmak, stake etmek ve yakında çıkacak pek çok özellikten yararlanmak için kullanılır.",
+        "website" : "Figment desteğiyle"
+      }
+    },
+    "operationDetails" : {
+      "extra" : {
+        "stakedAmount" : "Yetkisi devredilen tutar"
+      }
+    },
+    "stake" : {
+      "emptyState" : {
+        "description" : "Varlıklarınızı stake ederek Sui ödülleri kazanabilirsiniz.",
+        "info" : "Staking Nasıl Çalışır?",
+        "earnRewards" : "Ödüller kazanın"
+      },
+      "table" : {
+        "header" : "Staking Pozisyonları",
+        "stake" : "Ekle",
+        "staked" : "Yetki devredildi",
+        "pending" : "Bırakılmayı bekleyen",
+        "available" : "Çekilebilir bakiye"
+      },
+      "unstake" : "Yetki devrini sonlandır",
+      "activeTooltip" : "Yetkisi devredilen tutar ödül üretiyor",
+      "inactiveTooltip" : "Yetkisi devredilen tutar ödül üretmiyor",
+      "commission" : "Komisyon",
+      "totalStake" : "Toplam Yetki Devri",
+      "minSafeWarning" : "Yetersiz fon miktarı",
+      "flow" : {
+        "title" : "Yetki Devredin",
+        "steps" : {
+          "amount" : {
+            "title" : "Miktar"
+          },
+          "validator" : {
+            "title" : "Doğrulayıcılar",
+            "ledgerByChorusOneTC" : "Ledger by Chorus One Hüküm ve Koşulları",
+            "ledgerByFigmentTC" : "Ledger by Figment Hüküm ve Koşulları"
+          },
+          "connectDevice" : {
+            "title" : "Cihaz"
+          },
+          "confirmation" : {
+            "title" : "Onaylayın",
+            "success" : {
+              "title" : "Varlıklarınızla yetki devretmeyi tamamladınız",
+              "text" : "İşlem blok zinciri tarafından onaylandığında hesap bakiyeniz güncellenecek",
+              "cta" : "Ayrıntıları gör"
+            },
+            "broadcastError" : "İşleminiz başarısız olmuş olabilir. Lütfen biraz bekleyin ve tekrar denemeden önce işlem geçmişini kontrol edin."
+          }
+        }
+      }
+    },
+    "unstake" : {
+      "disabledTooltip" : "Stake edilen varlık miktarı stake durdurma için yeterli değil",
+      "flow" : {
+        "title" : "Varlıkların Yetki Devrini İptal Edin",
+        "steps" : {
+          "amount" : {
+            "title" : "Miktar",
+            "subtitle" : "Yetki iptali işleminin sonuçlanması <0>52 ila 65 saat</0> sürer.",
+            "warning" : "Yetki devri sonlandırıldığında bakiyeniz ve biriken ödüller anında hesabınıza geçecektir",
+            "fields" : {
+              "validator" : "Doğrulayıcı",
+              "amount" : "Yetki devri sonlandırılan tutar"
+            }
+          },
+          "connectDevice" : {
+            "title" : "Cihaz"
+          },
+          "confirmation" : {
+            "title" : "Onaylayın",
+            "success" : {
+              "title" : "Varlıklarınızdaki yetki devrini başarıyla iptal ettiniz.",
+              "description" : "<0>{{validator}}</0> hesabına devredilen <0>{{amount}}</0> tutarındaki yetkilendirme iptal edildi",
+              "cta" : "Ayrıntıları gör"
+            },
+            "broadcastError" : "İşleminiz başarısız olmuş olabilir. Lütfen biraz bekleyin ve tekrar denemeden önce işlem geçmişini kontrol edin."
+          }
+        }
+      }
+    }
+  },
   "delegation" : {
     "title" : "Ödüller kazanın",
     "header" : "Yetki Devri",
@@ -4412,11 +4471,6 @@
       "debugAppsDesc" : "Hata ayıklama etiketli platform uygulamalarını görüntüleme ve açmaya izin verin.",
       "debugReactQuery" : "ReactQuery hata ayıklamasına izin ver",
       "debugReactQueryDesc" : "ReactQuery hata ayıklaması konsolunu görüntüleme ve açmaya izin ver",
-      "nfts" : {
-        "title" : "Gizli NFT Koleksiyonları",
-        "description" : "Gizli koleksiyonlar listesini sıfırlayın",
-        "reset" : "Sıfırla ({{count}})"
-      },
       "exchangeDeveloperMode" : {
         "title" : "Exchange Geliştirici Modu",
         "desc" : "Exchange sağlayıcısı bilgilerini ekleyin",
@@ -4456,101 +4510,39 @@
           }
         }
       },
-      "debugSimpleHash" : {
-        "testSimpleHash" : {
-          "title" : "SimpleHash Araçları",
-          "description" : "SimpleHash kullanan bazı faydalı araçlar sağlar",
-          "cta" : "Aç",
-          "tabs" : {
-            "spam" : "Spam İhbarı",
-            "refresh" : "Metaverileri Yenile",
-            "check" : "Spam Puanı"
-          }
+      "mockAccounts" : {
+        "title" : "Test Hesapları Oluşturun",
+        "description" : "Test etmek amacıyla test hesapları oluşturun. Bu araçlar, çeşitli para birimlerine ve yapılandırmalara sahip test hesapları oluşturmanıza olanak tanır.",
+        "customGenerate" : {
+          "title" : "Custom generation",
+          "desc" : "Select currencies and add tokens"
         },
-        "debugSpamNft" : {
-          "report" : "İhbar et",
-          "contractAddress" : "Sözleşme Adresi",
-          "contractAddressDesc" : "İhbar edilen NFT'ye veya sözleşmenin kendisine ait contract_address bilgisi",
-          "chainId" : "Zincir Kimliği",
-          "chainIdDesc" : "İhbar edilen NFT'ye veya sözleşmeye ait chain_id bilgisi (ör. ethereum)",
-          "collectionId" : "Koleksiyon Kimliği",
-          "collectionIdDesc" : "İhbar edilen NFT'nin SimpleHash koleksiyon kimliği",
-          "tokenId" : "Token Kimliği (Token ID)",
-          "tokenIdDesc" : "İhbar edilen NFT'ye ait token_id",
-          "eventType" : "Olay Türü",
-          "eventTypeDesc" : "Göndermek istediğiniz ihbarın türü",
-          "success" : "İhbar başarıyla gönderildi. Geçerlilik kazanması 5 ila 10 dakika sürebilir.",
-          "error" : "İhbar gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
-          "reportType" : {
-            "title" : "Neyi ihbar etmek istiyorsunuz?",
-            "desc" : "Göndermek istediğiniz ihbarın türünü seçin",
-            "individual" : "Tek bir NFT için spam ihbarı",
-            "contract" : "Bir sözleşme için spam ihbarı",
-            "collection" : "Bir koleksiyon için spam ihbarı"
-          }
+        "quickGenerate" : {
+          "title" : "Quick generation",
+          "desc" : "Rastgele para birimlerinin yer aldığı rastgele 10 hesap oluşturun"
         },
-        "debugRefreshMetadata" : {
-          "refresh" : "Yenile",
-          "contractAddress" : "Sözleşme Adresi",
-          "contractAddressDesc" : "Yenilenen NFT'ye ait contract_address bilgisi veya sözleşmenin kendisi",
-          "chainId" : "Zincir Kimliği",
-          "chainIdDesc" : "Yenilenen NFT'ye veya sözleşmeye ait chain_id bilgisi (ör. ethereum)",
-          "tokenId" : "Token Kimliği (Token ID)",
-          "tokenIdDesc" : "Yenilenen NFT'ye ait token_id",
-          "success" : "Yenileme başarıyla gönderildi. Geçerlilik kazanması 5 ila 10 dakika sürebilir.",
-          "error" : "Yenileme gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
-          "refreshType" : {
-            "desc" : "Neyi yenilemek istiyorsunuz?",
-            "nft" : "Tek bir NFT için metaverileri yenilemek",
-            "contract" : "Bir sözleşme için metaverileri yenilemek"
-          }
+        "currencySelector" : {
+          "placeholder" : "Para birimleri seçin...",
+          "searchPlaceholder" : "Ara",
+          "noCurrenciesFound" : "Hiçbir para birimi bulunamadı",
+          "noCurrenciesAvailable" : "Kullanılabilir para birimi yok",
+          "selectedCount" : "{{count}} para birimi seçildi",
+          "selectedCount_other" : "{{count}} para birimi seçildi"
         },
-        "debugCheckSpamScore" : {
-          "check" : "Şunu kontrol edin:",
-          "contractAddress" : "Sözleşme Adresi",
-          "contractAddressDesc" : "Kontrol edilen NFT'ye ait contract_address bilgisi veya sözleşmenin kendisi",
-          "chainId" : "Zincir Kimliği",
-          "chainIdDesc" : "Kontrol edilen NFT'ye veya sözleşmeye ait chain_id bilgisi (ör. ethereum)",
-          "tokenId" : "Token Kimliği (Token ID)",
-          "tokenIdDesc" : "Kontrol edilen NFT'ye ait token_id",
-          "result" : {
-            "title" : "Bu sözleşmenin spam puanı: {{score}}.",
-            "desc" : "Puan, 0 ile 100 arasında sayısal bir değer olup 0 spam değil, 100 ise muhtemelen spam addedildiği anlamına gelir.\n Yanıtın null olması, koleksiyonun puanlandırılması için yeterli bilgi bulunmadığı veya koleksiyonun henüz değerlendirilmediği anlamına gelir"
-          },
-          "error" : "Talep gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
-          "refreshType" : {
-            "desc" : "Neyi kontrol etmek istiyorsunuz?",
-            "nft" : "Tek bir NFT",
-            "contract" : "Bir sözleşme"
-          }
+        "tokenIds" : {
+          "label" : "Token Kimlikleri (isteğe bağlı)",
+          "placeholder" : "token1, token2, token3"
         },
-        "back" : "Geri dön"
-      },
-      "debugNfts" : {
-        "title" : "NFT Araçları",
-        "description" : "Ledger Live’daki NFT’leri yönetmek için bazı faydalı araçlar sağlar",
-        "cta" : "Aç",
-        "tabs" : {
-          "config" : "Yapılandırma",
-          "generatorAndDestructor" : "Oluşturucular ve Yok Ediciler"
+        "buttons" : {
+          "generateAccounts" : "{{count}} Hesap Oluştur",
+          "generateAccounts_other" : "{{count}} Hesap Oluştur",
+          "generateAccountsQuick" : "{{count}} Hesap Oluştur"
         },
-        "configuration" : {
-          "supported" : "Desteklenen NFT Zinciri",
-          "supported_other" : "Desteklenen NFT Zincirleri",
-          "nms" : {
-            "title" : "NFT Meta Veri Hizmeti (NMS)",
-            "env" : "Ortam: {{env}}"
-          }
-        },
-        "generatorAndDestructor" : {
-          "genAcc" : "Hesaplar Oluşturun",
-          "genAccDesc" : "NFT'ler ile hesaplar oluşturun",
-          "cta" : "Oluştur",
-          "deleteAcc" : "Hesapları Silin",
-          "deleteAccDesc" : "Mağazadaki tüm hesapları silin",
-          "delete" : "Sil"
-        },
-        "back" : "Geri dön"
+        "alerts" : {
+          "selectCurrency" : "Lütfen en az bir para birimi seçin",
+          "confirmErase" : "Existing accounts will be erased. Continue?",
+          "generateError" : "Test hesapları oluşturulamadı. Lütfen tekrar deneyin."
+        }
       },
       "debugWalletSync" : {
         "title" : "Ledger Sync Hata Ayıklayıcısı",
@@ -4580,6 +4572,10 @@
           }
         }
       },
+      "modularDrawerDevTool" : {
+        "title" : "Modular Drawer Geliştirici Aracı",
+        "description" : "Modular Drawer’ı kolayca test etmenize olanak tanır"
+      },
       "experimentalApps" : "Deneysel uygulamalara izin ver",
       "experimentalAppsDesc" : "Deneysel etiketli platform uygulamalarını görüntüleme ve açmaya izin verin.",
       "mockAppUpdate" : "Test uygulama güncellemesi",
@@ -4590,6 +4586,8 @@
       "customCALRefDesc" : "Tüm CAL talepleri için kullanılacak özel bir dal, commit işlemi (Github) veya etiket belirtin",
       "enablePlatformDevTools" : "Platform geliştirme araçlarını etkinleştir",
       "enablePlatformDevToolsDesc" : "Platform uygulama geliştirme araçları penceresini açmayı etkinleştirin",
+      "customLockScreenTester" : "Özel kilitli ekran testçisi",
+      "customLockScreenTesterDesc" : "Desteklenen cihazlar için özel kilitli ekranı test edin",
       "customLockScreen" : "Özel kilitli ekran varlıkları",
       "customLockScreenDesc" : "Özel kilitli ekran grafik varlıklarında hata ayıklayın",
       "customLockScreenCTA" : "Başlat",
@@ -4627,8 +4625,6 @@
       "runLocalAppOpenButton" : "Aç",
       "enableLearnStagingUrl" : "Öğren sayfası staging URL'si",
       "enableLearnStagingUrlDesc" : "Öğren sayfası için staging URL'sini etkinleştirin.",
-      "enableStagingNftMetadataService" : "NFT metaverileri test ortamı hizmeti",
-      "enableStagingNftMetadataServiceDesc" : "NFT metaverileri test ortamı hizmetini etkinleştirin ve NFT önbelleğini sıfırlayın",
       "openOnboardingAppInstallDebug" : "İlk uygulama kurulumu hata ayıklama ekranını açın",
       "openOnboardingAppInstallDebugDesc" : "İlk uygulama kurulumunu senkronize etme adımındaki bileşenlerin yer aldığı bir ekranı açın"
     },
@@ -4729,6 +4725,10 @@
           "title" : "Europa İlk Kurulum Sonrası testi",
           "description" : "Europa cihazınızda ilk kurulum sonrası tüm özellikleri test edin"
         },
+        "testApexPostonboarding" : {
+          "title" : "Apex İlk Kurulum Sonrası Testi",
+          "description" : "Apex cihazınızda ilk kurulum sonrası tüm özellikleri test edin"
+        },
         "1559DeactivateGate" : {
           "title" : "EIP1559 minimum öncelik ücreti kapısını devre dışı bırak",
           "description" : "Bu, bir işlemin herhangi bir minimum öncelik ücreti beklenmeden gönderilmesini sağlar. İşlemin mempool'da sonsuza dek takılı kalmasına da yol açabilir."
@@ -4805,18 +4805,6 @@
         "desc" : "Token'ları gizlemek için ana hesaba gidin, token ismine sağ tıklayın ve 'Token'ı gizle' seçeneğini seçin.",
         "count" : "1 token",
         "count_other" : "{{count}} token"
-      },
-      "hiddenNftCollections" : {
-        "title" : "Gizli NFT Koleksiyonları",
-        "desc" : "Koleksiyon adına sağ tıklayıp 'NFT Koleksiyonunu Gizle'yi seçerek NFT Koleksiyonlarını gizleyebilirsiniz.",
-        "count" : "1 koleksiyon",
-        "count_other" : "{{count}} koleksiyon"
-      },
-      "hiddenOrdinalsAsset" : {
-        "title" : "Gizli Inscription'lar",
-        "desc" : "Inscription'a sağ tıklayıp \"Inscription'ı Gizle\" ögesini seçerek Inscription'ı gizleyebilirsiniz.",
-        "count" : "1 inscription",
-        "count_other" : "{{count}} inscription"
       },
       "fullNode" : {
         "title" : "Bitcoin tam düğümü bağla",
@@ -5703,6 +5691,10 @@
       "commentPlaceholder" : "Tercihe bağlı",
       "comment" : "Yorum"
     },
+    "canton" : {
+      "commentPlaceholder" : "Tercihe bağlı",
+      "comment" : "Yorum"
+    },
     "stellar" : {
       "memo" : "Memo",
       "memoType" : {
@@ -5899,10 +5891,6 @@
       "description" : "Lütfen tekrar deneyin."
     },
     "DisconnectedDevice" : {
-      "title" : "Cihaz bağlantısı kesildi",
-      "description" : "Ledger Live, cihazınıza bağlanamadı. Lütfen tekrar deneyin."
-    },
-    "DisconnectedDeviceDuringOperation" : {
       "title" : "Cihaz bağlantısı kesildi",
       "description" : "Ledger Live, cihazınıza bağlanamadı. Lütfen tekrar deneyin."
     },
@@ -6154,6 +6142,10 @@
       "title" : "Bir hata oluştu",
       "description" : "İşlem başarısız. Lütfen tekrar deneyin."
     },
+    "TransactionCannotBeCreated" : {
+      "title" : "İşleme Hatası",
+      "description" : "Changelly bu işlemi gerçekleştiremiyor. Hata kodu 8HBB{{errorCode}}"
+    },
     "TimeoutError" : {
       "title" : "Üzgünüz, sunucunun yanıt vermesi çok uzun sürdü",
       "description" : "Lütfen tekrar deneyin."
@@ -6288,10 +6280,6 @@
       "title" : "Otomatik doğrulama mevcut değil; adresi dikkatlice doğrulayın",
       "description" : null
     },
-    "EthAppNftNotSupported" : {
-      "title" : "Bu işlem bu cihaz için mevcut değil",
-      "description" : "NFT Gönder özelliği yalnızca Nano X ve Nano S+ ile kullanılabilir. Nano S ile nasıl NFT gönderebileceğinizi öğrenmek için lütfen müşteri destek platformumuzu ziyaret edin."
-    },
     "TransactionHasBeenValidatedError" : {
       "title" : "Hızlandırılamaz ve iptal edilemez",
       "description" : "Bu işlem zaten doğrulanmış"
@@ -6301,6 +6289,9 @@
       "description" : "Lütfen pencereyi kapatıp daha sonra tekrar deneyin"
     },
     "TonCommentInvalid" : {
+      "title" : "Yorum, özel karakterler içermemeli ve 120 karakteri aşmamalıdır"
+    },
+    "CantonCommentInvalid" : {
       "title" : "Yorum, özel karakterler içermemeli ve 120 karakteri aşmamalıdır"
     },
     "CantScanQRCode" : {
@@ -6509,9 +6500,6 @@
     "PolkadotAllFundsWarning" : {
       "title" : "Gelecekteki işlem ücretleri için yeterli bakiyenin kaldığından emin olun"
     },
-    "PolkadotDoMaxSendInstead" : {
-      "title" : "Bakiye {{minimumBalance}} altında olamaz Maksimum miktarı bir boş hesaba gönder."
-    },
     "PolkadotBondMinimumAmount" : {
       "title" : "Bağlanılacak tutar en az {{minimumBondAmount}} olmalıdır."
     },
@@ -6580,9 +6568,6 @@
       "title" : "Bu token transfer edilemez",
       "description" : "Bu token'lar \"soul-bound\" olup transfer edilemez"
     },
-    "NotEnoughNftOwned" : {
-      "title" : "Mevcut token sayısını aştınız"
-    },
     "CardanoMinAmountError" : {
       "title" : "En az {{amount}} ADA gönderilebilir"
     },
@@ -6648,6 +6633,18 @@
     "HederaAddAccountError" : {
       "title" : "Hesabınız eklenemedi. Lütfen tekrar deneyin."
     },
+    "HederaInsufficientFundsForAssociation" : {
+      "title" : "Yetersiz bakiye",
+      "description" : "Token ilişkilendirme ücreti için yeterli HBAR yok. En az ${{requiredWorthInUSD}} değerinde HBAR gerekir."
+    },
+    "HederaRecipientTokenAssociationRequired" : {
+      "title" : "Token ilişkilendirme gerekli",
+      "description" : "Göndermeye çalıştığınız token, hedef hesapla ilişkilendirilmemiş. Token’ın alınabilmesi için alıcı hesapla ilişkilendirilmesi gerekir."
+    },
+    "HederaRecipientTokenAssociationUnverified" : {
+      "title" : "Token ilişkilendirmesi doğrulanamıyor",
+      "description" : "Hedef hesabın bu token’ı alıp alamayacağını doğrulayamadık. Adres geçersiz olabilir veya bir ağ ya da hizmet sorunu yaşanıyor olabilir."
+    },
     "ImageIncorrectFileTypeError" : {
       "title" : "Dosyadan görüntü yüklenemedi.",
       "description" : "Lütfen bir görüntü seçerek tekrar deneyin."
@@ -6655,10 +6652,6 @@
     "ImageLoadFromFileError" : {
       "title" : "Dosyadan görüntü yüklenemedi",
       "description" : "Lütfen başka bir görüntüyle tekrar deneyin"
-    },
-    "ImageLoadFromNftError" : {
-      "title" : "NFT'den görüntü yüklenemedi",
-      "description" : "Lütfen başka bir NFT ile tekrar deneyin"
     },
     "ImageDownloadError" : {
       "title" : "Görüntü indirilemedi",
@@ -6685,11 +6678,11 @@
       "description" : "Lütfen başka bir görüntüyle tekrar deneyin"
     },
     "ImageCommitRefusedOnDevice" : {
-      "title" : "{{productName}} cihazında kilitli ekran resminin\nkurulumu iptal edildi",
+      "title" : "{{productName}} cihazında kilitli ekran resmi kaldırıldı",
       "description" : "Bunu yanlışlıkla yaptıysanız şimdi tekrar deneyin."
     },
     "ImageLoadRefusedOnDevice" : {
-      "title" : "{{productName}} cihazında kilitli ekran resminin\nkurulumu iptal edildi",
+      "title" : "Şu cihazdaki kilitli ekran resmi iptal edildi:\n{{productName}}",
       "description" : "Bunu yanlışlıkla yaptıysanız şimdi tekrar deneyin."
     },
     "ImageDoesNotExistOnDevice" : {
@@ -6725,7 +6718,7 @@
       "description" : "Cihazınızın kilidini açın ve tekrar deneyin.",
       "descriptionWithProductName" : "{{ productName }} cihazınızın kilidini açın ve tekrar deneyin."
     },
-    "DeviceNotOnboardedError" : {
+    "DeviceNotOnboardedDAError" : {
       "title" : "Ledger cihazınızın kurulumu yapılmadı",
       "description" : "Kullanmaya başlamak için cihazınızın kurulumunu yapın. Kurulum sürecinde size yardımcı olacağız.",
       "goToOnboardingButton" : "Ledger'ımı kur",
@@ -6782,6 +6775,18 @@
       "technicalErrorTitle" : "Teknik hata: ",
       "saveLogs" : "Logları kaydedin"
     },
+    "OneSuiMinForStake" : {
+      "title" : "Minimum tutar 1 SUI’dir"
+    },
+    "OneSuiMinForUnstake" : {
+      "title" : "Minimum tutar 1 SUI’dir"
+    },
+    "OneSuiMinForUnstakeToBeLeft" : {
+      "title" : "En az 1 SUI stake'te bırakılmalıdır"
+    },
+    "SomeSuiForUnstake" : {
+      "title" : "İleride gerekecek ağ ücretlerini karşılamak ve stake’inizin yetki devrini sonlandırmak üzere cüzdanınızda en az 0,1 SUI bulunduğundan lütfen emin olun"
+    },
     "NotEnoughBalanceForUnstaking" : {
       "message" : "Kullanılabilir (stake edilmemiş) bakiyeniz şu anda {{currentBalance}} ve {{assetName}} varlığınızın stake'ini durdurmak için gereken ağ ücretini karşılamıyor.",
       "oneCta" : "Hesabınıza {{assetName}} <cta1>{{cta1Label}}</cta1>",
@@ -6805,6 +6810,118 @@
     "AddressesSanctionedError" : {
       "title" : "Sizi güvende tutuyoruz",
       "description" : "Bu işlem, yaptırım uygulanan bir cüzdan adresi içerdiğinden işleme koyulamıyor.\n-- {{addresses}}"
+    },
+    "DisconnectedDeviceDuringOperation" : {
+      "title" : "Cihaz bağlantısı kesildi",
+      "description" : "Ledger Live, cihazınıza bağlanamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "DeviceDisconnectedWhileSendingError" : {
+      "title" : "Cihaz bağlantısı kesildi",
+      "description" : "Ledger Live, cihazınıza bağlanamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "DisconnectError" : {
+      "title" : "Cihaz bağlantısı kesildi",
+      "description" : "Ledger Live, cihazınıza bağlanamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "DeviceSessionNotFound" : {
+      "title" : "Cihaz bağlantısı kesildi",
+      "description" : "Ledger Live, cihazınıza bağlanamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "DeviceDisconnectedBeforeSendingApdu" : {
+      "title" : "Cihaz bağlantısı kesildi",
+      "description" : "Ledger Live, cihazınıza bağlanamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "TransportNotSupportedError" : {
+      "title" : "Bağlantı yöntemi hatası",
+      "description" : "Kullanılan cihaz bağlantı yöntemiyle ilgili bir sorun oluştu. Lütfen farklı bir bağlantı yöntemi deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "TransportAlreadyExistsError" : {
+      "title" : "Bağlantı yöntemi hatası",
+      "description" : "Kullanılan cihaz bağlantı yöntemiyle ilgili bir sorun oluştu. Lütfen farklı bir bağlantı yöntemi deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "NoTransportProvidedError" : {
+      "title" : "Bağlantı yöntemi hatası",
+      "description" : "Kullanılan cihaz bağlantı yöntemiyle ilgili bir sorun oluştu. Lütfen farklı bir bağlantı yöntemi deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "NoAccessibleDeviceError" : {
+      "title" : "Bağlantı yöntemi hatası",
+      "description" : "Kullanılan cihaz bağlantı yöntemiyle ilgili bir sorun oluştu. Lütfen farklı bir bağlantı yöntemi deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "ConnectionOpeningError" : {
+      "title" : "Bağlantı yöntemi hatası",
+      "description" : "Kullanılan cihaz bağlantı yöntemiyle ilgili bir sorun oluştu. Lütfen farklı bir bağlantı yöntemi deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "DeviceNotInitializedError" : {
+      "title" : "Cihazın ilk kurulumu yapılmamış",
+      "description" : "Cihazınız kullanıma hazır değil. Lütfen kurulum talimatlarını izleyin ve kurulum yapıldıktan sonra tekrar deneyin."
+    },
+    "DeviceNotOnboardedError" : {
+      "title" : "Cihazın ilk kurulumu yapılmamış",
+      "description" : "Cihazınız kullanıma hazır değil. Lütfen kurulum talimatlarını izleyin ve kurulum yapıldıktan sonra tekrar deneyin."
+    },
+    "DeviceLockedError" : {
+      "title" : "Cihaz kilitli",
+      "description" : "Cihazınız kilitlenmiş. Lütfen kilidini açıp tekrar deneyin."
+    },
+    "OutOfMemoryDAError" : {
+      "title" : "Bellek yetersiz",
+      "description" : "Cihazınızda yeterli bellek yok. Lütfen uygulamaları kaldırıp tekrar deneyin."
+    },
+    "UnsupportedFirmwareDAError" : {
+      "title" : "İşletim sistemi desteklenmiyor",
+      "description" : "Cihazınızın işletim sistemi desteklenmiyor. Lütfen Ledger Live üzerinden güncelleyin veya zorluk yaşarsanız yardım almak için Ledger Destek ile iletişime geçin."
+    },
+    "InvalidBatteryStatusTypeError" : {
+      "title" : "Pil hatası",
+      "description" : "Bir hata oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "InvalidBatteryDataError" : {
+      "title" : "Pil hatası",
+      "description" : "Pil durumu hatası. Lütfen Ledger Destek ile iletişime geçin."
+    },
+    "InvalidStatusWordError" : {
+      "title" : "Cihaz bağlantı hatası",
+      "description" : "Bir hata oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "InvalidResponseFormatError" : {
+      "title" : "Cihaz bağlantı hatası",
+      "description" : "Bir hata oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "UnknownDAError" : {
+      "title" : "Cihaz bağlantı hatası",
+      "description" : "Bir hata oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "DeviceNotRecognizedError" : {
+      "title" : "Cihaz tanınamadı",
+      "description" : "Ledger Live, cihazınızı tanıyamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "DeviceAlreadyDiscoveredError" : {
+      "title" : "Cihaz tanınamadı",
+      "description" : "Ledger Live, cihazınızı tanıyamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "UnknownDeviceError" : {
+      "title" : "Cihaz tanınamadı",
+      "description" : "Ledger Live, cihazınızı tanıyamadı. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "ReceiverApduError" : {
+      "title" : "İletişim hatası",
+      "description" : "Cihazınızla bilgi alışverişi yapılırken bir sorun oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "FramerApduError" : {
+      "title" : "İletişim hatası",
+      "description" : "Cihazınızla bilgi alışverişi yapılırken bir sorun oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "SendApduTimeoutError" : {
+      "title" : "İletişim hatası",
+      "description" : "Cihazınızla bilgi alışverişi yapılırken bir sorun oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "AlreadySendingApduError" : {
+      "title" : "İletişim hatası",
+      "description" : "Cihazınızla bilgi alışverişi yapılırken bir sorun oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
+    },
+    "UnknownDeviceExchangeError" : {
+      "title" : "İletişim hatası",
+      "description" : "Cihazınızla bilgi alışverişi yapılırken bir sorun oluştu. Lütfen tekrar deneyin veya sorun sürerse Ledger Destek ile iletişime geçin."
     }
   },
   "cryptoOrg" : {
@@ -6821,10 +6938,54 @@
     "currentAddress" : {
       "messageIfVirtual" : "{{name}} adresiniz Ledger cihazınızda onaylanamıyor. Kullandığınız takdirde sorumluluk size aittir."
     },
+    "receive" : {
+      "warnings" : {
+        "associationPrerequisite" : {
+          "text" : "HTS token’larını alabilmesi için hesabınızın ilişkilendirilmesi gerekiyor. Almak istediğiniz HTS token’ıyla hesabınızı henüz ilişkilendirmediyseniz, token ilişkilendirme akışını başlatmak için <0>buraya tıklayın</0>.",
+          "learnMore" : "Daha fazla bilgi"
+        },
+        "associationRequired" : {
+          "text" : "Devam tuşuna tıkladığınızda seçili token’ı Hedera hesabınızla ilişkilendireceksiniz.",
+          "learnMore" : "Daha fazla bilgi"
+        }
+      }
+    },
+    "receiveWithAssociation" : {
+      "steps" : {
+        "associationConfirmation" : {
+          "breadcrumbTitle" : "İlişkilendirin",
+          "title" : "Token'ı ilişkilendirin",
+          "pending" : {
+            "title" : "İşlem yayınlanıyor..."
+          },
+          "success" : {
+            "title" : "İşlem gönderildi",
+            "description" : "Token İlişkilendirme işlemi onaylandığında bu token’ı alabileceksiniz",
+            "cta" : "Ayrıntıları gör"
+          },
+          "broadcastError" : "İşleminiz başarısız olmuş olabilir. Lütfen biraz bekleyin ve tekrar denemeden önce işlem geçmişini kontrol edin."
+        }
+      }
+    },
     "send" : {
       "memo" : {
         "label" : "Memo (isteğe bağlı)",
         "characterCount" : "{{memoLength}} / {{memoMaxLength}}"
+      },
+      "warnings" : {
+        "missingAssociation" : {
+          "learnMore" : "Daha fazla bilgi"
+        },
+        "unverifiedAssociation" : {
+          "learnMore" : "Daha fazla bilgi"
+        }
+      }
+    },
+    "operationDetails" : {
+      "postAccountSection" : "İlişkilendirilen token",
+      "postAlert" : {
+        "text" : "Bu işlem onaylandığında token’ınızı alabileceksiniz. Akışı başlatmak için <0>buraya tıklayın</0>.",
+        "learnMore" : "Daha fazla bilgi"
       }
     }
   },
@@ -6846,15 +7007,9 @@
     "steps" : {
       "choose" : {
         "stepLabel" : "Resim seçin",
-        "description" : "Bir görüntü seçip ayarlayın (...)",
-        "pickFromNftGallery" : "NFT galerimden seç",
-        "myNfts" : "NFT'lerim",
+        "description" : "İstediğiniz bir dijital sanat eserini veya fotoğrafı seçin.\n{{productName}} cihazınızı özelleştirin.\nCihazınız sizi yansıtsın.",
         "upload" : "Bilgisayardan yükle",
-        "chooseNft" : "Bir NFT seçin",
-        "remove" : "Mevcut resmi kaldır",
-        "selectNft" : "NFT'yi seç",
-        "nftEmptyStateTitle" : "Gösterilecek NFT yok",
-        "nftEmptyStateDescription" : "Öncelikle cüzdanınıza NFT ekleyin."
+        "remove" : "Mevcut resmi kaldır"
       },
       "adjust" : {
         "stepLabel" : "Kırpın",
@@ -6929,9 +7084,9 @@
   "webview" : {
     "networkError" : {
       "title" : "Ağ Hatası",
-      "subtitle" : "Bir hata oluştu. Lütfen tekrar deneyin. Sorun devam ederse log'unuzu kaydedin ve Ledger destek ekibiyle iletişime geçin.",
+      "subtitle" : "Bir hata oluştu. Lütfen tekrar deneyin. Sorun sürerse log’larınızı kaydedin ve Ledger destek ekibiyle iletişime geçin.",
       "contactSupport" : "Ledger Destek ile iletişime geçin",
-      "saveLog" : "Log'u kaydet"
+      "saveLog" : "Log'ları kaydedin"
     },
     "noAccounts" : {
       "title" : "Bu uygulamaya erişmek için bir hesabınızın olması gerekiyor.",
@@ -7166,95 +7321,6 @@
       "description" : "Ledger cihazınızın Güvenilir Ekranında gösterilen talimatları izleyin."
     }
   },
-  "ordinals" : {
-    "inscriptions" : {
-      "seeMore" : "Daha fazla inscription görün",
-      "empty" : "Inscription eklemek için onu Bitcoin adresinize göndermeniz yeterlidir.",
-      "receive" : "Inscription Alın",
-      "hide" : "Inscription'ı Gizle",
-      "modal" : {
-        "title" : "Inscription'ı Gizle",
-        "desc" : "Bu eylem <0>{{inscriptionName}}</0> inscription'ını hesabınızda gizler. Dilediğiniz zaman ayarlardan onu tekrar görünür hâle getirebilirsiniz."
-      },
-      "discoveryDrawer" : {
-        "title" : "Ordinal'leri Keşfedin",
-        "description" : "Değerli nadir sat'lara ve inscription'lara sahip olabileceğinizi biliyor muydunuz?",
-        "learnMore" : "Daha fazla bilgi",
-        "protectTitle" : "Ordinal varlıklarınızı koruyun",
-        "protectDescription" : "Ordinal varlıklarınızı işlemlerinizden hariç tutun."
-      },
-      "detailsDrawer" : {
-        "description" : "Açıklama",
-        "collectionName" : "Koleksiyon Adı",
-        "inscriptionId" : "Inscription Kimliği",
-        "inscriptionNumber" : "Inscription Numarası",
-        "mintedTo" : "Mint'lenme Hedefi",
-        "genesisTx" : "Genesis İşlemi",
-        "blockNumber" : "Blok Numarası",
-        "contentType" : "İçerik Türü",
-        "createdDate" : "Oluşturulma tarihi",
-        "satribute" : "Sat Nadirliği",
-        "satNumber" : "Sat Numarası",
-        "satName" : "Sat Adı",
-        "location" : "Konum",
-        "outputValue" : "Çıktı değeri",
-        "storedOnChain" : "On-Chain Saklanıyor",
-        "hide" : "Gizle"
-      }
-    },
-    "rareSats" : {
-      "empty" : "Nadir Sat eklemek için onu Bitcoin adresinize göndermeniz yeterlidir.",
-      "receive" : "Nadir Sat Alın",
-      "title" : "Nadir Sat'lar",
-      "table" : {
-        "type" : "Sat Türü / Miktarı",
-        "year" : "Yıl"
-      },
-      "rareSat" : {
-        "description" : {
-          "alpha" : "İlk satoshi olan Alpha ile her bitcoin'in doğuşuna adım atın. Bu etiket, bir bitcoin biriminin doğuşunu temsil eder.",
-          "black_epic" : "Yaklaşık olarak dört yılda bir gerçekleşen ve Bitcoin madencilik ödülünün yarıya düşürüldüğü her yarılanma etkinliğindeki en son satoshi.",
-          "black_legendary" : "Black Legendary için Açıklama Yok",
-          "black_mythic" : "Black Mythic için Açıklama Yok",
-          "black_rare" : "Her madencilik zorluğunu düzenleme döneminin sonundaki en son satoshi'yi ifade eder.",
-          "black_uncommon" : "Yaklaşık olarak dört yılda bir gerçekleşen ve Bitcoin madencilik ödülünün yarıya düşürüldüğü her yarılanma etkinliğindeki en son satoshi.",
-          "block_9" : "9. Blok, Bitcoin'in geçmişinde özel bir yere sahiptir. İlk oluşturulan bloklardan biri olan bu blokta yer alan satoshi'ler, dolaşımdaki en eski sat'lardan bazılarıdır. Bu sat'ların, Bitcoin'in piyasaya sürülmesinden sonraki başlangıç dönemi ile somut bir bağlantısı vardır.",
-          "block_9_450x" : "9. Blokun ilk bitcoin'indeki sat'ların vurgulandığı Blok 9 450x ile geçmişe yolculuk edin. Bu etiket, Bitcoin'in geçmişindeki büyüleyici bir bölümü açığa çıkarmaktadır.",
-          "block_78" : "78. Blok, Bitcoin'in tarihinde çok önemli bir yere sahiptir. Hal Finney tarafından oluşturulan bu blok, esrarengiz Satoshi Nakamoto dışındaki bir kişinin blok zincirinin büyümesine katkıda bulunduğu ilk bloktur.",
-          "block_286" : "Satoshi Nakamoto tarafından yapılan ikinci Bitcoin işlemindeki satoshi'leri temsil eden 286. Blokun önemini keşfedin. Bu sat'lar Bitcoin'in esrarengiz yaratıcısının ağırlığını taşımakta ve gizemli kökeninin hikâyesine katkıda bulunmaktadır.",
-          "block_666" : "666. Blok için Açıklama Yok",
-          "common" : "Common için Açıklama Yok",
-          "epic" : "Bitcoin ağında dört yılda bir madencilik ödüllerinin yarıya düşürüldüğü bir \"yarılanma\" etkinliği gerçekleşir. Her bir yarılanma epoch'undaki (devrindeki) ilk sat \"Epic\" olarak etiketlenir ve Bitcoin'in ekonomik modelinde önemli bir anı temsil eder.",
-          "first_tx" : "12 Ocak 2009'da Satoshi Nakamoto'nun bilgisayar bilimcisi Hal Finney'ye 10 Bitcoin göndermesiyle birlikte tarih yazılmıştır. Bu, gerçekleştirilen ilk Bitcoin işlemidir. Bu ikonik işlemden kaynaklanan sat'lar \"First Transaction\" (İlk İşlem) etiketini taşır ve Bitcoin'in eşler arası borsasının doğuşunu simgeler.",
-          "hitman" : "Hitman için Açıklama Yok",
-          "jpeg" : "JPEG'in geçmişine yolculuk edin, çünkü bu satoshi'ler 24 Şubat 2010'da bir resim karşılığında yapılan ilk Bitcoin takasıyla bağlantılı olabilir. Bir inovasyon hikâyesini anlatan bu etiket, Bitcoin'in ilk geleneksel olmayan işlem ve takas girişimlerini sergiler.",
-          "legacy" : "Legacy için Açıklama Yok",
-          "legendary" : "Legendary için Açıklama Yok",
-          "mythic" : "Mythic için Açıklama Yok",
-          "nakamoto" : "Bitcoin'in Satoshi Nakamoto takma adlı yaratıcısının gizemi henüz çözülmemiştir. Bizzat Nakamoto tarafından çıkarılan sat'lar bu etiketi taşımakta ve koleksiyoncular tarafından yoğun talep görmektedir.",
-          "omega" : "Son satoshi olan Omega ile her bitcoin'in şairane sonunu deneyimleyin. Bir Bitcoin birimindeki son satoshi olun.",
-          "paliblock" : "PaliBlock Palindrome için Açıklama Yok",
-          "palindrome" : "Numarası hem normal hem de tersten okunduğunda aynı olan sat'lar \"Palindrome\" olarak işaretlenir. Örneğin, 12321 veya 45654 numaralı bir sat gibi. Bu benzersiz sayısal özellikler, etiketli sat'lara bir nadirlik ve ilginçlik katmanı ekler.",
-          "palinception" : "Her bir satoshi'nin palindrome'ların bir palindrome'unu oluşturduğu büyüleyici tek tip iç içe geçmiş palindrome'lar dünyasına dalın. Çok detaylı bir şekilde yapılandırılmış bu sat'lar, birbirinin ayna görüntüsü olan rakamlardan oluşan büyüleyici bir doku oluşturur.",
-          "pizza" : "Bitcoin topluluğundaki en ikonik hikâyelerden biri de bir programcının 22 Mayıs 2010'da iki Papa John's pizzası için 10.000 Bitcoin ödemesidir. Genellikle Bitcoin'in değerindeki ani yükselişi anlatmak için bu olaydan bahsedilir. Bu efsanevi işlemdeki sat'lar \"Pizza\" etiketini taşır.",
-          "rare" : "Bitcoin ağı, kabaca her on dakikada bir blok eklenmesini sağlamak için madencilik zorluğunu düzenli aralıklarla ayarlar. Böyle bir ayarlama dönemindeki ilk sat \"Rare\" (Nadir) olarak işaretlenir. Bu, ağın güvenliğinin ve mutabakat mekanizmalarının sürekli gelişen doğasını yansıtır. ",
-          "uncommon" : "Bu etiket, her bloktaki ilk satoshi'ye verilir. Yeni bir blokun Bitcoin blok zincirine yaklaşık olarak 10 dakikada bir eklendiği dikkate alındığında, bu sat'lar bu zaman aralığının tam başlangıcını simgeler.",
-          "vintage" : "İlk 1.000 blok, Bitcoin'in şafağını temsil eder. Bu dönemde oluşturulan sat'lar \"Vintage\" (Bağ Bozumu) olarak anılır."
-        }
-      }
-    },
-    "coinControl" : {
-      "amountToSend" : "Gönderilecek tutar:",
-      "of" : "/",
-      "excludeAssets" : "Ordinal varlıklarını hariç tut",
-      "selectDesc" : "İşlem yaparken kullanmak istediğiniz UTXO'yu seçin. İşareti kaldırılan UTXO'lar kullanılmaz.",
-      "utxos" : "UTXO'lar",
-      "learnMore" : "Bu ayar hakkında daha fazla bilgi edinin",
-      "confirm" : "Onayla",
-      "address" : "Adres",
-      "transactionId" : "İşlem Kimliği (TxID)"
-    }
-  },
   "lnsUpsell" : {
     "opted_in" : {
       "title" : "Sınırlı bellek, sınırlı deneyim",
@@ -7279,6 +7345,15 @@
       "newAccount" : "Yeni hesap",
       "addAccountSelection" : "Fonların ekleneceği hesabı seçin",
       "addAccountSelectionPtxFlow" : "Hesap seçin"
+    },
+    "editAccountName" : {
+      "title" : "Hesap adını düzenleyin",
+      "input" : {
+        "name" : "İsim"
+      },
+      "cta" : {
+        "save" : "Kaydet"
+      }
     },
     "fundAccount" : {
       "receive" : "Al",
@@ -7307,7 +7382,7 @@
         "foundAccounts_other" : "{{count}} hesap bulundu",
         "scanning" : "Hesaplar taranıyor..."
       },
-      "title" : "Blok zincirindeki mevcut tüm hesaplar aranıyor..."
+      "title" : "Blok zinciri kontrol ediliyor..."
     },
     "connectYourDevice" : {
       "title" : "Cihazınızı bağlayın ve kilidini açın"
@@ -7327,6 +7402,11 @@
         "selectAccount" : "Devam",
         "close" : "Kapat"
       }
+    },
+    "genericError" : {
+      "title" : "Bir ağ hatası oluştu",
+      "description" : "Bir hata oluştu, lütfen tekrar deneyin veya şüpheniz varsa Ledger Destek ile iletişime geçin.",
+      "cta" : "Tekrar dene"
     }
   },
   "nftEntryPoint" : {
@@ -7338,7 +7418,7 @@
   },
   "geoBlocking" : {
     "title" : "Konum kullanılamıyor",
-    "description" : "Ledger cüzdan bu konumda kullanılamıyor.",
+    "description" : "Ledger Live bu konumda kullanılamıyor.",
     "learnMore" : "Daha fazla bilgi"
   },
   "versionBlocking" : {

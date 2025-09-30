@@ -1,15 +1,11 @@
 import { Image, NativeModules, Platform } from "react-native";
-import RNFetchBlob from "rn-fetch-blob";
 import * as ImagePicker from "react-native-image-picker";
 import {
-  ImageDownloadError,
   ImageLoadFromGalleryError,
   ImageSizeLoadingError,
   ImageTooLargeError,
 } from "@ledgerhq/live-common/customImage/errors";
-import { NFTMediaSize, NFTMetadata } from "@ledgerhq/types-live";
-import { ImageDimensions, ImageFileUri, ImageUrl } from "./types";
-import { getMetadataMediaTypes } from "../../logic/nft";
+import { ImageDimensions, ImageFileUri } from "./types";
 
 /**
  * Call this to prompt the user to pick an image from its phone.
@@ -32,18 +28,22 @@ export async function importImageFromPhoneGallery(): Promise<ImageFileUri | null
             mediaType: "photo",
             quality: 1,
             includeBase64: false,
-          }).then(res => {
-            if (res.errorCode)
-              throw new Error(
-                `ImagePicker.launchImageLibrary Error (error code: ${res.errorCode}): ${res.errorMessage}`,
-              );
-            const assets = res?.assets || [];
-            if (assets.length === 0 && !res.didCancel) throw new Error("Assets length is 0");
-            return {
-              cancelled: res.didCancel,
-              uri: assets[0]?.uri,
-            };
-          });
+          })
+            .then(res => {
+              if (res.errorCode)
+                throw new Error(
+                  `ImagePicker.launchImageLibrary Error (error code: ${res.errorCode}): ${res.errorMessage}`,
+                );
+              const assets = res?.assets || [];
+              if (assets.length === 0 && !res.didCancel) throw new Error("Assets length is 0");
+              return {
+                cancelled: res.didCancel,
+                uri: assets[0]?.uri,
+              };
+            })
+            .catch(err => {
+              throw err;
+            });
     const { uri, cancelled } = await pickImagePromise;
     if (cancelled) return null;
     if (uri) {
@@ -56,60 +56,6 @@ export async function importImageFromPhoneGallery(): Promise<ImageFileUri | null
     console.error(e);
     throw new ImageLoadFromGalleryError();
   }
-}
-
-export function extractImageUrlFromNftMetadata(nftMetadata?: NFTMetadata): string | null {
-  if (nftMetadata?.staxImage) {
-    return nftMetadata?.staxImage;
-  }
-
-  const nftMediaTypes = nftMetadata ? getMetadataMediaTypes(nftMetadata) : null;
-  const nftMediaSize = nftMediaTypes
-    ? (["big", "preview"] as NFTMediaSize[]).find(size => nftMediaTypes[size] === "image")
-    : null;
-  const nftImageUri = nftMediaSize && nftMetadata?.medias?.[nftMediaSize]?.uri;
-
-  return nftImageUri || null;
-}
-
-type CancellablePromise<T> = {
-  cancel: () => void;
-  resultPromise: Promise<T>;
-};
-
-export function downloadImageToFile({ imageUrl }: ImageUrl): CancellablePromise<ImageFileUri> {
-  const downloadTask = RNFetchBlob.config({ fileCache: true }).fetch("GET", imageUrl);
-  return {
-    resultPromise: downloadTask
-      .then(res => ({ imageFileUri: "file://" + res.path() }))
-      .catch(e => {
-        if (e.message === "canceled") throw e;
-        throw new ImageDownloadError();
-      }),
-    cancel: downloadTask.cancel,
-  };
-}
-
-export function downloadImageToFileWithDimensions(
-  source: ImageUrl,
-): CancellablePromise<ImageFileUri & Partial<ImageDimensions>> {
-  const { imageUrl } = source;
-  const { resultPromise, cancel } = downloadImageToFile({
-    imageUrl,
-  });
-  return {
-    resultPromise: Promise.all([loadImageSizeAsync(imageUrl), resultPromise])
-      .then(([dims, { imageFileUri }]) => ({
-        width: dims.width,
-        height: dims.height,
-        imageFileUri,
-      }))
-      .catch(e => {
-        cancel();
-        throw e;
-      }),
-    cancel,
-  };
 }
 
 export async function loadImageSizeAsync(url: string): Promise<ImageDimensions> {
@@ -174,12 +120,5 @@ export function fitImageContain(
   return {
     width: (imageWidth / imageHeight) * boxHeight,
     height: boxHeight,
-  };
-}
-
-export function scaleDimensions(dimensions: ImageDimensions, scale: number) {
-  return {
-    width: dimensions.width * scale,
-    height: dimensions.height * scale,
   };
 }
