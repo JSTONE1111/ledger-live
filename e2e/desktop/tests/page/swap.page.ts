@@ -135,7 +135,7 @@ export class SwapPage extends AppPage {
 
     const providersWithoutKYC = providersList.filter(providerName => {
       const provider = Object.values(Provider).find(p => p.uiName === providerName);
-      if (process.env.SPECULOS_DEVICE === Device.LNS) {
+      if (process.env.SPECULOS_DEVICE === Device.LNS.name) {
         return provider && !provider.kyc && provider.availableOnLns;
       }
       return provider && !provider.kyc;
@@ -501,8 +501,8 @@ export class SwapPage extends AppPage {
   }
 
   async getMinimumAmount(accountFrom: Account, accountTo: Account) {
-    const amount = (await getMinimumSwapAmount(accountFrom, accountTo))?.toFixed(6) ?? "";
-    return amount ? parseFloat(amount).toString() : "";
+    const amount = await getMinimumSwapAmount(accountFrom, accountTo);
+    return amount ? parseFloat(amount.toFixed(6)).toString() : "";
   }
 
   @step("Click on swap max")

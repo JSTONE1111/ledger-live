@@ -18,7 +18,7 @@ import { urls } from "~/utils/urls";
 import { Linking } from "react-native";
 import { LegacyBleDevicesScanning } from "~/components/BleDevicePairingFlow/LegacyBleDevicesScanning";
 import { useLocalizedUrl } from "LLM/hooks/useLocalizedUrls";
-import { useDeviceManagementKitEnabled } from "@ledgerhq/live-dmk-mobile";
+import { BleScanningState, useDeviceManagementKitEnabled } from "@ledgerhq/live-dmk-mobile";
 
 const TIMEOUT_AFTER_PAIRED_MS = 2000;
 
@@ -76,6 +76,20 @@ export type BleDevicePairingFlowProps = {
    * should react to a request from this component to set or to clean its header.
    */
   requestToSetHeaderOptions: (request: SetHeaderOptionsRequest) => void;
+
+  /**
+   * In some cases, the parent of this component handles the scanning logic, so we pass the scanning state there.
+   */
+  bleScanningState?: BleScanningState;
+
+  /**
+   * Notifies changes in the pairing flow step
+   */
+  onPairingFlowStepChanged?: (step: PairingFlowStep | null) => void;
+  /**
+   * The headers for onboarding are configured to be only back arrows whilst in other flows can be cross icons.
+   */
+  isOnboarding?: boolean;
 };
 
 // A "done" state to avoid having the BLE scanning on the device that we just paired
@@ -93,10 +107,20 @@ const BleDevicePairingFlow: React.FC<BleDevicePairingFlowProps> = ({
   onPairingSuccess,
   onPairingSuccessAddToKnownDevices = false,
   requestToSetHeaderOptions,
+  onPairingFlowStepChanged,
+  bleScanningState,
+  isOnboarding,
 }) => {
   const dispatchRedux = useDispatch();
 
   const [pairingFlowStep, setPairingFlowStep] = useState<PairingFlowStep>("scanning");
+
+  useEffect(() => {
+    onPairingFlowStepChanged?.(pairingFlowStep);
+    return () => {
+      onPairingFlowStepChanged?.(null);
+    };
+  }, [pairingFlowStep, onPairingFlowStepChanged]);
 
   const [deviceToPair, setDeviceToPair] = useState<Device | null>(null);
   const [isPaired, setIsPaired] = useState(false);
@@ -191,12 +215,18 @@ const BleDevicePairingFlow: React.FC<BleDevicePairingFlowProps> = ({
       });
     } else if (pairingFlowStep === "pairing") {
       if (!isPaired) {
+        const options = isOnboarding
+          ? {
+              headerLeft: () => <NavigationHeaderBackButton onPress={onRetryPairingFlow} />,
+              headerRight: () => null,
+            }
+          : {
+              headerLeft: () => null,
+              headerRight: () => <NavigationHeaderCloseButton onPress={onRetryPairingFlow} />,
+            };
         requestToSetHeaderOptions({
           type: "set",
-          options: {
-            headerLeft: () => null,
-            headerRight: () => <NavigationHeaderCloseButton onPress={onRetryPairingFlow} />,
-          },
+          options,
         });
       } else {
         // If a device is paired, we still want to display the success component without the screen own header
@@ -223,6 +253,7 @@ const BleDevicePairingFlow: React.FC<BleDevicePairingFlowProps> = ({
     onRetryPairingFlow,
     pairingFlowStep,
     requestToSetHeaderOptions,
+    isOnboarding,
   ]);
 
   return (
@@ -250,6 +281,7 @@ const BleDevicePairingFlow: React.FC<BleDevicePairingFlowProps> = ({
             areKnownDevicesDisplayed={areKnownDevicesDisplayed}
             areKnownDevicesPairable={areKnownDevicesPairable}
             onDeviceSelect={onDeviceSelect}
+            bleScanningState={bleScanningState}
           />
         ) : (
           <LegacyBleDevicesScanning

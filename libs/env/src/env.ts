@@ -402,6 +402,11 @@ const envDefinitions = {
     parser: stringParser,
     desc: "switch the app into a DETOX mode for test purpose. Avoid falsy values.",
   },
+  E2E_NANO_APP_VERSION_PATH: {
+    def: "",
+    parser: stringParser,
+    desc: "Path for e2e nanoApp version artifacts (LLD and LLM)",
+  },
   EIP1559_MINIMUM_FEES_GATE: {
     def: true,
     parser: boolParser,
@@ -651,6 +656,11 @@ const envDefinitions = {
     parser: stringParser,
     desc: "(dev feature) seed to be used by speculos (device simulator)",
   },
+  PROVIDER_SESSION_ID_ENDPOINT: {
+    def: "https://buy.api.live.ledger.com/session",
+    parser: stringParser,
+    desc: "Request provider session id",
+  },
   SHOW_LEGACY_NEW_ACCOUNT: {
     def: false,
     parser: boolParser,
@@ -670,6 +680,11 @@ const envDefinitions = {
     def: "",
     parser: stringParser,
     desc: "Device model id for speculos",
+  },
+  SPECULOS_FIRMWARE_VERSION: {
+    def: "",
+    parser: stringParser,
+    desc: "Firmware version for speculos",
   },
   SPECULOS_PID_OFFSET: {
     def: 0,
@@ -794,12 +809,12 @@ const envDefinitions = {
     desc: "Trustchain API Prod",
   },
   DADA_API_STAGING: {
-    def: "https://dada.api.ledger-test.com/v1/",
+    def: "https://dada.api.ledger-test.com/v1",
     parser: stringParser,
     desc: "Dynamic Assets Data Aggregator API Staging",
   },
   DADA_API_PROD: {
-    def: "https://dada.api.ledger.com/v1/",
+    def: "https://dada.api.ledger.com/v1",
     parser: stringParser,
     desc: "Dynamic Assets Data Aggregator API Prod",
   },
