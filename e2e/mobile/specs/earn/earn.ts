@@ -56,7 +56,6 @@ export async function runInlineAddAccountTest(
 
 export async function runStartETHStakingFromEarnDashboardTest(
   account: Account,
-  earnButtonId: string,
   provider: Provider,
   tmsLinks: string[],
   tags: string[],
@@ -109,6 +108,7 @@ export async function runCorrectEarnPageIsLoadedDependingOnUserStakingSituationT
       await app.portfolio.openEarnTab();
       await earnReady;
       if (staking) {
+        await app.earnDashboard.goToTab("My Rewards");
         await app.earnDashboard.verifyTotalDeposited();
         await app.earnDashboard.verifyTotalRewardsEarned();
         await app.earnDashboard.verifyDepositedAssets(account);

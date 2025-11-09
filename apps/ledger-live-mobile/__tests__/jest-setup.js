@@ -34,6 +34,12 @@ jest.mock("react-native-gesture-handler", () => {
   };
 });
 
+jest.mock("react-native-haptic-feedback", () => ({
+  default: {
+    trigger: jest.fn(),
+  },
+}));
+
 jest.mock("@segment/analytics-react-native", () => mockAnalytics);
 
 jest.mock("react-native-launch-arguments", () => ({}));
@@ -139,6 +145,20 @@ jest.mock("@react-native-firebase/messaging", () => ({
   })),
 }));
 
+/*
+ * Mock `@react-native-firebase/remote-config` because importing causes:
+ * SyntaxError: Cannot use import statement outside a module
+ */
+jest.mock("@react-native-firebase/remote-config", () => {
+  const rc = {
+    getValue: jest.fn().mockReturnValue(),
+    setConfigSettings: jest.fn().mockResolvedValue(null),
+    setDefaults: jest.fn().mockResolvedValue(null),
+    fetchAndActivate: jest.fn().mockResolvedValue(null),
+  };
+  return { getRemoteConfig: jest.fn().mockReturnValue(rc) };
+});
+
 jest.mock("@braze/react-native-sdk", () => ({}));
 
 jest.mock("react-native-webview", () => jest.fn());
@@ -187,3 +207,12 @@ console.log = (...args) => {
   }
   originalLog.call(console, ...args);
 };
+
+// Mock isCurrencySupported globally for tests
+jest.mock("@ledgerhq/coin-framework/currencies/support", () => {
+  const actual = jest.requireActual("@ledgerhq/coin-framework/currencies/support");
+  return {
+    ...actual,
+    isCurrencySupported: jest.fn(() => true),
+  };
+});

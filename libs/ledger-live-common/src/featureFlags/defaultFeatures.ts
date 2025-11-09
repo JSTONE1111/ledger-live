@@ -33,6 +33,7 @@ export const initFeature = <T>(opts?: Feature<T>) => {
  * Currency Features.
  */
 export const CURRENCY_DEFAULT_FEATURES = {
+  currencyPolkadot: { enabled: true },
   currencyArbitrum: DEFAULT_FEATURE,
   currencyArbitrumSepolia: DEFAULT_FEATURE,
   currencyAstar: DEFAULT_FEATURE,
@@ -96,12 +97,15 @@ export const CURRENCY_DEFAULT_FEATURES = {
   currencyBerachain: DEFAULT_FEATURE,
   currencyHyperevm: DEFAULT_FEATURE,
   currencyCantonNetwork: DEFAULT_FEATURE,
+  currencyCantonNetworkDevnet: DEFAULT_FEATURE,
+  currencyCantonNetworkTestnet: DEFAULT_FEATURE,
   currencyKaspa: DEFAULT_FEATURE,
   currencyEthereumHoodi: DEFAULT_FEATURE,
   currencyCore: DEFAULT_FEATURE,
   currencyWestend: DEFAULT_FEATURE,
   currencyAssetHubPolkadot: DEFAULT_FEATURE,
   currencyAssetHubWestend: DEFAULT_FEATURE,
+  currencyMonad: DEFAULT_FEATURE,
 };
 
 /**
@@ -109,6 +113,7 @@ export const CURRENCY_DEFAULT_FEATURES = {
  */
 export const DEFAULT_FEATURES: Features = {
   ...CURRENCY_DEFAULT_FEATURES,
+  nanoOnboardingFundWallet: DEFAULT_FEATURE,
   welcomeScreenVideoCarousel: DEFAULT_FEATURE,
   portfolioExchangeBanner: DEFAULT_FEATURE,
   postOnboardingAssetsTransfer: DEFAULT_FEATURE,
@@ -439,7 +444,7 @@ export const DEFAULT_FEATURES: Features = {
     },
   },
 
-  ptxEarnDrawerApy: {
+  ptxEarnDrawerConfiguration: {
     enabled: false,
     params: {},
   },
@@ -527,7 +532,6 @@ export const DEFAULT_FEATURES: Features = {
   },
   enableAppsBackup: DEFAULT_FEATURE,
   web3hub: DEFAULT_FEATURE,
-  llmMarketQuickActions: DEFAULT_FEATURE,
   llmMemoTag: DEFAULT_FEATURE,
   lldMemoTag: DEFAULT_FEATURE,
   ldmkTransport: {
@@ -548,7 +552,6 @@ export const DEFAULT_FEATURES: Features = {
     },
   },
   llmRebornLP: { ...DEFAULT_FEATURE, params: { variant: ABTestingVariants.variantA } },
-  llmRebornFlex: DEFAULT_FEATURE,
   llmAccountListUI: DEFAULT_FEATURE,
   llmLedgerSyncEntryPoints: {
     ...DEFAULT_FEATURE,
@@ -565,6 +568,7 @@ export const DEFAULT_FEATURES: Features = {
       accounts: true,
       settings: true,
       onboarding: true,
+      postOnboarding: true,
     },
   },
   lldNanoSUpsellBanners: {
@@ -653,8 +657,6 @@ export const DEFAULT_FEATURES: Features = {
   },
   ldmkConnectApp: DEFAULT_FEATURE,
   lldNetworkBasedAddAccount: DEFAULT_FEATURE,
-  llmOfacGeoBlocking: DEFAULT_FEATURE,
-  lldOfacGeoBlocking: DEFAULT_FEATURE,
   llmDatadog: {
     ...DEFAULT_FEATURE,
     params: {
@@ -687,7 +689,9 @@ export const DEFAULT_FEATURES: Features = {
   llmHomescreen: DEFAULT_FEATURE,
   supportDeviceApex: DEFAULT_FEATURE,
   llmSyncOnboardingIncr1: DEFAULT_FEATURE,
+  lldSyncOnboardingIncr1: DEFAULT_FEATURE,
   noah: DEFAULT_FEATURE,
+  newSendFlow: DEFAULT_FEATURE,
 };
 
 // Firebase SDK treat JSON values as strings

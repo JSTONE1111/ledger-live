@@ -4,6 +4,7 @@ import {
   BlockInfo,
   Cursor,
   Page,
+  Validator,
   IncorrectTypeError,
   type Operation,
   type Pagination,
@@ -49,7 +50,7 @@ export function createApi(config: TezosConfig): TezosApi {
       _transaction: string,
       _sender: string,
       _publicKey: string,
-      _sequence: number,
+      _sequence: bigint,
     ): Promise<CraftedTransaction> => {
       throw new Error("craftRawTransaction is not supported");
     },
@@ -62,7 +63,7 @@ export function createApi(config: TezosConfig): TezosApi {
     // required by signer to compute next valid sequence/counter
     getSequence: async (address: string) => {
       const accountInfo = await api.getAccountByAddress(address);
-      return accountInfo.type === "user" ? accountInfo.counter + 1 : 0;
+      return accountInfo.type === "user" ? BigInt(accountInfo.counter + 1) : 0n;
     },
     getBlock(_height): Promise<Block> {
       throw new Error("getBlock is not supported");
@@ -72,6 +73,9 @@ export function createApi(config: TezosConfig): TezosApi {
     },
     getRewards(_address: string, _cursor?: Cursor): Promise<Page<Reward>> {
       throw new Error("getRewards is not supported");
+    },
+    getValidators(_cursor?: Cursor): Promise<Page<Validator>> {
+      throw new Error("getValidators is not supported");
     },
   };
 }
