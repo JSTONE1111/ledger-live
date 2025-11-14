@@ -1,11 +1,13 @@
 import { encodeTokenAccountId } from "@ledgerhq/coin-framework/account/index";
 import { Scenario, ScenarioTransaction } from "@ledgerhq/coin-tester/main";
 import { killSpeculos, spawnSpeculos } from "@ledgerhq/coin-tester/signers/speculos";
-import { findTokenById } from "@ledgerhq/cryptoassets/tokens";
+import { tokensById } from "@ledgerhq/cryptoassets/legacy/legacy-state";
+import { initializeLegacyTokens } from "@ledgerhq/cryptoassets/legacy/legacy-data";
+import { addTokens } from "@ledgerhq/cryptoassets/legacy/legacy-utils";
 import { Account } from "@ledgerhq/types-live";
 import { BigNumber } from "bignumber.js";
 import { ethers } from "ethers";
-import { makeAccount } from "@ledgerhq/coin-evm/__tests__/fixtures/common.fixtures";
+import { makeAccount } from "../fixtures";
 import { getCoinConfig, setCoinConfig } from "@ledgerhq/coin-evm/config";
 import {
   EvmNftTransaction,
@@ -14,13 +16,15 @@ import {
 import { killAnvil, spawnAnvil } from "../anvil";
 import { callMyDealer, ethereum, VITALIK, getBridges } from "../helpers";
 import { indexBlocks, initMswHandlers, resetIndexer, setBlock } from "../indexer";
-import { defaultNanoApp } from "../scenarii.test";
+import { defaultNanoApp } from "../constants";
 import { LiveConfig } from "@ledgerhq/live-config/LiveConfig";
 import { BridgeStrategy } from "@ledgerhq/coin-tester/types";
 
+initializeLegacyTokens(addTokens);
+
 type EthereumScenarioTransaction = ScenarioTransaction<EvmTransaction, Account>;
 
-const usdcOnEthereum = findTokenById("ethereum/erc20/usd__coin");
+const usdcOnEthereum = tokensById["ethereum/erc20/usd__coin"];
 if (!usdcOnEthereum) throw new Error("USDC on Ethereum token not found");
 const USDC_ON_ETHEREUM = usdcOnEthereum;
 const boredApeContract = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";

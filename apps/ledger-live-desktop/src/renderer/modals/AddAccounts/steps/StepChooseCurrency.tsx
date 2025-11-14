@@ -1,10 +1,6 @@
 import React, { useMemo, useCallback } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import {
-  listSupportedCurrencies,
-  listTokens,
-  isCurrencySupported,
-} from "@ledgerhq/live-common/currencies/index";
+import { listSupportedCurrencies } from "@ledgerhq/live-common/currencies/index";
 import { findTokenAccountByCurrency } from "@ledgerhq/live-common/account/index";
 import { supportLinkByTokenType } from "~/config/urls";
 import TrackPage from "~/renderer/analytics/TrackPage";
@@ -27,25 +23,16 @@ import { NetworkDown } from "@ledgerhq/errors";
 import ErrorBanner from "~/renderer/components/ErrorBanner";
 import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 
-import { useCurrenciesUnderFeatureFlag } from "@ledgerhq/live-common/modularDrawer/hooks/useCurrenciesUnderFeatureFlag";
-
-const listSupportedTokens = () =>
-  listTokens().filter(token => isCurrencySupported(token.parentCurrency));
+import { useAcceptedCurrency } from "@ledgerhq/live-common/modularDrawer/hooks/useAcceptedCurrency";
 
 const StepChooseCurrency = ({ currency, setCurrency }: StepProps) => {
-  const { deactivatedCurrencyIds } = useCurrenciesUnderFeatureFlag();
+  const isAcceptedCurrency = useAcceptedCurrency();
 
   const currencies = useMemo(() => {
-    const supportedCurrenciesAndTokens =
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      (listSupportedCurrencies() as CryptoOrTokenCurrency[]).concat(listSupportedTokens());
-
-    return supportedCurrenciesAndTokens.filter(
-      c =>
-        (c.type === "CryptoCurrency" && !deactivatedCurrencyIds.has(c.id)) ||
-        (c.type === "TokenCurrency" && !deactivatedCurrencyIds.has(c.parentCurrency.id)),
-    );
-  }, [deactivatedCurrencyIds]);
+    // Only list supported currencies, tokens are no longer listed here
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return (listSupportedCurrencies() as CryptoOrTokenCurrency[]).filter(isAcceptedCurrency);
+  }, [isAcceptedCurrency]);
 
   const url =
     currency && currency.type === "TokenCurrency"

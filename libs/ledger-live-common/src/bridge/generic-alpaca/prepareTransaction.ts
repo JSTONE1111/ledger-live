@@ -2,10 +2,14 @@ import { Account, AccountBridge } from "@ledgerhq/types-live";
 import { getAlpacaApi } from "./alpaca";
 import { transactionToIntent } from "./utils";
 import BigNumber from "bignumber.js";
-import { AssetInfo } from "@ledgerhq/coin-framework/api/types";
+import { AssetInfo, FeeEstimation } from "@ledgerhq/coin-framework/api/types";
 import { decodeTokenAccountId } from "@ledgerhq/coin-framework/account/index";
 import { TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { GenericTransaction } from "./types";
+
+function bnEq(a: BigNumber | null | undefined, b: BigNumber | null | undefined): boolean {
+  return !a && !b ? true : !a || !b ? false : a.eq(b);
+}
 
 function assetInfosFallback(transaction: GenericTransaction): {
   assetReference: string;
@@ -17,85 +21,99 @@ function assetInfosFallback(transaction: GenericTransaction): {
   };
 }
 
+function propagateField(estimation: FeeEstimation, field: string, dest: GenericTransaction): void {
+  const value = estimation?.parameters?.[field];
+
+  if (typeof value !== "bigint" && typeof value !== "number" && typeof value !== "string") return;
+
+  switch (field) {
+    case "type":
+      dest[field] = Number(value.toString());
+      return;
+    case "storageLimit":
+      dest[field] = new BigNumber(value.toString());
+      return;
+    default:
+      return;
+  }
+}
+
 export function genericPrepareTransaction(
   network: string,
   kind,
 ): AccountBridge<GenericTransaction, Account>["prepareTransaction"] {
   return async (account, transaction: GenericTransaction) => {
-    const { getAssetFromToken, computeIntentType, estimateFees } = getAlpacaApi(
+    const { getAssetFromToken, computeIntentType, estimateFees, validateIntent } = getAlpacaApi(
       account.currency.id,
       kind,
     );
     const { assetReference, assetOwner } = getAssetFromToken
-      ? getAssetInfos(transaction, account.freshAddress, getAssetFromToken)
+      ? await getAssetInfos(transaction, account.freshAddress, getAssetFromToken)
       : assetInfosFallback(transaction);
+    const customParametersFees = transaction.customFees?.parameters?.fees;
+    const estimation: FeeEstimation = customParametersFees
+      ? { value: BigInt(customParametersFees.toFixed()) }
+      : await estimateFees(
+          transactionToIntent(
+            account,
+            {
+              ...transaction,
+            },
+            computeIntentType,
+          ),
+        );
+    const fees = new BigNumber(estimation.value.toString());
 
-    const next: GenericTransaction = {
-      ...transaction,
-      assetOwner,
-      assetReference,
-    };
+    if (!bnEq(transaction.fees, fees)) {
+      const next: GenericTransaction = {
+        ...transaction,
+        fees,
+        assetReference,
+        assetOwner,
+        customFees: {
+          parameters: {
+            fees: customParametersFees ? new BigNumber(customParametersFees.toString()) : undefined,
+          },
+        },
+      };
 
-    const useAllAmount = !!next.useAllAmount || ["stake", "unstake"].includes(next.mode ?? "");
+      // Propagate needed fields
+      const fieldsToPropagate = ["type", "storageLimit"];
 
-    // Anticipate use cases where token amounts impact fee calculuses
-    if (useAllAmount && next.subAccountId) {
-      const subAccount = account.subAccounts?.find(sub => sub.id === next.subAccountId);
-
-      next.amount = subAccount?.spendableBalance ?? new BigNumber(0);
-    }
-
-    const intent = transactionToIntent(account, next, computeIntentType);
-    const estimation = await estimateFees(intent);
-    const customFeesValue = next.customFees?.parameters?.fees; // e.g. Stellar
-
-    next.fees = customFeesValue ?? new BigNumber(estimation.value.toString());
-
-    const fieldsToPropagate = ["storageLimit"] as const;
-
-    for (const field of fieldsToPropagate) {
-      const parameter = estimation.parameters?.[field];
-
-      if (
-        typeof parameter === "bigint" ||
-        typeof parameter === "number" ||
-        typeof parameter === "string"
-      ) {
-        next[field] = new BigNumber(parameter.toString());
+      for (const field of fieldsToPropagate) {
+        propagateField(estimation, field, next);
       }
-    }
 
-    // Fees are now fixed, compute max spendable native
-    if (useAllAmount && !next.subAccountId) {
-      // Check if the estimation has been done for a custom amount
-      const estimatedAmount = estimation.parameters?.amount;
-      if (
-        typeof estimatedAmount === "bigint" ||
-        typeof estimatedAmount === "number" ||
-        typeof estimatedAmount === "string"
-      ) {
-        next.amount = new BigNumber(estimatedAmount.toString());
-      } else {
-        next.amount = account.spendableBalance.gt(next.fees)
-          ? account.spendableBalance.minus(next.fees)
-          : new BigNumber(0);
+      // align with stellar/xrp: when send max (or staking intents), reflect validated amount in UI
+      if (transaction.useAllAmount || ["stake", "unstake"].includes(transaction.mode ?? "")) {
+        const { amount } = await validateIntent(
+          transactionToIntent(
+            account,
+            {
+              ...transaction,
+            },
+            computeIntentType,
+          ),
+        );
+        next.amount = new BigNumber(amount.toString());
       }
+      return next;
     }
 
-    return next;
+    return transaction;
   };
 }
 
-export function getAssetInfos(
+export async function getAssetInfos(
   tr: GenericTransaction,
   owner: string,
   getAssetFromToken: (token: TokenCurrency, owner: string) => AssetInfo,
-): {
+): Promise<{
   assetReference: string;
   assetOwner: string;
-} {
+}> {
   if (tr.subAccountId) {
-    const { token } = decodeTokenAccountId(tr.subAccountId);
+    const { token } = await decodeTokenAccountId(tr.subAccountId);
 
     if (!token) return assetInfosFallback(tr);
 

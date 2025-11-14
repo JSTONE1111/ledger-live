@@ -1,6 +1,10 @@
 import { handleActions, ReducerMap } from "redux-actions";
 import type { Action } from "redux-actions";
-import { getFiatCurrencyByTicker } from "@ledgerhq/live-common/currencies/index";
+import {
+  getFiatCurrencyByTicker,
+  findFiatCurrencyByTicker,
+  findCryptoCurrencyByTicker,
+} from "@ledgerhq/live-common/currencies/index";
 import { getEnv } from "@ledgerhq/live-env";
 import { createSelector } from "reselect";
 import { getAccountCurrency } from "@ledgerhq/live-common/account/helpers";
@@ -73,13 +77,14 @@ import type {
   SettingsSetSelectedTabPortfolioAssetsPayload,
   SettingsSetIsRebornPayload,
   SettingsIsOnboardingFlowPayload,
+  SettingsIsOnboardingFlowReceiveSuccessPayload,
+  SettingsIsPostOnboardingFlowPayload,
 } from "../actions/types";
 import {
   SettingsActionTypes,
   SettingsSetWalletTabNavigatorLastVisitedTabPayload,
 } from "../actions/types";
 import { ScreenName } from "~/const";
-import { findCurrencyByTicker } from "@ledgerhq/live-countervalues/findCurrencyByTicker";
 
 export const INITIAL_STATE: SettingsState = {
   counterValue: "USD",
@@ -164,6 +169,8 @@ export const INITIAL_STATE: SettingsState = {
   mevProtection: true,
   selectedTabPortfolioAssets: "Assets",
   isOnboardingFlow: false,
+  isOnboardingFlowReceiveSuccess: false,
+  isPostOnboardingFlow: false,
 };
 
 const pairHash = (from: { ticker: string }, to: { ticker: string }) =>
@@ -289,6 +296,22 @@ const handlers: ReducerMap<SettingsState, SettingsPayload> = {
     return {
       ...state,
       isOnboardingFlow: !!payload,
+    };
+  },
+
+  [SettingsActionTypes.SETTINGS_SET_IS_ONBOARDING_FlOW_RECEIVE_SUCCESS]: (state, action) => {
+    const payload = (action as Action<SettingsIsOnboardingFlowReceiveSuccessPayload>).payload;
+    return {
+      ...state,
+      isOnboardingFlowReceiveSuccess: !!payload,
+    };
+  },
+
+  [SettingsActionTypes.SETTINGS_SET_IS_POST_ONBOARDING_FlOW]: (state, action) => {
+    const payload = (action as Action<SettingsIsPostOnboardingFlowPayload>).payload;
+    return {
+      ...state,
+      isPostOnboardingFlow: !!payload,
     };
   },
 
@@ -627,7 +650,9 @@ export default handleActions<SettingsState, SettingsPayload>(handlers, INITIAL_S
 export const settingsStoreSelector = (state: State): SettingsState => state.settings;
 
 const counterValueCurrencyLocalSelector = (state: SettingsState): Currency =>
-  findCurrencyByTicker(state.counterValue) || getFiatCurrencyByTicker("USD");
+  findFiatCurrencyByTicker(state.counterValue) ||
+  findCryptoCurrencyByTicker(state.counterValue) ||
+  getFiatCurrencyByTicker("USD");
 
 export const counterValueCurrencySelector = createSelector(
   settingsStoreSelector,
@@ -734,6 +759,9 @@ export const hasCompletedCustomImageFlowSelector = (state: State) =>
 export const hasCompletedOnboardingSelector = (state: State) =>
   state.settings.hasCompletedOnboarding;
 export const isOnboardingFlowSelector = (state: State) => state.settings.isOnboardingFlow;
+export const isOnboardingFlowReceiveSuccessSelector = (state: State) =>
+  state.settings.isOnboardingFlowReceiveSuccess;
+export const isPostOnboardingFlowSelector = (state: State) => state.settings.isPostOnboardingFlow;
 export const hasInstalledAnyAppSelector = (state: State) => state.settings.hasInstalledAnyApp;
 export const countervalueFirstSelector = (state: State) => state.settings.graphCountervalueFirst;
 export const readOnlyModeEnabledSelector = (state: State) => state.settings.readOnlyModeEnabled;
