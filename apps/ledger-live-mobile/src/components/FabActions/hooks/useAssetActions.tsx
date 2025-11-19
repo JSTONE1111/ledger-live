@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { AccountLikeArray } from "@ledgerhq/types-live";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -24,6 +24,7 @@ import { useStake } from "LLM/hooks/useStake/useStake";
 import { flattenAccountsSelector } from "~/reducers/accounts";
 import { useOpenStakeDrawer } from "LLM/features/Stake";
 import { useOpenReceiveDrawer } from "LLM/features/Receive";
+import { useModularDrawerController } from "~/newArch/features/ModularDrawer";
 
 type useAssetActionsProps = {
   currency?: CryptoCurrency | TokenCurrency;
@@ -80,14 +81,23 @@ export default function useAssetActions({ currency, accounts }: useAssetActionsP
   const { handleOpenStakeDrawer, isModularDrawerEnabled: isModularDrawerEnabledStake } =
     useOpenStakeDrawer({
       sourceScreenName: "asset_action",
-      currency,
+      currencies: currency ? [currency.id] : undefined,
     });
-  const { handleOpenReceiveDrawer, isModularDrawerEnabled: isModularDrawerEnabledReceive } =
-    useOpenReceiveDrawer({
-      sourceScreenName: "asset",
-      currency,
+  const { handleOpenReceiveDrawer } = useOpenReceiveDrawer({
+    sourceScreenName: "asset",
+    currency,
+  });
+
+  const { openDrawer } = useModularDrawerController();
+
+  const handleOpenAddAccountDrawer = useCallback(() => {
+    openDrawer({
+      currencies: currency ? [currency.id] : [],
+      flow: "add_account",
+      source: "asset_action",
+      areCurrenciesFiltered: !!currency,
     });
-  const noah = useFeature("noah");
+  }, [currency, openDrawer]);
 
   const actions = useMemo<ActionButtonEvent[]>(() => {
     const isPtxServiceCtaScreensDisabled = !(ptxServiceCtaScreens?.enabled ?? true);
@@ -201,23 +211,7 @@ export default function useAssetActions({ currency, accounts }: useAssetActionsP
               id: "receive",
               label: t("transfer.receive.title"),
               Icon: iconReceive,
-              navigationParams: [
-                NavigatorName.ReceiveFunds,
-                {
-                  screen: ScreenName.ReceiveSelectAccount,
-                  params: {
-                    currency,
-                  },
-                },
-              ] as const,
-              // We have two features getting enabled at the same time that change the entry point of receive funds
-              // if noah is active that takes precedence ReceiveFundsNavigator is where that gets used -> ReceiveFundsOptions is therefore where the MAD draw will be opened if active
-              // if modular drawer is enabled but noah is not then go there
-              // if neither is enabled we'll go through the old flow
-              customHandler:
-                isModularDrawerEnabledReceive && !noah?.enabled
-                  ? handleOpenReceiveDrawer
-                  : undefined,
+              customHandler: handleOpenReceiveDrawer,
             },
             {
               id: "send",
@@ -254,15 +248,7 @@ export default function useAssetActions({ currency, accounts }: useAssetActionsP
                     id: "add_account",
                     label: t("addAccountsModal.ctaAdd"),
                     Icon: iconAddAccount,
-                    navigationParams: [
-                      NavigatorName.AddAccounts,
-                      {
-                        screen: ScreenName.AddAccountsSelectCrypto,
-                        params: {
-                          filterCurrencyIds: currency ? [currency.id] : undefined,
-                        },
-                      },
-                    ] as const,
+                    customHandler: handleOpenAddAccountDrawer,
                   },
                 ]
               : []),
@@ -287,9 +273,8 @@ export default function useAssetActions({ currency, accounts }: useAssetActionsP
     route,
     isModularDrawerEnabledStake,
     handleOpenStakeDrawer,
-    isModularDrawerEnabledReceive,
     handleOpenReceiveDrawer,
-    noah,
+    handleOpenAddAccountDrawer,
   ]);
 
   return {

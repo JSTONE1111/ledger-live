@@ -3791,7 +3791,9 @@
       },
       "wrongDevice": {
         "title": "Ledger Nano S™ is not compatible with {{provider}}",
-        "description": "Ledger Nano S™ is not compatible with {{provider}}. You can use Ledger Nano S Plus™, Ledger Nano X™, Ledger Stax™, or Ledger Flex™ to experience cross-chain swaps on {{provider}} via Ledger Live"
+        "description": "Ledger Nano S™ is not compatible with {{provider}}. You can use Ledger Nano S Plus™, Ledger Nano X™, Ledger Stax™, or Ledger Flex™ to experience cross-chain swaps on {{provider}} via Ledger Wallet",
+        "explore_compatible_devices": "Explore compatible devices",
+        "swapWithAnotherProvider": "Swap with another provider"
       },
       "incompatibility": {
         "explore_compatible_devices": "Explore compatible devices",
@@ -4439,6 +4441,7 @@
     "allowSecureConnection": "Allow a secure connection with Ledger",
     "loading": "Loading...",
     "turnOnAndUnlockDevice": "Switch on and unlock your device",
+    "powerOnDevice": "Power on and unlock your {{deviceName}}",
     "connectAndUnlockDevice": "Connect and unlock your device",
     "connectAnotherDevice": "Connect another Ledger",
     "unlockDevice": "Unlock your device",
@@ -4504,6 +4507,11 @@
     "bluetooth": {
       "title": "Connect via Bluetooth...",
       "label": "Automatically detect your Nano"
+    },
+    "bleDeviceNotAvailableDrawer": {
+      "bannerHintTitle": "Can't see your Ledger device?",
+      "scanSignersCta": "Scan devices",
+      "helpCenterCta": "Get support"
     },
     "deviceNotFoundPairNewDevice": "Pair with bluetooth",
     "headerDescription": "Please make sure your {{productName}} is unlocked with Bluetooth enabled",
