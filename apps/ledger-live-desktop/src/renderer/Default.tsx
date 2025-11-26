@@ -52,6 +52,7 @@ import {
   hasCompletedOnboardingSelector,
   hasSeenAnalyticsOptInPromptSelector,
   shareAnalyticsSelector,
+  areSettingsLoaded,
 } from "~/renderer/reducers/settings";
 import { isLocked as isLockedSelector } from "~/renderer/reducers/application";
 import { useAutoDismissPostOnboardingEntryPoint } from "@ledgerhq/live-common/postOnboarding/hooks/index";
@@ -62,6 +63,7 @@ import { useDeviceManagementKit } from "@ledgerhq/live-dmk-desktop";
 import { AppGeoBlocker } from "LLD/features/AppBlockers/components/AppGeoBlocker";
 import { AppVersionBlocker } from "LLD/features/AppBlockers/components/AppVersionBlocker";
 import { initMixpanel } from "./analytics/mixpanel";
+import { setSolanaLdmkEnabled } from "@ledgerhq/live-common/families/solana/setup";
 
 const PlatformCatalog = lazy(() => import("~/renderer/screens/platform"));
 const Dashboard = lazy(() => import("~/renderer/screens/dashboard"));
@@ -193,9 +195,12 @@ export default function Default() {
   const { pathname } = location;
   const history = useHistory();
   const hasCompletedOnboarding = useSelector(hasCompletedOnboardingSelector);
+  const areSettingsLoadedSelector = useSelector(areSettingsLoaded);
   const accounts = useSelector(accountsSelector);
   const analyticsConsoleActive = useEnv("ANALYTICS_CONSOLE");
   const providerNumber = useEnv("FORCE_PROVIDER");
+  const ldmkSolanaSignerFeatureFlag = useFeature("ldmkSolanaSigner");
+
   const dmk = useDeviceManagementKit();
 
   useAccountsWithFundsListener(accounts, updateIdentify);
@@ -222,6 +227,12 @@ export default function Default() {
   }, [mixpanelFF, shareAnalytics]);
 
   useEffect(() => {
+    if (typeof ldmkSolanaSignerFeatureFlag?.enabled === "boolean") {
+      setSolanaLdmkEnabled(ldmkSolanaSignerFeatureFlag?.enabled);
+    }
+  }, [ldmkSolanaSignerFeatureFlag]);
+
+  useEffect(() => {
     // WebHID is now always enabled, set provider if specified
     if (providerNumber) {
       dmk?.setProvider(providerNumber);
@@ -244,16 +255,32 @@ export default function Default() {
   }, [isLocked]);
 
   useEffect(() => {
+    if (!areSettingsLoadedSelector) {
+      return;
+    }
+
+    const wasHardReset = window.localStorage.getItem("hard-reset") === "1";
+
+    // If we just did a hard reset and onboarding is not completed, force redirect to onboarding
+    // even if we're on the settings page (where the reset button is)
+    if (wasHardReset && !hasCompletedOnboarding) {
+      history.replace("/onboarding");
+      window.localStorage.removeItem("hard-reset");
+      updateIdentify();
+      return;
+    }
+
+    // Normal onboarding check (when not after a reset)
     const userIsOnboardingOrSettingUp =
       pathname.includes("onboarding") ||
       pathname.includes("recover") ||
       pathname.includes("settings");
 
     if (!userIsOnboardingOrSettingUp && !hasCompletedOnboarding) {
-      history.push("/onboarding");
+      history.replace("/onboarding");
     }
     updateIdentify();
-  }, [history, pathname, hasCompletedOnboarding]);
+  }, [history, pathname, hasCompletedOnboarding, areSettingsLoadedSelector]);
 
   return (
     <>

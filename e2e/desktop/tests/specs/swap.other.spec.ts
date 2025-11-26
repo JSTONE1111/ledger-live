@@ -444,7 +444,14 @@ for (const { swap, xrayTicket, errorMessage, expectedErrorPerDevice } of swapWit
     test(
       `Swap using a different seed - ${swap.accountToDebit.currency.name} → ${swap.accountToCredit.currency.name}`,
       {
-        tag: ["@NanoSP", "@LNS", "@NanoX", "@Stax", "@Flex"],
+        tag: [
+          "@NanoSP",
+          "@LNS",
+          "@NanoX",
+          "@Stax",
+          "@Flex",
+          ...(swap.accountToDebit === Account.BTC_NATIVE_SEGWIT_1 ? ["@smoke"] : []),
+        ],
         annotation: { type: "TMS", description: xrayTicket },
       },
       async ({ app, electronApp }) => {
@@ -931,10 +938,7 @@ test.describe("Swap flow from different entry point", () => {
       await app.portfolio.clickOnSelectedAssetRow(swapEntryPoint.swap.accountToDebit.currency.name);
 
       await app.swap.goAndWaitForSwapToBeReady(() => app.assetPage.startSwapFlow());
-      await app.swap.expectSelectedAssetDisplayed(
-        swapEntryPoint.swap.accountToDebit.currency.name,
-        electronApp,
-      );
+      await app.swap.checkAssetTo(electronApp, swapEntryPoint.swap.accountToDebit.currency.name);
     },
   );
 
@@ -954,14 +958,8 @@ test.describe("Swap flow from different entry point", () => {
       await app.swap.goAndWaitForSwapToBeReady(() =>
         app.market.startSwapForSelectedTicker(swapEntryPoint.swap.accountToDebit.currency.ticker),
       );
-      await app.swap.expectSelectedAssetDisplayed(
-        swapEntryPoint.swap.accountToDebit.currency.name,
-        electronApp,
-      );
-      await app.swap.expectSelectedAssetDisplayed(
-        swapEntryPoint.swap.accountToDebit.accountName,
-        electronApp,
-      );
+      await app.swap.checkAssetTo(electronApp, swapEntryPoint.swap.accountToDebit.currency.name);
+      await app.swap.checkAssetTo(electronApp, swapEntryPoint.swap.accountToDebit.accountName);
     },
   );
 
@@ -979,17 +977,14 @@ test.describe("Swap flow from different entry point", () => {
       await app.layout.goToMarket();
       await app.market.openCoinPage(swapEntryPoint.swap.accountToDebit.currency.ticker);
       await app.swap.goAndWaitForSwapToBeReady(() => app.market.clickOnSwapButtonOnAsset());
-      await app.swap.expectSelectedAssetDisplayed(
-        swapEntryPoint.swap.accountToDebit.currency.name,
-        electronApp,
-      );
+      await app.swap.checkAssetTo(electronApp, swapEntryPoint.swap.accountToDebit.currency.name);
     },
   );
 
   test(
     "Entry Point - Account page",
     {
-      tag: ["@NanoSP", "@LNS", "@NanoX", "@Stax", "@Flex"],
+      tag: ["@NanoSP", "@LNS", "@NanoX", "@Stax", "@Flex", "@smoke"],
       annotation: {
         type: "TMS",
         description: "B2CQA-2989",
@@ -1002,14 +997,8 @@ test.describe("Swap flow from different entry point", () => {
         getParentAccountName(swapEntryPoint.swap.accountToDebit),
       );
       await app.swap.goAndWaitForSwapToBeReady(() => app.account.navigateToSwap());
-      await app.swap.expectSelectedAssetDisplayed(
-        swapEntryPoint.swap.accountToDebit.currency.name,
-        electronApp,
-      );
-      await app.swap.expectSelectedAssetDisplayed(
-        swapEntryPoint.swap.accountToDebit.accountName,
-        electronApp,
-      );
+      await app.swap.checkAssetTo(electronApp, swapEntryPoint.swap.accountToDebit.currency.name);
+      await app.swap.checkAssetTo(electronApp, swapEntryPoint.swap.accountToDebit.accountName);
     },
   );
 

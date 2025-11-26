@@ -32,7 +32,7 @@ import { isWalletAPISupportedCurrency } from "./helpers";
 import { WalletAPICurrency, AppManifest, WalletAPIAccount, WalletAPICustomHandlers } from "./types";
 import { getMainAccount, getParentAccount } from "../account";
 import { listSupportedCurrencies } from "../currencies";
-import { getCryptoAssetsStore } from "../bridge/crypto-assets";
+import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
 import { TrackingAPI } from "./tracking";
 import {
   bitcoinFamilyAccountGetXPubLogic,
@@ -370,6 +370,8 @@ export function useWalletAPIServer({
             // Pattern like "ethereum/**" or "solana/**" - include tokens for this family
             const family = id.slice(0, -3);
             tokenFamilies.add(family);
+            // Additionally include the parent currency itself
+            specificCurrencies.add(family);
           } else if (id.includes("/")) {
             // Specific token ID like "ethereum/erc20/usd__coin"
             specificTokenIds.add(id);

@@ -64,7 +64,6 @@ export enum ScreenName {
   DebugTransactionsAlerts = "DebugTransactionsAlerts",
   DebugSwipe = "DebugSwipe",
   DebugStore = "DebugStore",
-  DebugStoryly = "DebugStoryly",
   DebugSwap = "DebugSwap",
   DebugCameraPermissions = "DebugCameraPermissions",
   DebugTooltip = "DebugTooltip",
@@ -508,9 +507,6 @@ export enum ScreenName {
   WalletSyncManageInstancesProcess = "WalletSyncManageInstancesProcess",
   WalletSyncManageInstancesSuccess = "WalletSyncManageInstancesSuccess",
   LedgerSyncDeepLinkHandler = "LedgerSyncDeepLinkHandler",
-  ModularDrawerDeepLinkHandler = "ModularDrawerDeepLinkHandler",
-  ReceiveDeepLinkHandler = "ReceiveDeepLinkHandler",
-  AddAccountDeepLinkHandler = "AddAccountDeepLinkHandler",
 
   MockedAddAssetButton = "MockedAddAssetButton",
   MockedModularDrawer = "MockedModularDrawer",

@@ -467,6 +467,10 @@ export const DEFAULT_FEATURES: Features = {
     enabled: false,
   },
 
+  ptxSwapLiveAppOnPortfolio: {
+    enabled: false,
+  },
+
   llmAnalyticsOptInPrompt: {
     enabled: false,
     params: {
@@ -664,6 +668,7 @@ export const DEFAULT_FEATURES: Features = {
     },
   },
   ldmkConnectApp: DEFAULT_FEATURE,
+  ldmkSolanaSigner: DEFAULT_FEATURE,
   lldNetworkBasedAddAccount: DEFAULT_FEATURE,
   llmDatadog: {
     ...DEFAULT_FEATURE,
@@ -700,12 +705,14 @@ export const DEFAULT_FEATURES: Features = {
   lldSyncOnboardingIncr1: DEFAULT_FEATURE,
   noah: DEFAULT_FEATURE,
   newSendFlow: DEFAULT_FEATURE,
+  cantonSkipPreapprovalStep: DEFAULT_FEATURE,
   lldSessionReplay: {
     ...DEFAULT_FEATURE,
     params: {
       sampling: 100,
     },
   },
+  zcashShielded: DEFAULT_FEATURE,
 };
 
 // Firebase SDK treat JSON values as strings

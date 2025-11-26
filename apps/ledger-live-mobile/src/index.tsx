@@ -49,7 +49,7 @@ import NavBarColorHandler from "~/components/NavBarColorHandler";
 import { FirebaseFeatureFlagsProvider } from "~/components/FirebaseFeatureFlags";
 import { TermsAndConditionMigrateLegacyData } from "~/logic/terms";
 import HookDynamicContentCards from "~/dynamicContent/useContentCards";
-import { ModalSystemPrimer } from "~/newArch/components/ModalSystemPrimer";
+import { ModalSystemPrimer } from "LLM/components/ModalSystemPrimer";
 import PlatformAppProviderWrapper from "./PlatformAppProviderWrapper";
 
 import { DeeplinksProvider } from "~/navigation/DeeplinksProvider";
@@ -70,7 +70,6 @@ import {
 import useAccountsWithFundsListener from "@ledgerhq/live-common/hooks/useAccountsWithFundsListener";
 import { updateIdentify } from "./analytics";
 import { FeatureToggle, getFeature, useFeature } from "@ledgerhq/live-common/featureFlags/index";
-import { StorylyProvider } from "./components/StorylyStories/StorylyProvider";
 import { useSettings } from "~/hooks";
 import AppProviders from "./AppProviders";
 import { useAutoDismissPostOnboardingEntryPoint } from "@ledgerhq/live-common/postOnboarding/hooks/index";
@@ -99,10 +98,10 @@ import {
 import { initSentry } from "./sentry";
 import getOrCreateUser from "./user";
 import { FIRST_PARTY_MAIN_HOST_DOMAIN } from "./utils/constants";
-import useNativeStartupInfo from "./hooks/useNativeStartupInfo";
 import { ConfigureDBSaveEffects } from "./components/DBSave";
 import { useRef } from "react";
 import HookDevTools from "./devTools/useDevTools";
+import { setSolanaLdmkEnabled } from "@ledgerhq/live-common/families/solana/setup";
 
 if (Config.DISABLE_YELLOW_BOX) {
   LogBox.ignoreAllLogs();
@@ -138,7 +137,7 @@ function App() {
   const dispatch = useDispatch();
   const isTrackingEnabled = useSelector(trackingEnabledSelector);
   const automaticBugReportingEnabled = useSelector(reportErrorsEnabledSelector);
-  useNativeStartupInfo();
+  const ldmkSolanaSignerFeatureFlag = useFeature("ldmkSolanaSigner");
 
   const datadogAutoInstrumentation: AutoInstrumentationConfiguration = useMemo(
     () => ({
@@ -157,6 +156,12 @@ function App() {
     }),
     [datadogFF?.params, automaticBugReportingEnabled],
   );
+
+  useEffect(() => {
+    if (typeof ldmkSolanaSignerFeatureFlag?.enabled === "boolean") {
+      setSolanaLdmkEnabled(ldmkSolanaSignerFeatureFlag?.enabled);
+    }
+  }, [ldmkSolanaSignerFeatureFlag]);
 
   useEffect(() => {
     if (providerNumber && isLDMKEnabled) {
@@ -186,7 +191,7 @@ function App() {
   ]);
 
   useEffect(() => {
-    /* 
+    /*
     / To capture all tracking events under the same flow we have these states set
     / and to prevent the flow state leaking we reset them here
     */
@@ -348,12 +353,12 @@ export default class Root extends Component {
               <TermsAndConditionMigrateLegacyData />
               <QueuedDrawersContextProvider>
                 <FirebaseFeatureFlagsProvider getFeature={getFeature}>
-                  <I18nextProvider i18n={i18n}>
-                    <LocaleProvider>
-                      <PlatformAppProviderWrapper>
-                        <SafeAreaProvider>
-                          <ModalSystemPrimer />
-                          <StorylyProvider>
+                  <WaitForAppReady currencyInitialized={currencyInitialized}>
+                    <I18nextProvider i18n={i18n}>
+                      <LocaleProvider>
+                        <PlatformAppProviderWrapper>
+                          <SafeAreaProvider>
+                            <ModalSystemPrimer />
                             <StylesProvider>
                               <StyledStatusBar />
                               <NavBarColorHandler />
@@ -362,22 +367,20 @@ export default class Root extends Component {
                                   <AppProviders initialCountervalues={initialCountervalues}>
                                     <AppGeoBlocker>
                                       <AppVersionBlocker>
-                                        <WaitForAppReady currencyInitialized={currencyInitialized}>
-                                          <BridgeSyncProvider>
-                                            <App />
-                                          </BridgeSyncProvider>
-                                        </WaitForAppReady>
+                                        <BridgeSyncProvider>
+                                          <App />
+                                        </BridgeSyncProvider>
                                       </AppVersionBlocker>
                                     </AppGeoBlocker>
                                   </AppProviders>
                                 </GestureHandlerRootView>
                               </AuthPass>
                             </StylesProvider>
-                          </StorylyProvider>
-                        </SafeAreaProvider>
-                      </PlatformAppProviderWrapper>
-                    </LocaleProvider>
-                  </I18nextProvider>
+                          </SafeAreaProvider>
+                        </PlatformAppProviderWrapper>
+                      </LocaleProvider>
+                    </I18nextProvider>
+                  </WaitForAppReady>
                 </FirebaseFeatureFlagsProvider>
               </QueuedDrawersContextProvider>
             </RebootProvider>

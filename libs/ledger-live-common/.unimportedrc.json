@@ -56,6 +56,7 @@
     "src/deviceSDK/tasks/updateFirmware.ts",
     "src/deviceWordings.ts",
     "src/domain/getTokensWithFunds.ts",
+    "src/e2e/data/assetsDrawer.ts",
     "src/e2e/index.ts",
     "src/e2e/speculos.ts",
     "src/e2e/speculosAppVersion.ts",
@@ -312,7 +313,8 @@
     "src/modularDrawer/hooks/useDetailedAccountsCore.ts",
     "src/modularDrawer/types/detailedAccount.ts",
     "src/modularDrawer/utils/sortAccountsByFiatValue.ts",
-    "src/modularDrawer/index.ts"
+    "src/modularDrawer/index.ts",
+    "src/test-helpers/cryptoAssetsStore.ts"
   ],
   "extensions": [".ts", ".js", ".jsx", ".tsx"],
   "ignorePatterns": [
@@ -390,6 +392,7 @@
     "src/families/canton/config.ts",
     "src/families/canton/logic.ts",
     "src/families/canton/types.ts",
+    "src/families/canton/react.ts",
     "src/families/cardano/logic.ts",
     "src/families/cardano/staking.ts",
     "src/families/evm/shouldUseReceiveOptions.ts",
