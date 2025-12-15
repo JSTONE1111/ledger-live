@@ -44,7 +44,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-const SUPPORTED_LANGUAGES = [
+export const SUPPORTED_LANGUAGES = [
   "en",
   "fr",
   "es",

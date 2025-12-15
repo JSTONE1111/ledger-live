@@ -42,7 +42,7 @@ export default function MainNavigator() {
   const insets = useSafeAreaInsets();
   const tabBar = useMemo(
     () =>
-      ({ ...props }: BottomTabBarProps): JSX.Element =>
+      ({ ...props }: BottomTabBarProps): React.JSX.Element =>
         customTabBar({
           ...props,
           colors,
@@ -77,8 +77,8 @@ export default function MainNavigator() {
           },
         ],
         tabBarShowLabel: false,
-        tabBarActiveTintColor: colors.palette.primary.c80,
-        tabBarInactiveTintColor: colors.palette.neutral.c70,
+        tabBarActiveTintColor: colors.primary.c80,
+        tabBarInactiveTintColor: colors.neutral.c70,
         headerShown: false,
         popToTopOnBlur: true,
       }}

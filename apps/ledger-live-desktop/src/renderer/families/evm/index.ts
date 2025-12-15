@@ -1,5 +1,4 @@
 import { getMessageProperties } from "@ledgerhq/coin-evm/logic";
-import shouldUseReceiveOptions from "@ledgerhq/live-common/families/evm/shouldUseReceiveOptions";
 import AccountBodyHeader from "./AccountBodyHeader";
 import AccountFooter from "./AccountFooter";
 import accountHeaderManageActions from "./AccountHeaderManageActions";
@@ -9,12 +8,14 @@ import transactionConfirmFields from "./TransactionConfirmFields";
 import { EvmFamily } from "./types";
 
 const family: EvmFamily = {
+  operationDetails: {
+    OperationDetailsExtra: () => null,
+  },
   AccountBodyHeader,
   AccountFooter,
   accountHeaderManageActions,
   transactionConfirmFields,
   sendAmountFields,
-  shouldUseReceiveOptions,
   StepSummaryNetworkFeesRow,
   message: {
     getMessageProperties,

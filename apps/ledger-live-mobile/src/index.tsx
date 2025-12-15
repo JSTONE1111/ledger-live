@@ -1,3 +1,5 @@
+import "LLM/utils/logStartup/beforeJSImports";
+require("./promise-polyfill");
 import "./polyfill";
 import "./live-common-setup";
 import "./iosWebsocketFix";
@@ -81,6 +83,7 @@ import { WaitForAppReady } from "LLM/contexts/WaitForAppReady";
 import AppVersionBlocker from "LLM/features/AppBlockers/components/AppVersionBlocker";
 import AppGeoBlocker from "LLM/features/AppBlockers/components/AppGeoBlocker";
 import { StoragePerformanceOverlay } from "LLM/storage/screens/PerformanceMonitor";
+import { logStartupEvent } from "LLM/utils/logStartupTime";
 import {
   TrackingConsent,
   DatadogProvider,
@@ -102,6 +105,9 @@ import { ConfigureDBSaveEffects } from "./components/DBSave";
 import { useRef } from "react";
 import HookDevTools from "./devTools/useDevTools";
 import { setSolanaLdmkEnabled } from "@ledgerhq/live-common/families/solana/setup";
+import useCheckAccountWithFunds from "./logic/postOnboarding/useCheckAccountWithFunds";
+
+logStartupEvent("After js imports");
 
 if (Config.DISABLE_YELLOW_BOX) {
   LogBox.ignoreAllLogs();
@@ -121,6 +127,7 @@ const styles = StyleSheet.create({
 });
 
 function App() {
+  logStartupEvent("App render");
   const accounts = useSelector(accountsSelector);
   const analyticsFF = useFeature("llmAnalyticsOptInPrompt");
   const datadogFF = useFeature("llmDatadog");
@@ -208,10 +215,9 @@ function App() {
     const setUserEquipmentId = async () => {
       const { user } = await getOrCreateUser();
       if (!user) return;
-      const { id } = user; // id is the user uuid aka equipment ID (used
-      // in segment)
+      const { datadogId } = user;
       DdSdkReactNative.setUserInfo({
-        id,
+        id: datadogId,
       });
     };
     initializeDatadogProvider(
@@ -231,7 +237,9 @@ function App() {
     }
   }, [sentryFF?.enabled, automaticBugReportingEnabled]);
 
-  useAccountsWithFundsListener(accounts, updateIdentify);
+  const checkAccountsWithFunds = useCheckAccountWithFunds();
+
+  useAccountsWithFundsListener(accounts, updateIdentify, checkAccountsWithFunds);
   useFetchCurrencyAll();
   useFetchCurrencyFrom();
   useAutoDismissPostOnboardingEntryPoint();
@@ -338,6 +346,7 @@ export default class Root extends Component {
   };
 
   render() {
+    logStartupEvent("Root render");
     return (
       <LedgerStoreProvider onInitFinished={this.onInitFinished} store={store}>
         {({ ready, initialCountervalues, currencyInitialized }) =>

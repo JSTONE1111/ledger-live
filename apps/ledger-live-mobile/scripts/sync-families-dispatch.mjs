@@ -41,6 +41,7 @@ const targets = [
   "MemoTagInput",
   "MemoTagSummary",
   "ShouldUseReceiveOptions",
+  "PendingTransferProposals",
 ];
 
 async function genTarget(target) {

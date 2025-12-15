@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Flex, IconsLegacy, Tag, Text } from "@ledgerhq/native-ui";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
-import { PostOnboardingActionState, PostOnboardingAction } from "@ledgerhq/types-live";
+import { PostOnboardingActionState, PostOnboardingAction, Account } from "@ledgerhq/types-live";
 import Touchable from "../Touchable";
 import { track } from "~/analytics";
 import { BaseNavigationComposite, StackNavigatorNavigation } from "../RootNavigator/types/helpers";
@@ -17,8 +17,9 @@ export type Props = PostOnboardingAction &
   PostOnboardingActionState & {
     deviceModelId: DeviceModelId;
     productName: string;
-    isLedgerSyncActive: boolean;
-    openActivationDrawer: () => void;
+    isLedgerSyncActive?: boolean;
+    openActivationDrawer?: () => void;
+    accounts?: Account[];
   };
 
 const PostOnboardingActionRow: React.FC<Props> = props => {
@@ -38,6 +39,7 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
     shouldCompleteOnStart,
     openActivationDrawer,
     isLedgerSyncActive,
+    accounts,
   } = props;
   const { t } = useTranslation();
   const recoverServices = useFeature("protectServicesMobile");
@@ -51,9 +53,9 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
   const [isActionCompleted, setIsActionCompleted] = useState(false);
 
   const initIsActionCompleted = useCallback(async () => {
-    const isAlreadyCompleted = getIsAlreadyCompletedByState?.({ isLedgerSyncActive });
+    const isAlreadyCompleted = getIsAlreadyCompletedByState?.({ isLedgerSyncActive, accounts });
     setIsActionCompleted(completed || !!isAlreadyCompleted);
-  }, [setIsActionCompleted, completed, getIsAlreadyCompletedByState, isLedgerSyncActive]);
+  }, [setIsActionCompleted, completed, getIsAlreadyCompletedByState, isLedgerSyncActive, accounts]);
 
   useEffect(() => {
     initIsActionCompleted();
@@ -85,7 +87,7 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
       });
       navigation.navigate(navigationArgs[0], navigationArgs[1]);
     } else if ("startAction" in props) {
-      props.startAction({
+      props.startAction?.({
         openActivationDrawer,
       });
     }
@@ -102,7 +104,7 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
       <Flex
         flexDirection="row"
         alignItems="center"
-        py={6}
+        py={1}
         justifyContent="space-between"
         opacity={disabled ? 0.5 : 1}
       >
@@ -123,7 +125,7 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
                 </Tag>
               ) : null}
             </Flex>
-            {isActionCompleted ? null : (
+            {isActionCompleted || description === undefined ? null : (
               <Text variant="body" fontWeight="medium" color="neutral.c70">
                 {t(description, { productName })}
               </Text>

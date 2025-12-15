@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Flex, Icons, Tag, Text } from "@ledgerhq/react-ui";
 import { useTranslation } from "react-i18next";
-import { PostOnboardingActionState, PostOnboardingAction } from "@ledgerhq/types-live";
+import { PostOnboardingActionState, PostOnboardingAction, Account } from "@ledgerhq/types-live";
 import { DeviceModelId } from "@ledgerhq/types-devices";
 import { getDeviceModel } from "@ledgerhq/devices";
 import { track } from "~/renderer/analytics/segment";
@@ -19,7 +19,8 @@ import { EntryPoint } from "LLD/features/LedgerSyncEntryPoints/types";
 export type Props = PostOnboardingAction &
   PostOnboardingActionState & {
     deviceModelId: DeviceModelId | null;
-    isLedgerSyncActive: boolean;
+    isLedgerSyncActive?: boolean;
+    accounts?: Account[];
   };
 
 const ActionRowWrapper = styled(Flex)<{ completed: boolean }>`
@@ -39,6 +40,7 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
     shouldCompleteOnStart,
     getIsAlreadyCompletedByState,
     isLedgerSyncActive,
+    accounts,
   } = props;
   const { t } = useTranslation();
   const dispatch: Dispatch = useDispatch();
@@ -48,16 +50,16 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
 
   const { openDrawer: openActivationDrawer } = useLedgerSyncEntryPointViewModel({
     entryPoint: EntryPoint.postOnboarding,
-    needEligibleDevice: false,
+    needEligibleDevice: true,
   });
 
   const completeAction = useCompleteActionCallback();
   const [isActionCompleted, setIsActionCompleted] = useState(false);
 
   const initIsActionCompleted = useCallback(async () => {
-    const isAlreadyCompleted = getIsAlreadyCompletedByState?.({ isLedgerSyncActive });
+    const isAlreadyCompleted = getIsAlreadyCompletedByState?.({ isLedgerSyncActive, accounts });
     setIsActionCompleted(completed || !!isAlreadyCompleted);
-  }, [setIsActionCompleted, completed, getIsAlreadyCompletedByState, isLedgerSyncActive]);
+  }, [setIsActionCompleted, completed, getIsAlreadyCompletedByState, isLedgerSyncActive, accounts]);
 
   useEffect(() => {
     initIsActionCompleted();
@@ -73,21 +75,22 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
     };
 
     if ("startAction" in props && deviceModelId !== null) {
-      props.startAction({
+      props.startAction?.({
         openModalCallback,
         navigationCallback,
         deviceModelId,
         protectId,
         openActivationDrawer,
       });
-      buttonLabelForAnalyticsEvent &&
+      if (buttonLabelForAnalyticsEvent) {
         track("button_clicked2", {
           button: buttonLabelForAnalyticsEvent,
           deviceModelId,
           flow: "post-onboarding",
         });
+      }
     }
-    shouldCompleteOnStart && completeAction(id);
+    if (shouldCompleteOnStart) completeAction(id);
   }, [
     props,
     dispatch,
@@ -110,7 +113,7 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
       borderRadius={3}
       marginBottom={4}
       completed={isActionCompleted}
-      padding="32px 24px"
+      padding="16px 24px"
       {...(isActionCompleted
         ? undefined
         : {
@@ -129,7 +132,7 @@ const PostOnboardingActionRow: React.FC<Props> = props => {
           >
             {t(title)}
           </Text>
-          {!isActionCompleted ? (
+          {!isActionCompleted && description ? (
             <Text variant="body" fontWeight="medium" color="neutral.c70">
               {t(description, {
                 productName: getDeviceModel(deviceModelId ?? DeviceModelId.stax).productName,

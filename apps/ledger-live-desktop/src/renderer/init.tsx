@@ -31,7 +31,6 @@ import { enableGlobalTab, disableGlobalTab, isGlobalTabEnabled } from "~/config/
 import sentry from "~/sentry/renderer";
 import { setEnvOnAllThreads } from "~/helpers/env";
 import dbMiddleware from "~/renderer/middlewares/db";
-import { analyticsMiddleware } from "~/renderer/middlewares/analytics";
 import type { ReduxStore } from "~/renderer/createStore";
 import createStore from "~/renderer/createStore";
 import events from "~/renderer/events";
@@ -55,9 +54,10 @@ import { importMarketState } from "./actions/market";
 import { fetchWallet } from "./actions/wallet";
 import { fetchTrustchain } from "./actions/trustchain";
 import { registerTransportModules } from "~/renderer/live-common-setup";
+import { setupRecentAddressesStore } from "./recentAddresses";
+import { startAnalytics } from "./analytics/segment";
 
 const rootNode = document.getElementById("react-root");
-const TAB_KEY = 9;
 
 async function init() {
   // at this step. we know the app error handling will happen here. so we can unset the global onerror
@@ -120,9 +120,9 @@ async function init() {
 
   const store = createStore({
     dbMiddleware,
-    analyticsMiddleware,
   });
 
+  setupRecentAddressesStore(store);
   setupCryptoAssetsStore(store);
 
   // Hydrate persisted crypto assets tokens from app.json
@@ -168,10 +168,12 @@ async function init() {
     deepLinkUrl = url;
   });
   const initialSettings = (await getKey("app", "settings")) || {};
+  // Make sure startAnalytics is always called after a first getKey() because otherwise
+  // will run into issues where shareAnalytics state will not reflect the user's preferences and always be set to true...
+  startAnalytics(store);
 
   // Build settings to load, ensuring hasCompletedOnboarding is false after a hard reset
   const settingsToLoad = { ...initialSettings };
-
   if (wasHardReset) {
     settingsToLoad.hasCompletedOnboarding = false;
   }
@@ -230,12 +232,12 @@ async function init() {
   webFrame.setVisualZoomLevelLimits(1, 1);
   const matcher = window.matchMedia("(prefers-color-scheme: dark)");
   const updateOSTheme = () => store.dispatch(setOSDarkMode(matcher.matches));
-  matcher.addListener(updateOSTheme);
+  matcher.addEventListener("change", updateOSTheme);
   events({
     store,
   });
   window.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.which === TAB_KEY) {
+    if (e.key === "Tab") {
       if (!isGlobalTabEnabled()) enableGlobalTab();
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       logger.onTabKey(document.activeElement as HTMLElement);
@@ -297,11 +299,12 @@ async function init() {
     },
   };
 }
-function r(Comp: JSX.Element) {
+function r(Comp: React.JSX.Element) {
   if (rootNode) {
     render(Comp, rootNode);
   }
 }
+
 init()
   .catch(e => {
     logger.critical(e);

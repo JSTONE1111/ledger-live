@@ -5,14 +5,12 @@ import QRCode from "react-native-qrcode-svg";
 import { useTranslation } from "react-i18next";
 import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 import type { Account, TokenAccount } from "@ledgerhq/types-live";
-import { PostOnboardingActionId } from "@ledgerhq/types-live";
 import type { CryptoOrTokenCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import {
   makeEmptyTokenAccount,
   getMainAccount,
   getAccountCurrency,
 } from "@ledgerhq/live-common/account/index";
-import { getCurrencyColor } from "@ledgerhq/live-common/currencies/color";
 import FeatureToggle from "@ledgerhq/live-common/featureFlags/FeatureToggle";
 import { useTheme } from "styled-components/native";
 import { Flex, Text, IconsLegacy, Button, Box, BannerCard, Icons } from "@ledgerhq/native-ui";
@@ -38,7 +36,6 @@ import { BankMedium } from "@ledgerhq/native-ui/assets/icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { hasClosedWithdrawBannerSelector } from "~/reducers/settings";
 import { setCloseWithdrawBanner } from "~/actions/settings";
-import { useCompleteActionCallback } from "~/logic/postOnboarding/useCompleteAction";
 import { urls } from "~/utils/urls";
 import { useMaybeAccountName } from "~/reducers/wallet";
 import Animated, {
@@ -172,13 +169,6 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
       }
     }
   }, [currency, route.params?.createTokenAccount, mainAccount, dispatch, hasAddedTokenAccount]);
-
-  const completeAction = useCompleteActionCallback();
-
-  useEffect(() => {
-    completeAction(PostOnboardingActionId.assetsTransfer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     navigation.setOptions({
@@ -346,7 +336,7 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
         <Flex p={0} alignItems="center" justifyContent="center">
           <StyledTouchableHightlight
             activeOpacity={1}
-            underlayColor={colors.palette.opacityDefault.c10}
+            underlayColor={colors.opacityDefault.c10}
             alignItems="center"
             justifyContent="center"
             width={QRContainerSize}
@@ -388,13 +378,7 @@ function ReceiveConfirmationInner({ navigation, route, account, parentAccount }:
                   bg="constant.white"
                   position="absolute"
                 >
-                  <CurrencyIcon
-                    currency={currency}
-                    color={colors.constant.white}
-                    bg={getCurrencyColor(currency) || colors.constant.black}
-                    size={48}
-                    circle
-                  />
+                  <CurrencyIcon currency={currency} size={48} />
                 </Flex>
               </Flex>
               <Text

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from "react";
-import { Divider, Flex, Text, Button } from "@ledgerhq/native-ui";
+import { Divider, Flex, Text, Button, ScrollContainer, Icons } from "@ledgerhq/native-ui";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -13,13 +13,14 @@ import PostOnboardingActionRow from "~/components/PostOnboarding/PostOnboardingA
 import { TrackScreen } from "~/analytics";
 import Link from "~/components/wrappedUi/Link";
 import { useCompletePostOnboarding } from "~/logic/postOnboarding/useCompletePostOnboarding";
-import { ScrollContainer } from "@ledgerhq/native-ui";
 import { setHasBeenRedirectedToPostOnboarding, setIsPostOnboardingFlow } from "~/actions/settings";
 import ActivationDrawer from "LLM/features/WalletSync/screens/Activation/ActivationDrawer";
 import { Steps } from "LLM/features/WalletSync/types/Activation";
 import useLedgerSyncEntryPointViewModel from "LLM/features/LedgerSyncEntryPoint/useLedgerSyncEntryPointViewModel";
 import { EntryPoint } from "LLM/features/LedgerSyncEntryPoint/types";
 import { trustchainSelector } from "@ledgerhq/ledger-key-ring-protocol/store";
+import { accountsSelector } from "~/reducers/accounts";
+import { PostOnboardingActionId } from "@ledgerhq/types-live";
 
 const PostOnboardingHub = () => {
   const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const PostOnboardingHub = () => {
   const { actionsState, deviceModelId } = usePostOnboardingHubState();
   const closePostOnboarding = useCompletePostOnboarding();
   const isLedgerSyncActive = Boolean(useSelector(trustchainSelector)?.rootId);
+  const accounts = useSelector(accountsSelector);
 
   const { isActivationDrawerVisible, closeActivationDrawer, openActivationDrawer } =
     useLedgerSyncEntryPointViewModel({
@@ -79,12 +81,13 @@ const PostOnboardingHub = () => {
         justifyContent="space-between"
         flex={1}
         paddingBottom={safeAreaInsets.bottom}
+        testID="post-onboarding-hub-container"
       >
         <Flex pb={8}>
           <Text variant="h1Inter" fontWeight="semiBold">
             {areAllPostOnboardingActionsCompleted
               ? t("postOnboarding.hub.areAllPostOnboardingActionsCompletedTitle")
-              : t("postOnboarding.hub.title", { productName })}
+              : t("postOnboarding.hub.title")}
           </Text>
         </Flex>
         <ScrollContainer
@@ -96,6 +99,16 @@ const PostOnboardingHub = () => {
           }}
         >
           <Flex>
+            <PostOnboardingActionRow
+              id={PostOnboardingActionId.deviceOnboarded}
+              title="postOnboarding.actions.deviceOnboarded.titleCompleted"
+              titleCompleted="postOnboarding.actions.deviceOnboarded.titleCompleted"
+              completed
+              Icon={Icons.LedgerDevices}
+              deviceModelId={deviceModelId}
+              productName={productName}
+            />
+            <Divider />
             {actionsState.map((action, index, arr) => (
               <React.Fragment key={index}>
                 <PostOnboardingActionRow
@@ -104,6 +117,7 @@ const PostOnboardingHub = () => {
                   productName={productName}
                   openActivationDrawer={openActivationDrawer}
                   isLedgerSyncActive={isLedgerSyncActive}
+                  accounts={accounts}
                 />
                 {index !== arr.length - 1 && <Divider />}
               </React.Fragment>
@@ -130,6 +144,7 @@ const PostOnboardingHub = () => {
                   deviceModelId,
                   flow: "post-onboarding",
                 }}
+                testID="post-onboarding-hub-skip-button"
               >
                 {t("postOnboarding.hub.skip")}
               </Link>

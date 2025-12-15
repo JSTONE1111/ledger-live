@@ -1,7 +1,8 @@
 import { Provider } from "@ledgerhq/live-common/e2e/enum/Provider";
 import { getMinimumSwapAmount } from "@ledgerhq/live-common/e2e/swap";
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
-import { retryUntilTimeout } from "utils/retry";
+import { retryUntilTimeout } from "../../utils/retry";
+import { floatNumberRegex } from "@ledgerhq/live-common/e2e/data/regexes";
 
 export default class SwapLiveAppPage {
   fromSelector = "from-account-coin-selector";
@@ -93,7 +94,9 @@ export default class SwapLiveAppPage {
 
   @Step("Select available provider")
   async selectExchange() {
-    const providersList = await this.getProviderList();
+    const providersList = (await this.getProviderList()).filter(
+      name => name !== Provider.LIFI.uiName,
+    );
 
     const providersWithoutKYC = providersList.filter(providerName => {
       const provider = Object.values(Provider).find(p => p.uiName === providerName);
@@ -138,8 +141,6 @@ export default class SwapLiveAppPage {
 
   @Step("Tap execute swap button")
   async tapExecuteSwap() {
-    await waitWebElementByTestId(this.executeSwapButton);
-    await waitForWebElementToBeEnabled(this.executeSwapButton);
     await tapWebElementByTestId(this.executeSwapButton);
   }
 
@@ -163,7 +164,7 @@ export default class SwapLiveAppPage {
       `[data-testid^='${this.quoteCardProviderName}']`,
     );
     const numberOfQuotesText: string = await getWebElementText(this.numberOfQuotes);
-    jestExpect(numberOfQuotesText).toEqual(`${providerList.length} quotes found`);
+    jestExpect(numberOfQuotesText).toMatch(new RegExp(`${providerList.length} quotes? found`));
     return providerList;
   }
 
@@ -274,6 +275,7 @@ export default class SwapLiveAppPage {
   @Step("Click on swap max")
   async clickSwapMax() {
     await tapWebElementByTestId(this.swapMaxToggle);
+    await waitForWebElementToMatchRegex(app.swapLiveApp.toAmountInput, floatNumberRegex);
   }
 
   @Step("Retrieve send currency amount value")
@@ -341,6 +343,9 @@ export default class SwapLiveAppPage {
 
   @Step("Verify live app title contains $0")
   async verifyLiveAppTitle(provider: string) {
+    await waitForElementById(this.liveAppTitle, undefined, {
+      errorElementId: app.common.errorPage.genericErrorModalId,
+    });
     const liveApp = await getTextOfElement(this.liveAppTitle);
     jestExpect(liveApp?.toLowerCase()).toContain(provider);
   }
