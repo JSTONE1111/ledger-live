@@ -471,6 +471,13 @@ export const DEFAULT_FEATURES: Features = {
     params: {},
   },
 
+  ptxEarnUi: {
+    enabled: false,
+    params: {
+      value: "v1",
+    },
+  },
+
   ptxSwapLiveAppMobile: {
     enabled: false,
     params: {
@@ -585,6 +592,7 @@ export const DEFAULT_FEATURES: Features = {
       manager: true,
       accounts: true,
       settings: true,
+      onboarding: true,
       postOnboarding: true,
     },
   },
@@ -600,6 +608,7 @@ export const DEFAULT_FEATURES: Features = {
   },
   lwmLedgerSyncOptimisation: DEFAULT_FEATURE,
   lwdLedgerSyncOptimisation: DEFAULT_FEATURE,
+  lwmNewWordingOptInNotificationsDrawer: DEFAULT_FEATURE,
   lldNanoSUpsellBanners: {
     ...DEFAULT_FEATURE,
     params: {
@@ -727,7 +736,12 @@ export const DEFAULT_FEATURES: Features = {
       activeCurrencyIds: [],
     },
   },
-  newSendFlow: DEFAULT_FEATURE,
+  newSendFlow: {
+    ...DEFAULT_FEATURE,
+    params: {
+      families: [],
+    },
+  },
   cantonSkipPreapprovalStep: DEFAULT_FEATURE,
   lldSessionReplay: {
     ...DEFAULT_FEATURE,
@@ -740,6 +754,20 @@ export const DEFAULT_FEATURES: Features = {
   lldRebornABtest: DEFAULT_FEATURE,
   llmRebornABtest: DEFAULT_FEATURE,
   lifiSolana: DEFAULT_FEATURE,
+  llmAnimatedSplashScreen: {
+    enabled: true,
+    params: {
+      ios: true,
+      android: true,
+    },
+  },
+  llmOnboardingEnableSync: initFeature({
+    enabled: false,
+    params: {
+      nanos: false,
+      touchscreens: false,
+    },
+  }),
 };
 
 // Firebase SDK treat JSON values as strings

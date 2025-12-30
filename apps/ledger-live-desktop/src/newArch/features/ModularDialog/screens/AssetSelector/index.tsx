@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 import SearchInputContainer from "./components/SearchInputContainer";
 import { EnhancedModularDrawerConfiguration } from "@ledgerhq/live-common/wallet-api/ModularDrawer/types";
-import { MODULAR_DRAWER_PAGE_NAME } from "../../analytics/modularDrawer.types";
-import TrackDrawerScreen from "../../analytics/TrackDrawerScreen";
+import { MODULAR_DIALOG_PAGE_NAME } from "../../analytics/modularDialog.types";
+import TrackDialogScreen from "../../analytics/TrackDialogScreen";
 import { LoadingStatus } from "@ledgerhq/live-common/deposit/type";
 import { GenericError } from "../../components/GenericError";
 import { useSelector } from "react-redux";
 import { modularDrawerSearchedSelector } from "~/renderer/reducers/modularDrawer";
 import { AssetData } from "@ledgerhq/live-common/modularDrawer/utils/type";
 import { AssetSelectorContent } from "./components/AssetSelectorContent";
+import { ErrorInfo } from "@ledgerhq/live-common/dada-client/utils/errorUtils";
 
 export type AssetSelectorProps = {
   assetsToDisplay: CryptoOrTokenCurrency[];
@@ -17,7 +18,7 @@ export type AssetSelectorProps = {
   assetsConfiguration: EnhancedModularDrawerConfiguration["assets"];
   onAssetSelected: (asset: CryptoOrTokenCurrency) => void;
   loadNext?: () => void;
-  error?: boolean;
+  errorInfo?: ErrorInfo;
   refetch?: () => void;
   assetsSorted?: AssetData[];
 };
@@ -28,7 +29,7 @@ const AssetSelector = ({
   assetsConfiguration,
   onAssetSelected,
   loadNext,
-  error,
+  errorInfo,
   refetch,
   assetsSorted,
 }: Readonly<AssetSelectorProps>) => {
@@ -51,15 +52,15 @@ const AssetSelector = ({
   return (
     <>
       {assetsSorted?.length !== 1 && (
-        <TrackDrawerScreen
-          page={MODULAR_DRAWER_PAGE_NAME.MODULAR_ASSET_SELECTION}
+        <TrackDialogScreen
+          page={MODULAR_DIALOG_PAGE_NAME.MODULAR_ASSET_SELECTION}
           assetsConfig={assetsConfiguration}
           formatAssetConfig
         />
       )}
       <SearchInputContainer />
-      {error && refetch ? (
-        <GenericError onClick={refetch} />
+      {errorInfo?.hasError ? (
+        <GenericError onClick={refetch} type={errorInfo.isNetworkError ? "network" : "backend"} />
       ) : (
         <AssetSelectorContent
           assetsToDisplay={assetsToDisplay}

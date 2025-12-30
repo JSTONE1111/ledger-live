@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Account, AccountListItem } from "../AccountListItem";
-import { VirtualList } from "@ledgerhq/react-ui/pre-ldls";
+import { VirtualList } from "LLD/components/VirtualList";
 
 export const AccountVirtualList = ({
   accounts,
@@ -19,9 +19,10 @@ export const AccountVirtualList = ({
   return (
     <VirtualList
       items={accounts}
-      itemHeight={76}
+      itemHeight={64}
       bottomComponent={bottomComponent}
       renderItem={renderAccountListItem}
+      className="pb-40"
     />
   );
 };

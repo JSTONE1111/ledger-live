@@ -3715,6 +3715,8 @@
       "activeTooltip": "Active amount generate rewards",
       "inactiveTooltip": "Inactive amount does not generate rewards",
       "delegatedInfoTooltip": "Total amount that is delegated to validators.",
+      "inactiveStakeTooltip": "Inactive stake that can be withdrawn without deactivating your delegation.",
+      "inactiveStakeTitle": "Withdrawable Rewards",
       "withdrawableInfoTooltip": "Total amount that is withdrawable from delegations.",
       "withdrawableTitle": "Withdrawable",
       "statusUpdateNotice": "The status of the delegation will be updated when the transaction is confirmed.",
@@ -4661,7 +4663,10 @@
       },
       "modularDrawerDevTool": {
         "title": "Modular Drawer Dev Tool",
-        "description": "Allows you to test the Modular Drawer easily"
+        "description": "Allows you to test the Modular Drawer easily",
+        "openDrawer": "Open Drawer",
+        "debugDialog": "Debug Dialog",
+        "debugDuplicates": "Debug Duplicates"
       },
       "cryptoAssetsList": {
         "title": "Crypto Assets List",
@@ -5862,6 +5867,15 @@
     "canton": {
       "commentPlaceholder": "Optional",
       "comment": "Comment",
+      "expiryDuration": {
+        "label": "Expiry duration",
+        "summaryLabel": "Expiry Offer",
+        "threeHours": "3 hours",
+        "sixHours": "6 hours",
+        "oneDay": "1 day",
+        "oneWeek": "1 week",
+        "oneMonth": "30 days"
+      },
       "account": {
         "lockedBalance": "Locked",
         "lockedBalanceTooltip": "Your funds are locked in offers you've sent to others. You can cancel these offers any time, or wait for the recipient to accept or reject.",
@@ -5919,10 +5933,12 @@
       "pendingTransactions": {
         "title": "Pending Transactions ({{count}})",
         "incoming": {
-          "title": "Incoming Offers ({{count}})"
+          "title": "Incoming transfer to review ({{count}})",
+          "detailsTitle": "Incoming transfer details"
         },
         "outgoing": {
-          "title": "Outgoing Offers ({{count}})"
+          "title": "Outgoing Offers ({{count}})",
+          "detailsTitle": "Outgoing transfer details"
         },
         "pending": "Pending",
         "expired": "Expired",
@@ -6952,6 +6968,9 @@
     "HederaNoStakingRewardsError": {
       "title": "No rewards to claim"
     },
+    "HederaMemoIsTooLong": {
+      "title": "Memo is too long. Max length is {{maxLength}} characters"
+    },
     "ImageIncorrectFileTypeError": {
       "title": "Image loading from file failed.",
       "description": "Please try again with an image."
@@ -7451,6 +7470,12 @@
       }
     }
   },
+  "dialogs": {
+    "selectAccount": {
+      "description": "You don't have {{network}} accounts yet. Please add one to continue",
+      "addAccount": "Add account"
+    }
+  },
   "drawers": {
     "selectCurrency": {
       "title": "choose asset"
@@ -7881,6 +7906,17 @@
       "title": "A network error occurred",
       "description": "Something went wrong, please try again or contact Ledger Support if in doubt.",
       "cta": "Retry"
+    },
+    "errors": {
+      "network": {
+        "title": "Connection failed",
+        "description": "No internet connection. Please try again"
+      },
+      "backend": {
+        "title": "Connection failed",
+        "description": "Something went wrong on our end. Please try again later"
+      },
+      "cta": "Try again"
     }
   },
   "nftEntryPoint": {

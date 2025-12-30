@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { VirtualList } from "@ledgerhq/react-ui/pre-ldls";
+import { VirtualList } from "LLD/components/VirtualList";
 import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { NetworkListItem } from "../NetworkListItem";
 
@@ -31,5 +31,12 @@ export const NetworkVirtualList = ({ networks, onClick }: NetworkVirtualListProp
     [onClick],
   );
 
-  return <VirtualList itemHeight={64} items={networks} renderItem={renderNetworkItem} />;
+  return (
+    <VirtualList
+      itemHeight={64}
+      items={networks}
+      renderItem={renderNetworkItem}
+      className="pb-20"
+    />
+  );
 };

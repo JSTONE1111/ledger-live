@@ -21,7 +21,7 @@ import { AlertLedgerSyncDown } from "../../components/AlertLedgerSyncDown";
 import { useLedgerSyncStatus } from "../../hooks/useLedgerSyncStatus";
 import { TrustchainNotFound } from "@ledgerhq/ledger-key-ring-protocol/errors";
 import { useCustomTimeOut } from "../../hooks/useCustomTimeOut";
-import { useDispatch } from "react-redux";
+import { useDispatch } from "~/context/store";
 import { blockPasswordLock } from "~/actions/appstate";
 import { isNoTrustchainError } from "../../utils/errors";
 import useFeature from "@ledgerhq/live-common/featureFlags/useFeature";
@@ -199,6 +199,10 @@ const InstancesRow = styled(TouchableOpacity)<{ disabled?: boolean }>`
   }
 `;
 
-const Container = styled(Flex).attrs((p: { disabled?: boolean }) => ({
+type ContainerProps = {
+  disabled?: boolean;
+};
+
+const Container = styled(Flex).attrs<ContainerProps>(p => ({
   opacity: p.disabled ? 0.3 : 1,
-}))<{ disabled?: boolean }>``;
+}))``;

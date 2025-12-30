@@ -35,7 +35,7 @@ const mockUseAcceptedCurrency = jest.fn(() => () => true);
 
 // Helper to get the back button from DialogHeader (uses aria-label since DialogHeader doesn't expose test-id)
 const getBackButton = () => {
-  return screen.getByLabelText("components.sheetBar.goBackAriaLabel");
+  return screen.getByLabelText("components.dialogHeader.goBackAriaLabel");
 };
 
 beforeEach(() => {
@@ -114,7 +114,7 @@ describe("ModularDialogFlowManager - Select Account Flow", () => {
     await user.click(arbitrumNetwork);
 
     expect(screen.getAllByText(/select account/i)[0]).toBeVisible();
-    expect(screen.getByText(/add new or existing account/i)).toBeVisible();
+    expect(screen.getByText(/add account/i)).toBeVisible();
     expect(screen.getByText(/ethereum 2/i)).toBeVisible();
     expect(screen.getByText(/1 eth/i)).toBeVisible();
   });
@@ -203,8 +203,8 @@ describe("ModularDialogFlowManager - Select Account Flow", () => {
     );
 
     await waitFor(() => expect(screen.getAllByText(/select account/i)[0]).toBeVisible());
-    expect(screen.getByText(/add new or existing account/i)).toBeVisible();
-    expect(screen.queryByText(/bitcoin/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/add account/i)).toBeVisible();
+    expect(screen.getAllByText(/you don't have bitcoin accounts yet/i)[0]).toBeVisible();
   });
 
   it("should trigger add account with corresponding currency", async () => {
@@ -225,8 +225,8 @@ describe("ModularDialogFlowManager - Select Account Flow", () => {
     );
 
     await waitFor(() => expect(screen.getAllByText(/select account/i)[0]).toBeVisible());
-    expect(screen.getByText(/add new or existing account/i)).toBeVisible();
-    await user.click(screen.getByText(/add new or existing account/i));
+    expect(screen.getByText(/add account/i)).toBeVisible();
+    await user.click(screen.getByText(/add account/i));
     expect(mockDispatch).toHaveBeenCalledWith({
       payload: {
         data: {
@@ -505,6 +505,62 @@ describe("ModularDialogFlowManager - Select Account Flow", () => {
     );
 
     await waitFor(() => expect(screen.getByRole("textbox")).toBeVisible());
-    expect(screen.getByRole("textbox")).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole("textbox")).toHaveFocus());
+  });
+
+  it("should display description when there are no accounts for the selected network", async () => {
+    const { user } = render(
+      <ModularDialogFlowManager
+        currencies={mockCurrencies}
+        onAccountSelected={mockOnAccountSelected}
+      />,
+      {
+        ...INITIAL_STATE,
+        initialState: {
+          accounts: [],
+          modularDrawer: { isOpen: true },
+        },
+      },
+    );
+
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
+    const ethereumAsset = screen.getByText(/ethereum/i);
+    await user.click(ethereumAsset);
+
+    const ethereumNetwork = screen.getByText(/ethereum/i);
+    await user.click(ethereumNetwork);
+
+    await waitFor(() => expect(screen.getAllByText(/select account/i)[0]).toBeVisible());
+
+    const descriptions = screen.getAllByText(/you don't have ethereum accounts yet/i);
+    expect(descriptions[0]).toBeVisible();
+  });
+
+  it("should NOT display description when there are accounts for the selected network", async () => {
+    const { user } = render(
+      <ModularDialogFlowManager
+        currencies={mockCurrencies}
+        onAccountSelected={mockOnAccountSelected}
+      />,
+      {
+        ...INITIAL_STATE,
+        initialState: {
+          accounts: [ETH_ACCOUNT],
+          modularDrawer: { isOpen: true },
+        },
+      },
+    );
+
+    await waitFor(() => expect(screen.getByText(/ethereum/i)).toBeVisible());
+    const ethereumAsset = screen.getByText(/ethereum/i);
+    await user.click(ethereumAsset);
+
+    const ethereumNetwork = screen.getByText(/ethereum/i);
+    await user.click(ethereumNetwork);
+
+    await waitFor(() => expect(screen.getAllByText(/select account/i)[0]).toBeVisible());
+
+    const description = screen.queryByText(/you don't have ethereum accounts yet/i);
+    expect(description).not.toBeInTheDocument();
   });
 });
