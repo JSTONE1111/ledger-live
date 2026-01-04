@@ -7,7 +7,7 @@ import {
   useModularDrawerVisibility,
   ModularDrawerVisibleParams,
 } from "@ledgerhq/live-common/modularDrawer/useModularDrawerVisibility";
-import { useDispatch } from "react-redux";
+import { useDispatch } from "LLD/hooks/redux";
 import { openModal } from "~/renderer/actions/modals";
 import { currentRouteNameRef } from "~/renderer/analytics/screenRefs";
 import { setDrawer } from "~/renderer/drawers/Provider";
@@ -115,10 +115,10 @@ export function useOpenAssetFlowDialog(
         });
       };
 
-      const onFlowFinishedWithModalReopen = () => {
+      const onFlowFinishedWithModalReopen = (account: AccountLike, parentAccount?: Account) => {
         setDrawer();
         if (modalNameToReopen) {
-          dispatch(openModal(modalNameToReopen, undefined));
+          dispatch(openModal(modalNameToReopen, { account, parentAccount }));
         }
       };
       if (featureNetworkBasedAddAccount?.enabled) {
