@@ -38,10 +38,14 @@ import {
 import { analyticsDrawerContext } from "../drawers/Provider";
 import { accountsSelector } from "../reducers/accounts";
 import { currentRouteNameRef, previousRouteNameRef } from "./screenRefs";
-import { onboardingReceiveFlowSelector } from "../reducers/onboarding";
+import {
+  onboardingIsSyncFlowSelector,
+  onboardingReceiveFlowSelector,
+  onboardingSyncFlowSelector,
+} from "../reducers/onboarding";
 import { hubStateSelector } from "@ledgerhq/live-common/postOnboarding/reducer";
-import mixpanel from "mixpanel-browser";
 import { getTotalStakeableAssets } from "@ledgerhq/live-common/domain/getTotalStakeableAssets";
+import { getWallet40Attributes } from "@ledgerhq/live-common/analytics/featureFlagHelpers/wallet40";
 
 type ReduxStore = Redux.MiddlewareAPI<Redux.Dispatch<Redux.UnknownAction>, State>;
 
@@ -216,8 +220,12 @@ const extraProperties = (store: ReduxStore) => {
   const device = lastSeenDeviceSelector(state);
   const devices = devicesModelListSelector(state);
   const accounts = accountsSelector(state);
-  const isOnboardingReceiveFlow = onboardingReceiveFlowSelector(state);
   const { postOnboardingInProgress } = hubStateSelector(state);
+
+  const isOnboardingReceiveFlow = onboardingReceiveFlowSelector(state);
+  const isOnboardingSyncFlow = onboardingIsSyncFlowSelector(state);
+  const onboardingSyncFlow = onboardingSyncFlowSelector(state);
+  const isOnboardingFlow = isOnboardingReceiveFlow || isOnboardingSyncFlow;
 
   const ptxAttributes = getPtxAttributes();
   const ldmkTransport = analyticsFeatureFlagMethod
@@ -241,7 +249,6 @@ const extraProperties = (store: ReduxStore) => {
   const marketWidgetAttributes = getMarketWidgetAnalytics(state);
   const madAttributes = getMADAttributes();
   const addAccountAttributes = getAddAccountAttributes();
-  const sessionReplayProperties = mixpanel.get_session_recording_properties?.();
 
   const deviceInfo = device
     ? {
@@ -281,6 +288,8 @@ const extraProperties = (store: ReduxStore) => {
 
   const tokenWithFunds = getTokensWithFunds(accounts);
 
+  const wallet40Attributes = getWallet40Attributes(analyticsFeatureFlagMethod, "lwd");
+
   return {
     ...mandatoryProperties,
     appVersion: __APP_VERSION__,
@@ -310,12 +319,12 @@ const extraProperties = (store: ReduxStore) => {
     lldSyncOnboardingIncr1: Boolean(lldSyncOnboardingIncr1?.enabled),
     nanoOnboardingFundWallet: Boolean(nanoOnboardingFundWallet?.enabled),
     // For tracking receive flow events during onboarding
-    ...(isOnboardingReceiveFlow ? { flow: "Onboarding" } : {}),
-    ...(postOnboardingInProgress ? { flow: "post-onboarding" } : {}),
-    ...sessionReplayProperties,
+    ...(postOnboardingInProgress && !isOnboardingFlow ? { flow: "post-onboarding" } : {}),
+    ...(isOnboardingFlow ? { flow: "Onboarding", ...onboardingSyncFlow } : {}),
     isLDMKSolanaSignerEnabled: ldmkSolanaSigner?.enabled,
     totalStakeableAssets: combinedIds.size,
     stakeableAssets: stakeableAssetsList,
+    wallet40Attributes,
   };
 };
 
@@ -363,7 +372,7 @@ export const startAnalytics = async (store: ReduxStore) => {
     braze_external_id: id, // Needed for braze with this exact name
   };
   logger.analyticsStart(id, allProperties);
-  void analytics.identify(id, allProperties, {
+  analytics.identify(id, allProperties, {
     context: getContext(),
   });
 };
@@ -378,7 +387,7 @@ export const trackSubject = new ReplaySubject<LoggableEvent>(30);
 function sendTrack(event: string, properties: object | undefined | null) {
   const analytics = getAnalytics();
   if (!analytics) return;
-  void analytics.track(event, properties ?? undefined, {
+  analytics.track(event, properties ?? undefined, {
     context: getContext(),
   });
 }
@@ -417,7 +426,7 @@ export const updateIdentify = async () => {
     userId: id,
     braze_external_id: id, // Needed for braze with this exact name
   };
-  void analytics.identify(id, allProperties, {
+  analytics.identify(id, allProperties, {
     context: getContext(),
   });
 };

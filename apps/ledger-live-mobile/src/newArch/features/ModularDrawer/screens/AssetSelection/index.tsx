@@ -25,7 +25,7 @@ import { InfiniteLoader } from "@ledgerhq/native-ui";
 import createAssetConfigurationHook from "@ledgerhq/live-common/modularDrawer/modules/createAssetConfiguration";
 import { balanceItem } from "../../components/Balance";
 import { useBalanceDeps } from "../../hooks/useBalanceDeps";
-import { useSelector } from "~/context/store";
+import { useSelector } from "~/context/hooks";
 import { modularDrawerFlowSelector, modularDrawerSourceSelector } from "~/reducers/modularDrawer";
 import { AssetData } from "@ledgerhq/live-common/modularDrawer/utils/type";
 import { groupCurrenciesByAsset } from "@ledgerhq/live-common/modularDrawer/utils/groupCurrenciesByAsset";
@@ -68,7 +68,9 @@ const AssetSelection = ({
 
   const expandToFullHeight = () => {
     snapToIndex(1);
-    listRef.current?.scrollToIndex({ index: 0 });
+    if (formattedAssets.length > 0) {
+      listRef.current?.scrollToIndex({ index: 0 });
+    }
   };
 
   const assetsMap = groupCurrenciesByAsset(assetsSorted || []);

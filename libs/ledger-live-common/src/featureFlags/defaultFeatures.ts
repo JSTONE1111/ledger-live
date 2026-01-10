@@ -140,6 +140,13 @@ export const DEFAULT_FEATURES: Features = {
   receiveStakingFlowConfigDesktop: initFeature(),
   brazePushNotifications: initFeature(),
   stakeAccountBanner: initFeature(),
+  lldOnboardingEnableSync: initFeature({
+    enabled: false,
+    params: {
+      nanos: false,
+      touchscreens: false,
+    },
+  }),
   mixpanelAnalytics: initFeature({
     enabled: false,
     params: { record_sessions_percent: 100 },
@@ -742,12 +749,6 @@ export const DEFAULT_FEATURES: Features = {
     },
   },
   cantonSkipPreapprovalStep: DEFAULT_FEATURE,
-  lldSessionReplay: {
-    ...DEFAULT_FEATURE,
-    params: {
-      sampling: 100,
-    },
-  },
   zcashShielded: DEFAULT_FEATURE,
   llmNanoOnboardingFundWallet: DEFAULT_FEATURE,
   lldRebornABtest: DEFAULT_FEATURE,
@@ -767,6 +768,18 @@ export const DEFAULT_FEATURES: Features = {
       touchscreens: false,
     },
   }),
+  lwmWallet40: {
+    ...DEFAULT_FEATURE,
+    params: {
+      marketBanner: true,
+    },
+  },
+  lwdWallet40: {
+    ...DEFAULT_FEATURE,
+    params: {
+      marketBanner: true,
+    },
+  },
 };
 
 // Firebase SDK treat JSON values as strings
