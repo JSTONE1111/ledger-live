@@ -14,7 +14,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import snakeCase from "lodash/snakeCase";
-import React, { MutableRefObject, useCallback } from "react";
+import React, { type RefObject, useCallback } from "react";
 import { ABTestingVariants, FeatureId, Features, idsToLanguage } from "@ledgerhq/types-live";
 
 import { runOnceWhen } from "@ledgerhq/live-common/utils/runOnceWhen";
@@ -26,7 +26,6 @@ import {
 import { getTokensWithFunds } from "@ledgerhq/live-common/domain/getTokensWithFunds";
 import { getEnv } from "@ledgerhq/live-env";
 import { getAndroidArchitecture, getAndroidVersionCode } from "../logic/cleanBuildVersion";
-import { getIsNotifEnabled } from "../logic/getNotifPermissions";
 import getOrCreateUser from "../user";
 import {
   analyticsEnabledSelector,
@@ -62,10 +61,11 @@ import { aggregateData, getUniqueModelIdList } from "../logic/modelIdList";
 import { getMigrationUserProps } from "LLM/storage/utils/migrations/analytics";
 import { LiveConfig } from "@ledgerhq/live-config/LiveConfig";
 import { getVersionedRedirects } from "LLM/hooks/useStake/useVersionedStakePrograms";
-import { LAST_STARTUP_EVENTS } from "LLM/utils/logLastStartupEvents";
-import { resolveStartupEvents } from "LLM/utils/resolveStartupEvents";
+import { resolveStartupEvents, STARTUP_EVENTS } from "LLM/utils/resolveStartupEvents";
 import { getTotalStakeableAssets } from "@ledgerhq/live-common/domain/getTotalStakeableAssets";
 import { getWallet40Attributes } from "@ledgerhq/live-common/analytics/featureFlagHelpers/wallet40";
+import { notificationsPermissionStatusSelector } from "~/reducers/notifications";
+import { AuthorizationStatus } from "@react-native-firebase/messaging";
 
 const sessionId = uuid();
 const appVersion = `${VersionNumber.appVersion || ""} (${VersionNumber.buildVersion || ""})`;
@@ -170,12 +170,11 @@ const getRebornAttributes = () => {
 
 const getMEVAttributes = (state: State) => {
   if (!analyticsFeatureFlagMethod) return false;
-  const mevProtection = analyticsFeatureFlagMethod("llMevProtection");
 
   const hasMEVActivated = mevProtectionSelector(state);
 
   return {
-    MEVProtectionActivated: !mevProtection?.enabled ? "Null" : hasMEVActivated ? "Yes" : "No",
+    MEVProtectionActivated: hasMEVActivated ? "Yes" : "No",
   };
 };
 
@@ -212,6 +211,20 @@ const getMADAttributes = () => {
     receive_flow: madFeatureFlag?.params?.receive_flow ?? false,
     send_flow: madFeatureFlag?.params?.send_flow ?? false,
     isModularizationEnabled: madFeatureFlag?.params?.enableModularization ?? false,
+  };
+};
+
+const getOptimiseOptInNotificationsNewWordingAttributes = (): Record<string, unknown> => {
+  if (!analyticsFeatureFlagMethod) return {};
+  const optimiseOptInNotificationsNewWording = analyticsFeatureFlagMethod(
+    "lwmNewWordingOptInNotificationsDrawer",
+  );
+  const isFFEnabled = optimiseOptInNotificationsNewWording?.enabled;
+
+  if (!isFFEnabled) return {};
+
+  return {
+    pushOptInVariant: optimiseOptInNotificationsNewWording?.params?.variant,
   };
 };
 
@@ -260,7 +273,8 @@ const extraProperties = async (store: AppStore) => {
   const isReborn = isRebornSelector(state);
 
   const notifications = notificationsSelector(state);
-  const hasEnabledOsNotifications = await getIsNotifEnabled();
+  const hasEnabledOsNotifications =
+    notificationsPermissionStatusSelector(state) === AuthorizationStatus.AUTHORIZED;
 
   const notificationsOptedIn = {
     notificationsAllowed: notifications.areNotificationsAllowed,
@@ -328,8 +342,11 @@ const extraProperties = async (store: AppStore) => {
 
   const startupEvents = await resolveStartupEvents();
   const legacyStartupTime = startupEvents.find(
-    ({ event }) => event === LAST_STARTUP_EVENTS.APP_STARTED,
+    ({ event }) => event === STARTUP_EVENTS.APP_STARTED,
   )?.time;
+
+  const optimiseOptInNotificationsNewWordingAttributes =
+    getOptimiseOptInNotificationsNewWordingAttributes();
 
   return {
     ...mandatoryProperties,
@@ -385,6 +402,7 @@ const extraProperties = async (store: AppStore) => {
     totalStakeableAssets: combinedIds.size,
     stakeableAssets: stakeableAssetsList,
     wallet40Attributes,
+    ...optimiseOptInNotificationsNewWordingAttributes,
   };
 };
 
@@ -547,7 +565,7 @@ export const useAnalytics = () => {
   };
 };
 
-const lastScreenEventName: MutableRefObject<string | null | undefined> = React.createRef();
+const lastScreenEventName: RefObject<string | null | undefined> = React.createRef();
 
 /**
  * Track an event which will have the name `Page ${category}${name ? " " + name : ""}`.

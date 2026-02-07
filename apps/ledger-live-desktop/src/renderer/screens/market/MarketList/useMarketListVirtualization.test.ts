@@ -3,11 +3,8 @@
  */
 import { renderHook, waitFor } from "tests/testSetup";
 import { useMarketListVirtualization } from "./useMarketListVirtualization";
-import {
-  mockDomMeasurements,
-  setRefCurrent,
-} from "~/renderer/../newArch/features/__tests__/shared";
-import { mockMarketData } from "./__fixtures__/marketData";
+import { mockDomMeasurements, setRefCurrent } from "LLD/features/__tests__/shared";
+import { MOCK_MARKET_CURRENCY_DATA } from "@ledgerhq/live-common/market/utils/fixtures";
 
 describe("useMarketListVirtualization", () => {
   const mockOnLoadNextPage = jest.fn();
@@ -25,7 +22,7 @@ describe("useMarketListVirtualization", () => {
     const { result } = renderHook(() =>
       useMarketListVirtualization({
         itemCount: 10,
-        marketData: mockMarketData,
+        marketData: MOCK_MARKET_CURRENCY_DATA,
         loading: false,
         currenciesLength: 2,
         onLoadNextPage: mockOnLoadNextPage,
@@ -53,7 +50,7 @@ describe("useMarketListVirtualization", () => {
       {
         initialProps: {
           itemCount: 10,
-          marketData: mockMarketData,
+          marketData: MOCK_MARKET_CURRENCY_DATA,
           loading: false,
           currenciesLength: 2,
         },
@@ -74,7 +71,7 @@ describe("useMarketListVirtualization", () => {
 
     rerender({
       itemCount: 10,
-      marketData: mockMarketData,
+      marketData: MOCK_MARKET_CURRENCY_DATA,
       loading: false,
       currenciesLength: 2,
     });
@@ -88,7 +85,7 @@ describe("useMarketListVirtualization", () => {
     renderHook(() =>
       useMarketListVirtualization({
         itemCount: 2,
-        marketData: mockMarketData,
+        marketData: MOCK_MARKET_CURRENCY_DATA,
         loading: true,
         currenciesLength: 2,
         onLoadNextPage: mockOnLoadNextPage,
@@ -105,7 +102,7 @@ describe("useMarketListVirtualization", () => {
     renderHook(() =>
       useMarketListVirtualization({
         itemCount: 0,
-        marketData: [],
+        marketData: MOCK_MARKET_CURRENCY_DATA,
         loading: false,
         currenciesLength: 0,
         onLoadNextPage: mockOnLoadNextPage,
@@ -122,7 +119,7 @@ describe("useMarketListVirtualization", () => {
     const { result } = renderHook(() =>
       useMarketListVirtualization({
         itemCount: 2,
-        marketData: mockMarketData,
+        marketData: MOCK_MARKET_CURRENCY_DATA,
         loading: false,
         currenciesLength: 2,
         onLoadNextPage: mockOnLoadNextPage,
@@ -149,7 +146,7 @@ describe("useMarketListVirtualization", () => {
     const { result } = renderHook(() =>
       useMarketListVirtualization({
         itemCount: 10,
-        marketData: mockMarketData,
+        marketData: MOCK_MARKET_CURRENCY_DATA,
         loading: false,
         currenciesLength: 2,
         onLoadNextPage: mockOnLoadNextPage,
@@ -178,7 +175,7 @@ describe("useMarketListVirtualization", () => {
     const { rerender } = renderHook(() =>
       useMarketListVirtualization({
         itemCount: 10,
-        marketData: mockMarketData,
+        marketData: MOCK_MARKET_CURRENCY_DATA,
         loading: false,
         currenciesLength: 2,
         onLoadNextPage: mockOnLoadNextPage,

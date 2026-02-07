@@ -7,9 +7,8 @@ const commonImportRestrictions = [
     message: "Please remove the /lib import from live-common import.",
   },
   {
-    group: ["~/newArch", "~/newArch/*", "~/newArch/**"],
-    message:
-      "Use 'LLD' alias instead of '~/newArch'. Replace '~/newArch' with 'LLD' in your imports.",
+    group: ["~/mvvm", "~/mvvm/*", "~/mvvm/**"],
+    message: "Use 'LLD' alias instead of '~/mvvm'. Replace '~/mvvm' with 'LLD' in your imports.",
   },
 ];
 
@@ -23,6 +22,19 @@ const reactReduxImportRestrictions = [
     importNames: ["useSelector", "useDispatch", "useStore"],
     message:
       "Import typed hooks from 'LLD/hooks/redux' instead of 'react-redux' to ensure proper TypeScript typing.",
+  },
+];
+
+const shellOpenExternalRestrictions = [
+  {
+    selector: "CallExpression[callee.object.name='shell'][callee.property.name='openExternal']",
+    message:
+      "Do not use shell.openExternal() directly. In renderer code, use openURL() from '~/renderer/linking' instead to prevent RCE vulnerabilities. In main-process code, validate the URL with isUrlSafe before calling shell.openExternal. See: https://www.electronjs.org/docs/latest/tutorial/security#15-do-not-use-openexternal-with-untrusted-content",
+  },
+  {
+    selector: "MemberExpression[object.name='shell'][property.name='openExternal']",
+    message:
+      "Do not use shell.openExternal directly. In renderer code, use openURL() from '~/renderer/linking'. In main-process code, validate the URL with isUrlSafe before calling shell.openExternal.",
   },
 ];
 
@@ -65,11 +77,11 @@ module.exports = {
     node: true,
   },
   parser: "@typescript-eslint/parser",
-  plugins: ["react", "react-hooks"],
+  plugins: ["react", "react-hooks", "better-tailwindcss"],
   extends: [
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
-    "plugin:tailwindcss/recommended",
+    "plugin:better-tailwindcss/recommended",
   ],
   globals: {
     __DEV__: "readonly",
@@ -102,7 +114,7 @@ module.exports = {
     "space-before-function-paren": "off",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-non-null-assertion": "off", // Useful sometimes. Should not be abused.
-    "tailwindcss/no-custom-classname": "error",
+    "better-tailwindcss/enforce-consistent-line-wrapping": "off",
 
     // Ignore live-common for the moment because this rule does not work with subpath exports
     // See: https://github.com/import-js/eslint-plugin-import/issues/1810
@@ -115,8 +127,15 @@ module.exports = {
     currencyFamiliesRules,
     livecommonRules,
     {
+      files: ["src/**/*.ts", "src/**/*.tsx"],
+      excludedFiles: ["src/renderer/linking.ts"],
+      rules: {
+        "no-restricted-syntax": ["error", ...shellOpenExternalRestrictions],
+      },
+    },
+    {
       files: [
-        "src/newArch/hooks/redux.ts",
+        "src/mvvm/hooks/redux.ts",
         "src/**/*.test.tsx",
         "src/**/*.test.ts",
         "src/**/*.integration.tsx",
@@ -168,8 +187,9 @@ module.exports = {
     react: {
       version: "detect",
     },
-    tailwindcss: {
-      config: path.join(__dirname, "./tailwind.config.ts"),
+    "better-tailwindcss": {
+      entryPoint: path.join(__dirname, "./src/renderer/global.css"),
+      tailwindConfig: path.join(__dirname, "./tailwind.config.ts"),
       callees: ["cn"],
     },
   },

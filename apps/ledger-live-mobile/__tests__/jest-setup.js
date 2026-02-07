@@ -147,11 +147,17 @@ jest.mock("@react-native-community/netinfo", () => mockRNCNetInfo);
 
 jest.mock("react-native-safe-area-context", () => mockSafeAreaContext);
 
+// Mock react-native-worklets using official mock (must be before reanimated)
+// https://docs.swmansion.com/react-native-worklets/docs/guides/testing/#javascript
+jest.mock("react-native-worklets", () => require("react-native-worklets/lib/module/mock"));
+
+// Setup Reanimated testing environment
 require("react-native-reanimated").setUpTests();
 
 jest.mock("~/analytics", () => ({
   ...jest.requireActual("~/analytics"),
   track: jest.fn(),
+  updateIdentify: jest.fn(),
 }));
 
 jest.mock("@react-native-firebase/messaging", () => ({

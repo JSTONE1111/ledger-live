@@ -77,6 +77,7 @@ export type DefaultFeature = Feature<unknown>;
  */
 export type CurrencyFeatures = {
   currencyAvalancheCChain: DefaultFeature;
+  currencyAvalancheCChainFuji: DefaultFeature;
   currencyStacks: DefaultFeature;
   currencyOptimism: DefaultFeature;
   currencyOptimismSepolia: DefaultFeature;
@@ -95,7 +96,6 @@ export type CurrencyFeatures = {
   currencyAptosTestnet: DefaultFeature;
   currencyAxelar: DefaultFeature;
   currencySecretNetwork: DefaultFeature;
-  currencySeiNetwork: DefaultFeature;
   currencyDesmos: DefaultFeature;
   currencyDydx: DefaultFeature;
   currencyUmee: DefaultFeature;
@@ -111,7 +111,9 @@ export type CurrencyFeatures = {
   currencyPolygonZkEvmTestnet: DefaultFeature;
   currencyBase: DefaultFeature;
   currencyBaseSepolia: DefaultFeature;
+  currencyBitlayer: DefaultFeature;
   currencyKlaytn: DefaultFeature;
+  currencyKlaytnBaobab: DefaultFeature;
   currencyVechain: DefaultFeature;
   currencyCasper: DefaultFeature;
   currencyNeonEvm: DefaultFeature;
@@ -122,6 +124,8 @@ export type CurrencyFeatures = {
   currencyBlastSepolia: DefaultFeature;
   currencyScroll: DefaultFeature;
   currencyScrollSepolia: DefaultFeature;
+  currencyShape: DefaultFeature;
+  currencyStory: DefaultFeature;
   currencyIcon: DefaultFeature;
   currencyTon: DefaultFeature;
   currencyEtherlink: DefaultFeature;
@@ -154,6 +158,10 @@ export type CurrencyFeatures = {
   currencyZeroGravity: DefaultFeature;
   currencyConcordium: DefaultFeature;
   currencyConcordiumTestnet: DefaultFeature;
+  currencyAleo: DefaultFeature;
+  currencyAleoTestnet: DefaultFeature;
+  currencyUnichain: DefaultFeature;
+  currencyUnichainSepolia: DefaultFeature;
 };
 
 /**
@@ -204,6 +212,8 @@ export type Features = CurrencyFeatures & {
   ptxSwapLiveAppMobile: Feature_PtxSwapLiveApp;
   ptxSwapLiveAppKycWarning: DefaultFeature;
   ptxSwapLiveApp: Feature_PtxSwapLiveApp;
+  ptxPerpsLiveApp: Feature_PtxPerpsLiveApp;
+  ptxPerpsLiveAppMobile: Feature_PtxPerpsLiveApp;
   ptxSwapLiveAppOnPortfolio: DefaultFeature;
   ptxSwapDetailedView: Feature_PtxSwapDetailedView;
   ptxEarnLiveApp: Feature_PtxEarnLiveApp;
@@ -219,7 +229,6 @@ export type Features = CurrencyFeatures & {
   llmChatbotSupport: Feature_LlmChatbotSupport;
   myLedgerDisplayAppDeveloperName: Feature_MyLedgerDisplayAppDeveloperName;
   lldActionCarousel: Feature_lldActionCarousel;
-  marketperformanceWidgetDesktop: Feature_MarketperformanceWidgetDesktop;
   lldRefreshMarketData: Feature_LldRefreshMarketData;
   llmRefreshMarketData: Feature_LlmRefreshMarketData;
   lldWalletSync: Feature_LldWalletSync;
@@ -229,7 +238,6 @@ export type Features = CurrencyFeatures & {
   llmMemoTag: Feature_MemoTag;
   lldMemoTag: Feature_MemoTag;
   ldmkTransport: Feature_LdmkTransport;
-  llMevProtection: Feature_LlMevProtection;
   llCounterValueGranularitiesRates: Feature_LlCounterValueGranularitiesRates;
   llmRebornLP: Feature_LlmRebornLP;
   llmAccountListUI: DefaultFeature;
@@ -237,7 +245,7 @@ export type Features = CurrencyFeatures & {
   lldLedgerSyncEntryPoints: Feature_LldLedgerSyncEntryPoints;
   lwmLedgerSyncOptimisation: DefaultFeature;
   lwdLedgerSyncOptimisation: DefaultFeature;
-  lwmNewWordingOptInNotificationsDrawer: DefaultFeature;
+  lwmNewWordingOptInNotificationsDrawer: Feature_LwmNewWordingOptInNotificationsDrawer;
   lldNanoSUpsellBanners: Feature_LldNanoSUpsellBanners;
   llmNanoSUpsellBanners: Feature_LlmNanoSUpsellBanners;
   llmThai: DefaultFeature;
@@ -292,6 +300,7 @@ export type Features = CurrencyFeatures & {
   lldOnboardingEnableSync: Feature_OnboardingEnableSync;
   lwmWallet40: Feature_LwmWallet40;
   lwdWallet40: Feature_LwdWallet40;
+  addressPoisoningOperationsFilter: Feature_AddressPoisoningOperationsFilter;
 };
 
 /**
@@ -385,15 +394,6 @@ export type Feature_ReferralProgramDesktopSidebar = Feature<{
 }>;
 
 export type Feature_BrazePushNotifications = Feature<{
-  notificationsCategories: {
-    displayed: boolean;
-    category: string;
-  }[];
-  trigger_events: {
-    route_name: string;
-    timer: number;
-    type: string;
-  }[];
   reprompt_schedule: Array<{
     months: number;
     days: number;
@@ -431,29 +431,18 @@ export type Feature_BrazePushNotifications = Feature<{
       timer: number;
     };
   };
-
-  // Legacy fields kept for backward compatibility with existing configurations.
-  marketCoinStarred: {
-    enabled: boolean;
-    timer: number;
+  inactivity_enabled: boolean;
+  inactivity_reprompt: {
+    months: number;
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
   };
-  justFinishedOnboarding: {
-    enabled: boolean;
-    timer: number;
-  };
-  conditions: {
-    default_delay_between_two_prompts: {
-      seconds: number;
-    };
-    maybe_later_delay: {
-      seconds: number;
-    };
-    minimum_accounts_with_funds_number: number;
-    minimum_app_starts_number: number;
-    minimum_duration_since_app_first_start: {
-      seconds: number;
-    };
-  };
+  notificationsCategories: {
+    displayed: boolean;
+    category: string;
+  }[];
 }>;
 
 export type Feature_ReceiveStakingFlowConfigDesktop = Feature<{
@@ -631,6 +620,10 @@ export type Feature_PtxSwapLiveApp = Feature<{
   families?: string[];
 }>;
 
+export type Feature_PtxPerpsLiveApp = Feature<{
+  manifest_id: string;
+}>;
+
 export type Feature_PtxEarnLiveApp = Feature<{
   manifest_id: string;
 }>;
@@ -651,15 +644,6 @@ export type Feature_LldAnalyticsOptInPrompt = Feature<{
 
 export type Feature_lldActionCarousel = Feature<{
   variant: ABTestingVariants;
-}>;
-
-export type Feature_MarketperformanceWidgetDesktop = Feature<{
-  variant: ABTestingVariants;
-  refreshRate: number;
-  top: number;
-  limit: number;
-  supported: boolean;
-  enableNewFeature: boolean;
 }>;
 
 export type Feature_LldRefreshMarketData = Feature<{
@@ -714,10 +698,6 @@ export type Feature_LlCounterValueGranularitiesRates = Feature<{
   hourly: number;
 }>;
 
-export type Feature_LlMevProtection = Feature<{
-  link: string | null;
-}>;
-
 export type Feature_LlmMmkvMigration = Feature<{
   shouldRollback: boolean | null;
 }>;
@@ -741,6 +721,10 @@ export type Feature_Noah = Feature<{
 
 export type Feature_NewSendFlow = Feature<{
   families?: string[];
+}>;
+
+export type Feature_AddressPoisoningOperationsFilter = Feature<{
+  families: string[];
 }>;
 
 export type Feature_CounterValue = DefaultFeature;
@@ -820,18 +804,28 @@ export type Feature_OnboardingIgnoredOSUpdates = Feature<{
 
 type Feature_Wallet40_Params = {
   marketBanner: boolean;
+  graphRework: boolean;
+  quickActionCtas: boolean;
+  mainNavigation: boolean;
+
+  //Specifics
+  tour?: boolean;
+  newReceiveDialog?: boolean;
 };
 
 export type Feature_LwmWallet40 = Feature<
   {
-    // Add specific LWM params
+    tour: boolean;
   } & Feature_Wallet40_Params
 >;
 export type Feature_LwdWallet40 = Feature<
   {
-    //  Add specific LWD params
+    newReceiveDialog: boolean;
   } & Feature_Wallet40_Params
 >;
+export type Feature_LwmNewWordingOptInNotificationsDrawer = Feature<{
+  variant: ABTestingVariants;
+}>;
 
 /**
  * Utils types.

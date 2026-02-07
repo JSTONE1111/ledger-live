@@ -1,5 +1,5 @@
-import { localForger } from "@taquito/local-forging";
 import { SendTransactionIntent } from "@ledgerhq/coin-framework/api/types";
+import { localForger } from "@taquito/local-forging";
 import type { TezosApi } from "./types";
 import { createApi } from ".";
 
@@ -165,6 +165,12 @@ describe("Tezos Api", () => {
       // Then
       expect(result[0].asset).toEqual({ type: "native" });
       expect(result[0].value).toBeGreaterThan(0);
+    });
+
+    it("returns 0 when address is not found", async () => {
+      const result = await module.getBalance("tz1euQVEofitwkUzMRKCuBK9D1ZPiy4udXz1");
+
+      expect(result).toEqual([{ value: BigInt(0), asset: { type: "native" } }]);
     });
   });
 

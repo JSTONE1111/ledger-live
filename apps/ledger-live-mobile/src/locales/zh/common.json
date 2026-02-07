@@ -1131,6 +1131,12 @@
     "NearStakingThresholdNotMet" : {
       "title" : "数额必须至少为 {{threshold}}"
     },
+    "XrpInvalidMemo" : {
+      "title" : "备忘标签格式错误，数值应小于 4294967296"
+    },
+    "HederaMemoExceededSizeError" : {
+      "title" : "备忘标签长度无效，最大允许 100 个字符"
+    },
     "PinNotSet" : {
       "title" : "识别码未设置"
     },
@@ -2510,6 +2516,20 @@
       "description" : "就像其他密码一样，识别码可以让您解锁 {{productName}}，同时防止他人未经许可访问。",
       "continueOnDevice" : "在您的 {{productName}} 上设置识别码。"
     },
+    "syncStep" : {
+      "title" : "同步",
+      "doneTitle" : "钱包已同步",
+      "descriptionTitle" : "同步您的钱包",
+      "description" : "在您换用手机或使用电脑时，及时更新自己的资产组合",
+      "skipCta" : "以后再说",
+      "skip" : {
+        "title" : "是否确定?",
+        "description" : "如果跳过此步骤，当您更换手机或电脑时，将需要手动重新添加所有账户、余额及历史记录。",
+        "descriptionEmphasis" : "您可以随时在设置中禁用此功能。",
+        "skipCTA" : "是，跳过",
+        "syncCTA" : "否，同步我的钱包"
+      }
+    },
     "seedStep" : {
       "title" : "设置与备份",
       "doneTitle" : "秘密恢复短语已确认",
@@ -3457,7 +3477,9 @@
   "notifications" : {
     "prompt" : {
       "title" : "打开通知",
+      "titleVariantB" : "充分利用 Ledger Wallet",
       "desc" : "获取关于 Ledger Wallet、Ledger 产品、市场的最新资讯以及个性化推荐。在设置中随时选择停用",
+      "descVariantB" : "我们将向您发送个性化小贴士、设置指南以及相关市场新闻。",
       "allow" : "允许通知",
       "later" : "以后再说"
     },
@@ -3874,7 +3896,9 @@
         "celo_title" : "Ledger Nano S™ 不支持互换 Celo",
         "celo_description" : "要互换 Celo，请使用任何其他兼容的 Ledger 设备，例如 Ledger Nano S Plus™、Ledger Nano X™、Ledger Flex™ 或 Ledger Stax™。",
         "monad_title" : "Ledger Nano S™ 不支持互换 Monad",
-        "monad_description" : "要互换 Monad，请使用其他兼容的 Ledger 设备，例如 Ledger Nano S Plus™、Ledger Nano X™、Ledger Flex™ 或 Ledger Stax™。"
+        "monad_description" : "要互换 Monad，请使用其他兼容的 Ledger 设备，例如 Ledger Nano S Plus™、Ledger Nano X™、Ledger Flex™ 或 Ledger Stax™。",
+        "zcash_title" : "Ledger Nano S™ 不支持互换 Zcash",
+        "zcash_description" : "要互换 Zcash，请使用其他兼容的 Ledger 设备，例如 Ledger Nano S Plus™、Ledger Nano X™、Ledger Flex™ 或 Ledger Stax™。"
       }
     },
     "lending" : {
@@ -6355,6 +6379,7 @@
       "netApy" : "净年收益率",
       "stakeActivationState" : "状态",
       "stakeActivePercent" : "活跃",
+      "inactiveStake" : "可提取奖励",
       "stakeAvailableBalance" : "可用余额",
       "actions" : {
         "activate" : "激活",
@@ -8060,12 +8085,25 @@
   },
   "lnsUpsell" : {
     "opted_in" : {
-      "description" : "将您的 Ledger Nano S 升级到 Ledger Flex 等新款 Ledger 设备，即可享受 20% 专属折扣，解锁更多内存、全新功能和最新增强安全保护。 ",
+      "title" : "升级您的 Ledger Nano S™",
+      "description" : "购买最新 Ledger 签署设备可享八折专属优惠。",
       "cta" : "升级 Ledger 设备"
     },
     "opted_out" : {
-      "description" : "Ledger Nano S 内存有限，影响您访问最新功能、区块链变更和增强安全保护。为保证长期使用体验，请升级到新款 Ledger 设备。",
+      "title" : "升级您的 Ledger Nano S™",
+      "description" : "由于 Ledger Nano S 的存储容量有限，您将无法全面体验最新功能、区块链升级及安全增强。",
       "cta" : "了解更多"
+    }
+  },
+  "marketBanner" : {
+    "title" : "探索市场",
+    "viewAll" : "查看全部",
+    "viewAllAccessibilityHint" : "双击查看全部市场资产",
+    "connectionFailed" : "连接失败",
+    "errorAccessibilityHint" : "无法加载市场数据。请稍后重试。",
+    "tile" : {
+      "accessibilityLabel" : "{{name}}, {{change}}",
+      "accessibilityHint" : "双击查看市场详情"
     }
   },
   "largeMover" : {
@@ -8225,6 +8263,15 @@
     }
   },
   "canton" : {
+    "expiryDuration" : {
+      "label" : "有效期时长",
+      "summaryLabel" : "要约有效期",
+      "threeHours" : "3 小时",
+      "sixHours" : "6 小时",
+      "oneDay" : "1 天",
+      "oneWeek" : "1 周",
+      "oneMonth" : "30 天"
+    },
     "account" : {
       "lockedBalance" : "已锁定",
       "lockedBalanceTooltip" : "您的资金锁定在您发送给他人的要约中。您可以随时取消这些要约，或者等待接收方接受或拒绝。",
@@ -8298,6 +8345,28 @@
           }
         }
       }
+    }
+  },
+  "fearAndGreed" : {
+    "title" : "情绪指数",
+    "description" : "情绪指数反映了市场的情绪状态。其数值范围为 0 至 100，数值越低表示越恐惧，数值越高表示越贪婪。",
+    "levels" : {
+      "extremeFear" : "恐惧+",
+      "fear" : "恐惧",
+      "neutral" : "中立",
+      "greed" : "贪婪",
+      "extremeGreed" : "贪婪+"
+    }
+  },
+  "analyticsAllocation" : {
+    "header" : {
+      "main" : "数据分析"
+    },
+    "allocation" : {
+      "title" : "资产配置"
+    },
+    "actions" : {
+      "swap" : "互换"
     }
   }
 }

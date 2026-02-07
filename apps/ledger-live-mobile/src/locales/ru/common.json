@@ -1131,6 +1131,12 @@
     "NearStakingThresholdNotMet" : {
       "title" : "Сумма должна быть не менее {{threshold}}"
     },
+    "XrpInvalidMemo" : {
+      "title" : "Недопустимый формат примечания (Memo). Оно должно быть меньше 4294967296"
+    },
+    "HederaMemoExceededSizeError" : {
+      "title" : "Недопустимый размер примечания (Memo). Используйте не более 100 символов"
+    },
     "PinNotSet" : {
       "title" : "ПИН-код не установлен"
     },
@@ -1936,7 +1942,7 @@
       "recoveryPhrase" : {
         "title" : "Ваша секретная фраза восстановления",
         "desc" : "Фраза восстановления — уникальная последовательность из 24 слов для восстановления ваших приватных ключей.",
-        "desc_1" : "Ваш Ledger Nano генерирует уникальную фразу восстановления. У Ledger нет к ней доступа.",
+        "desc_1" : "Ваше устройство Ledger Nano генерирует уникальную фразу восстановления. У Ledger нет к ней доступа.",
         "cta" : "Продолжить",
         "checkboxDesc" : "Я осознаю, что если моя фраза восстановления попадёт в чужие руки, криптоактивы будут в опасности."
       },
@@ -2380,7 +2386,7 @@
     },
     "genuineCheckNonGenuineDrawer" : {
       "title" : "Не удалось проверить устройство {{ productName }} на подлинность",
-      "description" : "Этот {{productName}} небезопасен для использования. Обратитесь в Поддержку Ledger",
+      "description" : "Этим {{productName}} пользоваться небезопасно. Обратитесь в Поддержку Ledge",
       "supportCta" : "Связаться с Поддержкой Ledger"
     },
     "allowManagerDrawer" : {
@@ -2397,7 +2403,7 @@
         "description" : "Она поможет подтвердить, что у вас оригинальное устройство {{productName}}."
       },
       "completed" : {
-        "title" : "{{productName}} подлинный",
+        "title" : "Устройство {{productName}} подлинное",
         "description" : ""
       },
       "refused" : {
@@ -2500,8 +2506,8 @@
       "supportCta" : "Связаться с Поддержкой"
     },
     "earlySecurityCheckCompletedStep" : {
-      "title" : "{{productName}} подлинный",
-      "subtitle" : "Этот {{productName}} безопасен для использования. Можно приступать к настройке.",
+      "title" : "Устройство {{productName}} подлинное",
+      "subtitle" : "Этим {{productName}} пользоваться безопасно. Можно приступать к настройке.",
       "description" : "Коснитесь {{productName}} для начала настройки."
     },
     "pinStep" : {
@@ -2509,6 +2515,20 @@
       "doneTitle" : "ПИН-код установлен",
       "description" : "ПИН-код позволяет разблокировать {{productName}} и защитить его от посторонних, что в целом актуально для любых паролей.",
       "continueOnDevice" : "Установите ПИН-код на {{productName}}."
+    },
+    "syncStep" : {
+      "title" : "Синхронизация",
+      "doneTitle" : "Кошелёк синхронизирован",
+      "descriptionTitle" : "Синхронизируйте кошельки",
+      "description" : "Держите портфель в актуальном состоянии, переключаясь между смартфонами и ПК",
+      "skipCta" : "Отложить",
+      "skip" : {
+        "title" : "Вы уверены?",
+        "description" : "Если вы пропустите этот этап, вам придётся вручную добавлять все счета и историю операций при переходе на новый смартфон или ПК.",
+        "descriptionEmphasis" : "Отключить функцию всегда можно в Настройках.",
+        "skipCTA" : "Пропустить",
+        "syncCTA" : "Синхронизировать"
+      }
     },
     "seedStep" : {
       "title" : "Настройка и резервная копия",
@@ -3457,7 +3477,9 @@
   "notifications" : {
     "prompt" : {
       "title" : "Включите уведомления",
+      "titleVariantB" : "Извлеките максимум из Ledger Wallet",
       "desc" : "Будьте в курсе последних новостей о Ledger Wallet, устройствах Ledger и рынке криптовалют, а также получайте персонализированные рекомендации. Отписаться можно в любой момент в настройках.",
+      "descVariantB" : "Мы отправим вам персонализированные советы, руководства по настройке и актуальные новости о происходящем на рынке.",
       "allow" : "Разрешить уведомления",
       "later" : "Не сейчас"
     },
@@ -3874,7 +3896,9 @@
         "celo_title" : "Ledger Nano S™ не поддерживает обмен Celo",
         "celo_description" : "Используйте другие совместимые устройства Ledger для обмена Celo. Это Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ и Ledger Stax™.",
         "monad_title" : "Ledger Nano S™ не поддерживает обмен Monad",
-        "monad_description" : "Для обмена Monad используйте совместимые устройства Ledger. Это Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ и Ledger Stax™."
+        "monad_description" : "Для обмена Monad используйте совместимые устройства Ledger. Это Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ и Ledger Stax™.",
+        "zcash_title" : "Ledger Nano S™ не поддерживает обмен Zcash",
+        "zcash_description" : "Для обмена Zcash используйте совместимые устройства Ledger. Это Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ и Ledger Stax™."
       }
     },
     "lending" : {
@@ -4681,7 +4705,7 @@
       "connectExistingLedger" : "Подключить уже настроенный Ledger",
       "connectExistingLedgerDescription" : "Если Ledger уже настроен",
       "setUpNewLedger" : "Настроить новый Ledger",
-      "setUpNewLedgerDescription" : "Если Ledger ещё не настроен",
+      "setUpNewLedgerDescription" : "Если Ledger ещё не настроено",
       "buyDeviceCTA" : "<0>Хотите новое устройство Ledger? </0><1>Купите его</1>",
       "item" : {
         "usb" : "Подключен через USB",
@@ -6355,6 +6379,7 @@
       "netApy" : "Чистая прибыль в год",
       "stakeActivationState" : "Состояние",
       "stakeActivePercent" : "Активно",
+      "inactiveStake" : "Выводимые вознаграждения",
       "stakeAvailableBalance" : "Доступно",
       "actions" : {
         "activate" : "Активировать",
@@ -8060,12 +8085,25 @@
   },
   "lnsUpsell" : {
     "opted_in" : {
-      "description" : "Перейдите с вашего Ledger Nano S на новое устройство по примеру Ledger Flex. Тогда вы получите больший объём памяти, актуальные улучшения безопасности, последние функции и эксклюзивную скидку в 20%. ",
+      "title" : "Обновите устройство Ledger Nano S™",
+      "description" : "Получите эксклюзивную скидку 20% на новые устройства подписи Ledger.",
       "cta" : "Обновиться"
     },
     "opted_out" : {
-      "description" : "У Ledger Nano S ограниченный объём памяти, что не позволяет владельцам аппаратного кошелька использовать актуальные функции и изменения в блокчейне, а также наслаждаться улучшениями безопасности. Перейдите на новое устройство Ledger, и пользуйтесь им ещё долгие годы.",
+      "title" : "Обновите устройство Ledger Nano S™",
+      "description" : "У Ledger Nano S ограниченный объём памяти, что не позволяет владельцам этого устройства использовать актуальные функции и изменения в блокчейне, а также наслаждаться улучшениями безопасности.",
       "cta" : "Подробнее..."
+    }
+  },
+  "marketBanner" : {
+    "title" : "Исследуйте рынок",
+    "viewAll" : "Посмотреть всё",
+    "viewAllAccessibilityHint" : "Нажмите дважды, чтобы посмотреть все активы рынка",
+    "connectionFailed" : "Сбой подключения",
+    "errorAccessibilityHint" : "Ошибка при загрузке рыночных данных. Повторите попытку позже.",
+    "tile" : {
+      "accessibilityLabel" : "{{name}}, {{change}}",
+      "accessibilityHint" : "Нажмите дважды, чтобы посмотреть информацию о рынке"
     }
   },
   "largeMover" : {
@@ -8225,6 +8263,15 @@
     }
   },
   "canton" : {
+    "expiryDuration" : {
+      "label" : "Срок действия",
+      "summaryLabel" : "Предложенная экспирация",
+      "threeHours" : "3 часа",
+      "sixHours" : "6 часов",
+      "oneDay" : "1 д",
+      "oneWeek" : "1 неделя",
+      "oneMonth" : "30 дн"
+    },
     "account" : {
       "lockedBalance" : "Заблокировано",
       "lockedBalanceTooltip" : "Ваши криптоактивы заблокированы в предложениях, которые вы отправили другим пользователям. Вы можете отменить их в любое время или дождаться ответа получателя.",
@@ -8298,6 +8345,28 @@
           }
         }
       }
+    }
+  },
+  "fearAndGreed" : {
+    "title" : "Настроения",
+    "description" : "Индекс настроений отражает эмоциональное состояние рынка. Его значение варьируется от 0 до 100. Более низкий показатель означает крайний страх, а более высокий — крайнюю жадность.",
+    "levels" : {
+      "extremeFear" : "Страх+",
+      "fear" : "Страх",
+      "neutral" : "Нейтральное",
+      "greed" : "Жадность",
+      "extremeGreed" : "Жадность+"
+    }
+  },
+  "analyticsAllocation" : {
+    "header" : {
+      "main" : "Аналитика"
+    },
+    "allocation" : {
+      "title" : "Распределение активов"
+    },
+    "actions" : {
+      "swap" : "Обменять"
     }
   }
 }

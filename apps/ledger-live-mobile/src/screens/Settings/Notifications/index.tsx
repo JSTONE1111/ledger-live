@@ -1,19 +1,20 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Platform } from "react-native";
 import { useSelector, useDispatch } from "~/context/hooks";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/context/Locale";
 import { capitalize } from "lodash/fp";
 import { Box, Switch, Text, Button, IconsLegacy } from "@ledgerhq/native-ui";
 import SettingsNavigationScrollView from "../SettingsNavigationScrollView";
 import SettingsRow from "~/components/SettingsRow";
-import { track, TrackScreen, updateIdentify } from "~/analytics";
+import { track, TrackScreen, trackWithRoute, updateIdentify } from "~/analytics";
 import { notificationsSelector } from "~/reducers/settings";
 import { setNotifications } from "~/actions/settings";
 import type { State } from "~/reducers/types";
-import { useNotifications } from "~/logic/notifications";
+import { useNotifications } from "LLM/features/NotificationsPrompt";
 import { updateUserPreferences } from "~/notifications/braze";
 import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
 import { AuthorizationStatus } from "@react-native-firebase/messaging";
+import { useRoute } from "@react-navigation/core";
 
 const notificationsMapping = {
   areNotificationsAllowed: "allowed",
@@ -31,7 +32,7 @@ type NotificationRowProps = {
 function NotificationSettingsRow({ disabled, notificationKey, label }: NotificationRowProps) {
   const dispatch = useDispatch();
   const notifications = useSelector(notificationsSelector);
-  const { resetOptOutState, permissionStatus, optOutOfNotifications } = useNotifications();
+  const { markUserAsOptIn, permissionStatus, markUserAsOptOut } = useNotifications();
 
   const { t } = useTranslation();
 
@@ -48,13 +49,11 @@ function NotificationSettingsRow({ disabled, notificationKey, label }: Notificat
 
       if (notificationKey === "areNotificationsAllowed") {
         if (value === false) {
-          optOutOfNotifications();
+          markUserAsOptOut();
         }
 
-        if (value === true) {
-          if (permissionStatus === AuthorizationStatus.AUTHORIZED) {
-            resetOptOutState();
-          }
+        if (value === true && permissionStatus === AuthorizationStatus.AUTHORIZED) {
+          markUserAsOptIn();
         }
       }
 
@@ -62,14 +61,21 @@ function NotificationSettingsRow({ disabled, notificationKey, label }: Notificat
         toggle: `Toggle_${capitalizedKey === "Allowed" ? "Allow" : capitalizedKey}`,
         enabled: value,
       });
+
+      updateIdentify();
+      updateUserPreferences({
+        ...notifications,
+        [notificationKey]: value,
+      });
     },
     [
-      capitalizedKey,
       dispatch,
       notificationKey,
+      capitalizedKey,
+      notifications,
+      markUserAsOptOut,
       permissionStatus,
-      resetOptOutState,
-      optOutOfNotifications,
+      markUserAsOptIn,
     ],
   );
 
@@ -88,30 +94,33 @@ function NotificationSettingsRow({ disabled, notificationKey, label }: Notificat
 function NotificationsSettings() {
   const { t } = useTranslation();
   const notifications = useSelector(notificationsSelector);
-  const {
-    permissionStatus,
-    requestPushNotificationsPermission,
-    pushNotificationsOldRoute,
-    hiddenNotificationCategories,
-  } = useNotifications();
+  const { permissionStatus, requestPushNotificationsPermission } = useNotifications();
+
+  const featureBrazePushNotifications = useFeature("brazePushNotifications");
+  const hiddenNotificationCategories = useMemo(() => {
+    const hiddenCategories = [];
+    const categoriesToHide = featureBrazePushNotifications?.params?.notificationsCategories ?? [];
+
+    for (const notificationsCategory of categoriesToHide) {
+      if (!notificationsCategory?.displayed) {
+        hiddenCategories.push(notificationsCategory?.category || "");
+      }
+    }
+
+    return hiddenCategories;
+  }, [featureBrazePushNotifications?.params?.notificationsCategories]);
+
   const featureTransactionsAlerts = useFeature("transactionsAlerts");
+  const route = useRoute();
 
   const allowPushNotifications = useCallback(() => {
-    track("button_clicked", {
+    trackWithRoute("button_clicked", route, {
       button: "Go to system settings",
-      page: pushNotificationsOldRoute,
     });
     requestPushNotificationsPermission();
-  }, [pushNotificationsOldRoute, requestPushNotificationsPermission]);
+  }, [requestPushNotificationsPermission, route]);
 
   const isOsPermissionAuthorized = permissionStatus === AuthorizationStatus.AUTHORIZED;
-
-  // Refresh user properties and send them to Segment when notifications preferences are updated
-  // Also send user notifications preferences to Braze when updated
-  useEffect(() => {
-    updateIdentify();
-    updateUserPreferences(notifications);
-  }, [notifications]);
 
   const disableSubSettings = !notifications.areNotificationsAllowed;
 

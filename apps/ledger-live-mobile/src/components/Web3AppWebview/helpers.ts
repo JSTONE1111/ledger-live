@@ -51,7 +51,7 @@ export function useWebView(
   ref: React.ForwardedRef<WebviewAPI>,
   onStateChange: WebviewProps["onStateChange"],
 ) {
-  const serverRef = useRef<WalletAPIServer>();
+  const serverRef = useRef<WalletAPIServer | undefined>(undefined);
 
   const tracking = useMemo(
     () =>
@@ -239,7 +239,7 @@ export function useWebviewState(
   params: Pick<WebviewProps, "manifest" | "inputs">,
   WebviewAPIRef: React.ForwardedRef<WebviewAPI>,
   onStateChange: WebviewProps["onStateChange"],
-  serverRef?: React.MutableRefObject<WalletAPIServer | undefined>,
+  serverRef?: React.RefObject<WalletAPIServer | undefined>,
 ) {
   const webviewRef = useRef<WebView>(null);
   const { manifest, inputs } = params;
@@ -293,6 +293,9 @@ export function useWebviewState(
         },
         loadURL: (url: string): void => {
           setURI(url);
+        },
+        resetToInitialURL: (): void => {
+          setURI(initialURL);
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         notify: (method: `event.${string}`, params: any) => {
@@ -609,8 +612,10 @@ export function useSelectAccount({
   currentAccountHistDb?: CurrentAccountHistDB;
 }) {
   const currencyIds = useDAppManifestCurrencyIds(manifest);
-  const { setCurrentAccountHist, setCurrentAccount, currentAccount } =
-    useDappCurrentAccount(currentAccountHistDb);
+  const { setCurrentAccountHist, setCurrentAccount, currentAccount } = useDappCurrentAccount(
+    manifest.id,
+    currentAccountHistDb,
+  );
   const { openDrawer } = useModularDrawerController();
 
   const onSelectAccountSuccess = useCallback(

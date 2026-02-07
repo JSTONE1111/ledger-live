@@ -81,7 +81,7 @@ for (const token of subAccounts) {
         const selector = await getModularSelector(app, "ASSET");
         if (selector) {
           await selector.validateItems();
-          await selector.selectAsset(token.account.currency);
+          await selector.selectAssetByTicker(token.account.currency);
           await selector.selectNetwork(token.account.currency);
           await app.scanAccountsDrawer.selectFirstAccount();
           await app.scanAccountsDrawer.clickCloseButton();
@@ -104,7 +104,6 @@ for (const token of subAccounts) {
   });
 }
 
-//Warning 🚨: Test may fail due to the GetAppAndVersion issue - Jira: LIVE-12581
 for (const token of subAccountReceive) {
   test.describe("Add subAccount when parent exists", () => {
     test.use({

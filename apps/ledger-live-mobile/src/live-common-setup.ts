@@ -28,6 +28,7 @@ setWalletAPIVersion(WALLET_API_VERSION);
 
 setSupportedCurrencies([
   "avalanche_c_chain",
+  "avalanche_c_chain_fuji",
   "axelar",
   "stargaze",
   "secret_network",
@@ -35,7 +36,6 @@ setSupportedCurrencies([
   "desmos",
   "dydx",
   "onomy",
-  "sei_network",
   "quicksilver",
   "persistence",
   "bitcoin",
@@ -104,7 +104,9 @@ setSupportedCurrencies([
   "syscoin",
   "vechain",
   "internet_computer",
+  "bitlayer",
   "klaytn",
+  "klaytn_baobab",
   "polygon_zk_evm",
   "polygon_zk_evm_testnet",
   "base",
@@ -127,6 +129,8 @@ setSupportedCurrencies([
   "blast_sepolia",
   "scroll",
   "scroll_sepolia",
+  "shape",
+  "story",
   "ton",
   "etherlink",
   "zksync",
@@ -149,6 +153,10 @@ setSupportedCurrencies([
   "zero_gravity",
   "concordium",
   "concordium_testnet",
+  "aleo",
+  "aleo_testnet",
+  "unichain",
+  "unichain_sepolia",
 ]);
 
 if (Config.FORCE_PROVIDER && !isNaN(parseInt(Config.FORCE_PROVIDER, 10)))

@@ -1,6 +1,6 @@
 import { Flex, SearchInput } from "@ledgerhq/native-ui";
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/context/Locale";
 import { Search } from "../../types";
 
 export function SearchBar({
@@ -18,7 +18,7 @@ export function SearchBar({
             flexGrow: 1,
             width: 100,
           }}
-          data-testid="platform-catalog-search-input"
+          testID="platform-catalog-search-input"
           ref={inputRef}
           value={input}
           onChange={onChange}

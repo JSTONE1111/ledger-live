@@ -1131,6 +1131,12 @@
     "NearStakingThresholdNotMet" : {
       "title" : "จำนวนต้องมีอย่างน้อย {{threshold}}"
     },
+    "XrpInvalidMemo" : {
+      "title" : "รูปแบบของ Memo ไม่ถูกต้อง ควรน้อยกว่า 4294967296"
+    },
+    "HederaMemoExceededSizeError" : {
+      "title" : "ขนาด Memo ไม่ถูกต้อง ขนาดสูงสุดที่อนุญาตคือ 100 ตัวอักษร"
+    },
     "PinNotSet" : {
       "title" : "ไม่ได้ตั้งค่า PIN"
     },
@@ -2510,6 +2516,20 @@
       "description" : "PIN ช่วยให้คุณปลดล็อก {{productName}} ของคุณและป้องกันการเข้าถึงที่ไม่พึงประสงค์ เช่นเดียวกับรหัสผ่านหรือรหัสยืนยัน",
       "continueOnDevice" : "ตั้งค่า PIN ของคุณบน {{productName}}"
     },
+    "syncStep" : {
+      "title" : "การซิงโครไนซ์",
+      "doneTitle" : "วอลเล็ตที่ซิงค์แล้ว",
+      "descriptionTitle" : "ซิงค์วอลเล็ตของคุณ",
+      "description" : "พอร์ตของคุณจะอัปเดตอยู่เสมอ ไม่ว่าจะสลับไปใช้งานบนมือถือหรือคอมพิวเตอร์",
+      "skipCta" : "ทำภายหลัง",
+      "skip" : {
+        "title" : "คุณแน่ใจหรือไม่?",
+        "description" : "หากคุณข้ามขั้นตอนนี้ คุณจะต้องเพิ่มบัญชี ยอดคงเหลือในบัญชี และประวัติธุรกรรมใหม่ทั้งหมดด้วยตัวเอง หากคุณเปลี่ยนไปใช้โทรศัพท์หรือคอมพิวเตอร์เครื่องใหม่",
+        "descriptionEmphasis" : "คุณสามารถปิดการใช้งานได้ตลอดเวลาในเมนูการตั้งค่า",
+        "skipCTA" : "ใช่! ข้ามขั้นตอนนี้",
+        "syncCTA" : "ไม่! ซิงค์วอลเล็ตของฉัน"
+      }
+    },
     "seedStep" : {
       "title" : "การติดตั้งและสำรองข้อมูล",
       "doneTitle" : "ยืนยัน Secret Recovery Phrase แล้ว",
@@ -3457,7 +3477,9 @@
   "notifications" : {
     "prompt" : {
       "title" : "เปิดการแจ้งเตือน",
+      "titleVariantB" : "รับประโยชน์สูงสุดจากแอป Ledger Wallet",
       "desc" : "รับข้อมูลอัปเดตล่าสุดเกี่ยวกับแอป Ledger Wallet, ผลิตภัณฑ์ Ledger, ตลาด ตลอดจนคำแนะนำส่วนบุคคล ยกเลิกได้ทุกเมื่อในการตั้งค่า",
+      "descVariantB" : "เราจะส่งเคล็ดลับที่ปรับเข้ากับบุคคล คู่มือการติดตั้ง และข่าวสารตลาดที่เกี่ยวข้องให้กับคุณ",
       "allow" : "อนุญาตการแจ้งเตือน",
       "later" : "อาจดำเนินการในภายหลัง"
     },
@@ -3874,7 +3896,9 @@
         "celo_title" : "Ledger Nano S™ ไม่รองรับการสวอป Celo",
         "celo_description" : "ในการสวอป Celo ให้ทำธุรกรรมผ่านอุปกรณ์ Ledger รุ่นอื่นที่ใช้ได้ เช่น Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ หรือ Ledger Stax™",
         "monad_title" : "Ledger Nano S™ ไม่รองรับการสวอป Monad",
-        "monad_description" : "หากต้องการสวอป Monad ให้ใช้อุปกรณ์ Ledger ที่รองรับรุ่นอื่น ๆ เช่น Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ หรือ Ledger Stax™"
+        "monad_description" : "หากต้องการสวอป Monad ให้ใช้อุปกรณ์ Ledger ที่รองรับรุ่นอื่น ๆ เช่น Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ หรือ Ledger Stax™",
+        "zcash_title" : "Ledger Nano S™ ไม่รองรับการสวอป Zcash",
+        "zcash_description" : "เพื่อสวอป Zcash ให้ทำธุรกรรมผ่านอุปกรณ์ Ledger รุ่นอื่น ๆ ที่ใช้ได้ เช่น Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ หรือ Ledger Stax™"
       }
     },
     "lending" : {
@@ -6355,6 +6379,7 @@
       "netApy" : "อัตราผลตอบแทนต่อปี (APY) สุทธิ",
       "stakeActivationState" : "State",
       "stakeActivePercent" : "ใช้งานอยู่",
+      "inactiveStake" : "Reward ที่สามารถถอนได้",
       "stakeAvailableBalance" : "ยอดคงเหลือในบัญชีที่ใช้ได้",
       "actions" : {
         "activate" : "เปิดใช้งาน",
@@ -8060,12 +8085,25 @@
   },
   "lnsUpsell" : {
     "opted_in" : {
-      "description" : "อัปเกรด Ledger Nano S ของคุณเป็น Ledger รุ่นใหม่กว่า —เช่น Ledger Flex — เพื่อรับหน่วยความจำเพิ่ม การปรับปรุงด้านความปลอดภัยล่าสุด ฟีเจอร์ใหม่ และส่วนลดพิเศษ 20% ",
+      "title" : "อัปเกรด Ledger Nano S™ ของคุณ",
+      "description" : "รับส่วนลด 20% สำหรับอุปกรณ์ลงนาม Ledger รุ่นใหม่ล่าสุด",
       "cta" : "อัปเกรด My Ledger"
     },
     "opted_out" : {
-      "description" : "หน่วยความจำที่จำกัดของ Ledger Nano S ของคุณจะยับยั้งการเข้าถึงฟีเจอร์ล่าสุด การเปลี่ยนแปลงบล็อกเชน และการเพิ่มความปลอดภัยให้กับคุณ เพื่อการใช้งานระยะยาว ควรอัปเกรดเป็นอุปกรณ์ Ledger รุ่นใหม่กว่า",
+      "title" : "อัปเกรด Ledger Nano S™ ของคุณ",
+      "description" : "หน่วยความจำที่จำกัดของ Ledger Nano S ของคุณจะยับยั้งการเข้าถึงฟีเจอร์ล่าสุด การเปลี่ยนแปลงบล็อกเชน และการเพิ่มความปลอดภัยให้กับคุณ",
       "cta" : "เรียนรู้เพิ่มเติม"
+    }
+  },
+  "marketBanner" : {
+    "title" : "สำรวจตลาด",
+    "viewAll" : "ดูทั้งหมด",
+    "viewAllAccessibilityHint" : "แตะสองครั้งเพื่อดูสินทรัพย์ในตลาดทั้งหมด",
+    "connectionFailed" : "การเชื่อมต่อล้มเหลว",
+    "errorAccessibilityHint" : "ไม่สามารถโหลดข้อมูลตลาดได้ โปรดลองอีกครั้งในภายหลัง",
+    "tile" : {
+      "accessibilityLabel" : "{{name}}, {{change}}",
+      "accessibilityHint" : "แตะสองครั้งเพื่อดูรายละเอียดของตลาด"
     }
   },
   "largeMover" : {
@@ -8225,6 +8263,15 @@
     }
   },
   "canton" : {
+    "expiryDuration" : {
+      "label" : "ช่วงเวลาหมดอายุ",
+      "summaryLabel" : "ข้อเสนอใกล้หมดอายุ",
+      "threeHours" : "3 ชั่วโมง",
+      "sixHours" : "6 ชั่วโมง",
+      "oneDay" : "1 วัน",
+      "oneWeek" : "1 สัปดาห์",
+      "oneMonth" : "30 วัน"
+    },
     "account" : {
       "lockedBalance" : "ถูกล็อก",
       "lockedBalanceTooltip" : "มีการล็อกเงินทุนของคุณไว้ในข้อเสนอที่คุณส่งให้บุคคลอื่น คุณสามารถยกเลิกข้อเสนอเหล่านี้ได้ทุกเมื่อ หรือรอให้ผู้รับยอมรับหรือปฏิเสธ",
@@ -8298,6 +8345,28 @@
           }
         }
       }
+    }
+  },
+  "fearAndGreed" : {
+    "title" : "ดัชนีวัดอารมณ์",
+    "description" : "ดัชนีวัดอารมณ์บ่งชี้ถึงสภาวะทางอารมณ์ของตลาด โดยมีช่วงตั้งแต่ 0 ถึง 100 โดยมูลค่าที่ต่ำกว่าแสดงถึงความกลัวขั้นสุด และมูลค่าที่สูงกว่าแสดงถึงความโลภขั้นสุด",
+    "levels" : {
+      "extremeFear" : "กลัวขั้นสุด",
+      "fear" : "กลัว",
+      "neutral" : "ปกติ",
+      "greed" : "โลภ",
+      "extremeGreed" : "โลภขั้นสุด"
+    }
+  },
+  "analyticsAllocation" : {
+    "header" : {
+      "main" : "การวิเคราะห์"
+    },
+    "allocation" : {
+      "title" : "การจัดสรรสินทรัพย์"
+    },
+    "actions" : {
+      "swap" : "สวอป"
     }
   }
 }

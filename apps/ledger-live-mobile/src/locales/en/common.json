@@ -467,6 +467,9 @@
       "title": "Device authentication failed",
       "description": "Something went wrong. Please try again. If the problem persists, please save your logs using the button below and provide them to Ledger Support."
     },
+    "EthAppPleaseEnableContractData": {
+      "title": "Enable Blind signing or Contract data in Ethereum app"
+    },
     "HardResetFail": {
       "title": "Sorry, could not reset",
       "description": "Please try again. If the problem persists, please save your logs using the button below and provide them to Ledger Support."
@@ -1107,9 +1110,6 @@
     "HederaNoStakingRewardsError": {
       "title": "No rewards to claim"
     },
-    "HederaMemoIsTooLong": {
-      "title": "Memo is too long. Max length is {{maxLength}} characters"
-    },
     "NearNewAccountWarning": {
       "title": "The recipient account is not created yet. The protocol requires a {{formattedNewAccountStorageCost}} transfer to create it."
     },
@@ -1133,6 +1133,12 @@
     },
     "NearStakingThresholdNotMet": {
       "title": "Amount needs to be at least {{threshold}}"
+    },
+    "XrpInvalidMemo": {
+      "title": "Memo format is wrong, it should be less than 4294967296"
+    },
+    "HederaMemoExceededSizeError": {
+      "title": "Invalid memo size, maximum allowed is 100 characters"
     },
     "PinNotSet": {
       "title": "PIN not set"
@@ -2670,6 +2676,10 @@
     "carousel": {
       "title": "For you"
     },
+    "perpsEntry": {
+      "title": "Perpetuals",
+      "description": "Trade with leverage"
+    },
     "recommended": {
       "title": "Recommended"
     },
@@ -2678,6 +2688,10 @@
       "seeMarket": "See all"
     },
     "walletBalance": "Wallet balance",
+    "balance": {
+      "noSigner": "The most secure\nwallet",
+      "noFund": "Secure your\ncrypto"
+    },
     "seeAllAssets": "See all assets",
     "seeAllAccounts": "See all accounts",
     "marketPriceSection": {
@@ -2698,6 +2712,20 @@
       "send": "Send",
       "deposit": "Receive",
       "stake": "Stake"
+    },
+    "quickActionsCtas": {
+      "transfer": "Transfer",
+      "swap": "Swap",
+      "buy": "Buy",
+      "connect": "Connect",
+      "buyLedger": "Buy a Ledger",
+      "transferDrawer": {
+        "title": "Transfer",
+        "receiveCrypto": "Receive crypto",
+        "sendCrypto": "Send crypto",
+        "bankTransfer": "Bank transfer",
+        "bankTransferDescription": "Receive stablecoin by sending cash"
+      }
     },
     "recoverBanner": {
       "subscribeDone": {
@@ -2977,7 +3005,8 @@
         "receiveFunds": "Receive",
         "buyCrypto": "Buy"
       },
-      "addAccountCta": "Add Account"
+      "addAccountCta": "Add Account",
+      "addCryptoAccount": "Add crypto account"
     },
     "settings": {
       "header": "Account settings",
@@ -3475,7 +3504,9 @@
   "notifications": {
     "prompt": {
       "title": "Turn notifications on",
+      "titleVariantB": "Don't miss what matters",
       "desc": "Get the latest updates on Ledger Wallet, Ledger products, the market, and personalised recommendations. Opt-out anytime in the settings",
+      "descVariantB": "Get real-time alerts on new tokens, earning opportunities, and market shifts. Opt out at any time.",
       "allow": "Allow notifications",
       "later": "Maybe later"
     },
@@ -3847,7 +3878,8 @@
         "title": "Select quote"
       },
       "twoStepApproval": {
-        "title": "Complete steps"
+        "title": "Complete steps",
+        "completedTitle": "Transaction Status"
       },
       "loader": {
         "title": "Processing Swap",
@@ -3892,7 +3924,9 @@
         "celo_title": "Ledger Nano S™ does not support swapping Celo",
         "celo_description": "To swap Celo, use any other compatible Ledger device, such as the Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ or Ledger Stax™.",
         "monad_title": "Ledger Nano S™ does not support swapping Monad",
-        "monad_description": "To swap Monad, use any other compatible Ledger device, such as the Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ or Ledger Stax™."
+        "monad_description": "To swap Monad, use any other compatible Ledger device, such as the Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ or Ledger Stax™.",
+        "zcash_title": "Ledger Nano S™ does not support swapping Zcash",
+        "zcash_description": "To swap Zcash, use any other compatible Ledger device, such as the Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ or Ledger Stax™."
       }
     },
     "lending": {
@@ -4541,6 +4575,7 @@
       },
       "acceptTerms": "By signing this transaction, you accept <0><0>{{provider}}</0>'s terms of use</0>",
       "nearIntentsAcceptTerms": "By validating this transaction,\n I accept the <0>Terms of use of SwapKit</0>, the technology powering NEAR Intents",
+      "acceptTermsSponsored": "To benefit from free network fees, you also agree to share your transaction details (including your wallet address) with Blinklabs.",
       "changellySimplifiedAcceptTerms": "By validating this transaction, you accept Changelly's <0>Terms of Use</0> and its <1>AML/KYC policy</1>. Changelly may apply AML/KYC procedures which can, in limited cases, impact the completion of your transaction. Should that happen, you must contact Changelly’s <2>customer support.</2>",
       "notice": "Verify the Swap details on your device before sending it. The addresses are exchanged securely so you don’t have to verify them."
     },
@@ -7855,7 +7890,7 @@
       "sync": "Sync successful",
       "syncDesc": "Changes in your crypto accounts will now automatically appear across Ledger Wallet apps on synched phones and computers.",
       "activation": "Ledger Sync turned on for this phone",
-      "complete" : {
+      "complete": {
         "title": "Sync complete",
         "description": "From now on, your portfolio will automatically stay sync across all your devices."
       },
@@ -8085,12 +8120,25 @@
   },
   "lnsUpsell": {
     "opted_in": {
-      "description": "Upgrade your Ledger Nano S to a newer Ledger — like the Ledger Flex — for more memory, the latest security enhancements, fresh features, and an exclusive 20% off. ",
+      "title": "Upgrade your Ledger Nano S™",
+      "description": "Get an exclusive 20% off on the latest Ledger signers.",
       "cta": "Upgrade my Ledger"
     },
     "opted_out": {
-      "description": "The limited memory of your Ledger Nano S restricts your access to the latest features, blockchain changes and security enhancements. For long-term use, upgrade to a newer Ledger device.",
+      "title": "Upgrade your Ledger Nano S™",
+      "description": "The limited memory of your Ledger Nano S restricts your access to the latest features, blockchain changes and security enhancements.",
       "cta": "Learn more"
+    }
+  },
+  "marketBanner": {
+    "title": "Explore market",
+    "viewAll": "View all",
+    "viewAllAccessibilityHint": "Double tap to view all market assets",
+    "connectionFailed": "Connection failed",
+    "errorAccessibilityHint": "Unable to load market data. Please try again later.",
+    "tile": {
+      "accessibilityLabel": "{{name}}, {{change}}",
+      "accessibilityHint": "Double tap to view market details"
     }
   },
   "largeMover": {
@@ -8234,7 +8282,7 @@
     },
     "transactionCannotBeCreated": {
       "title": "Partner unavailable",
-      "description": "Changelly cannot process this transaction. Error code 8HBB-{{randomCode}}"
+      "description": "The swap provider cannot process this transaction. Error code 8HBB-{{randomCode}}"
     },
     "swapQuoteLowLiquidity": {
       "title": "Partner unavailable",
@@ -8271,6 +8319,11 @@
       "preapprove": "Successfully added account",
       "validator": "Ledger Validator",
       "title": "Automatically accept incoming funds",
+      "processing": {
+        "title": "Processing transaction",
+        "description": "This process may take up to 1 minute",
+        "keepDeviceNearby": "Stay in the Ledger Wallet app and keep your Ledger nearby."
+      },
       "reonboard": {
         "title": "Account Update Required",
         "account": "Account",
@@ -8332,6 +8385,29 @@
           }
         }
       }
+    }
+  },
+  "fearAndGreed": {
+    "title": "Mood index",
+    "description": "The mood index indicates the emotional state of the market. It ranges from 0 to 100, where a lower value indicates extreme fear, and a higher value indicates extreme greed.",
+    "levels": {
+      "extremeFear": "Fear+",
+      "fear": "Fear",
+      "neutral": "Neutral",
+      "greed": "Greed",
+      "extremeGreed": "Greed+"
+    },
+    "tileTitle": "Mood"
+  },
+  "analyticsAllocation": {
+    "header": {
+      "main": "Analytics"
+    },
+    "allocation": {
+      "title": "Asset Allocation"
+    },
+    "actions": {
+      "swap": "Swap"
     }
   }
 }

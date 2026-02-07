@@ -1,12 +1,10 @@
+import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { PublicKey } from "@solana/web3.js";
 import { StakeMeta } from "./network/chain/account/stake";
 import { SolanaStake, StakeAction } from "./types";
 import { assertUnreachable } from "./utils";
-import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 
 export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
-
-export const MAX_MEMO_LENGTH = 500;
 
 export const isValidBase58Address = (address: string): boolean => {
   try {

@@ -1131,6 +1131,12 @@
     "NearStakingThresholdNotMet" : {
       "title" : "A quantia precisa ser de pelo menos {{threshold}}"
     },
+    "XrpInvalidMemo" : {
+      "title" : "O formato do memo está incorreto; ele deve ser menor que 4294967296"
+    },
+    "HederaMemoExceededSizeError" : {
+      "title" : "Tamanho do memo inválido, o máximo permitido é 100 caracteres"
+    },
     "PinNotSet" : {
       "title" : "PIN não definido"
     },
@@ -2510,6 +2516,20 @@
       "description" : "Assim como qualquer senha ou código de acesso, o PIN permite que você desbloqueie sua {{productName}} e evite acessos indesejados.",
       "continueOnDevice" : "Crie seu PIN na sua {{productName}}."
     },
+    "syncStep" : {
+      "title" : "Sincronização",
+      "doneTitle" : "Carteira sincronizada",
+      "descriptionTitle" : "Sincronize sua carteira",
+      "description" : "Mantenha seu portfólio atualizado ao trocar de smartphone ou usar um computador",
+      "skipCta" : "Farei isso mais tarde",
+      "skip" : {
+        "title" : "Tem certeza?",
+        "description" : "Se você pular esta etapa, terá que re-adicionar manualmente todas as suas contas, saldos e histórico se mudar para um novo smartphone ou computador.",
+        "descriptionEmphasis" : "Você pode sempre desativar nas configurações.",
+        "skipCTA" : "Sim, pular",
+        "syncCTA" : "Não, sincronizar minha carteira"
+      }
+    },
     "seedStep" : {
       "title" : "Configuração e backup",
       "doneTitle" : "Frase de Recuperação Secreta confirmada",
@@ -3457,7 +3477,9 @@
   "notifications" : {
     "prompt" : {
       "title" : "Ativar Notificações",
+      "titleVariantB" : "Aproveite ao máximo a Ledger Wallet",
       "desc" : "Receba as últimas atualizações sobre a Ledger Wallet, os produtos Ledger, o mercado e recomendações personalizadas. Cancele a qualquer momento nas configurações",
+      "descVariantB" : "Enviaremos dicas personalizadas, guias de configuração e notícias relevantes do mercado.",
       "allow" : "Permitir Notificações",
       "later" : "Talvez mais tarde"
     },
@@ -3874,7 +3896,9 @@
         "celo_title" : "A Ledger Nano S™ não é compatível com a troca de Celo",
         "celo_description" : "Para trocar Celo, use qualquer outro dispositivo Ledger compatível, como a Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ ou Ledger Stax™.",
         "monad_title" : "A Ledger Nano S™ não é compatível com a troca de Monad",
-        "monad_description" : "Para trocar Monad, use qualquer outro dispositivo Ledger compatível, como a Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ ou Ledger Stax™."
+        "monad_description" : "Para trocar Monad, use qualquer outro dispositivo Ledger compatível, como a Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ ou Ledger Stax™.",
+        "zcash_title" : "A Ledger Nano™ S não é compatível com a troca de Zcash",
+        "zcash_description" : "Para trocar Zcash, use qualquer outro dispositivo Ledger compatível, como a Ledger Nano™ S Plus, Ledger Nano™ X, Ledger Flex™ ou Ledger Stax™."
       }
     },
     "lending" : {
@@ -6355,6 +6379,7 @@
       "netApy" : "APY líquido",
       "stakeActivationState" : "Estado",
       "stakeActivePercent" : "Ativo",
+      "inactiveStake" : "Recompensas Sacáveis",
       "stakeAvailableBalance" : "Saldo Disponível",
       "actions" : {
         "activate" : "Ativar",
@@ -8060,12 +8085,25 @@
   },
   "lnsUpsell" : {
     "opted_in" : {
-      "description" : "Atualize sua Ledger Nano S para uma Ledger mais nova — como a Ledger Flex — para ter mais memória, melhorias mais avançadas de segurança, novos recursos e um desconto exclusivo de 20%. ",
+      "title" : "Faça upgrade da sua Ledger Nano S™",
+      "description" : "Ganhe um desconto exclusivo de 20% nos autenticadores Ledger mais recentes.",
       "cta" : "Atualizar minha Ledger"
     },
     "opted_out" : {
-      "description" : "A memória limitada da Ledger Nano S restringe seu acesso aos últimos recursos, mudanças em blockchains e aprimoramentos de segurança. Para uso prolongado, atualize para um dispositivo Ledger mais recente.",
+      "title" : "Faça upgrade da sua Ledger Nano S™",
+      "description" : "A memória limitada da Ledger Nano S restringe seu acesso aos últimos recursos, mudanças em blockchains e aprimoramentos de segurança.",
       "cta" : "Saiba mais"
+    }
+  },
+  "marketBanner" : {
+    "title" : "Explorar o mercado",
+    "viewAll" : "Ver todos",
+    "viewAllAccessibilityHint" : "Toque duas vezes para ver todos os ativos do mercado",
+    "connectionFailed" : "Falha de conexão",
+    "errorAccessibilityHint" : "Falha ao carregar as informações do mercado. Tente novamente mais tarde.",
+    "tile" : {
+      "accessibilityLabel" : "{{name}}, {{change}}",
+      "accessibilityHint" : "Toque duas vezes para ver os detalhes do mercado"
     }
   },
   "largeMover" : {
@@ -8225,6 +8263,15 @@
     }
   },
   "canton" : {
+    "expiryDuration" : {
+      "label" : "Duração da validade",
+      "summaryLabel" : "Validade da oferta",
+      "threeHours" : "3 horas",
+      "sixHours" : "6 horas",
+      "oneDay" : "1 dia",
+      "oneWeek" : "1 semana",
+      "oneMonth" : "30 dias"
+    },
     "account" : {
       "lockedBalance" : "Bloqueado",
       "lockedBalanceTooltip" : "Seus fundos estão bloqueados em ofertas que você enviou a outras pessoas. Você pode cancelar essas ofertas a qualquer momento ou esperar que o destinatário aceite ou recuse.",
@@ -8298,6 +8345,28 @@
           }
         }
       }
+    }
+  },
+  "fearAndGreed" : {
+    "title" : "Índice de Sentimento",
+    "description" : "O índice de sentimento mostra o estado emocional do mercado. O índice vai de 0 a 100: números baixos sinalizam medo intenso, enquanto números altos refletem ganância extrema.",
+    "levels" : {
+      "extremeFear" : "Medo+",
+      "fear" : "Medo",
+      "neutral" : "Neutro",
+      "greed" : "Ganância",
+      "extremeGreed" : "Ganância+"
+    }
+  },
+  "analyticsAllocation" : {
+    "header" : {
+      "main" : "Métricas"
+    },
+    "allocation" : {
+      "title" : "Alocação de Ativos"
+    },
+    "actions" : {
+      "swap" : "Trocar"
     }
   }
 }

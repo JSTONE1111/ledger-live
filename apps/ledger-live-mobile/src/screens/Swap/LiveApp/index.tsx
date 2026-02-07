@@ -9,7 +9,7 @@ import {
 import { LiveAppManifest } from "@ledgerhq/live-common/platform/types";
 import { useLocalLiveAppManifest } from "@ledgerhq/live-common/wallet-api/LocalLiveAppProvider/index";
 import { Flex, InfiniteLoader } from "@ledgerhq/native-ui";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/context/Locale";
 import GenericErrorView from "~/components/GenericErrorView";
 import { initialWebviewState } from "~/components/Web3AppWebview/helpers";
 import { WebviewAPI, WebviewState } from "~/components/Web3AppWebview/types";
@@ -106,7 +106,7 @@ export function SwapLiveApp({
     if (isWebviewError) return APP_FAILED_TO_LOAD;
     if (!manifest) return APP_MANIFEST_NOT_FOUND_ERROR;
 
-    return error;
+    return null;
   }, [manifest, isWebviewError, isConnected, t]);
 
   if (error) {

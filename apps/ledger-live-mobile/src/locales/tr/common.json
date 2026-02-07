@@ -1131,6 +1131,12 @@
     "NearStakingThresholdNotMet" : {
       "title" : "Tutarın en az {{threshold}} olması gerekiyor"
     },
+    "XrpInvalidMemo" : {
+      "title" : "Memo formatı yanlış, 4294967296’dan küçük olmalıdır"
+    },
+    "HederaMemoExceededSizeError" : {
+      "title" : "Geçersiz memo boyutu, en fazla 100 karaktere izin verilir"
+    },
     "PinNotSet" : {
       "title" : "PIN kodu belirlenmedi"
     },
@@ -1873,7 +1879,7 @@
             "label" : "Ekrandaki yönergeleri okuyarak cihazınızı nasıl kullanacağınızı öğrenin."
           },
           "2" : {
-            "title" : "“Yeni cihaz olarak kur” seçeneğini onaylayın",
+            "title" : "“Set up as new device” (Yeni cihaz olarak kur) seçeneğini onaylayın",
             "label" : "Seçimi onaylamak için her iki tuşa da aynı anda basın."
           },
           "3" : {
@@ -2509,6 +2515,20 @@
       "doneTitle" : "PIN kodu belirlendi",
       "description" : "PIN kodu, tüm parolalar ve giriş kodları gibi {{productName}} cihazınızın kilidini açmanızı ve istenmeyen erişimleri önlemenizi sağlar.",
       "continueOnDevice" : "{{productName}} cihazınızda PIN Kodunuzu belirleyin."
+    },
+    "syncStep" : {
+      "title" : "Senkronizasyon",
+      "doneTitle" : "Cüzdan senkronize edildi",
+      "descriptionTitle" : "Cüzdanınızı senkronize edin",
+      "description" : "Farklı telefonlar arasında geçiş yaparken veya bilgisayar kullanırken portföyünüzün güncel kalmasını sağlayın",
+      "skipCta" : "Daha sonra yapacağım",
+      "skip" : {
+        "title" : "Emin misiniz?",
+        "description" : "Bu işlemi atlarsanız, yeni bir telefona veya bilgisayara geçtiğinizde tüm hesaplarınız, bakiyeleriniz ve geçmişinizi manuel olarak yeniden eklemeniz gerekecektir.",
+        "descriptionEmphasis" : "Bunu istediğiniz zaman ayarlardan devre dışı bırakabilirsiniz.",
+        "skipCTA" : "Evet, atla",
+        "syncCTA" : "Hayır, cüzdanımı senkronize et"
+      }
     },
     "seedStep" : {
       "title" : "Kurulum ve yedekleme",
@@ -3457,7 +3477,9 @@
   "notifications" : {
     "prompt" : {
       "title" : "Bildirimleri aç",
+      "titleVariantB" : "Ledger Wallet’tan en iyi şekilde faydalanın",
       "desc" : "Ledger Wallet, Ledger ürünleri ve piyasalar hakkındaki son haberleri ve kişiye özel öneriler alın. Ayarları değiştirerek istediğiniz zaman abonelikten çıkabilirsiniz",
+      "descVariantB" : "Size kişiselleştirilmiş ipuçları, kurulum rehberleri ve önemli piyasa haberlerini göndereceğiz.",
       "allow" : "Bildirimlere izin ver",
       "later" : "Belki sonra"
     },
@@ -3874,7 +3896,9 @@
         "celo_title" : "Ledger Nano S™, Celo takasını desteklemez",
         "celo_description" : "Celo takas etmek için Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ veya Ledger Stax™ gibi diğer herhangi bir uyumlu Ledger cihazını kullanın.",
         "monad_title" : "Ledger Nano S™, Monad takasını desteklemez",
-        "monad_description" : "Monad takas etmek için Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ veya Ledger Stax™ gibi başka bir uyumlu Ledger cihazını kullanın."
+        "monad_description" : "Monad takas etmek için Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ veya Ledger Stax™ gibi başka bir uyumlu Ledger cihazını kullanın.",
+        "zcash_title" : "Ledger Nano S™, Zcash takasını desteklemez",
+        "zcash_description" : "Zcash takas etmek için Ledger Nano S Plus™, Ledger Nano X™, Ledger Flex™ veya Ledger Stax™ gibi başka bir uyumlu Ledger cihazını kullanın."
       }
     },
     "lending" : {
@@ -4622,7 +4646,7 @@
   "EditDeviceName" : {
     "title" : "Cihazın adını değiştirin",
     "charactersRemaining" : "{{remainingCount}} karakter kaldı",
-    "action" : "İsmi belirle",
+    "action" : "Adı belirle",
     "rename" : "İsmi değiştir",
     "success" : "Cihazın adı '{{deviceName}}' olarak değiştirildi"
   },
@@ -4824,7 +4848,7 @@
       "all" : "Tümü",
       "installed" : "Uygulamalar",
       "not_installed" : "Yüklenmemiş",
-      "supported" : "Ledger Wallet destekleniyor",
+      "supported" : "Ledger Wallet desteği",
       "updatable" : "Güncellenebilir",
       "apply" : "Uygula"
     },
@@ -6355,6 +6379,7 @@
       "netApy" : "Net APY",
       "stakeActivationState" : "Durum",
       "stakeActivePercent" : "Aktif",
+      "inactiveStake" : "Çekilebilir Ödüller",
       "stakeAvailableBalance" : "Mevcut bakiye",
       "actions" : {
         "activate" : "Etkinleştir",
@@ -7324,7 +7349,7 @@
         "actions" : {
           "redelegate" : "Yetki devret",
           "claim-rewards" : "Ödülleri topla",
-          "undelegate" : "Yetki devrini sonlandır"
+          "undelegate" : "Yetki devrini iptal et"
         }
       }
     },
@@ -8060,12 +8085,25 @@
   },
   "lnsUpsell" : {
     "opted_in" : {
-      "description" : "Daha fazla bellek, en son güvenlik güncellemeleri, yeni özellikler ve %20 oranında özel bir indirim için Ledger Nano S cihazınızın modelini Ledger Flex gibi daha yeni bir Ledger modeline yükseltin. ",
+      "title" : "Ledger Nano S™ cihazınızın modelini yükseltin",
+      "description" : "En yeni Ledger imzalayıcılarda %20 özel indirimden faydalanın.",
       "cta" : "Ledger modelimi yükselt"
     },
     "opted_out" : {
-      "description" : "Ledger Nano S cihazınızdaki sınırlı bellek en yeni özelliklere, blok zinciri değişikliklerine ve güvenlik güncellemelerine erişiminizi kısıtlar. Uzun vadeli kullanım için daha yeni bir Ledger cihazına model yükseltin.",
+      "title" : "Ledger Nano S™ cihazınızın modelini yükseltin",
+      "description" : "Ledger Nano S cihazınızdaki sınırlı bellek; en yeni özelliklere, blok zinciri değişikliklerine ve güvenlik güncellemelerine erişiminizi kısıtlar.",
       "cta" : "Daha fazla bilgi"
+    }
+  },
+  "marketBanner" : {
+    "title" : "Piyasayı keşfedin",
+    "viewAll" : "Tümünü gör",
+    "viewAllAccessibilityHint" : "Piyasadaki tüm varlıkları görüntülemek için çift dokunun",
+    "connectionFailed" : "Bağlantı başarısız oldu",
+    "errorAccessibilityHint" : "Piyasa verileri yüklenemiyor. Lütfen daha sonra tekrar deneyin.",
+    "tile" : {
+      "accessibilityLabel" : "{{name}}, {{change}}",
+      "accessibilityHint" : "Piyasa bilgilerini görüntülemek için çift dokunun"
     }
   },
   "largeMover" : {
@@ -8225,6 +8263,15 @@
     }
   },
   "canton" : {
+    "expiryDuration" : {
+      "label" : "Sona erme süresi",
+      "summaryLabel" : "Teklifin Süresi Doluyor",
+      "threeHours" : "3 saat",
+      "sixHours" : "6 saat",
+      "oneDay" : "1 gün",
+      "oneWeek" : "1 hafta",
+      "oneMonth" : "30 gün"
+    },
     "account" : {
       "lockedBalance" : "Kilitli",
       "lockedBalanceTooltip" : "Fonlarınız, başkalarına gönderdiğiniz tekliflerde kilitlenmiş durumda. Bu teklifleri istediğiniz zaman iptal edebilir veya alıcının kabul etmesini ya da reddetmesini bekleyebilirsiniz.",
@@ -8298,6 +8345,28 @@
           }
         }
       }
+    }
+  },
+  "fearAndGreed" : {
+    "title" : "Duygu endeksi",
+    "description" : "Duygu endeksi, piyasanın duygusal durumunu gösterir. En düşük değerlerin aşırı korku ve en yüksek değerlerin ise aşırı açgözlülük anlamına geldiği 0 ila 100 aralığında bir derecelendirmedir.",
+    "levels" : {
+      "extremeFear" : "Aşırı Korku",
+      "fear" : "Korku",
+      "neutral" : "Nötr",
+      "greed" : "Açgözlülük",
+      "extremeGreed" : "Aşırı Açgözlülük"
+    }
+  },
+  "analyticsAllocation" : {
+    "header" : {
+      "main" : "Analiz"
+    },
+    "allocation" : {
+      "title" : "Varlık Dağılımı"
+    },
+    "actions" : {
+      "swap" : "Takas et"
     }
   }
 }

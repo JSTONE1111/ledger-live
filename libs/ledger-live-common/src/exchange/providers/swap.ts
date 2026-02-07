@@ -243,6 +243,15 @@ const DEFAULT_SWAP_PROVIDERS: Record<string, ProviderConfig & Partial<Additional
     supportUrl: "https://help.paraswap.io/en/",
     mainUrl: "https://www.velora.xyz/",
   },
+  okx: {
+    type: "DEX",
+    displayName: "OKX",
+    needsBearerToken: false,
+    termsOfUseUrl: "https://web3.okx.com/help/okx-web3-build-user-agreement",
+    supportUrl: "https://web3.okx.com/build/dev-docs/wallet-api/support",
+    mainUrl: "https://web3.okx.com/",
+    needsKYC: false,
+  },
 };
 
 export const dexProvidersContractAddress: { [key: string]: string } = {
@@ -256,6 +265,7 @@ export const termsOfUse: { [key: string]: string } = {
   "1inch": "https://1inch.com/assets/Widget_1inch.com_Terms_of_Use.pdf",
   Uniswap: "https://uniswap.org/terms-of-service",
   velora: "https://www.velora.xyz/terms/terms-of-use",
+  okx: "https://web3.okx.com/help/okx-web3-build-user-agreement",
 };
 
 export const privacyPolicy: { [key: string]: string } = {

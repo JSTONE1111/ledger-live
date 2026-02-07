@@ -6,7 +6,7 @@ import {
   getEthDepositScreenSetting,
 } from "@ledgerhq/live-common/featureFlags/stakePrograms/index";
 import { runOnceWhen } from "@ledgerhq/live-common/utils/runOnceWhen";
-import { LiveConfig } from "@ledgerhq/live-config/lib-es/LiveConfig";
+import { LiveConfig } from "@ledgerhq/live-config/LiveConfig";
 import { getEnv } from "@ledgerhq/live-env";
 import { getDefaultAccountName } from "@ledgerhq/live-wallet/accountName";
 import type { AccountLike, Feature, FeatureId, Features } from "@ledgerhq/types-live";
@@ -28,7 +28,6 @@ import {
   languageSelector,
   lastSeenDeviceSelector,
   localeSelector,
-  marketPerformanceWidgetSelector,
   mevProtectionSelector,
   shareAnalyticsSelector,
   sharePersonalizedRecommendationsSelector,
@@ -76,18 +75,6 @@ export function setAnalyticsFeatureFlagMethod(method: typeof analyticsFeatureFla
   analyticsFeatureFlagMethod = method;
 }
 
-const getMarketWidgetAnalytics = (state: State) => {
-  if (!analyticsFeatureFlagMethod) return false;
-  const marketWidget = analyticsFeatureFlagMethod("marketperformanceWidgetDesktop");
-
-  const hasMarketWidgetActivated = marketPerformanceWidgetSelector(state);
-
-  return {
-    hasMarketWidget: !marketWidget?.enabled ? "Null" : hasMarketWidgetActivated ? "Yes" : "No",
-    hasMarketWidgetV2: marketWidget?.params?.enableNewFeature ? "Yes" : "No",
-  };
-};
-
 const getLedgerSyncAttributes = (state: State) => {
   if (!analyticsFeatureFlagMethod) return false;
   const walletSync = analyticsFeatureFlagMethod("lldWalletSync");
@@ -102,12 +89,11 @@ const getLedgerSyncAttributes = (state: State) => {
 
 const getMEVAttributes = (state: State) => {
   if (!analyticsFeatureFlagMethod) return false;
-  const mevProtection = analyticsFeatureFlagMethod("llMevProtection");
 
   const hasMEVActivated = mevProtectionSelector(state);
 
   return {
-    MEVProtectionActivated: !mevProtection?.enabled ? "Null" : hasMEVActivated ? "Yes" : "No",
+    MEVProtectionActivated: hasMEVActivated ? "Yes" : "No",
   };
 };
 
@@ -246,7 +232,6 @@ const extraProperties = (store: ReduxStore) => {
 
   const ledgerSyncAttributes = getLedgerSyncAttributes(state);
   const mevProtectionAttributes = getMEVAttributes(state);
-  const marketWidgetAttributes = getMarketWidgetAnalytics(state);
   const madAttributes = getMADAttributes();
   const addAccountAttributes = getAddAccountAttributes();
 
@@ -311,7 +296,6 @@ const extraProperties = (store: ReduxStore) => {
     ...deviceInfo,
     ...ledgerSyncAttributes,
     ...mevProtectionAttributes,
-    ...marketWidgetAttributes,
     ...addAccountAttributes,
     madAttributes,
     isLDMKTransportEnabled: ldmkTransport?.enabled,

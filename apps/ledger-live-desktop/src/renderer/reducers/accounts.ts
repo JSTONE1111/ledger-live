@@ -6,6 +6,7 @@ import {
   clearAccount,
   getAccountCurrency,
   isUpToDateAccount,
+  isAccountEmpty,
 } from "@ledgerhq/live-common/account/index";
 import { getEnv } from "@ledgerhq/live-env";
 import isEqual from "lodash/isEqual";
@@ -32,7 +33,6 @@ type HandlersPayloads = {
   ADD_ACCOUNTS: AddAccountsAction["payload"];
   UPDATE_ACCOUNT: { accountId: string; updater: (a: Account) => Account };
   REMOVE_ACCOUNT: Account;
-  CLEAN_FULLNODE_DISCONNECT: never;
   CLEAN_ACCOUNTS_CACHE: never;
   REPLACE_ACCOUNTS: Account[];
 };
@@ -51,7 +51,6 @@ const handlers: AccountsHandlers = {
       return updater(existingAccount);
     }),
   REMOVE_ACCOUNT: (state, { payload: account }) => state.filter(acc => acc.id !== account.id),
-  CLEAN_FULLNODE_DISCONNECT: state => state.filter(acc => acc.currency.id !== "bitcoin"),
   CLEAN_ACCOUNTS_CACHE: state => state.map(clearAccount),
   REPLACE_ACCOUNTS: (state, { payload }) => payload,
 };
@@ -139,3 +138,8 @@ export const starredAccountsSelector = createSelector(
 export const isUpToDateAccountSelector = createSelector(accountSelector, isUpToDateAccount);
 
 export const flattenAccountsSelector = createSelector(accountsSelector, flattenAccounts);
+
+export const areAccountsEmptySelector = createSelector(
+  accountsSelector,
+  accounts => accounts.length > 0 && accounts.every(isAccountEmpty),
+);

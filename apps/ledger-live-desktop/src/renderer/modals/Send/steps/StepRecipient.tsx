@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { getStuckAccountAndOperation } from "@ledgerhq/live-common/operation";
 import { Trans } from "react-i18next";
-import { getMainAccount, getRecentAddressesStore } from "@ledgerhq/live-common/account/index";
+import { getMainAccount } from "@ledgerhq/live-common/account/index";
 import TrackPage from "~/renderer/analytics/TrackPage";
 import Box from "~/renderer/components/Box";
 import Button from "~/renderer/components/Button";
@@ -177,11 +177,6 @@ export const StepRecipientFooter = ({
   const alwaysShowMemoTagInfo = useSelector(alwaysShowMemoTagInfoSelector);
 
   const handleOnNext = async () => {
-    if (mainAccount && transaction) {
-      const store = getRecentAddressesStore();
-      const ensName = transaction.recipientDomain?.domain;
-      store.addAddress(mainAccount.currency.id, transaction.recipient, ensName);
-    }
     if (
       transaction &&
       lldMemoTag?.enabled &&
@@ -237,9 +232,7 @@ export const StepRecipientFooter = ({
         </Text>
       </Flex>
       <Flex columnGap={2}>
-        <Button secondary onClick={handleOnRefuseAddTag}>
-          {t("send.info.needMemoTag.cta.not.addTag")}
-        </Button>
+        <Button onClick={handleOnRefuseAddTag}>{t("send.info.needMemoTag.cta.not.addTag")}</Button>
         <Button primary onClick={handleOnAddTag}>
           {t("send.info.needMemoTag.cta.addTag")}
         </Button>

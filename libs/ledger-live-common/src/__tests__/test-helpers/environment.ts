@@ -9,7 +9,9 @@ import { setWalletAPIVersion } from "../../wallet-api/version";
 
 setWalletAPIVersion(WALLET_API_VERSION);
 setSupportedCurrencies([
+  "aleo",
   "avalanche_c_chain",
+  "avalanche_c_chain_fuji",
   "axelar",
   "stargaze",
   "secret_network",
@@ -17,7 +19,6 @@ setSupportedCurrencies([
   "desmos",
   "dydx",
   "onomy",
-  "sei_network",
   "quicksilver",
   "persistence",
   "bitcoin",
@@ -84,7 +85,9 @@ setSupportedCurrencies([
   "velas_evm",
   "syscoin",
   "internet_computer",
+  "bitlayer",
   "klaytn",
+  "klaytn_baobab",
   "polygon_zk_evm",
   "polygon_zk_evm_testnet",
   "base",
@@ -106,6 +109,8 @@ setSupportedCurrencies([
   "blast_sepolia",
   "scroll",
   "scroll_sepolia",
+  "shape",
+  "story",
   "ton",
   "etherlink",
   "zksync",
@@ -130,6 +135,10 @@ setSupportedCurrencies([
   "zero_gravity",
   "concordium",
   "concordium_testnet",
+  "aleo",
+  "aleo_testnet",
+  "unichain",
+  "unichain_sepolia",
 ]);
 LiveConfig.setConfig(liveConfig);
 

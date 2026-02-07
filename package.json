@@ -80,6 +80,7 @@
     "coin:coverage": "pnpm turbo coverage --filter=\"@ledgerhq/coin-*\" --concurrency=2",
     "coin:coverage:clean": "rm -rf coverage libs/coin-modules/**/coverage libs/coin-framework/coverage",
     "coin:algorand": "pnpm --filter coin-algorand",
+    "coin:aleo": "pnpm --filter coin-aleo",
     "coin:aptos": "pnpm --filter coin-aptos",
     "coin:bitcoin": "pnpm --filter coin-bitcoin",
     "coin:canton": "pnpm --filter coin-canton",
@@ -115,6 +116,7 @@
     "coin:tester:polkadot": "pnpm --filter coin-tester-polkadot",
     "coin:tester:solana": "pnpm --filter coin-tester-solana",
     "coin:tester:bitcoin": "pnpm --filter coin-tester-bitcoin",
+    "coin:zcash-shielded": "pnpm --filter zcash-shielded test",
     "evm-tools": "pnpm --filter evm-tools",
     "domain": "pnpm --filter domain-service",
     "doc": "pnpm --filter docs",
@@ -133,6 +135,8 @@
     "config": "pnpm --filter live-config",
     "utils": "pnpm --filter live-utils",
     "hooks": "pnpm --filter live-hooks",
+    "psbtv2": "pnpm --filter psbtv2",
+    "currency-format": "pnpm --filter live-currency-format",
     "lkrp": "pnpm --filter ledger-key-ring-protocol",
     "hw-lkrp": "pnpm --filter hw-ledger-key-ring-protocol",
     "countervalues": "pnpm --filter live-countervalues",
@@ -149,6 +153,7 @@
     "ljs:hw-app-algorand": "pnpm --filter hw-app-algorand",
     "ljs:hw-app-btc": "pnpm --filter hw-app-btc",
     "ljs:hw-app-canton": "pnpm --filter hw-app-canton",
+    "ljs:hw-app-concordium": "pnpm --filter hw-app-concordium",
     "ljs:hw-app-celo": "pnpm --filter hw-app-celo",
     "ljs:hw-app-cosmos": "pnpm --filter hw-app-cosmos",
     "ljs:hw-app-eth": "pnpm --filter hw-app-eth",
@@ -204,12 +209,12 @@
     "ui:icons": "pnpm --filter icons-ui",
     "ui:crypto-icons": "pnpm --filter crypto-icons-ui",
     "ui:shared": "pnpm --filter ui-shared",
-    "ui:example:next": "pnpm  --filter=\"next.js-example\"",
-    "ui:example:webpack": "pnpm  --filter=\"webpack.js-example\"",
+    "ui:example:rspack": "pnpm  --filter=\"rspack-example\"",
     "actions": "pnpm --filter @actions/*",
     "import:cal-tokens": "pnpm --filter=\"@ledgerhq/cryptoassets\" import:cal-tokens"
   },
   "devDependencies": {
+    "@ledgerhq/lumen-design-core": "catalog:",
     "@changesets/changelog-github": "0.5.0",
     "@changesets/cli": "2.27.7",
     "@commitlint/cli": "17.8.1",
@@ -222,6 +227,7 @@
     "@react-native-community/cli-platform-android": "15.1.0",
     "@react-native-community/cli-platform-ios": "15.1.0",
     "@react-native/babel-plugin-codegen": "catalog:",
+    "@vitest/mocker": "4.0.17",
     "@ton/crypto": "^3.3.0",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
@@ -242,6 +248,9 @@
   },
   "pnpm": {
     "overrides": {
+      "live-mobile>@types/react": "19.0.14",
+      "live-mobile>react": "19.0.0",
+      "live-mobile>react-test-renderer": "19.0.0",
       "stellar-base>sodium-native": "^3.2.1",
       "remove-flow-types-loader>flow-remove-types": "^2",
       "remove-flow-types-loader>loader-utils": "*",
@@ -271,7 +280,9 @@
       "@exodus/patch-broken-hermes-typed-arrays": "patches/@exodus__patch-broken-hermes-typed-arrays.patch",
       "@taquito/http-utils": "patches/@taquito__http-utils.patch",
       "react-native-webview@13.16.0": "patches/react-native-webview@13.16.0.patch",
-      "react-native@0.77.3": "patches/react-native@0.77.3.patch"
+      "@testing-library/react-native@13.3.3": "patches/@testing-library__react-native@13.3.3.patch",
+      "styled-components@6.1.19": "patches/styled-components@6.1.19.patch",
+      "react-native@0.79.7": "patches/react-native@0.79.7.patch"
     },
     "packageExtensions": {
       "eslint-config-next@*": {

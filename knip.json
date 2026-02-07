@@ -42,10 +42,12 @@
         "src/webviewPreloader/index.ts"
       ],
       "ignore": [
-        "src/newArch/features/Collectibles/**",
         ".storybook/stub.ts",
+        ".storybook/electronStub.js",
+        ".storybook/fsStub.js",
+        ".storybook/settingsMock.ts",
         "src/renderer/mockServiceWorker.js",
-        "src/newArch/utils/cn.ts"
+        "src/mvvm/utils/cn.ts"
       ],
       "ignoreDependencies": [
         "prop-types",
@@ -55,7 +57,10 @@
         "ws",
         "@electron/fuses",
         "@reduxjs/toolkit",
-        "class-variance-authority"
+        "class-variance-authority",
+        "embla-carousel-autoplay",
+        "embla-carousel-react",
+        "events"
       ]
     },
     "./apps/ledger-live-mobile": {

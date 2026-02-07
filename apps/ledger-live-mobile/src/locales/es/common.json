@@ -1131,6 +1131,12 @@
     "NearStakingThresholdNotMet" : {
       "title" : "La cantidad debe ser de {{threshold}} como mínimo."
     },
+    "XrpInvalidMemo" : {
+      "title" : "El formato del memo es incorrecto, debe ser menor que 4294967296."
+    },
+    "HederaMemoExceededSizeError" : {
+      "title" : "Tamaño de memo no válido; el límite máximo permitido es de 100 caracteres."
+    },
     "PinNotSet" : {
       "title" : "PIN no establecido"
     },
@@ -2510,6 +2516,20 @@
       "description" : "Al igual que cualquier contraseña o código de acceso, el PIN te permite desbloquear tu {{productName}} e impedir accesos no deseados.",
       "continueOnDevice" : "Configura el PIN en tu {{productName}}."
     },
+    "syncStep" : {
+      "title" : "Sincronización",
+      "doneTitle" : "Wallet sincronizada",
+      "descriptionTitle" : "Sincroniza tu wallet",
+      "description" : "Mantén tu portfolio actualizado si cambias de móvil o usas tu PC.",
+      "skipCta" : "Lo haré más tarde",
+      "skip" : {
+        "title" : "¿Estás seguro?",
+        "description" : "Si omites este paso y cambias a otro móvil o PC, tendrás que volver a agregar manualmente todas tus cuentas, saldos e historial.",
+        "descriptionEmphasis" : "Si quieres, puedes desactivarlo desde los ajustes.",
+        "skipCTA" : "Sí, omitir",
+        "syncCTA" : "No, sincronizar mi wallet"
+      }
+    },
     "seedStep" : {
       "title" : "Configuración y copia de respaldo",
       "doneTitle" : "Frase de Recuperación Secreta confirmada",
@@ -3457,7 +3477,9 @@
   "notifications" : {
     "prompt" : {
       "title" : "Activar las notificaciones",
+      "titleVariantB" : "Saca el máximo partido de Ledger Wallet",
       "desc" : "Recibe recomendaciones personalizadas y las últimas novedades sobre Ledger Wallet, los productos Ledger y el mercado. Puedes cancelar la suscripción en cualquier momento desde los ajustes.",
+      "descVariantB" : "Te enviaremos consejos personalizados, guías de configuración y las noticias más relevantes del mercado.",
       "allow" : "Permitir notificaciones",
       "later" : "Quizás más tarde"
     },
@@ -3874,7 +3896,9 @@
         "celo_title" : "No es posible utilizar el Ledger Nano S™ para permutar Celo",
         "celo_description" : "Para permutar Celo, usa cualquier otro dispositivo Ledger compatible, como el Ledger Nano S Plus™, el Ledger Nano X™, el Ledger Flex™ o el Ledger Stax™.",
         "monad_title" : "No es posible usar el Ledger Nano S™ para permutar Monad",
-        "monad_description" : "Para permutar Monad, usa cualquier otro dispositivo Ledger compatible, como el Ledger Nano S Plus™, el Ledger Nano X™, el Ledger Flex™ o el Ledger Stax™."
+        "monad_description" : "Para permutar Monad, usa cualquier otro dispositivo Ledger compatible, como el Ledger Nano S Plus™, el Ledger Nano X™, el Ledger Flex™ o el Ledger Stax™.",
+        "zcash_title" : "No es posible usar el Ledger Nano S™ para permutar Zcash",
+        "zcash_description" : "Para permutar Zcash, usa cualquier otro dispositivo Ledger compatible, como el Ledger Nano S Plus™, el Ledger Nano X™, el Ledger Flex™ o el Ledger Stax™."
       }
     },
     "lending" : {
@@ -6355,6 +6379,7 @@
       "netApy" : "APY neto",
       "stakeActivationState" : "Provincia",
       "stakeActivePercent" : "Activo",
+      "inactiveStake" : "Recompensas retirables",
       "stakeAvailableBalance" : "Saldo disponible",
       "actions" : {
         "activate" : "Activar",
@@ -8060,12 +8085,25 @@
   },
   "lnsUpsell" : {
     "opted_in" : {
-      "description" : "Actualiza tu Ledger Nano S a un dispositivo Ledger más moderno, como el Ledger Flex, para disponer de más memoria, mejoras de seguridad más recientes y nuevas funciones. Además, un exclusivo 20% de descuento. ",
+      "title" : "Renueva tu Ledger Nano S™",
+      "description" : "Consigue un descuento exclusivo del 20% en los signers Ledger más modernos.",
       "cta" : "Renovar mi Ledger"
     },
     "opted_out" : {
-      "description" : "La memoria limitada de tu Ledger Nano S restringe tu acceso a las opciones más recientes, a cambios en la blockchain y a mejoras de seguridad. Cambia a un dispositivo Ledger más moderno para garantizar un uso prolongado.",
+      "title" : "Renueva tu Ledger Nano S™",
+      "description" : "La memoria limitada de tu Ledger Nano S restringe tu acceso a las opciones más recientes, a los cambios en la blockchain y a las mejoras de seguridad.",
       "cta" : "Más información"
+    }
+  },
+  "marketBanner" : {
+    "title" : "Explorar mercado",
+    "viewAll" : "Ver todo",
+    "viewAllAccessibilityHint" : "Pulsa dos veces para ver todos los activos del mercado",
+    "connectionFailed" : "La conexión ha fallado",
+    "errorAccessibilityHint" : "No es posible cargar los datos del mercado. Inténtalo de nuevo más tarde.",
+    "tile" : {
+      "accessibilityLabel" : "{{name}}, {{change}}",
+      "accessibilityHint" : "Pulsa dos veces para ver los detalles del mercado"
     }
   },
   "largeMover" : {
@@ -8225,6 +8263,15 @@
     }
   },
   "canton" : {
+    "expiryDuration" : {
+      "label" : "Duración de la caducidad",
+      "summaryLabel" : "Oferta de caducidad",
+      "threeHours" : "3 horas",
+      "sixHours" : "6 horas",
+      "oneDay" : "1 día",
+      "oneWeek" : "1 semana",
+      "oneMonth" : "30 días"
+    },
     "account" : {
       "lockedBalance" : "Bloqueado",
       "lockedBalanceTooltip" : "Tus fondos están bloqueados en ofertas que has enviado a otros usuarios. Puedes cancelar estas ofertas en cualquier momento o esperar a que el destinatario acepte o rechace tu oferta.",
@@ -8298,6 +8345,28 @@
           }
         }
       }
+    }
+  },
+  "fearAndGreed" : {
+    "title" : "Índice de sentimiento",
+    "description" : "El índice de sentimiento indica el estado emocional del mercado. Oscila entre el 0 y el 100. Un valor más bajo indica miedo extremo, mientras que uno más alto representa avaricia extrema.",
+    "levels" : {
+      "extremeFear" : "Más miedo",
+      "fear" : "Miedo",
+      "neutral" : "Neutro",
+      "greed" : "Avaricia",
+      "extremeGreed" : "Más avaricia"
+    }
+  },
+  "analyticsAllocation" : {
+    "header" : {
+      "main" : "Análisis"
+    },
+    "allocation" : {
+      "title" : "Asignación de activos"
+    },
+    "actions" : {
+      "swap" : "Permutar"
     }
   }
 }

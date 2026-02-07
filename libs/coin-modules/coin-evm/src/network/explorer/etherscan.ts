@@ -1,15 +1,10 @@
+import { isNFTActive } from "@ledgerhq/coin-framework/nft/support";
+import { makeLRUCache } from "@ledgerhq/live-network/cache";
 import { delay } from "@ledgerhq/live-promise";
+import { log } from "@ledgerhq/logs";
+import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { Operation } from "@ledgerhq/types-live";
 import axios, { AxiosRequestConfig } from "axios";
-import { makeLRUCache } from "@ledgerhq/live-network/cache";
-import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
-import { isNFTActive } from "@ledgerhq/coin-framework/nft/support";
-import { log } from "@ledgerhq/logs";
-import {
-  EtherscanAPIError,
-  EtherscanLikeExplorerUsedIncorrectly,
-  InvalidExplorerResponse,
-} from "../../errors";
 import {
   etherscanOperationToOperations,
   etherscanERC20EventToOperations,
@@ -18,6 +13,11 @@ import {
   etherscanInternalTransactionToOperations,
 } from "../../adapters";
 import { getCoinConfig } from "../../config";
+import {
+  EtherscanAPIError,
+  EtherscanLikeExplorerUsedIncorrectly,
+  InvalidExplorerResponse,
+} from "../../errors";
 import {
   EtherscanERC1155Event,
   EtherscanERC20Event,
@@ -359,7 +359,7 @@ export const getLastInternalOperations = async (
  * do not use a Promise.all here, it would
  * break because of the rate limits
  */
-export const getLastOperations: ExplorerApi["getLastOperations"] = makeLRUCache<
+export const getLastOperations = makeLRUCache<
   [
     currency: CryptoCurrency,
     address: string,
@@ -412,10 +412,18 @@ export const getLastOperations: ExplorerApi["getLastOperations"] = makeLRUCache<
       };
     } catch (err) {
       log("EVM getLastOperations", "Error while fetching data from Etherscan like API", err);
-      throw new InvalidExplorerResponse("", { currencyName: currency.name });
+      const message =
+        typeof err === "string"
+          ? err
+          : err instanceof Error
+            ? `${err.name} - ${err.message}`
+            : JSON.stringify(err);
+      throw new InvalidExplorerResponse(`${currency.name} - ${message}`, {
+        currencyName: currency.name,
+      });
     }
   },
-  (currency, address, accountId, fromBlock, toBlock) => accountId + fromBlock + toBlock,
+  (_currency, _address, accountId, fromBlock, toBlock) => accountId + fromBlock + toBlock,
   { ttl: ETHERSCAN_TIMEOUT },
 );
 
@@ -423,4 +431,8 @@ const explorerApi: ExplorerApi = {
   getLastOperations,
 };
 
-export default explorerApi;
+const explorerApiNoChache: ExplorerApi = {
+  getLastOperations: getLastOperations.force,
+};
+
+export default { explorerApi, explorerApiNoChache };

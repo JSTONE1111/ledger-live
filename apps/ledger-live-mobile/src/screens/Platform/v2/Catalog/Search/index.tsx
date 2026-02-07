@@ -3,7 +3,7 @@ import { Linking, TouchableOpacity } from "react-native";
 import { useTheme } from "styled-components/native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { Flex, Text, InfiniteLoader } from "@ledgerhq/native-ui";
-import { Trans, useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "~/context/Locale";
 import { HTTP_REGEX } from "@ledgerhq/live-common/wallet-api/constants";
 import ArrowLeft from "~/icons/ArrowLeft";
 import { TAB_BAR_SAFE_HEIGHT } from "~/components/TabBar/TabBarSafeAreaView";
@@ -84,7 +84,7 @@ export function Search({ title, disclaimer, search }: Props) {
             style={{ paddingVertical: 16 }}
             onPress={search.onCancel}
           >
-            <ArrowLeft size={18} color={colors.neutral.c100} />
+            <ArrowLeft size={18} color={colors.neutral.c100} testID="catalog-search-arrow-left" />
           </TouchableOpacity>
         }
         searchContent={<SearchBar search={search} />}

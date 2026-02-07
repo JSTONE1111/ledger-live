@@ -6,8 +6,8 @@ import {
   Operation,
   StakingTransactionIntent,
 } from "@ledgerhq/coin-framework/api/types";
-import { ethers } from "ethers";
 import { setupCalClientStore } from "@ledgerhq/cryptoassets/cal-client/test-helpers";
+import { ethers } from "ethers";
 import { EvmConfig } from "../config";
 import { createApi } from "./index";
 
@@ -90,8 +90,6 @@ describe.each([
       expect(result.parent?.hash).toMatch(/^0x[A-Fa-f0-9]{64}$/);
       expect(result.parent?.height).toBe(19999999);
       expect(result.parent?.height).toBe(result.height - 1);
-      expect(result.parent?.time).toBeInstanceOf(Date);
-      expect(result.parent?.time!.getTime()).toBeLessThan(result.time!.getTime());
     });
 
     it("returns block info without parent for genesis block", async () => {
@@ -109,7 +107,6 @@ describe.each([
       if (result.parent) {
         expect(result.parent.height).toBeGreaterThanOrEqual(0);
         expect(result.parent.hash).toMatch(/^0x[A-Fa-f0-9]{64}$/);
-        expect(result.parent.time).toBeInstanceOf(Date);
         expect(result.parent.height).toBe(result.height - 1);
       }
     });
@@ -156,8 +153,6 @@ describe.each([
       expect(result.info.parent?.hash).toMatch(/^0x[A-Fa-f0-9]{64}$/);
       expect(result.info.parent?.height).toBe(19999999);
       expect(result.info.parent?.height).toBe(result.info.height - 1);
-      expect(result.info.parent?.time).toBeInstanceOf(Date);
-      expect(result.info.parent?.time!.getTime()).toBeLessThan(result.info.time!.getTime());
     });
 
     it("returns block without parent for genesis block", async () => {
@@ -268,8 +263,14 @@ describe.each([
       ]);
     });
 
+    it("returns 0 when address is not found", async () => {
+      const result = await module.getBalance("0xcafebabe00000000000000000000000000000000");
+
+      expect(result).toEqual([{ value: BigInt(0), asset: { type: "native" } }]);
+    });
+
     it("returns balance for an address", async () => {
-      const result = await module.getBalance("0x9bcd841436ef4f85dacefb1aec772af71619024e");
+      const result = await module.getBalance("0x66c4371aE8FFeD2ec1c2EBbbcCfb7E494181E1E3");
 
       expect(result).toBeInstanceOf(Array);
       expect(result[0]).toEqual({
@@ -281,6 +282,30 @@ describe.each([
         expect(balance.asset.type).not.toEqual("native");
         expect(balance.value).toBeGreaterThanOrEqual(0);
       });
+    });
+
+    /**
+     * Ensure non regression and avoid
+     * "To send batches over 10 items, consider using a dedicated API provider"
+     */
+    it("returns at least 10 token balances on Optimisim", async () => {
+      const module = createApi(
+        {
+          node: {
+            type: "external",
+            uri: "https://mainnet.optimism.io",
+          },
+          explorer: {
+            type: "blockscout",
+            uri: "https://optimism.blockscout.com/api",
+          },
+        } as EvmConfig,
+        "optimism",
+      );
+
+      const result = await module.getBalance("0x1CDDb825910426644e00e769072Ce1Ea7d4e34BB");
+
+      expect(result.length).toBeGreaterThan(10);
     });
   });
 

@@ -59,7 +59,7 @@ import {
   fromEVMAddress,
   toEVMAddress,
   formatTransactionId,
-  getTimestampRangeFromBlockHeight,
+  getDateRangeFromBlockHeight,
   getBlockHash,
   isStakingTransaction,
   extractCompanyFromNodeDescription,
@@ -94,8 +94,8 @@ describe("logic utils", () => {
     oldStakingLedgerNodeIdEnv = getEnv("HEDERA_STAKING_LEDGER_NODE_ID");
   });
 
-  afterAll(() => {
-    rpcClient._resetInstance();
+  afterAll(async () => {
+    await rpcClient._resetInstance();
   });
 
   describe("signature serialization", () => {
@@ -530,31 +530,31 @@ describe("logic utils", () => {
   });
 
   describe("safeParseAccountId", () => {
-    it("returns account id and no checksum for valid address without checksum", () => {
-      const [error, result] = safeParseAccountId("0.0.9124531");
+    it("returns account id and no checksum for valid address without checksum", async () => {
+      const [error, result] = await safeParseAccountId("0.0.9124531");
 
       expect(error).toBeNull();
       expect(result?.accountId).toBe("0.0.9124531");
       expect(result?.checksum).toBeNull();
     });
 
-    it("returns account id and checksum for valid address with correct checksum", () => {
-      const [error, result] = safeParseAccountId("0.0.9124531-xrxlv");
+    it("returns account id and checksum for valid address with correct checksum", async () => {
+      const [error, result] = await safeParseAccountId("0.0.9124531-xrxlv");
 
       expect(error).toBeNull();
       expect(result?.accountId).toBe("0.0.9124531");
       expect(result?.checksum).toBe("xrxlv");
     });
 
-    it("returns error for valid address with incorrect checksum", () => {
-      const [error, accountId] = safeParseAccountId("0.0.9124531-invld");
+    it("returns error for valid address with incorrect checksum", async () => {
+      const [error, accountId] = await safeParseAccountId("0.0.9124531-invld");
 
       expect(error).toBeInstanceOf(HederaRecipientInvalidChecksum);
       expect(accountId).toBeNull();
     });
 
-    it("returns error for invalid address format", () => {
-      const [error, accountId] = safeParseAccountId("not-a-valid-address");
+    it("returns error for invalid address format", async () => {
+      const [error, accountId] = await safeParseAccountId("not-a-valid-address");
 
       expect(error).toBeInstanceOf(InvalidAddress);
       expect(accountId).toBeNull();
@@ -694,59 +694,59 @@ describe("logic utils", () => {
     });
   });
 
-  describe("getTimestampRangeFromBlockHeight", () => {
+  describe("getDateRangeFromBlockHeight", () => {
     it("calculates consensus timestamp for block height 0 with default window", () => {
-      const result = getTimestampRangeFromBlockHeight(0);
+      const result = getDateRangeFromBlockHeight(0);
 
       expect(result).toEqual({
-        start: "0.000000000",
-        end: "10.000000000",
+        start: new Date(0),
+        end: new Date(10000),
       });
     });
 
     it("calculates consensus timestamp for block height 1 with default window", () => {
-      const result = getTimestampRangeFromBlockHeight(1);
+      const result = getDateRangeFromBlockHeight(1);
 
       expect(result).toEqual({
-        start: "10.000000000",
-        end: "20.000000000",
+        start: new Date(10000),
+        end: new Date(20000),
       });
     });
 
     it("calculates consensus timestamp with custom block window of 1 second", () => {
-      const result = getTimestampRangeFromBlockHeight(42, 1);
+      const result = getDateRangeFromBlockHeight(42, 1);
 
       expect(result).toEqual({
-        start: "42.000000000",
-        end: "43.000000000",
+        start: new Date(42000),
+        end: new Date(43000),
       });
     });
 
     it("handles large block heights correctly", () => {
-      const result = getTimestampRangeFromBlockHeight(1000000);
+      const result = getDateRangeFromBlockHeight(1000000);
 
       expect(result).toEqual({
-        start: "10000000.000000000",
-        end: "10000010.000000000",
+        start: new Date("1970-04-26T17:46:40.000Z"),
+        end: new Date("1970-04-26T17:46:50.000Z"),
       });
     });
 
     it("ensures start and end timestamps are within the same block window", () => {
       const blockHeight = 50;
       const blockWindowSeconds = 10;
-      const result = getTimestampRangeFromBlockHeight(blockHeight, blockWindowSeconds);
+      const result = getDateRangeFromBlockHeight(blockHeight, blockWindowSeconds);
 
-      const startSeconds = parseInt(result.start.split(".")[0]);
-      const endSeconds = parseInt(result.end.split(".")[0]);
+      const startSeconds = result.start.getTime() / 1000;
+      const endSeconds = result.end.getTime() / 1000;
 
       expect(endSeconds - startSeconds).toBe(blockWindowSeconds);
     });
 
-    it("maintains correct nanosecond precision format", () => {
-      const result = getTimestampRangeFromBlockHeight(123);
+    it("does not use sub second precision", () => {
+      const result = getDateRangeFromBlockHeight(123);
 
-      expect(result.start).toMatch(/^\d+\.000000000$/);
-      expect(result.end).toMatch(/^\d+\.000000000$/);
+      expect(result.start.getMilliseconds()).toEqual(0);
+      expect(result.end.getMilliseconds()).toEqual(0);
     });
   });
 

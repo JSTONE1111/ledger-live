@@ -65,6 +65,18 @@ export default function DebugSettings({
         iconLeft={<IconsLegacy.EmojiHappyMedium size={24} color="black" />}
         onPress={() => navigate(ScreenName.DebugPlayground)}
       />
+      <SettingsRow
+        title="Lumen Debug"
+        desc="Playground for testing Lumen components"
+        iconLeft={<IconsLegacy.PenMedium size={24} color="black" />}
+        onPress={() => navigate(ScreenName.DebugLumen)}
+      />
+      <SettingsRow
+        title="Wallet Features Dev Tool"
+        desc="Toggle Wallet 4.0 features for desktop (lwdWallet40 feature flag)"
+        iconLeft={<IconsLegacy.WalletMedium size={24} color="black" />}
+        onPress={() => navigate(ScreenName.DebugWallet40)}
+      />
     </SettingsNavigationScrollView>
   );
 }
