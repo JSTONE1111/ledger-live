@@ -4,7 +4,8 @@ import {
   makeAccountBridgeReceive,
   makeScanAccounts,
 } from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import { SignerContext } from "@ledgerhq/coin-framework/signer";
+import type { SignerContext } from "@ledgerhq/coin-framework/signer";
+import type { CoinConfig } from "@ledgerhq/coin-framework/config";
 import type {
   AccountBridge,
   Bridge,
@@ -13,7 +14,8 @@ import type {
 } from "@ledgerhq/types-live";
 import getAddressWrapper from "@ledgerhq/coin-framework/bridge/getAddressWrapper";
 import type { Observable } from "rxjs";
-import type { Transaction as AleoTransaction } from "../types/index";
+import aleoCoinConfig, { type AleoCoinConfig } from "../config";
+import type { AleoAccount, Transaction as AleoTransaction } from "../types/index";
 import type { AleoSigner } from "../types/signer";
 import resolver from "../signer/getAddress";
 import { validateAddress } from "../logic/validateAddress";
@@ -21,6 +23,7 @@ import { estimateMaxSpendable } from "./estimateMaxSpendable";
 import { getAccountShape, sync } from "./sync";
 import { createTransaction } from "./createTransaction";
 import { prepareTransaction } from "./prepareTransaction";
+import { assignFromAccountRaw, assignToAccountRaw } from "./serialization";
 import { getTransactionStatus } from "./getTransactionStatus";
 
 export function buildCurrencyBridge(signerContext: SignerContext<AleoSigner>): CurrencyBridge {
@@ -40,7 +43,7 @@ export function buildCurrencyBridge(signerContext: SignerContext<AleoSigner>): C
 
 export function buildAccountBridge(
   signerContext: SignerContext<AleoSigner>,
-): AccountBridge<AleoTransaction> {
+): AccountBridge<AleoTransaction, AleoAccount> {
   const getAddress = resolver(signerContext);
   const receive = makeAccountBridgeReceive(getAddressWrapper(getAddress));
 
@@ -61,12 +64,19 @@ export function buildAccountBridge(
       throw new Error("broadcast is not supported");
     },
     estimateMaxSpendable,
+    assignFromAccountRaw,
+    assignToAccountRaw,
     getSerializedAddressParameters,
     validateAddress,
   };
 }
 
-export function createBridges(signerContext: SignerContext<AleoSigner>): Bridge<AleoTransaction> {
+export function createBridges(
+  signerContext: SignerContext<AleoSigner>,
+  coinConfig: CoinConfig<AleoCoinConfig>,
+): Bridge<AleoTransaction, AleoAccount> {
+  aleoCoinConfig.setCoinConfig(coinConfig);
+
   return {
     currencyBridge: buildCurrencyBridge(signerContext),
     accountBridge: buildAccountBridge(signerContext),

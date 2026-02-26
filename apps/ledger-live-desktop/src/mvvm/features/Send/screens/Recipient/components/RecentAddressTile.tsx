@@ -1,24 +1,24 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
+import type { RecentAddress } from "@ledgerhq/live-common/flows/send/recipient/types";
+import { formatAddress } from "@ledgerhq/live-common/utils/addressUtils";
 import {
-  Tile,
-  TileContent,
-  TileSpot,
-  TileTitle,
-  TileDescription,
   Menu,
   MenuContent,
   MenuItem,
-  TileSecondaryAction,
   MenuTrigger,
+  Tile,
+  TileContent,
+  TileDescription,
+  TileSecondaryAction,
+  TileSpot,
+  TileTitle,
 } from "@ledgerhq/lumen-ui-react";
-import { Wallet, Trash, MoreVertical, LedgerLogo } from "@ledgerhq/lumen-ui-react/symbols";
-import { formatAddress } from "LLD/features/ModularDialog/components/Address/formatAddress";
-import { formatRelativeDate } from "../utils/dateFormatter";
-import { useMaybeAccountName } from "~/renderer/reducers/wallet";
+import { LedgerLogo, MoreVertical, Trash, Wallet } from "@ledgerhq/lumen-ui-react/symbols";
 import { useSelector } from "LLD/hooks/redux";
+import React from "react";
+import { useTranslation } from "react-i18next";
 import { accountsSelector } from "~/renderer/reducers/accounts";
-import type { RecentAddress } from "../types";
+import { useMaybeAccountName } from "~/renderer/reducers/wallet";
+import { useFormatRelativeDate } from "../hooks/useFormatRelativeDate";
 
 type RecentAddressTileProps = Readonly<{
   recentAddress: RecentAddress;
@@ -28,6 +28,7 @@ type RecentAddressTileProps = Readonly<{
 
 export function RecentAddressTile({ recentAddress, onSelect, onRemove }: RecentAddressTileProps) {
   const { t } = useTranslation();
+  const formatRelativeDate = useFormatRelativeDate();
   const allAccounts = useSelector(accountsSelector);
 
   const account = recentAddress.accountId
@@ -58,7 +59,11 @@ export function RecentAddressTile({ recentAddress, onSelect, onRemove }: RecentA
         secondaryAction={
           <Menu>
             <MenuTrigger asChild>
-              <TileSecondaryAction icon={MoreVertical} aria-label="More actions" />
+              <TileSecondaryAction
+                icon={MoreVertical}
+                aria-label="More actions"
+                data-testid="send-recent-tile-action"
+              />
             </MenuTrigger>
             <MenuContent>
               <MenuItem onSelect={handleRemove}>

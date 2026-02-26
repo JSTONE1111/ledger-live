@@ -43,7 +43,6 @@ const minBalancePerCurrencyId: Partial<Record<CryptoCurrency["id"], number>> = {
   polygon: 0.005,
   ethereum: 0.001,
   ethereum_sepolia: 0.001,
-  ethereum_holesky: 0.001,
   ethereum_hoodi: 0.001,
   ethereum_classic: 0.05,
   klaytn_baobab: 0.1,
@@ -63,6 +62,7 @@ const minBalancePerCurrencyId: Partial<Record<CryptoCurrency["id"], number>> = {
   zero_gravity: 0.01,
   unichain: 0.001,
   unichain_sepolia: 0.001,
+  adi: 0.001,
 };
 
 /**

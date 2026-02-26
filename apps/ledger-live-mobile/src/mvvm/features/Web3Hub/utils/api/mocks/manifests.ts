@@ -61,7 +61,6 @@ export const mocks: AppManifest[] = [
       "umee",
       "desmos",
       "dydx",
-      "onomy",
       "quicksilver",
       "persistence",
       "avalanche_c_chain",
@@ -99,7 +98,6 @@ export const mocks: AppManifest[] = [
       "ethereum_ropsten/**",
       "ethereum_goerli/**",
       "ethereum_sepolia/**",
-      "ethereum_holesky",
       "hedera",
       "cardano/**",
       "filecoin",
@@ -146,6 +144,7 @@ export const mocks: AppManifest[] = [
       "somnia",
       "zero_gravity",
       "unichain",
+      "adi",
     ],
     content: {
       shortDescription: {

@@ -224,15 +224,6 @@ export const expectedCurrencyList = [
   },
   {
     type: "CryptoCurrency",
-    id: "onomy",
-    ticker: "NOM",
-    name: "Onomy",
-    family: "cosmos",
-    color: "#8c94d3",
-    decimals: 18,
-  },
-  {
-    type: "CryptoCurrency",
     id: "quicksilver",
     ticker: "QCK",
     name: "Quicksilver",
@@ -593,15 +584,6 @@ export const expectedCurrencyList = [
   },
   {
     type: "CryptoCurrency",
-    id: "ethereum_holesky",
-    ticker: "ETH",
-    name: "Ethereum Holesky",
-    family: "ethereum",
-    color: "#00ff00",
-    decimals: 18,
-  },
-  {
-    type: "CryptoCurrency",
     id: "ethereum_hoodi",
     ticker: "ETH",
     name: "Ethereum Hoodi",
@@ -725,6 +707,15 @@ export const expectedCurrencyList = [
     family: "aptos",
     color: "#FFCD29",
     decimals: 8,
+  },
+  {
+    type: "CryptoCurrency",
+    id: "adi",
+    ticker: "ADI",
+    name: "Adi",
+    family: "ethereum",
+    color: "#0066CC",
+    decimals: 18,
   },
   {
     type: "CryptoCurrency",

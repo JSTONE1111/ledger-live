@@ -1,25 +1,34 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
-import Animation from "~/components/Animation";
-import Splashscreen from "./Splashscreen.json";
 
-const LottieLauncher = ({ onFinish }: { onFinish: () => void }) => {
+import { Lottie, resolveLottieSource } from "LLM/components/Lottie";
+
+import splashscreenLottieModule from "./Splashscreen.lottie";
+
+const LottieLauncher = () => {
   const { width, height } = Dimensions.get("window");
   const size = Math.min(width, height);
+  const source = resolveLottieSource(splashscreenLottieModule);
+  const lottieStyle = useMemo(
+    () => ({ width: size, height: size, backgroundColor: "transparent" as const }),
+    [size],
+  );
 
   return (
     <View style={styles.container}>
-      <Animation
-        source={Splashscreen}
-        style={{ width: size, height: size }}
+      <Lottie
+        testID="lottie-launcher"
+        source={source}
+        style={lottieStyle}
         loop={false}
         autoPlay
         speed={2}
-        onAnimationFinish={onFinish}
       />
     </View>
   );
 };
+
+export default LottieLauncher;
 
 const styles = StyleSheet.create({
   container: {
@@ -29,5 +38,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#131214",
   },
 });
-
-export default LottieLauncher;

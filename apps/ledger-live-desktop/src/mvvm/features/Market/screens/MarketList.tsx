@@ -13,7 +13,7 @@ import { ListSkeleton } from "../components/ListSkeleton";
 import { ListData } from "../components/ListData";
 
 type MarketListVirtualization = {
-  parentRef: RefObject<HTMLDivElement>;
+  parentRef: RefObject<HTMLDivElement | null>;
   rowVirtualizer: Virtualizer<HTMLDivElement, Element>;
 };
 
@@ -47,7 +47,7 @@ function MarketList({
   toggleStar,
   virtualization,
   t,
-}: MarketListProps) {
+}: Readonly<MarketListProps>) {
   const { order, search, starred, range, counterCurrency } = marketParams;
   const { parentRef, rowVirtualizer } = virtualization;
 
@@ -60,7 +60,7 @@ function MarketList({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col rounded-md bg-surface">
+    <div className="flex min-h-0 flex-1 flex-col rounded-t-md bg-surface">
       {search && currenciesLength > 0 && <TrackPage category="Market Search" success={true} />}
       <ListHeader
         order={order}

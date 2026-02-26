@@ -148,6 +148,30 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
   },
+  adi: {
+    type: "CryptoCurrency",
+    id: "adi",
+    coinType: CoinType.ETH,
+    name: "Adi",
+    managerAppName: "Ethereum",
+    ticker: "ADI",
+    scheme: "adi",
+    color: "#0066CC",
+    family: "evm",
+    units: [
+      {
+        name: "ADI",
+        code: "ADI",
+        magnitude: 18,
+      },
+    ],
+    ethereumLikeInfo: {
+      chainId: 36900,
+    },
+    explorerViews: [blockscoutExplorerView("https://explorer.adifoundation.ai")],
+    keywords: ["adi", "adi chain"],
+    tokenTypes: ["erc20"],
+  },
   near: {
     type: "CryptoCurrency",
     id: "near",
@@ -2268,35 +2292,6 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
   },
-  onomy: {
-    type: "CryptoCurrency",
-    id: "onomy",
-    coinType: CoinType.ATOM,
-    name: "Onomy",
-    managerAppName: "Cosmos",
-    ticker: "NOM",
-    scheme: "onomy",
-    color: "#8c94d3",
-    family: "cosmos",
-    units: [
-      {
-        name: "Onomy",
-        code: "NOM",
-        magnitude: 18,
-      },
-      {
-        name: "Micro-Onomy",
-        code: "anom",
-        magnitude: 0,
-      },
-    ],
-    explorerViews: [
-      {
-        tx: "https://www.mintscan.io/onomy-protocol/txs/$hash",
-        address: "https://www.mintscan.io/onomy-protocl/validators/$address",
-      },
-    ],
-  },
   ontology: {
     type: "CryptoCurrency",
     id: "ontology",
@@ -3617,32 +3612,6 @@ export const cryptocurrenciesById: Record<CryptoCurrencyId, CryptoCurrency> = {
       },
     ],
     explorerId: "eth_sepolia",
-  },
-  ethereum_holesky: {
-    type: "CryptoCurrency",
-    id: "ethereum_holesky",
-    coinType: CoinType.ETH,
-    name: "Ethereum Holesky",
-    managerAppName: "Ethereum",
-    ticker: "ETH",
-    deviceTicker: "ETH",
-    scheme: "eth_holesky",
-    color: "#00ff00",
-    units: ethereumUnits("ether", "ETH"),
-    isTestnetFor: "ethereum",
-    disableCountervalue: true,
-    family: "evm",
-    blockAvgTime: 15,
-    ethereumLikeInfo: {
-      chainId: 17000,
-    },
-    explorerViews: [
-      {
-        tx: "https://holesky.etherscan.io/tx/$hash",
-        address: "https://holesky.etherscan.io/address/$address",
-      },
-    ],
-    explorerId: "eth_holesky",
   },
   ethereum_hoodi: {
     type: "CryptoCurrency",

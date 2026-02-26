@@ -23,7 +23,7 @@ const subAccounts = [
     xrayTicket1: "B2CQA-2577, B2CQA-1079",
     xrayTicket2: "B2CQA-2583",
   },
-  { account: TokenAccount.XLM_USCD, xrayTicket1: "B2CQA-2579", xrayTicket2: "B2CQA-2585" },
+  { account: TokenAccount.XLM_USDC, xrayTicket1: "B2CQA-2579", xrayTicket2: "B2CQA-2585" },
   { account: TokenAccount.ALGO_USDT_1, xrayTicket1: "B2CQA-2575", xrayTicket2: "B2CQA-2581" },
   { account: TokenAccount.TRX_USDT, xrayTicket1: "B2CQA-2580", xrayTicket2: "B2CQA-2586" },
   { account: TokenAccount.BSC_BUSD_1, xrayTicket1: "B2CQA-2576", xrayTicket2: "B2CQA-2582" },
@@ -39,9 +39,10 @@ const subAccountReceive: Array<{
   { account: TokenAccount.ETH_USDT_1, xrayTicket: "B2CQA-2492" },
   { account: TokenAccount.ETH_LIDO, xrayTicket: "B2CQA-2491" },
   { account: TokenAccount.TRX_USDT, xrayTicket: "B2CQA-2496" },
-  { account: TokenAccount.BSC_BUSD_1, xrayTicket: "B2CQA-2489" },
-  { account: TokenAccount.POL_DAI_1, xrayTicket: "B2CQA-2493" },
-  { account: TokenAccount.POL_UNI, xrayTicket: "B2CQA-2494" },
+  //TODO: re-enable tests when https://ledgerhq.atlassian.net/browse/LIVE-25852 is fixed
+  // { account: TokenAccount.BSC_BUSD_1, xrayTicket: "B2CQA-2489" },
+  // { account: TokenAccount.POL_DAI_1, xrayTicket: "B2CQA-2493" },
+  // { account: TokenAccount.POL_UNI, xrayTicket: "B2CQA-2494" },
   { account: TokenAccount.SUI_USDC_1, xrayTicket: "B2CQA-3906" },
 ];
 
@@ -66,7 +67,7 @@ for (const token of subAccounts) {
           "@NanoGen5",
           `@${token.account.currency.id}`,
           ...(family ? [`@family-${family}`] : []),
-          ...(token.account === TokenAccount.XLM_USCD ? ["@smoke"] : []),
+          ...(token.account === TokenAccount.XLM_USDC ? ["@smoke"] : []),
         ],
         annotation: {
           type: "TMS",
@@ -97,8 +98,8 @@ for (const token of subAccounts) {
           await app.portfolio.navigateToAsset(token.account.currency.name);
         }
         await app.account.navigateToToken(token.account);
-        await app.account.expectLastOperationsVisibility();
         await app.account.expectTokenAccount(token.account);
+        await app.account.expectLastOperationsVisibility();
       },
     );
   });
@@ -517,7 +518,7 @@ for (const transaction of tokenTransactionInvalid) {
 test.describe("Send token (subAccount) - valid address & amount input", () => {
   const tokenTransactionValid = new Transaction(
     TokenAccount.ETH_USDT_1,
-    TokenAccount.ETH_USDT_2,
+    TokenAccount.ETH_USDT_3,
     "1",
     Fee.MEDIUM,
   );

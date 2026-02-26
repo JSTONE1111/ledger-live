@@ -294,9 +294,6 @@ export function useWebviewState(
         loadURL: (url: string): void => {
           setURI(url);
         },
-        resetToInitialURL: (): void => {
-          setURI(initialURL);
-        },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         notify: (method: `event.${string}`, params: any) => {
           serverRef?.current?.sendMessage(method, params);
@@ -490,6 +487,7 @@ function useUiHook({ manifest }: Props): UiHook {
         account,
         parentAccount,
         transaction,
+        broadcast,
         options,
         onSuccess,
         onError,
@@ -500,6 +498,7 @@ function useUiHook({ manifest }: Props): UiHook {
             transaction,
             accountId: account.id,
             parentId: parentAccount ? parentAccount.id : undefined,
+            broadcast,
             appName: options?.hwAppId,
             dependencies: options?.dependencies,
             onSuccess,

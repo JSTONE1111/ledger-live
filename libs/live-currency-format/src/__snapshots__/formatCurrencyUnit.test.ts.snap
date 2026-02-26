@@ -2,6 +2,8 @@
 
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format 0G unit (0G) 1`] = `"0,012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Adi unit (ADI) 1`] = `"0,012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Aion unit (AION) 1`] = `"123.456.789,00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Akroma unit (AKA) 1`] = `"123.456.789,00000000- -AKA"`;
@@ -132,8 +134,6 @@ exports[`formatCurrencyUnit with custom options with locale de-DE should correct
 
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Ethereum Classic unit (ETC) 1`] = `"0,012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Ethereum Holesky unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Ethereum Hoodi unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Ethereum Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
@@ -261,8 +261,6 @@ exports[`formatCurrencyUnit with custom options with locale de-DE should correct
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format OP Mainnet unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format OP Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Onomy unit (Onomy) 1`] = `"0,012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale de-DE should correctly format Ontology unit (ONT) 1`] = `"123.456.789,00000000- -ONT"`;
 
@@ -406,6 +404,8 @@ exports[`formatCurrencyUnit with custom options with locale de-DE should correct
 
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format 0G unit (0G) 1`] = `"0.012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Adi unit (ADI) 1`] = `"0.012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Aion unit (AION) 1`] = `"123,456,789.00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Akroma unit (AKA) 1`] = `"123,456,789.00000000- -AKA"`;
@@ -536,8 +536,6 @@ exports[`formatCurrencyUnit with custom options with locale en-US should correct
 
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Ethereum Classic unit (ETC) 1`] = `"0.012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Ethereum Holesky unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Ethereum Hoodi unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Ethereum Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
@@ -665,8 +663,6 @@ exports[`formatCurrencyUnit with custom options with locale en-US should correct
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format OP Mainnet unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format OP Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Onomy unit (Onomy) 1`] = `"0.012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale en-US should correctly format Ontology unit (ONT) 1`] = `"123,456,789.00000000- -ONT"`;
 
@@ -810,6 +806,8 @@ exports[`formatCurrencyUnit with custom options with locale en-US should correct
 
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format 0G unit (0G) 1`] = `"0,012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Adi unit (ADI) 1`] = `"0,012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Aion unit (AION) 1`] = `"123.456.789,00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Akroma unit (AKA) 1`] = `"123.456.789,00000000- -AKA"`;
@@ -940,8 +938,6 @@ exports[`formatCurrencyUnit with custom options with locale es-ES should correct
 
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Ethereum Classic unit (ETC) 1`] = `"0,012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Ethereum Holesky unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Ethereum Hoodi unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Ethereum Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
@@ -1069,8 +1065,6 @@ exports[`formatCurrencyUnit with custom options with locale es-ES should correct
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format OP Mainnet unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format OP Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Onomy unit (Onomy) 1`] = `"0,012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale es-ES should correctly format Ontology unit (ONT) 1`] = `"123.456.789,00000000- -ONT"`;
 
@@ -1214,6 +1208,8 @@ exports[`formatCurrencyUnit with custom options with locale es-ES should correct
 
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format 0G unit (0G) 1`] = `"0,012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Adi unit (ADI) 1`] = `"0,012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Aion unit (AION) 1`] = `"123 456 789,00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Akroma unit (AKA) 1`] = `"123 456 789,00000000- -AKA"`;
@@ -1344,8 +1340,6 @@ exports[`formatCurrencyUnit with custom options with locale fr-FR should correct
 
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Ethereum Classic unit (ETC) 1`] = `"0,012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Ethereum Holesky unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Ethereum Hoodi unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Ethereum Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
@@ -1473,8 +1467,6 @@ exports[`formatCurrencyUnit with custom options with locale fr-FR should correct
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format OP Mainnet unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format OP Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Onomy unit (Onomy) 1`] = `"0,012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale fr-FR should correctly format Ontology unit (ONT) 1`] = `"123 456 789,00000000- -ONT"`;
 
@@ -1618,6 +1610,8 @@ exports[`formatCurrencyUnit with custom options with locale fr-FR should correct
 
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format 0G unit (0G) 1`] = `"0.012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Adi unit (ADI) 1`] = `"0.012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Aion unit (AION) 1`] = `"123,456,789.00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Akroma unit (AKA) 1`] = `"123,456,789.00000000- -AKA"`;
@@ -1748,8 +1742,6 @@ exports[`formatCurrencyUnit with custom options with locale ja-JP should correct
 
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Ethereum Classic unit (ETC) 1`] = `"0.012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Ethereum Holesky unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Ethereum Hoodi unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Ethereum Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
@@ -1877,8 +1869,6 @@ exports[`formatCurrencyUnit with custom options with locale ja-JP should correct
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format OP Mainnet unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format OP Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Onomy unit (Onomy) 1`] = `"0.012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale ja-JP should correctly format Ontology unit (ONT) 1`] = `"123,456,789.00000000- -ONT"`;
 
@@ -2022,6 +2012,8 @@ exports[`formatCurrencyUnit with custom options with locale ja-JP should correct
 
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format 0G unit (0G) 1`] = `"0.012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Adi unit (ADI) 1`] = `"0.012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Aion unit (AION) 1`] = `"123,456,789.00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Akroma unit (AKA) 1`] = `"123,456,789.00000000- -AKA"`;
@@ -2152,8 +2144,6 @@ exports[`formatCurrencyUnit with custom options with locale ko-KR should correct
 
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Ethereum Classic unit (ETC) 1`] = `"0.012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Ethereum Holesky unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Ethereum Hoodi unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Ethereum Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
@@ -2281,8 +2271,6 @@ exports[`formatCurrencyUnit with custom options with locale ko-KR should correct
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format OP Mainnet unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format OP Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Onomy unit (Onomy) 1`] = `"0.012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale ko-KR should correctly format Ontology unit (ONT) 1`] = `"123,456,789.00000000- -ONT"`;
 
@@ -2426,6 +2414,8 @@ exports[`formatCurrencyUnit with custom options with locale ko-KR should correct
 
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format 0G unit (0G) 1`] = `"0,012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Adi unit (ADI) 1`] = `"0,012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Aion unit (AION) 1`] = `"123.456.789,00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Akroma unit (AKA) 1`] = `"123.456.789,00000000- -AKA"`;
@@ -2556,8 +2546,6 @@ exports[`formatCurrencyUnit with custom options with locale pt-BR should correct
 
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Ethereum Classic unit (ETC) 1`] = `"0,012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Ethereum Holesky unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Ethereum Hoodi unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Ethereum Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
@@ -2685,8 +2673,6 @@ exports[`formatCurrencyUnit with custom options with locale pt-BR should correct
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format OP Mainnet unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format OP Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Onomy unit (Onomy) 1`] = `"0,012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale pt-BR should correctly format Ontology unit (ONT) 1`] = `"123.456.789,00000000- -ONT"`;
 
@@ -2830,6 +2816,8 @@ exports[`formatCurrencyUnit with custom options with locale pt-BR should correct
 
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format 0G unit (0G) 1`] = `"0,012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Adi unit (ADI) 1`] = `"0,012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Aion unit (AION) 1`] = `"123 456 789,00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Akroma unit (AKA) 1`] = `"123 456 789,00000000- -AKA"`;
@@ -2960,8 +2948,6 @@ exports[`formatCurrencyUnit with custom options with locale ru-RU should correct
 
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Ethereum Classic unit (ETC) 1`] = `"0,012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Ethereum Holesky unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Ethereum Hoodi unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Ethereum Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
@@ -3089,8 +3075,6 @@ exports[`formatCurrencyUnit with custom options with locale ru-RU should correct
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format OP Mainnet unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format OP Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Onomy unit (Onomy) 1`] = `"0,012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale ru-RU should correctly format Ontology unit (ONT) 1`] = `"123 456 789,00000000- -ONT"`;
 
@@ -3234,6 +3218,8 @@ exports[`formatCurrencyUnit with custom options with locale ru-RU should correct
 
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format 0G unit (0G) 1`] = `"0,012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Adi unit (ADI) 1`] = `"0,012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Aion unit (AION) 1`] = `"123.456.789,00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Akroma unit (AKA) 1`] = `"123.456.789,00000000- -AKA"`;
@@ -3364,8 +3350,6 @@ exports[`formatCurrencyUnit with custom options with locale tr-TR should correct
 
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Ethereum Classic unit (ETC) 1`] = `"0,012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Ethereum Holesky unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Ethereum Hoodi unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Ethereum Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
@@ -3493,8 +3477,6 @@ exports[`formatCurrencyUnit with custom options with locale tr-TR should correct
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format OP Mainnet unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format OP Sepolia unit (ether) 1`] = `"0,012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Onomy unit (Onomy) 1`] = `"0,012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale tr-TR should correctly format Ontology unit (ONT) 1`] = `"123.456.789,00000000- -ONT"`;
 
@@ -3638,6 +3620,8 @@ exports[`formatCurrencyUnit with custom options with locale tr-TR should correct
 
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format 0G unit (0G) 1`] = `"0.012345678900000000- -0G"`;
 
+exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Adi unit (ADI) 1`] = `"0.012345678900000000- -ADI"`;
+
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Aion unit (AION) 1`] = `"123,456,789.00000000- -AION"`;
 
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Akroma unit (AKA) 1`] = `"123,456,789.00000000- -AKA"`;
@@ -3768,8 +3752,6 @@ exports[`formatCurrencyUnit with custom options with locale zh-CN should correct
 
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Ethereum Classic unit (ETC) 1`] = `"0.012345678900000000- -ETC"`;
 
-exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Ethereum Holesky unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Ethereum Hoodi unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Ethereum Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
@@ -3897,8 +3879,6 @@ exports[`formatCurrencyUnit with custom options with locale zh-CN should correct
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format OP Mainnet unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
 
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format OP Sepolia unit (ether) 1`] = `"0.012345678900000000- -ETH"`;
-
-exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Onomy unit (Onomy) 1`] = `"0.012345678900000000- -NOM"`;
 
 exports[`formatCurrencyUnit with custom options with locale zh-CN should correctly format Ontology unit (ONT) 1`] = `"123,456,789.00000000- -ONT"`;
 
@@ -4042,6 +4022,8 @@ exports[`formatCurrencyUnit with custom options with locale zh-CN should correct
 
 exports[`formatCurrencyUnit with default options should correctly format 0G unit (0G) 1`] = `"0.0123456"`;
 
+exports[`formatCurrencyUnit with default options should correctly format Adi unit (ADI) 1`] = `"0.0123456"`;
+
 exports[`formatCurrencyUnit with default options should correctly format Aion unit (AION) 1`] = `"123,456,789"`;
 
 exports[`formatCurrencyUnit with default options should correctly format Akroma unit (AKA) 1`] = `"123,456,789"`;
@@ -4172,8 +4154,6 @@ exports[`formatCurrencyUnit with default options should correctly format EtherGe
 
 exports[`formatCurrencyUnit with default options should correctly format Ethereum Classic unit (ETC) 1`] = `"0.0123456"`;
 
-exports[`formatCurrencyUnit with default options should correctly format Ethereum Holesky unit (ether) 1`] = `"0.0123456"`;
-
 exports[`formatCurrencyUnit with default options should correctly format Ethereum Hoodi unit (ether) 1`] = `"0.0123456"`;
 
 exports[`formatCurrencyUnit with default options should correctly format Ethereum Sepolia unit (ether) 1`] = `"0.0123456"`;
@@ -4301,8 +4281,6 @@ exports[`formatCurrencyUnit with default options should correctly format Nyx uni
 exports[`formatCurrencyUnit with default options should correctly format OP Mainnet unit (ether) 1`] = `"0.0123456"`;
 
 exports[`formatCurrencyUnit with default options should correctly format OP Sepolia unit (ether) 1`] = `"0.0123456"`;
-
-exports[`formatCurrencyUnit with default options should correctly format Onomy unit (Onomy) 1`] = `"0.0123456"`;
 
 exports[`formatCurrencyUnit with default options should correctly format Ontology unit (ONT) 1`] = `"123,456,789"`;
 

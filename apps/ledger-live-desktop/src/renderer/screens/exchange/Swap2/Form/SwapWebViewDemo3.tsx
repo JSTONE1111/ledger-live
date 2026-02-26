@@ -61,7 +61,7 @@ import {
 import FeesDrawerLiveApp from "./FeesDrawerLiveApp";
 import WebviewErrorDrawer from "./WebviewErrorDrawer/index";
 import { currentRouteNameRef } from "~/renderer/analytics/screenRefs";
-import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
+import { useFeature, useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 import { useDeeplinkCustomHandlers } from "~/renderer/components/WebPlatformPlayer/CustomHandlers";
 import { SwapLoader } from "./SwapLoader";
 import { useDiscreetMode } from "~/renderer/components/Discreet";
@@ -113,6 +113,7 @@ type SwapLocationState = {
   defaultParentAccount?: Account;
   defaultAccountId?: string;
   defaultParentAccountId?: string;
+  defaultCurrency?: { id?: string; fromCurrencyId?: string; toCurrencyId?: string };
   defaultAmountFrom?: string;
   from?: string;
   defaultToken?: TokenParams;
@@ -197,6 +198,7 @@ const SwapWebView = ({ manifest, isEmbedded = false, Loader = SwapLoader }: Swap
   const ptxSwapLiveAppOnPortfolio = useFeature("ptxSwapLiveAppOnPortfolio")?.enabled;
   const lldModularDrawerFF = useFeature("lldModularDrawer");
   const isLldModularDrawer = lldModularDrawerFF?.enabled && lldModularDrawerFF?.params?.live_app;
+  const { isEnabled: isLwd40Enabled } = useWalletFeaturesConfig("desktop");
   const customPTXHandlers = usePTXCustomHandlers(manifest, accounts);
   const customDeeplinkHandlers = useDeeplinkCustomHandlers();
   const customHandlers = useMemo(
@@ -502,13 +504,18 @@ const SwapWebView = ({ manifest, isEmbedded = false, Loader = SwapLoader }: Swap
             fromPath: simplifyFromPath(state?.from),
           }
         : {}),
-      ...(state?.defaultToken
+      ...(state?.defaultToken?.fromTokenId ? { fromTokenId: state.defaultToken.fromTokenId } : {}),
+      ...(state?.defaultToken?.toTokenId ? { toTokenId: state.defaultToken.toTokenId } : {}),
+      ...(state?.defaultToken ? { amountFrom: state?.defaultAmountFrom || "" } : {}),
+      ...(state?.defaultCurrency?.toCurrencyId || state?.defaultCurrency?.id
+        ? { toCurrencyId: state!.defaultCurrency!.toCurrencyId ?? state!.defaultCurrency!.id }
+        : {}),
+      ...(state?.defaultCurrency?.fromCurrencyId
+        ? { fromCurrencyId: state.defaultCurrency.fromCurrencyId }
+        : {}),
+      ...(state?.defaultAmountFrom
         ? {
-            fromTokenId: state.defaultToken.fromTokenId,
-            toTokenId: state.defaultToken.toTokenId,
-            fromToken: state.defaultToken.fromTokenId,
-            toToken: state.defaultToken.toTokenId,
-            amountFrom: state?.defaultAmountFrom || "",
+            amountFrom: state.defaultAmountFrom,
           }
         : {}),
       ...(state?.affiliate
@@ -519,16 +526,7 @@ const SwapWebView = ({ manifest, isEmbedded = false, Loader = SwapLoader }: Swap
     }).toString();
 
     return params;
-  }, [
-    isOffline,
-    resolvedDefaultAccount,
-    resolvedDefaultParentAccount,
-    state?.defaultAmountFrom,
-    state?.from,
-    state?.defaultToken,
-    state?.affiliate,
-    walletState,
-  ]);
+  }, [isOffline, resolvedDefaultAccount, resolvedDefaultParentAccount, state, walletState]);
 
   const onSwapWebviewError = (error?: SwapLiveError) => {
     logger.critical(error);
@@ -595,6 +593,7 @@ const SwapWebView = ({ manifest, isEmbedded = false, Loader = SwapLoader }: Swap
             isModularDrawer: isLldModularDrawer ? "true" : "false",
             isEmbedded: isEmbedded ? "true" : "false",
             discreetMode: discreetMode ? "true" : "false",
+            lwd40enabled: isLwd40Enabled ? "true" : "false",
           }}
           onStateChange={onStateChange}
           ref={webviewAPIRef}

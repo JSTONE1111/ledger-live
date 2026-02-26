@@ -19,6 +19,7 @@ import IsSystemLanguageAvailable from "~/renderer/components/IsSystemLanguageAva
 import IsTermOfUseUpdated from "./components/IsTermOfUseUpdated";
 import KeyboardContent from "~/renderer/components/KeyboardContent";
 import MainSideBar from "~/renderer/components/MainSideBar";
+import SideBar from "LLD/components/SideBar";
 import TriggerAppReady from "~/renderer/components/TriggerAppReady";
 import ContextMenuWrapper from "~/renderer/components/ContextMenu/ContextMenuWrapper";
 import DebugUpdater from "~/renderer/components/debug/DebugUpdater";
@@ -63,11 +64,12 @@ import { useDeviceManagementKit } from "@ledgerhq/live-dmk-desktop";
 import { AppGeoBlocker } from "LLD/features/AppBlockers/components/AppGeoBlocker";
 import { AppVersionBlocker } from "LLD/features/AppBlockers/components/AppVersionBlocker";
 import { setSolanaLdmkEnabled } from "@ledgerhq/live-common/families/solana/setup";
+import { themeSelector } from "./actions/general";
 import useCheckAccountWithFunds from "./components/PostOnboardingHub/logic/useCheckAccountWithFunds";
-import { ModularDialogRoot } from "LLD/features/ModularDialog/ModularDialogRoot";
-import { SendFlowRoot } from "LLD/features/Send/SendFlowRoot";
+import GlobalDialogs from "LLD/features/GlobalDialogs";
 import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/walletFeaturesConfig/useWalletFeaturesConfig";
-
+import { useShouldShowDeferredModals } from "~/renderer/hooks/useShouldShowDeferredModals";
+import backgroundImg from "~/renderer/images/background.png";
 const PlatformCatalog = lazy(() => import("~/renderer/screens/platform"));
 const Dashboard = lazy(() => import("~/renderer/screens/dashboard"));
 const Settings = lazy(() => import("~/renderer/screens/settings"));
@@ -207,15 +209,23 @@ const RecoverPlayerWithFeatureToggle = () => {
 };
 
 // Shared content for the main app layout
-const MainAppContent = ({ shouldDisplayMarketBanner }: { shouldDisplayMarketBanner: boolean }) => (
+const MainAppContent = ({
+  shouldDisplayMarketBanner,
+  shouldDisplayWallet40MainNav,
+}: {
+  shouldDisplayMarketBanner: boolean;
+  shouldDisplayWallet40MainNav: boolean;
+}) => (
   <>
     <Routes>
       <Route path="/recover/:appId" element={<RecoverPlayerWithFeatureToggle />} />
+      <Route path="/perps/*" element={withSuspense(Perps)({})} />
     </Routes>
-    <MainSideBar />
+    {shouldDisplayWallet40MainNav ? <SideBar /> : <MainSideBar />}
+
     <Page>
       <TopBannerContainer>
-        <UpdateBanner />
+        {!shouldDisplayWallet40MainNav && <UpdateBanner />}
         <FirmwareUpdateBanner />
         <VaultSignerBanner />
       </TopBannerContainer>
@@ -236,7 +246,6 @@ const MainAppContent = ({ shouldDisplayMarketBanner }: { shouldDisplayMarketBann
         <Route path="/account/:id/*" element={withSuspense(Account)({})} />
         <Route path="/asset/*" element={withSuspense(Asset)({})} />
         <Route path="/swap/*" element={withSuspense(Swap2)({})} />
-        <Route path="/perps/*" element={withSuspense(Perps)({})} />
         <Route path="/market/:currencyId" element={withSuspense(MarketCoin)({})} />
         <Route
           path="/market"
@@ -251,23 +260,49 @@ const MainAppContent = ({ shouldDisplayMarketBanner }: { shouldDisplayMarketBann
   </>
 );
 
-// Main app layout component that handles the main navigation after onboarding
-const MainAppLayout = () => {
+// Main app layout component that handles the main navigation after onboarding (exported for testing)
+export const MainAppLayout = () => {
   const { pathname } = useLocation();
-  const { shouldDisplayMarketBanner, isEnabled: isWallet40Enabled } =
-    useWalletFeaturesConfig("desktop");
+  const theme = useSelector(themeSelector);
+  const {
+    shouldDisplayMarketBanner,
+    isEnabled: isWallet40Enabled,
+    shouldDisplayWallet40MainNav,
+  } = useWalletFeaturesConfig("desktop");
+  const shouldShowDeferredModals = useShouldShowDeferredModals();
+
+  //TODO: Remove this once testing is done
+  const walletFeatureFlag = useFeature("lwdWallet40");
+  const walletParams = walletFeatureFlag?.params;
+  const shouldDisplayBackground =
+    isWallet40Enabled && theme === "dark" && Boolean(walletParams?.background);
 
   const useWallet40Layout = isWallet40Enabled && isWallet40Page(pathname);
+
   return (
     <>
-      <IsNewVersion />
-      <IsSystemLanguageAvailable />
-      <IsTermOfUseUpdated />
+      {shouldShowDeferredModals && (
+        <>
+          <IsNewVersion />
+          <IsSystemLanguageAvailable />
+          <IsTermOfUseUpdated />
+        </>
+      )}
       <SyncNewAccounts priority={2} />
 
       {useWallet40Layout ? (
-        <div className="flex size-full grow flex-row bg-canvas">
-          <MainAppContent shouldDisplayMarketBanner={shouldDisplayMarketBanner} />
+        <div
+          className="flex size-full grow flex-row bg-canvas bg-top-left bg-no-repeat"
+          style={
+            shouldDisplayBackground
+              ? { backgroundImage: `url(${backgroundImg})`, backgroundSize: "45% 70%" }
+              : undefined
+          }
+        >
+          <MainAppContent
+            shouldDisplayMarketBanner={shouldDisplayMarketBanner}
+            shouldDisplayWallet40MainNav={shouldDisplayWallet40MainNav}
+          />
         </div>
       ) : (
         <Box
@@ -280,7 +315,10 @@ const MainAppLayout = () => {
             height: "100%",
           }}
         >
-          <MainAppContent shouldDisplayMarketBanner={shouldDisplayMarketBanner} />
+          <MainAppContent
+            shouldDisplayMarketBanner={shouldDisplayMarketBanner}
+            shouldDisplayWallet40MainNav={shouldDisplayWallet40MainNav}
+          />
         </Box>
       )}
 
@@ -412,8 +450,9 @@ export default function Default() {
                       value={process.env.DISABLE_TRANSACTION_BROADCAST}
                     />
                   ) : null}
-                  <ModularDialogRoot />
-                  <SendFlowRoot />
+
+                  <GlobalDialogs />
+
                   <Routes>
                     <Route
                       path="/onboarding/*"
@@ -449,7 +488,9 @@ export default function Default() {
                       }
                     />
 
-                    {!hasCompletedOnboarding ? (
+                    {hasCompletedOnboarding ? (
+                      <Route path="/*" element={<MainAppLayout />} />
+                    ) : (
                       <>
                         <Route
                           path="/settings/*"
@@ -460,8 +501,6 @@ export default function Default() {
                           element={<RecoverPlayerWithFeatureToggle />}
                         />
                       </>
-                    ) : (
-                      <Route path="/*" element={<MainAppLayout />} />
                     )}
                   </Routes>
                 </ContextMenuWrapper>

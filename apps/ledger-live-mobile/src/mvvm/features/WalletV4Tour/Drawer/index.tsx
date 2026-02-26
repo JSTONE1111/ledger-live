@@ -1,32 +1,93 @@
 import React from "react";
-import { Flex } from "@ledgerhq/native-ui";
+import { Slides } from "@ledgerhq/native-ui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import QueuedDrawerGorhom from "../../../components/QueuedDrawer/temp/QueuedDrawerGorhom";
+import Animated from "react-native-reanimated";
+import { FlatList } from "react-native-gesture-handler";
 import { useWalletV4TourDrawerViewModel } from "./hooks/useWalletV4TourDrawerViewModel";
+import { BottomSheetHeader } from "@ledgerhq/lumen-ui-rnative";
+import { default as QueuedDrawerBottomSheet } from "LLM/components/QueuedDrawer/QueuedDrawerBottomSheet";
+import { SlideItem } from "./components/SlideItem";
+import { SlideFooterButton } from "./components/SlideFooterButton";
+import { StyleSheet, View } from "react-native";
+import { ProgressIndicator } from "./components/ProgressIndicator";
+import { TrackScreen } from "~/analytics";
+import { PAGE_TRACKING_WALLET_V4_TOUR } from "./const";
 
 export const useWalletV4TourDrawer = () => {
   return useWalletV4TourDrawerViewModel();
 };
 
+const AnimatedGestureHandlerFlatList = Animated.createAnimatedComponent(FlatList);
+
+type WalletV4TourDrawerProps = Omit<
+  ReturnType<typeof useWalletV4TourDrawerViewModel>,
+  "handleOpenDrawer"
+>;
+
 export const WalletV4TourDrawer = ({
   isDrawerOpen,
   handleCloseDrawer,
-}: {
-  isDrawerOpen: boolean;
-  handleCloseDrawer: () => void;
-}) => {
+  closeDrawer,
+  onSlideChange,
+  slides,
+}: WalletV4TourDrawerProps) => {
   const { bottom: bottomInset } = useSafeAreaInsets();
 
+  if (!isDrawerOpen) {
+    return null;
+  }
+
   return (
-    <QueuedDrawerGorhom
+    <QueuedDrawerBottomSheet
       isRequestingToBeOpened={isDrawerOpen}
-      onClose={handleCloseDrawer}
+      onClose={closeDrawer}
       snapPoints={["92%"]}
-      noCloseButton={false}
     >
-      <Flex flex={1} style={{ paddingBottom: bottomInset }}>
-        {/* add the slides here */}
-      </Flex>
-    </QueuedDrawerGorhom>
+      <View style={styles.content}>
+        <BottomSheetHeader />
+        <TrackScreen page={PAGE_TRACKING_WALLET_V4_TOUR} source="Wallet" />
+        <Slides
+          bounces={false}
+          as={AnimatedGestureHandlerFlatList}
+          testID="walletv4-tour-slides-container"
+          initialNumToRender={1}
+          maxToRenderPerBatch={1}
+          onSlideChange={onSlideChange}
+        >
+          <Slides.Content>
+            {slides.map((slide, index) => (
+              <Slides.Content.Item key={slide.title + slide.description}>
+                <SlideItem
+                  title={slide.title}
+                  description={slide.description}
+                  index={index}
+                  lottieSrc={slide.lottieSrc}
+                  speed={slide.speed}
+                />
+              </Slides.Content.Item>
+            ))}
+          </Slides.Content>
+
+          <Slides.ProgressIndicator style={styles.progressIndicator}>
+            <ProgressIndicator />
+          </Slides.ProgressIndicator>
+
+          <Slides.Footer style={{ marginBottom: bottomInset + 60 }}>
+            <SlideFooterButton onClose={handleCloseDrawer} />
+          </Slides.Footer>
+        </Slides>
+      </View>
+    </QueuedDrawerBottomSheet>
   );
 };
+
+const styles = StyleSheet.create({
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  progressIndicator: {
+    marginTop: 40,
+    marginBottom: 32,
+  },
+});

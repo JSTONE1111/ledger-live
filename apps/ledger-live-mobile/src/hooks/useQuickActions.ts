@@ -18,6 +18,8 @@ import { getAccountCurrency, getParentAccount } from "@ledgerhq/coin-framework/l
 import { shallowAccountsSelector } from "~/reducers/accounts";
 import { useOpenStakeDrawer } from "LLM/features/Stake";
 import { useOpenReceiveDrawer } from "LLM/features/Receive";
+import { useOpenSwap } from "LLM/features/Swap";
+import { useOpenBuy } from "LLM/features/Buy";
 
 export type QuickAction = {
   disabled: boolean;
@@ -105,6 +107,9 @@ function useQuickActions({ currency, accounts }: QuickActionProps = {}) {
     sourceScreenName: route.name,
   });
 
+  const { handleOpenSwap } = useOpenSwap({ currency, sourceScreenName: route.name });
+  const { handleOpenBuy } = useOpenBuy({ currency, sourceScreenName: route.name });
+
   const quickActionsList = useMemo(() => {
     const list: Partial<Record<Actions, QuickAction>> = {
       SEND: {
@@ -125,13 +130,7 @@ function useQuickActions({ currency, accounts }: QuickActionProps = {}) {
       },
       SWAP: {
         disabled: isPtxServiceCtaExchangeDrawerDisabled || readOnlyModeEnabled || !hasFunds,
-        route: [
-          NavigatorName.Swap,
-          {
-            screen: ScreenName.SwapTab,
-            params: { currency },
-          },
-        ],
+        customHandler: handleOpenSwap,
         icon: IconsLegacy.BuyCryptoMedium,
       },
     };
@@ -139,13 +138,7 @@ function useQuickActions({ currency, accounts }: QuickActionProps = {}) {
     if (canBeBought) {
       list.BUY = {
         disabled: isPtxServiceCtaExchangeDrawerDisabled || readOnlyModeEnabled,
-        route: [
-          NavigatorName.Exchange,
-          {
-            screen: ScreenName.ExchangeBuy,
-            params: { defaultCurrencyId: currency?.id },
-          },
-        ],
+        customHandler: handleOpenBuy,
         icon: IconsLegacy.PlusMedium,
       };
     }
@@ -217,6 +210,8 @@ function useQuickActions({ currency, accounts }: QuickActionProps = {}) {
     handleOpenReceiveDrawer,
     isPtxServiceCtaExchangeDrawerDisabled,
     hasFunds,
+    handleOpenSwap,
+    handleOpenBuy,
     canBeBought,
     canBeSold,
     partnerStakeRoute,

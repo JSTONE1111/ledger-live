@@ -1,5 +1,133 @@
 # @ledgerhq/coin-evm
 
+## 2.44.0
+
+### Minor Changes
+
+- [#13987](https://github.com/LedgerHQ/ledger-live/pull/13987) [`438989f`](https://github.com/LedgerHQ/ledger-live/commit/438989f96a31dfbd494284dadd05723f9eb864f5) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - fix(BACK-10233): fix coin-evm dropping internal transactions from smart contracts
+
+- [#13977](https://github.com/LedgerHQ/ledger-live/pull/13977) [`5c9240a`](https://github.com/LedgerHQ/ledger-live/commit/5c9240aed148dd302cc6c29796fd1260411f0f9e) Thanks [@jprudent](https://github.com/jprudent)! - implement pagination for etherscan based explorers in coin-evm
+
+### Patch Changes
+
+- Updated dependencies [[`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0), [`d02f203`](https://github.com/LedgerHQ/ledger-live/commit/d02f2035e4f2ac6c3b446cf4107cd017ea4faf43)]:
+  - @ledgerhq/live-env@2.28.0
+  - @ledgerhq/coin-framework@6.17.0
+  - @ledgerhq/domain-service@1.6.5
+  - @ledgerhq/evm-tools@1.11.1
+  - @ledgerhq/cryptoassets@13.39.1
+  - @ledgerhq/live-network@2.2.3
+
+## 2.44.0-next.0
+
+### Minor Changes
+
+- [#13987](https://github.com/LedgerHQ/ledger-live/pull/13987) [`438989f`](https://github.com/LedgerHQ/ledger-live/commit/438989f96a31dfbd494284dadd05723f9eb864f5) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - fix(BACK-10233): fix coin-evm dropping internal transactions from smart contracts
+
+- [#13977](https://github.com/LedgerHQ/ledger-live/pull/13977) [`5c9240a`](https://github.com/LedgerHQ/ledger-live/commit/5c9240aed148dd302cc6c29796fd1260411f0f9e) Thanks [@jprudent](https://github.com/jprudent)! - implement pagination for etherscan based explorers in coin-evm
+
+### Patch Changes
+
+- Updated dependencies [[`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0), [`d02f203`](https://github.com/LedgerHQ/ledger-live/commit/d02f2035e4f2ac6c3b446cf4107cd017ea4faf43)]:
+  - @ledgerhq/live-env@2.28.0-next.0
+  - @ledgerhq/coin-framework@6.17.0-next.0
+  - @ledgerhq/domain-service@1.6.5-next.0
+  - @ledgerhq/evm-tools@1.11.1-next.0
+  - @ledgerhq/cryptoassets@13.39.1-next.0
+  - @ledgerhq/live-network@2.2.3-next.0
+
+## 2.43.0
+
+### Minor Changes
+
+- [#13992](https://github.com/LedgerHQ/ledger-live/pull/13992) [`cb6cce9`](https://github.com/LedgerHQ/ledger-live/commit/cb6cce9031b6400968eca11017c6e4d0606805a2) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - fix(BACK-10392): fix RSK EIP-1191 addresses rejected by ethers validation
+
+- [#13985](https://github.com/LedgerHQ/ledger-live/pull/13985) [`03b3105`](https://github.com/LedgerHQ/ledger-live/commit/03b3105efe8094b79ba70432e475fdc5d945c2c4) Thanks [@estrauser-ledger](https://github.com/estrauser-ledger)! - block time and hash are mandatory for alpaca
+
+- [#14215](https://github.com/LedgerHQ/ledger-live/pull/14215) [`c4e7d20`](https://github.com/LedgerHQ/ledger-live/commit/c4e7d20ce631d43d7c8847d3f56187f68140fbab) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-modules): align `tsconfig` and `eslint` with quality standards
+
+- [#14264](https://github.com/LedgerHQ/ledger-live/pull/14264) [`ebb41ed`](https://github.com/LedgerHQ/ledger-live/commit/ebb41ed183ed5d6c16b82eb94c9fceea3fe26b61) Thanks [@jprudent](https://github.com/jprudent)! - fix tx hash on internal tx provided by blockscout
+
+- [#14131](https://github.com/LedgerHQ/ledger-live/pull/14131) [`8006565`](https://github.com/LedgerHQ/ledger-live/commit/8006565f77487fa0e38bf5f8d7bb4cda4cdba1f5) Thanks [@Canestin](https://github.com/Canestin)! - chore: remove ethereum holesky
+
+- [#14385](https://github.com/LedgerHQ/ledger-live/pull/14385) [`4c642cb`](https://github.com/LedgerHQ/ledger-live/commit/4c642cbf197bbc5bd7783a08f36774d016ab3b22) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - deps(coin-evm,coin-tester-evm): remove `bluebird`
+
+- [#14188](https://github.com/LedgerHQ/ledger-live/pull/14188) [`62e9b32`](https://github.com/LedgerHQ/ledger-live/commit/62e9b32207ad55211a2985e9e00d568abc2abe37) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-evm): log on NaN value found
+
+### Patch Changes
+
+- Updated dependencies [[`03b3105`](https://github.com/LedgerHQ/ledger-live/commit/03b3105efe8094b79ba70432e475fdc5d945c2c4), [`d5da9e0`](https://github.com/LedgerHQ/ledger-live/commit/d5da9e04d7a92b3f7f9df9d462bdd101cadbd300), [`7896aa2`](https://github.com/LedgerHQ/ledger-live/commit/7896aa2dacc12e6781267fa3ca2965aa6fb018d2), [`8a258aa`](https://github.com/LedgerHQ/ledger-live/commit/8a258aa0655123d22f955067acffaf9f74661165), [`8006565`](https://github.com/LedgerHQ/ledger-live/commit/8006565f77487fa0e38bf5f8d7bb4cda4cdba1f5), [`2ec4196`](https://github.com/LedgerHQ/ledger-live/commit/2ec419630bceab7a9600711742a18034ba9ff3cc), [`fe678a1`](https://github.com/LedgerHQ/ledger-live/commit/fe678a1d16eeda84cf8d802eee53026ea677be58)]:
+  - @ledgerhq/coin-framework@6.16.0
+  - @ledgerhq/cryptoassets@13.39.0
+  - @ledgerhq/evm-tools@1.11.0
+  - @ledgerhq/domain-service@1.6.4
+
+## 2.43.0-next.0
+
+### Minor Changes
+
+- [#13992](https://github.com/LedgerHQ/ledger-live/pull/13992) [`cb6cce9`](https://github.com/LedgerHQ/ledger-live/commit/cb6cce9031b6400968eca11017c6e4d0606805a2) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - fix(BACK-10392): fix RSK EIP-1191 addresses rejected by ethers validation
+
+- [#13985](https://github.com/LedgerHQ/ledger-live/pull/13985) [`03b3105`](https://github.com/LedgerHQ/ledger-live/commit/03b3105efe8094b79ba70432e475fdc5d945c2c4) Thanks [@estrauser-ledger](https://github.com/estrauser-ledger)! - block time and hash are mandatory for alpaca
+
+- [#14215](https://github.com/LedgerHQ/ledger-live/pull/14215) [`c4e7d20`](https://github.com/LedgerHQ/ledger-live/commit/c4e7d20ce631d43d7c8847d3f56187f68140fbab) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-modules): align `tsconfig` and `eslint` with quality standards
+
+- [#14264](https://github.com/LedgerHQ/ledger-live/pull/14264) [`ebb41ed`](https://github.com/LedgerHQ/ledger-live/commit/ebb41ed183ed5d6c16b82eb94c9fceea3fe26b61) Thanks [@jprudent](https://github.com/jprudent)! - fix tx hash on internal tx provided by blockscout
+
+- [#14131](https://github.com/LedgerHQ/ledger-live/pull/14131) [`8006565`](https://github.com/LedgerHQ/ledger-live/commit/8006565f77487fa0e38bf5f8d7bb4cda4cdba1f5) Thanks [@Canestin](https://github.com/Canestin)! - chore: remove ethereum holesky
+
+- [#14385](https://github.com/LedgerHQ/ledger-live/pull/14385) [`4c642cb`](https://github.com/LedgerHQ/ledger-live/commit/4c642cbf197bbc5bd7783a08f36774d016ab3b22) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - deps(coin-evm,coin-tester-evm): remove `bluebird`
+
+- [#14188](https://github.com/LedgerHQ/ledger-live/pull/14188) [`62e9b32`](https://github.com/LedgerHQ/ledger-live/commit/62e9b32207ad55211a2985e9e00d568abc2abe37) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-evm): log on NaN value found
+
+### Patch Changes
+
+- Updated dependencies [[`03b3105`](https://github.com/LedgerHQ/ledger-live/commit/03b3105efe8094b79ba70432e475fdc5d945c2c4), [`d5da9e0`](https://github.com/LedgerHQ/ledger-live/commit/d5da9e04d7a92b3f7f9df9d462bdd101cadbd300), [`7896aa2`](https://github.com/LedgerHQ/ledger-live/commit/7896aa2dacc12e6781267fa3ca2965aa6fb018d2), [`8a258aa`](https://github.com/LedgerHQ/ledger-live/commit/8a258aa0655123d22f955067acffaf9f74661165), [`8006565`](https://github.com/LedgerHQ/ledger-live/commit/8006565f77487fa0e38bf5f8d7bb4cda4cdba1f5), [`2ec4196`](https://github.com/LedgerHQ/ledger-live/commit/2ec419630bceab7a9600711742a18034ba9ff3cc), [`fe678a1`](https://github.com/LedgerHQ/ledger-live/commit/fe678a1d16eeda84cf8d802eee53026ea677be58)]:
+  - @ledgerhq/coin-framework@6.16.0-next.0
+  - @ledgerhq/cryptoassets@13.39.0-next.0
+  - @ledgerhq/evm-tools@1.11.0-next.0
+  - @ledgerhq/domain-service@1.6.4-next.0
+
+## 2.42.0
+
+### Minor Changes
+
+- [#14132](https://github.com/LedgerHQ/ledger-live/pull/14132) [`982a7e9`](https://github.com/LedgerHQ/ledger-live/commit/982a7e9c73867b7c7b90ccae6df575d59c06806c) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-modules): promote compiler options for tracking unused vars$
+
+- [#14027](https://github.com/LedgerHQ/ledger-live/pull/14027) [`65f0757`](https://github.com/LedgerHQ/ledger-live/commit/65f0757b1ea33a5971132d338e270ecf3242ba10) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - fix(BACK-10235): fix "Cannot convert NaN to a BigInt" with blockscout optimism transactions
+
+- [#14038](https://github.com/LedgerHQ/ledger-live/pull/14038) [`a774b49`](https://github.com/LedgerHQ/ledger-live/commit/a774b49cca0696426d20a51782e3f18640c47613) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-evm): embed etherscan message within `InvalidExplorerResponse`
+
+### Patch Changes
+
+- Updated dependencies [[`bf34cf5`](https://github.com/LedgerHQ/ledger-live/commit/bf34cf516a26081ddd493bb01042b1a0e462b029), [`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014)]:
+  - @ledgerhq/coin-framework@6.15.0
+  - @ledgerhq/live-env@2.27.0
+  - @ledgerhq/domain-service@1.6.3
+  - @ledgerhq/evm-tools@1.10.2
+  - @ledgerhq/cryptoassets@13.38.1
+  - @ledgerhq/live-network@2.2.2
+
+## 2.42.0-next.0
+
+### Minor Changes
+
+- [#14132](https://github.com/LedgerHQ/ledger-live/pull/14132) [`982a7e9`](https://github.com/LedgerHQ/ledger-live/commit/982a7e9c73867b7c7b90ccae6df575d59c06806c) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-modules): promote compiler options for tracking unused vars$
+
+- [#14027](https://github.com/LedgerHQ/ledger-live/pull/14027) [`65f0757`](https://github.com/LedgerHQ/ledger-live/commit/65f0757b1ea33a5971132d338e270ecf3242ba10) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - fix(BACK-10235): fix "Cannot convert NaN to a BigInt" with blockscout optimism transactions
+
+- [#14038](https://github.com/LedgerHQ/ledger-live/pull/14038) [`a774b49`](https://github.com/LedgerHQ/ledger-live/commit/a774b49cca0696426d20a51782e3f18640c47613) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-evm): embed etherscan message within `InvalidExplorerResponse`
+
+### Patch Changes
+
+- Updated dependencies [[`bf34cf5`](https://github.com/LedgerHQ/ledger-live/commit/bf34cf516a26081ddd493bb01042b1a0e462b029), [`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014)]:
+  - @ledgerhq/coin-framework@6.15.0-next.0
+  - @ledgerhq/live-env@2.27.0-next.0
+  - @ledgerhq/domain-service@1.6.3-next.0
+  - @ledgerhq/evm-tools@1.10.2-next.0
+  - @ledgerhq/cryptoassets@13.38.1-next.0
+  - @ledgerhq/live-network@2.2.2-next.0
+
 ## 2.41.0
 
 ### Minor Changes

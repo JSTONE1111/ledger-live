@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, SafeAreaView, BackHandler, Platform } from "react-native";
+import React, { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { View, StyleSheet, SafeAreaView, BackHandler, Platform } from "react-native";
 import { useSelector } from "~/context/hooks";
 
 import { LiveAppManifest } from "@ledgerhq/live-common/platform/types";
 import { safeGetRefValue } from "@ledgerhq/live-common/wallet-api/react";
 import { safeUrl } from "@ledgerhq/live-common/wallet-api/helpers";
+import WebView from "react-native-webview";
 
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
@@ -36,9 +37,11 @@ export enum MobileViewState {
 type Props = {
   manifest: LiveAppManifest;
   inputs?: Record<string, string | undefined>;
+  isLwm40Enabled?: boolean;
+  onScroll?: ComponentProps<typeof WebView>["onScroll"];
 };
 /** Subset of WebPTXPlayer functionality required for Earn live app. */
-export const EarnWebview = ({ manifest, inputs }: Props) => {
+export const EarnWebview = ({ manifest, inputs, isLwm40Enabled, onScroll }: Props) => {
   const webviewAPIRef = useRef<WebviewAPI>(null);
   const [webviewState, setWebviewState] = useState<WebviewState>(initialWebviewState);
 
@@ -138,31 +141,25 @@ export const EarnWebview = ({ manifest, inputs }: Props) => {
     };
   }, [customEarnHandlers, customDeeplinkHandlers]);
 
+  const Container = isLwm40Enabled ? View : SafeAreaView;
+
   return (
-    <SafeAreaView style={[styles.root]}>
+    <Container style={[styles.root]}>
       <Web3AppWebview
         ref={webviewAPIRef}
         manifest={manifest}
         inputs={inputs}
         onStateChange={setWebviewState}
         customHandlers={customHandlers}
+        onScroll={onScroll}
+        Loader={() => <Loading backgroundColor="transparent" />}
       />
-      {webviewState.loading ? <Loading /> : null}
-    </SafeAreaView>
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  headerLeft: {
-    display: "flex",
-    flexDirection: "row",
-    paddingRight: 8,
-  },
-  buttons: {
-    paddingVertical: 8,
-    paddingHorizontal: 8,
   },
 });

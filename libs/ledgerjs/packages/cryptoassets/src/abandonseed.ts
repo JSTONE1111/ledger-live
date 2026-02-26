@@ -21,6 +21,7 @@ const abandonSeedAddresses: Partial<Record<CryptoCurrency["id"], string>> = {
   avalanche_c_chain_fuji: EVM_DEAD_ADDRESS,
   aptos: EVM_DEAD_ADDRESS,
   aptos_testnet: EVM_DEAD_ADDRESS,
+  adi: EVM_DEAD_ADDRESS,
   cosmos: "cosmos19rl4cm2hmr8afy4kldpxz3fka4jguq0auqdal4",
   ripple: "rHsMGQEkVNJmpGWs8XUBoTBiAAbwxZN5v3",
   stellar: "GDYPMQMYW2JTLPWAUAHIDY3E4VHP5SGTFC5SMA45L7ZPOTHWQ2PHEW3E",
@@ -65,7 +66,6 @@ const abandonSeedAddresses: Partial<Record<CryptoCurrency["id"], string>> = {
   elrond: "erd1sqhjrtmsn5yjk6w85099p8v0ly0g8z9pxeqe5dvu5rlf2n7vq3vqytny9g",
   ethereum_classic: EVM_DEAD_ADDRESS,
   ethereum_sepolia: EVM_DEAD_ADDRESS,
-  ethereum_holesky: EVM_DEAD_ADDRESS,
   ethereum_hoodi: EVM_DEAD_ADDRESS,
   hedera: "0.0.163372",
   cardano_testnet:
@@ -95,7 +95,6 @@ const abandonSeedAddresses: Partial<Record<CryptoCurrency["id"], string>> = {
   syscoin: EVM_DEAD_ADDRESS,
   near: "4e7de0a21d8a20f970c86b6edf407906d7ba9e205979c3268270eef80a286e2d",
   axelar: "axelar19rl4cm2hmr8afy4kldpxz3fka4jguq0acwm455",
-  onomy: "onomy19rl4cm2hmr8afy4kldpxz3fka4jguq0axpetws",
   quicksilver: "quick19rl4cm2hmr8afy4kldpxz3fka4jguq0ahya0x8",
   persistence: "persistence19rl4cm2hmr8afy4kldpxz3fka4jguq0ajvtw33",
   internet_computer: "454109defbdd79d7283cdde63b8dab4d48f590b8b2923574cca0356ab6958b2b",

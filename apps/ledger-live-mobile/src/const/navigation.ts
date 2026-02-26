@@ -45,6 +45,7 @@ export enum ScreenName {
   DebugFetchCustomImage = "DebugFetchCustomImage",
   DebugFirmwareUpdate = "DebugFirmwareUpdate",
   DebugGenerators = "DebugGenerators",
+  DebugContentCards = "DebugContentCards",
   DebugHttpTransport = "DebugHttpTransport",
   DebugInformation = "DebugInformation",
   DebugPerformance = "DebugPerformance",
@@ -125,7 +126,13 @@ export enum ScreenName {
   SendSummary = "SendSummary",
   SendBroadcastError = "SendBroadcastError",
   SendValidationError = "SendValidationError",
-  NewSendFlow = "NewSendFlow",
+  NewSendRecipient = "NewSendRecipient",
+  SendFlowRecipient = "SendFlowRecipient",
+  SendFlowAmount = "SendFlowAmount",
+  SendFlowConfirmation = "SendFlowConfirmation",
+  SendFlowCustomFees = "SendFlowCustomFees",
+  SendFlowCoinControl = "SendFlowCoinControl",
+  SendFlowSignature = "SendFlowSignature",
   TransactionAlreadyValidatedError = "TransactionAlreadyValidatedError",
   SendValidationSuccess = "SendValidationSuccess",
   SettingsScreen = "SettingsScreen",
@@ -546,7 +553,6 @@ export enum ScreenName {
   // Web3Hub
   Web3HubMain = "Web3HubMain",
   Web3HubSearch = "Web3HubSearch",
-  Web3HubTabs = "Web3HubTabs",
   Web3HubApp = "Web3HubApp",
 
   // Add Accountv2 / Receive shared screens
@@ -593,6 +599,7 @@ export enum NavigatorName {
   ReceiveFunds = "ReceiveFunds",
   ReceiveFundsOptions = "ReceiveFundsOptions",
   SendFunds = "SendFunds",
+  SendFlow = "SendFlow",
   Settings = "Settings",
   SignMessage = "SignMessage",
   Swap = "SwapNavigator",
@@ -657,6 +664,7 @@ export enum NavigatorName {
 
   // Tab
   Main = "Main",
+  CardTab = "CardTab",
   WalletTab = "WalletTabNavigator",
   // Root
   RootNavigator = "RootNavigator",

@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useRefreshAccountsOrdering } from "~/actions/general";
 import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
@@ -14,7 +15,9 @@ const MAX_ASSETS_TO_DISPLAY = 5;
 
 interface UseReadOnlyPortfolioViewModelResult {
   assets: Asset[];
+  safeAreaTop: number;
   shouldDisplayGraphRework: boolean;
+  shouldDisplayWallet40MainNav: boolean;
   isLNSUpsellBannerShown: boolean;
   source: string | undefined;
   goToAssets: () => void;
@@ -25,7 +28,9 @@ const useReadOnlyPortfolioViewModel = (navigation: {
   goBack: () => void;
   navigate: (name: string, params?: object) => void;
 }): UseReadOnlyPortfolioViewModelResult => {
-  const { shouldDisplayGraphRework } = useWalletFeaturesConfig("mobile");
+  const { shouldDisplayGraphRework, shouldDisplayWallet40MainNav } =
+    useWalletFeaturesConfig("mobile");
+  const { top: safeAreaTop } = useSafeAreaInsets();
   const isLNSUpsellBannerShown = useLNSUpsellBannerState("wallet").isShown;
 
   const { sortedCryptoCurrencies } = useReadOnlyCoins({ maxDisplayed: MAX_ASSETS_TO_DISPLAY });
@@ -66,7 +71,9 @@ const useReadOnlyPortfolioViewModel = (navigation: {
 
   return {
     assets,
+    safeAreaTop,
     shouldDisplayGraphRework,
+    shouldDisplayWallet40MainNav,
     isLNSUpsellBannerShown,
     source,
     goToAssets,

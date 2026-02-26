@@ -1,3 +1,4 @@
+import buildCoinConfig, { type CurrencyConfig } from "@ledgerhq/coin-framework/config";
 import { ConfigInfo } from "@ledgerhq/live-config/LiveConfig";
 
 type CosmosConfig = Record<string, ConfigInfo>;
@@ -56,17 +57,6 @@ export const cosmosConfig: CosmosConfig = {
     default: {
       lcd: "https://api.nyx.nodes.guru",
       minGasPrice: 0,
-      status: {
-        type: "active",
-      },
-    },
-  },
-  config_currency_onomy: {
-    type: "object",
-    default: {
-      lcd: "https://rest-mainnet.onomy.io",
-      minGasPrice: 0.003,
-      ledgerValidator: "onomyvaloper1fgklp9hemczlwtqp9jqzq3xahh38hznxu9mtmf",
       status: {
         type: "active",
       },
@@ -208,8 +198,6 @@ export const cosmosConfig: CosmosConfig = {
     },
   },
 };
-
-import buildCoinConfig, { type CurrencyConfig } from "@ledgerhq/coin-framework/config";
 
 export type CosmosCoinConfig = CurrencyConfig & CosmosConfig;
 const coinConfig = buildCoinConfig<CosmosCoinConfig>();

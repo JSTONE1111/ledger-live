@@ -1,5 +1,61 @@
 # @ledgerhq/native-ui
 
+## 0.57.0
+
+### Minor Changes
+
+- [#14266](https://github.com/LedgerHQ/ledger-live/pull/14266) [`2f07682`](https://github.com/LedgerHQ/ledger-live/commit/2f07682ccfb504caf38ba8798e3b22847302890d) Thanks [@tonykhaov](https://github.com/tonykhaov)! - Add Wallet V4 Tour drawer with slides showcasing new features
+
+## 0.57.0-next.0
+
+### Minor Changes
+
+- [#14266](https://github.com/LedgerHQ/ledger-live/pull/14266) [`2f07682`](https://github.com/LedgerHQ/ledger-live/commit/2f07682ccfb504caf38ba8798e3b22847302890d) Thanks [@tonykhaov](https://github.com/tonykhaov)! - Add Wallet V4 Tour drawer with slides showcasing new features
+
+## 0.56.0
+
+### Minor Changes
+
+- [#14303](https://github.com/LedgerHQ/ledger-live/pull/14303) [`7ac313c`](https://github.com/LedgerHQ/ledger-live/commit/7ac313c00fdfd6df29cc0767150f1ed0bbc380e2) Thanks [@tonykhaov](https://github.com/tonykhaov)! - feat: slides component
+
+- [#14202](https://github.com/LedgerHQ/ledger-live/pull/14202) [`00c6ddd`](https://github.com/LedgerHQ/ledger-live/commit/00c6ddd11ebb925be63e651526f7bcfe50d0fda5) Thanks [@tonykhaov](https://github.com/tonykhaov)! - feat: create Slides component
+
+## 0.56.0-next.0
+
+### Minor Changes
+
+- [#14303](https://github.com/LedgerHQ/ledger-live/pull/14303) [`7ac313c`](https://github.com/LedgerHQ/ledger-live/commit/7ac313c00fdfd6df29cc0767150f1ed0bbc380e2) Thanks [@tonykhaov](https://github.com/tonykhaov)! - feat: slides component
+
+- [#14202](https://github.com/LedgerHQ/ledger-live/pull/14202) [`00c6ddd`](https://github.com/LedgerHQ/ledger-live/commit/00c6ddd11ebb925be63e651526f7bcfe50d0fda5) Thanks [@tonykhaov](https://github.com/tonykhaov)! - feat: create Slides component
+
+## 0.55.0
+
+### Minor Changes
+
+- [#13830](https://github.com/LedgerHQ/ledger-live/pull/13830) [`a90b9df`](https://github.com/LedgerHQ/ledger-live/commit/a90b9df5709ddcf0c1c7f6ceb31f0510b9888f7e) Thanks [@ysitbon](https://github.com/ysitbon)! - upgrade react-native-reanimated from v3 to v4
+
+  - Add new required dependency `react-native-worklets` (0.7.2)
+  - Migrate babel plugin from `react-native-reanimated/plugin` to `react-native-worklets/plugin`
+  - Migrate `runOnJS` API to `scheduleOnRN` from `react-native-worklets`
+  - Add missing dependency arrays to `useAnimatedStyle` hooks (required for Reanimated 4 without Babel plugin)
+  - Update test mocks for compatibility with Reanimated 4
+
+- [#14020](https://github.com/LedgerHQ/ledger-live/pull/14020) [`34cf993`](https://github.com/LedgerHQ/ledger-live/commit/34cf99398715d029c6d814cd9d4a697e5db775da) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Change network crypto icons border radius to match LWD
+
+## 0.55.0-next.0
+
+### Minor Changes
+
+- [#13830](https://github.com/LedgerHQ/ledger-live/pull/13830) [`a90b9df`](https://github.com/LedgerHQ/ledger-live/commit/a90b9df5709ddcf0c1c7f6ceb31f0510b9888f7e) Thanks [@ysitbon](https://github.com/ysitbon)! - upgrade react-native-reanimated from v3 to v4
+
+  - Add new required dependency `react-native-worklets` (0.7.2)
+  - Migrate babel plugin from `react-native-reanimated/plugin` to `react-native-worklets/plugin`
+  - Migrate `runOnJS` API to `scheduleOnRN` from `react-native-worklets`
+  - Add missing dependency arrays to `useAnimatedStyle` hooks (required for Reanimated 4 without Babel plugin)
+  - Update test mocks for compatibility with Reanimated 4
+
+- [#14020](https://github.com/LedgerHQ/ledger-live/pull/14020) [`34cf993`](https://github.com/LedgerHQ/ledger-live/commit/34cf99398715d029c6d814cd9d4a697e5db775da) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Change network crypto icons border radius to match LWD
+
 ## 0.54.0
 
 ### Minor Changes

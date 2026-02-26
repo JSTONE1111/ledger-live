@@ -1,26 +1,26 @@
 import { emptyHistoryCache, encodeAccountId } from "@ledgerhq/coin-framework/account";
-import { inferSubOperations } from "@ledgerhq/coin-framework/serialization";
 import type { GetAccountShape } from "@ledgerhq/coin-framework/bridge/jsHelpers";
 import { makeSync, mergeOps } from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
 import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
+import { inferSubOperations } from "@ledgerhq/coin-framework/serialization";
+import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
 import { promiseAllBatched } from "@ledgerhq/live-promise";
-import { BigNumber } from "bignumber.js";
 
-import algorandAPI, {
+import { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
+import type { SyncConfig, Account, TokenAccount, OperationType } from "@ledgerhq/types-live";
+import { BigNumber } from "bignumber.js";
+import { computeAlgoMaxSpendable } from "./bridgeLogic";
+import {
+  getAccount,
+  getAllAccountTransactions,
   type AlgoAsset,
   type AlgoAssetTransferInfo,
   type AlgoPaymentInfo,
   type AlgoTransaction,
-} from "./api";
-
-import { AlgoTransactionType } from "./api";
-
-import { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
-import type { SyncConfig, Account, TokenAccount, OperationType } from "@ledgerhq/types-live";
-import { AlgorandAccount, AlgorandOperation } from "./types";
-import { computeAlgoMaxSpendable } from "./logic";
+  AlgoTransactionType,
+} from "./network";
 import { addPrefixToken, extractTokenId } from "./tokens";
+import { AlgorandAccount, AlgorandOperation } from "./types";
 
 const SECONDS_TO_MILLISECONDS = 1000;
 
@@ -232,7 +232,7 @@ export const getAccountShape: GetAccountShape<AlgorandAccount> = async (info, sy
     derivationMode,
   });
 
-  const { round, balance, pendingRewards, assets } = await algorandAPI.getAccount(address);
+  const { round, balance, pendingRewards, assets } = await getAccount(address);
 
   const nbAssets = assets.length;
 
@@ -243,10 +243,7 @@ export const getAccountShape: GetAccountShape<AlgorandAccount> = async (info, sy
     mode: "send",
   });
 
-  const newTransactions: AlgoTransaction[] = await algorandAPI.getAccountTransactions(
-    address,
-    startAt,
-  );
+  const newTransactions: AlgoTransaction[] = await getAllAccountTransactions(address, startAt);
 
   const subAccounts = await buildSubAccounts({
     currency,

@@ -1,5 +1,59 @@
 # @ledgerhq/live-wallet
 
+## 0.11.4
+
+### Patch Changes
+
+- Updated dependencies [[`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0)]:
+  - @ledgerhq/live-env@2.28.0
+  - @ledgerhq/hw-ledger-key-ring-protocol@0.7.3
+  - @ledgerhq/live-network@2.2.3
+  - @ledgerhq/speculos-transport@0.5.4
+
+## 0.11.4-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0)]:
+  - @ledgerhq/live-env@2.28.0-next.0
+  - @ledgerhq/hw-ledger-key-ring-protocol@0.7.3-next.0
+  - @ledgerhq/live-network@2.2.3-next.0
+  - @ledgerhq/speculos-transport@0.5.4-next.0
+
+## 0.11.3
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/speculos-transport@0.5.3
+
+## 0.11.3-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/speculos-transport@0.5.3-next.0
+
+## 0.11.2
+
+### Patch Changes
+
+- Updated dependencies [[`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014)]:
+  - @ledgerhq/live-env@2.27.0
+  - @ledgerhq/hw-ledger-key-ring-protocol@0.7.2
+  - @ledgerhq/live-network@2.2.2
+  - @ledgerhq/speculos-transport@0.5.2
+
+## 0.11.2-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014)]:
+  - @ledgerhq/live-env@2.27.0-next.0
+  - @ledgerhq/hw-ledger-key-ring-protocol@0.7.2-next.0
+  - @ledgerhq/live-network@2.2.2-next.0
+  - @ledgerhq/speculos-transport@0.5.2-next.0
+
 ## 0.11.1
 
 ### Patch Changes

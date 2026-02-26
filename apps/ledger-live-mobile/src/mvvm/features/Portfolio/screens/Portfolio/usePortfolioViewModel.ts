@@ -20,7 +20,6 @@ import useDynamicContent from "~/dynamicContent/useDynamicContent";
 import usePortfolioAnalyticsOptInPrompt from "~/hooks/analyticsOptInPrompt/usePorfolioAnalyticsOptInPrompt";
 import { useLNSUpsellBannerState } from "LLM/features/LNSUpsell";
 import { useAutoRedirectToPostOnboarding } from "~/hooks/useAutoRedirectToPostOnboarding";
-import { useListenToHidDevices } from "~/hooks/useListenToHidDevices";
 import { useWallet40Theme } from "LLM/hooks/useWallet40Theme";
 import storage from "LLM/storage";
 import { DdRum } from "@datadog/mobile-react-native";
@@ -32,6 +31,8 @@ interface UsePortfolioViewModelResult {
   hideEmptyTokenAccount: boolean;
   isAWalletCardDisplayed: boolean;
   isAccountListUIEnabled: boolean;
+  shouldDisplayQuickActionCtas: boolean;
+  shouldDisplayWallet40MainNav: boolean;
   showAssets: boolean;
   isLNSUpsellBannerShown: boolean;
   isAddModalOpened: boolean;
@@ -52,11 +53,11 @@ const usePortfolioViewModel = (navigation: {
   const [isAddModalOpened, setAddModalOpened] = useState(false);
   const { isAWalletCardDisplayed } = useDynamicContent();
   const accountListFF = useFeature("llmAccountListUI");
-  const { shouldDisplayGraphRework } = useWalletFeaturesConfig("mobile");
+  const { shouldDisplayGraphRework, shouldDisplayQuickActionCtas, shouldDisplayWallet40MainNav } =
+    useWalletFeaturesConfig("mobile");
   const isAccountListUIEnabled = accountListFF?.enabled ?? false;
   const llmDatadog = useFeature("llmDatadog");
   const allAccounts = useSelector(flattenAccountsSelector, shallowEqual);
-  useListenToHidDevices();
   const isFocused = useIsFocused();
   const { backgroundColor } = useWallet40Theme("mobile");
 
@@ -135,6 +136,8 @@ const usePortfolioViewModel = (navigation: {
     hideEmptyTokenAccount,
     isAWalletCardDisplayed,
     isAccountListUIEnabled,
+    shouldDisplayQuickActionCtas,
+    shouldDisplayWallet40MainNav,
     showAssets,
     isLNSUpsellBannerShown,
     isAddModalOpened,

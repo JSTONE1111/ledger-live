@@ -1,5 +1,51 @@
 # @ledgerhq/speculos-transport
 
+## 0.5.4
+
+### Patch Changes
+
+- Updated dependencies [[`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0)]:
+  - @ledgerhq/live-env@2.28.0
+  - @ledgerhq/live-dmk-speculos@0.6.1
+
+## 0.5.4-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0)]:
+  - @ledgerhq/live-env@2.28.0-next.0
+  - @ledgerhq/live-dmk-speculos@0.6.1-next.0
+
+## 0.5.3
+
+### Patch Changes
+
+- Updated dependencies [[`2407e23`](https://github.com/LedgerHQ/ledger-live/commit/2407e2350ca699b4b506bdfb1563ade32b022e0f)]:
+  - @ledgerhq/live-dmk-speculos@0.6.0
+
+## 0.5.3-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`2407e23`](https://github.com/LedgerHQ/ledger-live/commit/2407e2350ca699b4b506bdfb1563ade32b022e0f)]:
+  - @ledgerhq/live-dmk-speculos@0.6.0-next.0
+
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies [[`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014)]:
+  - @ledgerhq/live-env@2.27.0
+  - @ledgerhq/live-dmk-speculos@0.5.2
+
+## 0.5.2-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014)]:
+  - @ledgerhq/live-env@2.27.0-next.0
+  - @ledgerhq/live-dmk-speculos@0.5.2-next.0
+
 ## 0.5.1
 
 ### Patch Changes

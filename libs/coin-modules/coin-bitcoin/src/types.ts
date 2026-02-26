@@ -9,6 +9,7 @@ import {
   TransactionStatusCommonRaw,
   Operation,
 } from "@ledgerhq/types-live";
+import { ZcashPrivateInfo, ZcashPrivateInfoRaw } from "@ledgerhq/zcash-shielded/types";
 
 export type BitcoinInput = {
   address: string | null | undefined;
@@ -147,7 +148,6 @@ export type Transaction = TransactionCommon & {
   opReturnData?: Buffer | undefined;
   changeAddress?: string | undefined;
   psbt?: string;
-  finalizePsbt?: boolean;
 };
 
 export type TransactionRaw = TransactionCommonRaw & {
@@ -174,14 +174,7 @@ export type TransactionStatusRaw = TransactionStatusCommonRaw & {
   changeAddress: string | undefined;
 };
 
-export type BitcoinAccount = Account & { bitcoinResources: BitcoinResources } & {
-  privateInfo?: PrivateInfo;
-};
-
-export type PrivateInfo = {
-  key: string;
-  balance: BigNumber;
-};
+export type BitcoinAccount = Account & { bitcoinResources: BitcoinResources };
 
 export type BitcoinAccountRaw = AccountRaw & {
   bitcoinResources: BitcoinResourcesRaw;
@@ -190,4 +183,9 @@ export type BitcoinAccountRaw = AccountRaw & {
 export type BtcOperationExtra = {
   inputs?: string[];
 };
+
 export type BtcOperation = Operation<BtcOperationExtra>;
+
+export type ZcashAccount = BitcoinAccount & { privateInfo?: ZcashPrivateInfo };
+
+export type ZcashAccountRaw = BitcoinAccountRaw & { privateInfo?: ZcashPrivateInfoRaw };

@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import semver from "semver";
-import { useLocation, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "LLD/hooks/redux";
-import Card from "~/renderer/components/Box/Card";
 import {
   counterValueCurrencySelector,
   developerModeSelector,
@@ -25,13 +25,16 @@ import {
   WALLET_API_VERSION,
 } from "@ledgerhq/live-common/wallet-api/constants";
 import { useInternalAppIds } from "@ledgerhq/live-common/hooks/useInternalAppIds";
-import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
+import { useFeature, useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 import { useLocalLiveAppManifest } from "@ledgerhq/live-common/wallet-api/LocalLiveAppProvider/index";
 import { useProviderInterstitalEnabled } from "@ledgerhq/live-common/hooks/useShowProviderLoadingTransition";
 import { walletSelector } from "~/renderer/reducers/wallet";
 import { useDiscreetMode } from "~/renderer/components/Discreet";
 import { NetworkErrorScreen } from "~/renderer/components/Web3AppWebview/NetworkError";
 import { ProviderInterstitial } from "LLD/components/ProviderInterstitial";
+import PageHeader from "LLD/components/PageHeader";
+import { getWallet40HeaderKey } from "./helpers";
+import Box from "~/renderer/components/Box/Box";
 
 type ExchangeState = { account?: string } | undefined;
 
@@ -57,6 +60,9 @@ const LiveAppExchange = ({ appId }: { appId: string }) => {
   const internalAppIds = useInternalAppIds() || INTERNAL_APP_IDS;
   const walletState = useSelector(walletSelector);
 
+  const { shouldDisplayWallet40MainNav } = useWalletFeaturesConfig("desktop");
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const providerInterstitialEnabled = useProviderInterstitalEnabled({
     manifest,
   });
@@ -101,36 +107,43 @@ const LiveAppExchange = ({ appId }: { appId: string }) => {
     localStorage.removeItem("flow-name");
   }
 
-  return (
-    <Card
-      grow
-      style={{
-        overflow: "hidden",
-        height: "100%",
-      }}
-    >
-      <WebPTXPlayer
-        manifest={manifest}
-        inputs={{
-          theme: themeType,
-          ...customUrlParams,
-          lang,
-          locale,
-          currencyTicker,
-          devMode,
-          discreetMode: discreetMode ? "true" : "false",
-          ...(localManifest?.providerTestBaseUrl && {
-            providerTestBaseUrl: localManifest?.providerTestBaseUrl,
-          }),
-          ...(localManifest?.providerTestId && {
-            providerTestId: localManifest?.providerTestId,
-          }),
+  const headerKey = getWallet40HeaderKey(manifest.id);
 
-          ...Object.fromEntries(searchParams.entries()),
+  return (
+    <>
+      {shouldDisplayWallet40MainNav && headerKey ? (
+        <PageHeader title={t(headerKey)} onBack={() => navigate(-1)} />
+      ) : null}
+      <Box
+        grow
+        style={{
+          overflow: "hidden",
+          height: "100%",
         }}
-        Loader={providerInterstitialEnabled ? ProviderInterstitial : undefined}
-      />
-    </Card>
+      >
+        <WebPTXPlayer
+          manifest={manifest}
+          inputs={{
+            theme: themeType,
+            ...customUrlParams,
+            lang,
+            locale,
+            currencyTicker,
+            devMode,
+            discreetMode: discreetMode ? "true" : "false",
+            ...(localManifest?.providerTestBaseUrl && {
+              providerTestBaseUrl: localManifest?.providerTestBaseUrl,
+            }),
+            ...(localManifest?.providerTestId && {
+              providerTestId: localManifest?.providerTestId,
+            }),
+
+            ...Object.fromEntries(searchParams.entries()),
+          }}
+          Loader={providerInterstitialEnabled ? ProviderInterstitial : undefined}
+        />
+      </Box>
+    </>
   );
 };
 

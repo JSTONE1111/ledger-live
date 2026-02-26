@@ -1,8 +1,9 @@
 import {
   AssetInfo,
+  Page,
   MemoNotSupported,
   Operation,
-  Pagination,
+  ListOperationsOptions,
 } from "@ledgerhq/coin-framework/api/types";
 import { log } from "@ledgerhq/logs";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
@@ -116,19 +117,35 @@ function toOperation(
   };
 }
 
+// the sort parameter has a double meaning:
+// - legacy (for the bridge): it's used to sort the operations in the result list. Explorer always queried in "desc" order.
+// - new: it's used to sort AND query the explorer with the correct order.
+
+// the limit parameter is a newly introduced parameter for pagination. It's used to switch between "legacy" and "new" behavior.
+// see tests for a full description of the behavior.
 export async function listOperations(
   currency: CryptoCurrency,
   address: string,
-  pagination: Pagination,
-): Promise<[Operation<MemoNotSupported>[], string]> {
+  options: ListOperationsOptions,
+): Promise<Page<Operation<MemoNotSupported>>> {
   const explorerApi = getExplorerApi(currency);
-  const { lastCoinOperations, lastTokenOperations, lastNftOperations, lastInternalOperations } =
-    await explorerApi.getLastOperations(
-      currency,
-      address,
-      `js:2:${currency.id}:${address}:`,
-      pagination.minHeight,
-    );
+  const explorerOrder = options.limit === undefined ? "desc" : options.order ?? "desc";
+  const {
+    lastCoinOperations,
+    lastTokenOperations,
+    lastNftOperations,
+    lastInternalOperations,
+    nextPagingToken,
+  } = await explorerApi.getOperations(
+    currency,
+    address,
+    `js:2:${currency.id}:${address}:`,
+    options.minHeight,
+    undefined,
+    options.cursor,
+    options.limit,
+    explorerOrder,
+  );
 
   const isNativeOperation = (coinOperation: LiveOperation): boolean =>
     ![...lastTokenOperations, ...lastNftOperations].map(op => op.hash).includes(coinOperation.hash);
@@ -153,18 +170,14 @@ export async function listOperations(
   const tokenOperations = [...lastTokenOperations, ...lastNftOperations].map<
     Operation<MemoNotSupported>
   >(op => toOperation(currency.id, address, { type: "token", owner: address, parents }, op));
-  const internalOperations = lastInternalOperations
-    .filter(op => op.hash in parents)
-    .map<Operation<MemoNotSupported>>(op =>
-      toOperation(
-        currency.id,
-        address,
-        { type: "native", internal: true },
-        // Explorers don't provide block hash and fees for internal operations.
-        // We take this values from their parent.
-        { ...op, fee: parents[op.hash].fee, blockHash: parents[op.hash].blockHash },
-      ),
-    );
+  const internalOperations = lastInternalOperations.map<Operation<MemoNotSupported>>(op => {
+    // Explorers don't provide block hash and fees for internal operations.
+    // When a matching parent transaction exists, we take these values from it.
+    // Otherwise, we use the internal operation's defaults.
+    const parent = parents[op.hash];
+    const enrichedOp = parent ? { ...op, fee: parent.fee, blockHash: parent.blockHash } : op;
+    return toOperation(currency.id, address, { type: "native", internal: true }, enrichedOp);
+  });
 
   const hasValidType = (operation: Operation): boolean =>
     [
@@ -184,10 +197,10 @@ export async function listOperations(
     .concat(internalOperations)
     .filter(hasValidType)
     .sort((a, b) =>
-      pagination.order === "asc"
+      options.order === "asc"
         ? a.tx.date.getTime() - b.tx.date.getTime()
         : b.tx.date.getTime() - a.tx.date.getTime(),
     );
 
-  return [operations, ""];
+  return { items: operations, next: nextPagingToken };
 }

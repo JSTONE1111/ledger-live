@@ -1,3 +1,20 @@
+import type {
+  Block,
+  BlockInfo,
+  BlockTransaction,
+  BlockOperation,
+  Operation as Op,
+  Page,
+  Stake,
+  StakeState,
+  AssetInfo,
+} from "@ledgerhq/coin-framework/api/index";
+import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
+import { getEnv } from "@ledgerhq/live-env";
+import { makeLRUCache, minutes } from "@ledgerhq/live-network/cache";
+import { log } from "@ledgerhq/logs";
+import type { Operation, OperationType } from "@ledgerhq/types-live";
+import { getInputObjects } from "@mysten/signers/ledger";
 import {
   BalanceChange,
   Checkpoint,
@@ -17,42 +34,27 @@ import {
   TransactionBlockData,
 } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
+import { SUI_SYSTEM_STATE_OBJECT_ID } from "@mysten/sui/utils";
 import { BigNumber } from "bignumber.js";
-import type {
-  Block,
-  BlockInfo,
-  BlockTransaction,
-  BlockOperation,
-  Operation as Op,
-  Page,
-  Stake,
-  StakeState,
-  AssetInfo,
-} from "@ledgerhq/coin-framework/api/index";
-import type { Operation, OperationType } from "@ledgerhq/types-live";
 import uniqBy from "lodash/unionBy";
-import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
-import { log } from "@ledgerhq/logs";
-import { makeLRUCache, minutes } from "@ledgerhq/live-network/cache";
+import coinConfig from "../config";
+import { ONE_SUI } from "../constants";
 import type {
   Transaction as TransactionType,
+  Resolution,
   SuiValidator,
   CreateExtrinsicArg,
   CoreTransaction,
 } from "../types";
 import { ensureAddressFormat } from "../utils";
-import coinConfig from "../config";
-import { getEnv } from "@ledgerhq/live-env";
-import { SUI_SYSTEM_STATE_OBJECT_ID } from "@mysten/sui/utils";
-import { getCurrentSuiPreloadData } from "../bridge/preload";
-import { ONE_SUI } from "../constants";
-import { getInputObjects } from "@mysten/signers/ledger";
+import { getCurrentSuiPreloadData } from "./preload-data";
 
 const apiMap: Record<string, SuiClient> = {};
 type AsyncApiFunction<T> = (api: SuiClient) => Promise<T>;
 
 export const TRANSACTIONS_LIMIT_PER_QUERY = 50;
 export const TRANSACTIONS_LIMIT = 300;
+const MULTI_GET_OBJECTS_LIMIT = 50;
 const BLOCK_HEIGHT = 5; // sui has no block height metainfo, we use it simulate proper icon statuses in apps
 
 export const DEFAULT_COIN_TYPE = "0x2::sui::SUI";
@@ -95,6 +97,39 @@ export async function withApi<T>(execute: AsyncApiFunction<T>) {
 
   const result = await execute(apiMap[url]);
   return result;
+}
+
+/**
+ * Wraps a SuiClient to batch multiGetObjects calls in chunks of 50,
+ * working around the SUI RPC limit.
+ */
+export function withBatchedMultiGetObjects(client: SuiClient): SuiClient {
+  return new Proxy(client, {
+    get(target, prop, _receiver) {
+      if (prop === "multiGetObjects") {
+        return async (params: Parameters<SuiClient["multiGetObjects"]>[0]) => {
+          const { ids } = params;
+          if (ids.length <= MULTI_GET_OBJECTS_LIMIT) {
+            return target.multiGetObjects(params);
+          }
+          const results = [];
+          for (let i = 0; i < ids.length; i += MULTI_GET_OBJECTS_LIMIT) {
+            const chunk = await target.multiGetObjects({
+              ...params,
+              ids: ids.slice(i, i + MULTI_GET_OBJECTS_LIMIT),
+            });
+            results.push(...chunk);
+          }
+          return results;
+        };
+      }
+      const value = Reflect.get(target, prop, target);
+      if (typeof value === "function") {
+        return value.bind(target);
+      }
+      return value;
+    },
+  });
 }
 
 export const getAllBalancesCached = makeLRUCache(
@@ -627,7 +662,7 @@ export const getOperations = async (
 export const filterOperations = (
   sendOps: LoadOperationResponse,
   receiveOps: LoadOperationResponse,
-  order: "ascending" | "descending",
+  _order: "ascending" | "descending",
   shouldFilter: boolean = true,
 ): LoadOperationResponse => {
   let filterTimestamp: number = 0;
@@ -897,6 +932,7 @@ export const getCoinsForAmount = async (
  * @param address - The sender's address
  * @param transaction - The transaction details including recipient, amount, and coin type
  * @param withObjects - Return serialized input objects used in the transaction
+ * @param resolution - For token clear signing
  * @returns Promise<TransactionBlock> - A built transaction block ready for execution
  *
  */
@@ -904,79 +940,118 @@ export const createTransaction = async (
   address: string,
   transaction: CreateExtrinsicArg,
   withObjects: boolean = false,
-): Promise<CoreTransaction> =>
+  resolution?: Resolution,
+): Promise<CoreTransaction> => {
+  const { serialized, bcsObjects } = await createTransactionFromMode(address, transaction);
+
+  return {
+    unsigned: serialized,
+    ...(withObjects ? { objects: bcsObjects } : {}),
+    ...(transaction.coinType !== DEFAULT_COIN_TYPE && resolution ? { resolution } : {}),
+  };
+};
+
+const createTransactionFromMode = (address: string, transaction: CreateExtrinsicArg) => {
+  const { mode } = transaction;
+  switch (mode) {
+    case "delegate":
+      return createTransactionForDelegate(address, transaction);
+    case "undelegate":
+      return createTransactionForUndelegate(address, transaction);
+    default:
+      return createTransactionForOthers(address, transaction);
+  }
+};
+
+const createTransactionForDelegate = async (address: string, transaction: CreateExtrinsicArg) =>
   withApi(async api => {
     const tx = new Transaction();
+
     tx.setSender(ensureAddressFormat(address));
-    const { mode, amount } = transaction;
-    switch (mode) {
-      case "delegate": {
-        const coins = tx.splitCoins(tx.gas, [amount.toNumber()]);
-        tx.moveCall({
-          target: "0x3::sui_system::request_add_stake",
-          arguments: [
-            tx.object(SUI_SYSTEM_STATE_OBJECT_ID),
-            coins,
-            tx.pure.address(transaction.recipient),
-          ],
-        });
 
-        tx.setGasBudgetIfNotSet(ONE_SUI / 10);
-        break;
+    const { amount } = transaction;
+    const coins = tx.splitCoins(tx.gas, [amount.toNumber()]);
+
+    tx.moveCall({
+      target: "0x3::sui_system::request_add_stake",
+      arguments: [
+        tx.object(SUI_SYSTEM_STATE_OBJECT_ID),
+        coins,
+        tx.pure.address(transaction.recipient),
+      ],
+    });
+
+    tx.setGasBudgetIfNotSet(ONE_SUI / 10);
+
+    const serialized = await tx.build({ client: api });
+    const { bcsObjects } = await getInputObjects(tx, withBatchedMultiGetObjects(api));
+
+    return { serialized, bcsObjects };
+  });
+
+const createTransactionForUndelegate = async (address: string, transaction: CreateExtrinsicArg) =>
+  withApi(async api => {
+    const tx = new Transaction();
+
+    tx.setSender(ensureAddressFormat(address));
+    const { useAllAmount, amount } = transaction;
+
+    if (useAllAmount) {
+      tx.moveCall({
+        target: "0x3::sui_system::request_withdraw_stake",
+        arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), tx.object(transaction.stakedSuiId!)],
+      });
+    } else {
+      const res = tx.moveCall({
+        target: "0x3::staking_pool::split",
+        arguments: [tx.object(transaction.stakedSuiId!), tx.pure.u64(amount.toString())],
+      });
+      tx.moveCall({
+        target: "0x3::sui_system::request_withdraw_stake",
+        arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), res],
+      });
+    }
+
+    tx.setGasBudgetIfNotSet(ONE_SUI / 10);
+
+    const serialized = await tx.build({ client: api });
+    const { bcsObjects } = await getInputObjects(tx, withBatchedMultiGetObjects(api));
+
+    return { serialized, bcsObjects };
+  });
+
+const createTransactionForOthers = async (address: string, transaction: CreateExtrinsicArg) =>
+  withApi(async api => {
+    const tx = new Transaction();
+
+    tx.setSender(ensureAddressFormat(address));
+
+    if (transaction.coinType !== DEFAULT_COIN_TYPE) {
+      const requiredAmount = transaction.amount.toNumber();
+
+      const coins = await getCoinsForAmount(api, address, transaction.coinType, requiredAmount);
+
+      if (coins.length === 0) {
+        throw new Error(`No coins found for type ${transaction.coinType}`);
       }
-      case "undelegate": {
-        if (transaction.useAllAmount) {
-          tx.moveCall({
-            target: "0x3::sui_system::request_withdraw_stake",
-            arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), tx.object(transaction.stakedSuiId!)],
-          });
-        } else {
-          const res = tx.moveCall({
-            target: "0x3::staking_pool::split",
-            arguments: [tx.object(transaction.stakedSuiId!), tx.pure.u64(amount.toString())],
-          });
-          tx.moveCall({
-            target: "0x3::sui_system::request_withdraw_stake",
-            arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), res],
-          });
-        }
 
-        tx.setGasBudgetIfNotSet(ONE_SUI / 10);
-        break;
+      const coinObjects = coins.map(coin => tx.object(coin.coinObjectId));
+
+      if (coinObjects.length > 1) {
+        tx.mergeCoins(coinObjects[0], coinObjects.slice(1));
       }
-      default: {
-        if (transaction.coinType !== DEFAULT_COIN_TYPE) {
-          const requiredAmount = transaction.amount.toNumber();
 
-          const coins = await getCoinsForAmount(api, address, transaction.coinType, requiredAmount);
-
-          if (coins.length === 0) {
-            throw new Error(`No coins found for type ${transaction.coinType}`);
-          }
-
-          const coinObjects = coins.map(coin => tx.object(coin.coinObjectId));
-
-          if (coinObjects.length > 1) {
-            tx.mergeCoins(coinObjects[0], coinObjects.slice(1));
-          }
-
-          const [coin] = tx.splitCoins(coinObjects[0], [transaction.amount.toNumber()]);
-          tx.transferObjects([coin], transaction.recipient);
-        } else {
-          const [coin] = tx.splitCoins(tx.gas, [transaction.amount.toNumber()]);
-          tx.transferObjects([coin], transaction.recipient);
-        }
-      }
+      const [coin] = tx.splitCoins(coinObjects[0], [transaction.amount.toNumber()]);
+      tx.transferObjects([coin], transaction.recipient);
+    } else {
+      const [coin] = tx.splitCoins(tx.gas, [transaction.amount.toNumber()]);
+      tx.transferObjects([coin], transaction.recipient);
     }
 
     const serialized = await tx.build({ client: api });
+    const { bcsObjects } = await getInputObjects(tx, withBatchedMultiGetObjects(api));
 
-    if (withObjects) {
-      const { bcsObjects } = await getInputObjects(tx, api);
-      return { unsigned: serialized, objects: bcsObjects as Uint8Array[] };
-    }
-
-    return { unsigned: serialized };
+    return { serialized, bcsObjects };
   });
 
 /**

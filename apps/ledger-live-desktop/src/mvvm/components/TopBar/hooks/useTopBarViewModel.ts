@@ -1,29 +1,71 @@
-import { useDispatch, useSelector } from "LLD/hooks/redux";
-import { TopBarAction } from "../types";
-import { useTranslation } from "react-i18next";
-import { discreetModeSelector } from "~/renderer/reducers/settings";
-import { setDiscreetMode } from "~/renderer/actions/settings";
-import { Eye, EyeCross } from "@ledgerhq/lumen-ui-react/symbols";
-import { useMemo } from "react";
+import { TopBarSlot } from "../types";
+import { useActivityIndicator } from "./useActivityIndicator";
+import { useDiscreetMode } from "./useDiscreetMode";
+import { useMyLedger } from "./useMyLedger";
+import { useSettings } from "./useSettings";
 
 const useTopBarViewModel = () => {
-  const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const discreetMode = useSelector(discreetModeSelector);
-  const discreetIcon = useMemo(() => (discreetMode ? EyeCross : Eye), [discreetMode]);
+  const { handleDiscreet, discreetIcon, tooltip: discreetTooltip } = useDiscreetMode();
+  const {
+    hasAccounts,
+    handleSync,
+    isRotating,
+    icon: activityIndicatorIcon,
+    tooltip: activityIndicatorTooltip,
+  } = useActivityIndicator();
+  const { handleSettings, settingsIcon, tooltip: settingsTooltip } = useSettings();
+  const { handleMyLedger, tooltip: myLedgerTooltip, icon: myLedgerIcon } = useMyLedger();
 
-  const topBarActionsList: TopBarAction[] = [
+  const topBarSlots: TopBarSlot[] = [
+    ...(hasAccounts
+      ? [
+          {
+            type: "action" as const,
+            action: {
+              label: "synchronize",
+              tooltip: activityIndicatorTooltip,
+              icon: activityIndicatorIcon,
+              isInteractive: !isRotating,
+              onClick: handleSync,
+            },
+          },
+        ]
+      : []),
+    { type: "notification" },
     {
-      label: "discreet",
-      tooltip: t("settings.discreet"),
-      icon: discreetIcon,
-      isInteractive: true,
-      onClick: () => dispatch(setDiscreetMode(!discreetMode)),
+      type: "action",
+      action: {
+        label: "discreet",
+        tooltip: discreetTooltip,
+        icon: discreetIcon,
+        isInteractive: true,
+        onClick: handleDiscreet,
+      },
+    },
+    {
+      type: "action",
+      action: {
+        label: "settings",
+        tooltip: settingsTooltip,
+        icon: settingsIcon,
+        isInteractive: true,
+        onClick: handleSettings,
+      },
+    },
+    {
+      type: "action",
+      action: {
+        label: "my ledger",
+        tooltip: myLedgerTooltip,
+        icon: myLedgerIcon,
+        isInteractive: true,
+        onClick: handleMyLedger,
+      },
     },
   ];
 
   return {
-    topBarActionsList,
+    topBarSlots,
   };
 };
 

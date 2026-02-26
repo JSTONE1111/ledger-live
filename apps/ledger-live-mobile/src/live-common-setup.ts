@@ -35,7 +35,6 @@ setSupportedCurrencies([
   "umee",
   "desmos",
   "dydx",
-  "onomy",
   "quicksilver",
   "persistence",
   "bitcoin",
@@ -73,7 +72,6 @@ setSupportedCurrencies([
   "bitcoin_testnet",
   "bitcoin_regtest",
   "ethereum_sepolia",
-  "ethereum_holesky",
   "ethereum_hoodi",
   "elrond", // NOTE: legacy 'multiversx' name, kept for compatibility
   "hedera",
@@ -123,6 +121,7 @@ setSupportedCurrencies([
   "lukso",
   "aptos",
   "aptos_testnet",
+  "adi",
   "linea",
   "linea_sepolia",
   "blast",

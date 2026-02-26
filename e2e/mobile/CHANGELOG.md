@@ -1,5 +1,29 @@
 # ledger-live-mobile-e2e-tests
 
+## 0.14.0
+
+### Minor Changes
+
+- [#13829](https://github.com/LedgerHQ/ledger-live/pull/13829) [`ff67587`](https://github.com/LedgerHQ/ledger-live/commit/ff67587241e5c521b4e1be2074985450fb6f9edc) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - test: e2e send hbar
+
+## 0.14.0-next.0
+
+### Minor Changes
+
+- [#13829](https://github.com/LedgerHQ/ledger-live/pull/13829) [`ff67587`](https://github.com/LedgerHQ/ledger-live/commit/ff67587241e5c521b4e1be2074985450fb6f9edc) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - test: e2e send hbar
+
+## 0.13.0
+
+### Minor Changes
+
+- [#14131](https://github.com/LedgerHQ/ledger-live/pull/14131) [`8006565`](https://github.com/LedgerHQ/ledger-live/commit/8006565f77487fa0e38bf5f8d7bb4cda4cdba1f5) Thanks [@Canestin](https://github.com/Canestin)! - chore: remove ethereum holesky
+
+## 0.13.0-next.0
+
+### Minor Changes
+
+- [#14131](https://github.com/LedgerHQ/ledger-live/pull/14131) [`8006565`](https://github.com/LedgerHQ/ledger-live/commit/8006565f77487fa0e38bf5f8d7bb4cda4cdba1f5) Thanks [@Canestin](https://github.com/Canestin)! - chore: remove ethereum holesky
+
 ## 0.12.0
 
 ### Minor Changes

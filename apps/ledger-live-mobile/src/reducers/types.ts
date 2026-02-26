@@ -27,15 +27,17 @@ import { ImageType } from "../components/CustomImage/types";
 import { WalletState } from "@ledgerhq/live-wallet/store";
 import { TrustchainStore } from "@ledgerhq/ledger-key-ring-protocol/store";
 import { Steps } from "LLM/features/WalletSync/types/Activation";
-import { type TabListType as TabPortfolioAssetsType } from "~/screens/Portfolio/useListsAnimation";
+import { type TabListType as TabPortfolioAssetsType } from "~/screens/Portfolio/TabSection";
 import type { CountervaluesState } from "./countervalues";
 import type { ToastState } from "./toast";
 import type { ModularDrawerState } from "./modularDrawer";
 import type { LLMRTKApiState } from "~/context/rtkQueryApi";
 import type { ReceiveOptionsDrawerState } from "./receiveOptionsDrawer";
 import type { TransferDrawerState } from "./transferDrawer";
+import type { SendFlowState } from "./sendFlow";
 import { IdentitiesState } from "@ledgerhq/client-ids/store";
 import type { FirebaseMessagingTypes } from "@react-native-firebase/messaging";
+import { RebornBuyDeviceDrawerState } from "./rebornBuyDeviceDrawer";
 
 // === ACCOUNT STATE ===
 
@@ -146,6 +148,10 @@ export type DynamicContentState = {
   mobileCards: BrazeContentCard[];
   /** Check if CC are loading */
   isLoading: boolean;
+  /** Local/debug category cards (merged in selectors, not from Braze) */
+  localCategoriesCards: CategoryContentCard[];
+  /** Local/debug mobile cards (merged in selectors, not from Braze) */
+  localMobileCards: BrazeContentCard[];
 };
 
 // === IN VIEW STATE ===
@@ -378,11 +384,13 @@ export type State = LLMRTKApiState & {
   market: MarketState;
   modularDrawer: ModularDrawerState;
   receiveOptionsDrawer: ReceiveOptionsDrawerState;
+  rebornBuyDeviceDrawer: RebornBuyDeviceDrawerState;
   transferDrawer: TransferDrawerState;
   notifications: NotificationsState;
   postOnboarding: PostOnboardingState;
   protect: ProtectState;
   ratings: RatingsState;
+  sendFlow: SendFlowState;
   settings: SettingsState;
   toasts: ToastState;
   trustchain: TrustchainStore;

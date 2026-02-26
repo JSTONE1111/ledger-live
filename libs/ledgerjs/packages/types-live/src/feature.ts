@@ -100,7 +100,6 @@ export type CurrencyFeatures = {
   currencyDydx: DefaultFeature;
   currencyUmee: DefaultFeature;
   currencyStargaze: DefaultFeature;
-  currencyOnomy: DefaultFeature;
   currencyPersistence: DefaultFeature;
   currencyQuicksilver: DefaultFeature;
   currencyInternetComputer: DefaultFeature;
@@ -158,6 +157,7 @@ export type CurrencyFeatures = {
   currencyZeroGravity: DefaultFeature;
   currencyConcordium: DefaultFeature;
   currencyConcordiumTestnet: DefaultFeature;
+  currencyAdi: DefaultFeature;
   currencyAleo: DefaultFeature;
   currencyAleoTestnet: DefaultFeature;
   currencyUnichain: DefaultFeature;
@@ -807,17 +807,17 @@ type Feature_Wallet40_Params = {
   graphRework: boolean;
   quickActionCtas: boolean;
   mainNavigation: boolean;
+  tour: boolean;
+  lazyOnboarding: boolean;
+  balanceRefreshRework: boolean;
+  assetSection: boolean;
 
-  //Specifics
-  tour?: boolean;
+  // Specifics
   newReceiveDialog?: boolean;
+  background?: boolean;
 };
 
-export type Feature_LwmWallet40 = Feature<
-  {
-    tour: boolean;
-  } & Feature_Wallet40_Params
->;
+export type Feature_LwmWallet40 = Feature<Feature_Wallet40_Params>;
 export type Feature_LwdWallet40 = Feature<
   {
     newReceiveDialog: boolean;

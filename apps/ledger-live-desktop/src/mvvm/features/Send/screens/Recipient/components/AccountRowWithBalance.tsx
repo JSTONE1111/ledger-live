@@ -1,6 +1,6 @@
 import React from "react";
 import type { Account } from "@ledgerhq/types-live";
-import { formatAddress } from "LLD/features/ModularDialog/components/Address/formatAddress";
+import { formatAddress } from "@ledgerhq/live-common/utils/addressUtils";
 import { useMaybeAccountName } from "~/renderer/reducers/wallet";
 import { AddressListItem } from "./AddressListItem";
 import { useFormattedAccountBalance } from "../hooks/useFormattedAccountBalance";
@@ -11,6 +11,7 @@ type AccountRowWithBalanceProps = Readonly<{
   showSendTo?: boolean;
   disabled?: boolean;
   customName?: string;
+  testId?: string;
 }>;
 
 export function AccountRowWithBalance({
@@ -19,6 +20,7 @@ export function AccountRowWithBalance({
   showSendTo = false,
   disabled = false,
   customName,
+  testId,
 }: AccountRowWithBalanceProps) {
   const accountName = useMaybeAccountName(account);
   const { formattedBalance, formattedCounterValue } = useFormattedAccountBalance(account);
@@ -36,6 +38,7 @@ export function AccountRowWithBalance({
       showSendTo={showSendTo}
       isLedgerAccount
       disabled={disabled}
+      testId={testId}
     />
   );
 }

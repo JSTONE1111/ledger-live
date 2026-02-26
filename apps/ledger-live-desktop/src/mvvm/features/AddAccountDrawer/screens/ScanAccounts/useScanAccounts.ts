@@ -26,6 +26,7 @@ import {
   getUnimportedAccounts,
 } from "./utils/processAccounts";
 import { useCantonCreatableAccounts } from "./hooks/useCantonCreatableAccounts";
+import { useConcordiumCreatableAccounts } from "./hooks/concordium/useConcordiumCreatableAccounts";
 
 const selectImportable = (importable: Account[]) => (selected: string[]) => {
   const importableIds = importable.map(a => a.id);
@@ -40,6 +41,7 @@ const deselectImportable = (importable: Account[]) => (selected: string[]) => {
 export interface UseScanAccountsProps {
   currency: CryptoCurrency;
   deviceId: string;
+  deferAccountAddition?: boolean;
   onComplete: (accounts: Account[]) => void;
   navigateToWarningScreen: (reason: WarningReason, account?: Account) => void;
 }
@@ -47,6 +49,7 @@ export interface UseScanAccountsProps {
 export function useScanAccounts({
   currency,
   deviceId,
+  deferAccountAddition = false,
   onComplete,
   navigateToWarningScreen,
 }: UseScanAccountsProps) {
@@ -166,6 +169,12 @@ export function useScanAccounts({
       selectedIds: filteredSelectedIds,
     });
 
+  const { hasConcordiumCreatableAccounts, selectedConcordiumAccounts } =
+    useConcordiumCreatableAccounts({
+      scannedAccounts,
+      selectedIds: filteredSelectedIds,
+    });
+
   const handleConfirm = useCallback(() => {
     trackAddAccountEvent(ADD_ACCOUNT_EVENTS_NAME.ADD_ACCOUNT_BUTTON_CLICKED, {
       button: "Confirm",
@@ -189,17 +198,35 @@ export function useScanAccounts({
       return;
     }
 
+    if (hasConcordiumCreatableAccounts) {
+      setDrawer();
+
+      dispatch(
+        openModal("MODAL_CONCORDIUM_ONBOARD_ACCOUNT", {
+          currency,
+          selectedAccounts: selectedConcordiumAccounts,
+          editedNames: {},
+        }),
+      );
+
+      return;
+    }
+
     if (accountsToImport.length > 0) {
       setHasImportedAccounts(true);
     }
-    dispatch(
-      addAccountsAction({
-        existingAccounts,
-        scannedAccounts,
-        selectedIds: filteredSelectedIds,
-        renamings: {},
-      }),
-    );
+
+    if (!deferAccountAddition) {
+      dispatch(
+        addAccountsAction({
+          existingAccounts,
+          scannedAccounts,
+          selectedIds: filteredSelectedIds,
+          renamings: {},
+        }),
+      );
+    }
+
     onComplete(accountsToImport);
   }, [
     trackAddAccountEvent,
@@ -211,8 +238,11 @@ export function useScanAccounts({
     device,
     hasCantonCreatableAccounts,
     selectedCantonCreatableAccounts,
+    hasConcordiumCreatableAccounts,
+    selectedConcordiumAccounts,
     filteredSelectedIds,
     scannedAccounts,
+    deferAccountAddition,
   ]);
 
   const toggleShowAllCreatedAccounts = useCallback(() => setShowAllCreatedAccounts(p => !p), []);

@@ -385,11 +385,11 @@ const evmConfig: CurrencyLiveConfigDefinition = {
       },
       node: {
         type: "external",
-        uri: "https://arb1.arbitrum.io/rpc",
+        uri: "https://arbitrum.coin.ledger.com",
       },
       explorer: {
-        type: "blockscout",
-        uri: "https://arbitrum.blockscout.com/api",
+        type: "etherscan",
+        uri: "https://proxyetherscan.api.live.ledger.com/v2/api/42161",
       },
       showNfts: false,
     },
@@ -792,7 +792,7 @@ const evmConfig: CurrencyLiveConfigDefinition = {
       },
       node: {
         type: "external",
-        uri: "https://base-rpc.publicnode.com",
+        uri: "https://base.coin.ledger.com",
       },
       explorer: {
         type: "etherscan",
@@ -902,19 +902,6 @@ const evmConfig: CurrencyLiveConfigDefinition = {
       node: { type: "ledger", explorerId: "eth_sepolia" },
       explorer: { type: "ledger", explorerId: "eth_sepolia" },
       gasTracker: { type: "ledger", explorerId: "eth_sepolia" },
-      showNfts: false,
-    },
-  },
-  config_currency_ethereum_holesky: {
-    type: "object",
-    default: {
-      status: {
-        type: "active",
-        features: [{ id: "blockchain_txs", status: "active" }],
-      },
-      node: { type: "ledger", explorerId: "eth_holesky" },
-      explorer: { type: "ledger", explorerId: "eth_holesky" },
-      gasTracker: { type: "ledger", explorerId: "eth_holesky" },
       showNfts: false,
     },
   },
@@ -1169,6 +1156,24 @@ const evmConfig: CurrencyLiveConfigDefinition = {
       showNfts: false,
     },
   },
+  config_currency_adi: {
+    type: "object",
+    default: {
+      status: {
+        type: "active",
+        features: [{ id: "blockchain_txs", status: "active" }],
+      },
+      node: {
+        type: "external",
+        uri: "https://rpc.adifoundation.ai",
+      },
+      explorer: {
+        type: "blockscout",
+        uri: "https://explorer.adifoundation.ai/api",
+      },
+      showNfts: false,
+    },
+  },
   config_currency_unichain: {
     type: "object",
     default: {
@@ -1178,7 +1183,7 @@ const evmConfig: CurrencyLiveConfigDefinition = {
       },
       node: {
         type: "external",
-        uri: "https://mainnet.unichain.org",
+        uri: "https://unichain-rpc.publicnode.com",
       },
       explorer: {
         type: "blockscout",
@@ -1194,7 +1199,7 @@ const evmConfig: CurrencyLiveConfigDefinition = {
         type: "active",
         features: [{ id: "blockchain_txs", status: "active" }],
       },
-      node: { type: "external", uri: "https://sepolia.unichain.org" },
+      node: { type: "external", uri: "https://unichain-sepolia-rpc.publicnode.com" },
       explorer: { type: "blockscout", uri: "https://unichain-sepolia.blockscout.com/api" },
       showNfts: false,
     },

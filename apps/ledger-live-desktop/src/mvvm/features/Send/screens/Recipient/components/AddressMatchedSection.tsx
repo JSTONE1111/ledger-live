@@ -1,11 +1,11 @@
+import type { AddressSearchResult } from "@ledgerhq/live-common/flows/send/recipient/types";
+import { formatAddress } from "@ledgerhq/live-common/utils/addressUtils";
+import { Banner, Subheader, SubheaderRow, SubheaderTitle } from "@ledgerhq/lumen-ui-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Banner, Subheader, SubheaderRow, SubheaderTitle } from "@ledgerhq/lumen-ui-react";
-import { formatAddress } from "LLD/features/ModularDialog/components/Address/formatAddress";
-import { AddressListItem } from "./AddressListItem";
+import { useFormatRelativeDate } from "../hooks/useFormatRelativeDate";
 import { AccountRowWithBalance } from "./AccountRowWithBalance";
-import { formatRelativeDate } from "../utils/dateFormatter";
-import type { AddressSearchResult } from "../types";
+import { AddressListItem } from "./AddressListItem";
 
 type AddressMatchedSectionProps = Readonly<{
   searchResult: AddressSearchResult;
@@ -25,6 +25,7 @@ export function AddressMatchedSection({
   hasBridgeError = false,
 }: AddressMatchedSectionProps) {
   const { t } = useTranslation();
+  const formatRelativeDate = useFormatRelativeDate();
 
   const { matchedAccounts, ensName, matchedRecentAddress, status, resolvedAddress } = searchResult;
 
@@ -51,9 +52,11 @@ export function AddressMatchedSection({
     return `${ensName} (${formattedAddress})`;
   };
 
-  const getRecentDescription = (): string => {
+  const getRecentDescription = (): string | undefined => {
     if (matchedRecentAddress) {
-      return `Already used · ${formatRelativeDate(matchedRecentAddress.lastUsedAt)}`;
+      return t("newSendFlow.alreadyUsed", {
+        date: formatRelativeDate(matchedRecentAddress.lastUsedAt),
+      });
     }
     return formattedAddress;
   };
@@ -62,7 +65,9 @@ export function AddressMatchedSection({
     <div className="flex w-full min-w-0 flex-col">
       <Subheader className="mb-12">
         <SubheaderRow>
-          <SubheaderTitle>{t("newSendFlow.addressMatched")}</SubheaderTitle>
+          <SubheaderTitle data-testid="send-address-matched-title">
+            {t("newSendFlow.addressMatched")}
+          </SubheaderTitle>
         </SubheaderRow>
       </Subheader>
       <div className="-mx-8 flex flex-col">
@@ -75,6 +80,7 @@ export function AddressMatchedSection({
               onSelect={() => onSelect(account.freshAddress)}
               showSendTo
               disabled={isSanctioned || hasBridgeError}
+              testId="send-matched-address-button"
             />
           ))}
 
@@ -87,6 +93,7 @@ export function AddressMatchedSection({
             onSelect={() => onSelect(resolvedAddress ?? searchValue, ensName)}
             showSendTo
             disabled={isSanctioned || hasBridgeError}
+            testId="send-matched-address-button"
           />
         )}
 
@@ -104,6 +111,7 @@ export function AddressMatchedSection({
             }
             showSendTo
             disabled={isSanctioned || hasBridgeError}
+            testId="send-matched-address-button"
           />
         )}
 
@@ -116,6 +124,7 @@ export function AddressMatchedSection({
             showSendTo
             disabled={false}
             hideDescription
+            testId="send-matched-address-button"
           />
         )}
 
@@ -127,6 +136,7 @@ export function AddressMatchedSection({
             description={formattedAddress}
             showSendTo
             disabled={true}
+            testId="send-matched-address-button"
           />
         )}
 

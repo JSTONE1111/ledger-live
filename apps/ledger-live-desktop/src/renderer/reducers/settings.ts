@@ -126,6 +126,8 @@ export type SettingsState = {
   lastOnboardedDevice: Device | null;
   alwaysShowMemoTagInfo: boolean;
   anonymousUserNotifications: { LNSUpsell?: number } & Record<string, number>;
+  hasSeenWalletV4Tour: boolean;
+  doNotAskAgainSkipMemo: boolean;
 };
 
 export const getInitialLanguageAndLocale = (): { language: Language; locale: Locale } => {
@@ -160,7 +162,7 @@ export const INITIAL_STATE: SettingsState = {
   orderAccounts: "balance|desc",
   countervalueFirst: false,
   autoLockTimeout: 10,
-  selectedTimeRange: "month",
+  selectedTimeRange: "day",
   currenciesSettings: {},
   pairExchanges: {},
   developerMode: !!process.env.__DEV__,
@@ -224,6 +226,8 @@ export const INITIAL_STATE: SettingsState = {
   lastOnboardedDevice: null,
   alwaysShowMemoTagInfo: true,
   anonymousUserNotifications: {},
+  hasSeenWalletV4Tour: false,
+  doNotAskAgainSkipMemo: false,
 };
 
 /* Handlers */
@@ -281,6 +285,7 @@ type HandlersPayloads = {
   [UPDATE_ANONYMOUS_USER_NOTIFICATIONS]: {
     notifications: Record<string, number>;
   };
+  SET_HAS_SEEN_WALLET_V4_TOUR: boolean;
 };
 type SettingsHandlers<PreciseKey = true> = Handlers<SettingsState, HandlersPayloads, PreciseKey>;
 
@@ -496,6 +501,10 @@ const handlers: SettingsHandlers = {
       ...state.anonymousUserNotifications,
       ...notifications,
     },
+  }),
+  SET_HAS_SEEN_WALLET_V4_TOUR: (state: SettingsState, { payload }) => ({
+    ...state,
+    hasSeenWalletV4Tour: payload,
   }),
 };
 
@@ -753,12 +762,15 @@ export const hideEmptyTokenAccountsSelector = (state: State) =>
   state.settings.hideEmptyTokenAccounts;
 export const filterTokenOperationsZeroAmountSelector = (state: State) =>
   state.settings.filterTokenOperationsZeroAmount;
+
+export const doNotAskAgainSkipMemoSelector = (state: State) => state.settings.doNotAskAgainSkipMemo;
 export const lastSeenDeviceSelector = (state: State): DeviceModelInfo | null | undefined => {
   const { lastSeenDevice } = state.settings;
   if (!lastSeenDevice || !Object.values(DeviceModelId).includes(lastSeenDevice.modelId))
     return null;
   return lastSeenDevice;
 };
+export const hasOnboardedDeviceSelector = (state: State) => lastSeenDeviceSelector(state) !== null;
 export const devicesModelListSelector = (state: State): DeviceModelId[] =>
   state.settings.devicesModelList;
 export const latestFirmwareSelector = (state: State) => state.settings.latestFirmware;
@@ -788,3 +800,4 @@ export const mevProtectionSelector = (state: State) => state.settings.mevProtect
 export const alwaysShowMemoTagInfoSelector = (state: State) => state.settings.alwaysShowMemoTagInfo;
 export const anonymousUserNotificationsSelector = (state: State) =>
   state.settings.anonymousUserNotifications;
+export const hasSeenWalletV4TourSelector = (state: State) => state.settings.hasSeenWalletV4Tour;

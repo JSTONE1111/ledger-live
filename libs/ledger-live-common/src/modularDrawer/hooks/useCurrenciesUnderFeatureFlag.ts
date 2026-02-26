@@ -7,6 +7,7 @@ import useEnv from "../../hooks/useEnv";
 export function useCurrenciesUnderFeatureFlag() {
   const mock = useEnv("MOCK");
 
+  const adi = useFeature("currencyAdi");
   const aleo = useFeature("currencyAleo");
   const aleoTestnet = useFeature("currencyAleoTestnet");
   const aptos = useFeature("currencyAptos");
@@ -17,7 +18,6 @@ export function useCurrenciesUnderFeatureFlag() {
   const umee = useFeature("currencyUmee");
   const desmos = useFeature("currencyDesmos");
   const dydx = useFeature("currencyDydx");
-  const onomy = useFeature("currencyOnomy");
   const quicksilver = useFeature("currencyQuicksilver");
   const persistence = useFeature("currencyPersistence");
   const avaxCChain = useFeature("currencyAvalancheCChain");
@@ -96,6 +96,7 @@ export function useCurrenciesUnderFeatureFlag() {
 
   const featureFlaggedCurrencies = useMemo(
     (): Partial<Record<CryptoCurrencyId, Feature<unknown> | null>> => ({
+      adi,
       aleo,
       aleo_testnet: aleoTestnet,
       aptos,
@@ -106,7 +107,6 @@ export function useCurrenciesUnderFeatureFlag() {
       umee,
       desmos,
       dydx,
-      onomy,
       quicksilver,
       persistence,
       avalanche_c_chain: avaxCChain,
@@ -184,6 +184,7 @@ export function useCurrenciesUnderFeatureFlag() {
       unichain_sepolia: unichainSepolia,
     }),
     [
+      adi,
       aleo,
       aleoTestnet,
       aptos,
@@ -194,7 +195,6 @@ export function useCurrenciesUnderFeatureFlag() {
       umee,
       desmos,
       dydx,
-      onomy,
       quicksilver,
       persistence,
       avaxCChain,

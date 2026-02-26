@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSelector } from "~/context/hooks";
@@ -15,15 +16,22 @@ import { QUICK_ACTIONS_TEST_IDS } from "../../testIds";
 import { useTranslation } from "~/context/Locale";
 import { useReceiveNoahEntry } from "LLM/features/Noah/useNoahEntryPoint";
 
+// Fiat provider manifest ID for Noah integration
+const FIAT_PROVIDER_MANIFEST_ID = "noah";
+
+const BUTTON_ID = "quick_action_transfer";
+
 interface TransferDrawerViewModel {
   isOpen: boolean;
   actions: readonly TransferAction[];
   handleClose: () => void;
   t: (key: string) => string;
+  bottomInset: number;
 }
 
 export const useTransferDrawerViewModel = (): TransferDrawerViewModel => {
   const { t } = useTranslation();
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<BaseNavigatorStackParamList>>();
 
   const { isOpen, sourceScreenName, closeDrawer } = useTransferDrawerController();
@@ -41,7 +49,7 @@ export const useTransferDrawerViewModel = (): TransferDrawerViewModel => {
 
   const handleReceivePress = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action_transfer",
+      button: BUTTON_ID,
       flow: "receive",
       page: sourceScreenName,
     });
@@ -51,7 +59,7 @@ export const useTransferDrawerViewModel = (): TransferDrawerViewModel => {
 
   const handleSendPress = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action_transfer",
+      button: BUTTON_ID,
       flow: "send",
       page: sourceScreenName,
     });
@@ -63,15 +71,15 @@ export const useTransferDrawerViewModel = (): TransferDrawerViewModel => {
 
   const handleBankTransferPress = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action_transfer",
+      button: BUTTON_ID,
       flow: "bank_transfer",
       page: sourceScreenName,
     });
     closeDrawer();
-    navigation.navigate(NavigatorName.Exchange, {
-      screen: ScreenName.ExchangeBuy,
+    navigation.navigate(NavigatorName.ReceiveFunds, {
+      screen: ScreenName.ReceiveProvider,
       params: {
-        mode: "onRamp",
+        manifestId: FIAT_PROVIDER_MANIFEST_ID,
       },
     });
   }, [closeDrawer, navigation, sourceScreenName]);
@@ -124,5 +132,6 @@ export const useTransferDrawerViewModel = (): TransferDrawerViewModel => {
     actions,
     handleClose: closeDrawer,
     t,
+    bottomInset,
   };
 };

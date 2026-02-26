@@ -1,18 +1,19 @@
-import React from "react";
-import type { Account } from "@ledgerhq/types-live";
 import type { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
-import EmptyList from "./EmptyList";
-import { RecentAddressesSection } from "./RecentAddressesSection";
-import { MyAccountsSection } from "./MyAccountsSection";
-import { AddressMatchedSection } from "./AddressMatchedSection";
-import { LoadingState } from "./LoadingState";
-import { ValidationBanner } from "./ValidationBanner";
-import { AddressValidationError } from "./AddressValidationError";
+import type { Account } from "@ledgerhq/types-live";
+import React from "react";
+import { DialogBody } from "@ledgerhq/lumen-ui-react";
 import type {
   AddressSearchResult,
-  RecentAddress,
   AddressValidationError as AddressValidationErrorType,
-} from "../types";
+  RecentAddress,
+} from "@ledgerhq/live-common/flows/send/recipient/types";
+import { AddressMatchedSection } from "./AddressMatchedSection";
+import { AddressValidationError } from "./AddressValidationError";
+import EmptyList from "./EmptyList";
+import { LoadingState } from "./LoadingState";
+import { MyAccountsSection } from "./MyAccountsSection";
+import { RecentAddressesSection } from "./RecentAddressesSection";
+import { ValidationBanner } from "./ValidationBanner";
 
 type RecipientAddressModalViewProps = Readonly<{
   searchValue: string;
@@ -40,6 +41,9 @@ type RecipientAddressModalViewProps = Readonly<{
   onAccountSelect: (account: Account) => void;
   onAddressSelect: (address: string, ensName?: string) => void;
   onRemoveAddress: (address: RecentAddress) => void;
+  hasMemo: boolean;
+  hasMemoValidationError: boolean;
+  hasFilledMemo: boolean;
 }>;
 
 export function RecipientAddressModalView({
@@ -68,6 +72,9 @@ export function RecipientAddressModalView({
   onAccountSelect,
   onAddressSelect,
   onRemoveAddress,
+  hasMemo,
+  hasMemoValidationError,
+  hasFilledMemo,
 }: RecipientAddressModalViewProps) {
   const shouldShowErrorBanner =
     !isLoading &&
@@ -77,7 +84,7 @@ export function RecipientAddressModalView({
       showBridgeRecipientWarning);
 
   return (
-    <>
+    <DialogBody className="py-16">
       {isLoading && <LoadingState />}
 
       {showInitialState && (
@@ -95,7 +102,7 @@ export function RecipientAddressModalView({
         </>
       )}
 
-      {showMatchedAddress && (
+      {showMatchedAddress && (!hasMemo || (hasFilledMemo && !hasMemoValidationError)) && (
         <AddressMatchedSection
           searchResult={result}
           searchValue={searchValue}
@@ -131,6 +138,6 @@ export function RecipientAddressModalView({
           )}
         </div>
       )}
-    </>
+    </DialogBody>
   );
 }

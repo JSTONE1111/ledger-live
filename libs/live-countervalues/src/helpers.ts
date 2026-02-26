@@ -1,5 +1,6 @@
 import { Currency } from "@ledgerhq/types-cryptoassets";
 import type { RateGranularity } from "./types";
+import type { PortfolioRange } from "@ledgerhq/types-live";
 
 export const inferCurrencyAPIID = (currency: Currency): string => {
   switch (currency.type) {
@@ -10,6 +11,10 @@ export const inferCurrencyAPIID = (currency: Currency): string => {
     case "TokenCurrency": {
       // temporary solution to support assethub_polkadot
       if (currency.id === "assethub_polkadot") return "polkadot";
+
+      // temporary solution to support concordium_testnet
+      if (currency.id === "concordium_testnet") return "concordium";
+
       return currency.id;
     }
   }
@@ -28,9 +33,25 @@ export const datapointLimits: Record<RateGranularity, number> = {
   hourly: 7 * DAY, // we fetch at MOST a week of hourly. after that there are too much data...
 };
 
-export const datapointRetention: Record<Extract<RateGranularity, "hourly">, number> = {
+export const datapointRetention: Record<RateGranularity, number> = {
   hourly: 7 * DAY, // we keep hourly data for 7 days
+  daily: 9999 * DAY, // we keep daily data for a very long time by default, can be overridden by user settings
 };
+
+export function portfolioRangeToDays(range: PortfolioRange): number | undefined {
+  switch (range) {
+    case "day":
+      return 1;
+    case "week":
+      return 7;
+    case "month":
+      return 30;
+    case "year":
+      return 365;
+    case "all":
+      return undefined;
+  }
+}
 
 /**
  * efficient implementation of YYYY-MM-DD formatter

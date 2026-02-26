@@ -1,28 +1,22 @@
 import React from "react";
-import { Box, Text } from "@ledgerhq/lumen-ui-rnative";
+import { Box, BottomSheetView, BottomSheetHeader } from "@ledgerhq/lumen-ui-rnative";
 import { TransferAction } from "../../types";
 import TransferListItem from "./TransferListItem";
-import { BottomSheetView } from "@gorhom/bottom-sheet";
 import { QUICK_ACTIONS_TEST_IDS } from "../../testIds";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 interface TransferDrawerViewProps {
   readonly actions: readonly TransferAction[];
   readonly title: string;
+  readonly bottomInset: number;
 }
 
-export const TransferDrawerView = ({ actions, title }: TransferDrawerViewProps) => {
-  const { bottom: bottomInset } = useSafeAreaInsets();
-
+export const TransferDrawerView = ({ actions, title, bottomInset }: TransferDrawerViewProps) => {
   return (
-    <BottomSheetView style={{ paddingBottom: bottomInset + 24, paddingTop: 32 }}>
-      <Box testID={QUICK_ACTIONS_TEST_IDS.transferDrawer.container}>
-        <Text
-          typography="heading2SemiBold"
-          lx={{ marginBottom: "s16", marginLeft: "s6", color: "base" }}
-        >
-          {title}
-        </Text>
+    <BottomSheetView style={{ paddingBottom: bottomInset + 24, paddingHorizontal: 16 }}>
+      <BottomSheetHeader title={title} appearance="expanded" />
+      <Box
+        style={{ marginHorizontal: -8 }}
+        testID={QUICK_ACTIONS_TEST_IDS.transferDrawer.container}
+      >
         {actions.map(action => (
           <TransferListItem key={action.id} action={action} />
         ))}

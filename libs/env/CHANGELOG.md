@@ -1,5 +1,29 @@
 # @ledgerhq/live-env
 
+## 2.28.0
+
+### Minor Changes
+
+- [#14407](https://github.com/LedgerHQ/ledger-live/pull/14407) [`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0) Thanks [@mateuszpalosz-ext](https://github.com/mateuszpalosz-ext)! - lastBlock method implementation and network api client for Aleo
+
+## 2.28.0-next.0
+
+### Minor Changes
+
+- [#14407](https://github.com/LedgerHQ/ledger-live/pull/14407) [`19e62ca`](https://github.com/LedgerHQ/ledger-live/commit/19e62ca57461e3201ce8186023d7896411fce0e0) Thanks [@mateuszpalosz-ext](https://github.com/mateuszpalosz-ext)! - lastBlock method implementation and network api client for Aleo
+
+## 2.27.0
+
+### Minor Changes
+
+- [#14065](https://github.com/LedgerHQ/ledger-live/pull/14065) [`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Sunset legacy announcements (CDN json) system from desktop app to gain app.json performance
+
+## 2.27.0-next.0
+
+### Minor Changes
+
+- [#14065](https://github.com/LedgerHQ/ledger-live/pull/14065) [`7a75642`](https://github.com/LedgerHQ/ledger-live/commit/7a75642c2f56e27c778106d60a44049917d04014) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Sunset legacy announcements (CDN json) system from desktop app to gain app.json performance
+
 ## 2.26.0
 
 ### Minor Changes

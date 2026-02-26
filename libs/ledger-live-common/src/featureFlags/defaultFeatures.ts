@@ -61,7 +61,6 @@ export const CURRENCY_DEFAULT_FEATURES = {
   currencyLukso: DEFAULT_FEATURE,
   currencyMetis: DEFAULT_FEATURE,
   currencyMoonriver: DEFAULT_FEATURE,
-  currencyOnomy: DEFAULT_FEATURE,
   currencyOptimism: DEFAULT_FEATURE,
   currencyOptimismSepolia: DEFAULT_FEATURE,
   currencyPersistence: DEFAULT_FEATURE,
@@ -118,6 +117,7 @@ export const CURRENCY_DEFAULT_FEATURES = {
   currencyZeroGravity: DEFAULT_FEATURE,
   currencyConcordium: DEFAULT_FEATURE,
   currencyConcordiumTestnet: DEFAULT_FEATURE,
+  currencyAdi: DEFAULT_FEATURE,
   currencyUnichain: DEFAULT_FEATURE,
   currencyUnichainSepolia: DEFAULT_FEATURE,
 };
@@ -741,7 +741,9 @@ export const DEFAULT_FEATURES: Features = {
     ...DEFAULT_FEATURE,
     params: {},
   },
-  llmHomescreen: DEFAULT_FEATURE,
+  llmHomescreen: {
+    enabled: true,
+  },
   supportDeviceApex: DEFAULT_FEATURE,
   llmSyncOnboardingIncr1: DEFAULT_FEATURE,
   lldSyncOnboardingIncr1: DEFAULT_FEATURE,
@@ -785,6 +787,9 @@ export const DEFAULT_FEATURES: Features = {
       quickActionCtas: true,
       tour: true,
       mainNavigation: true,
+      lazyOnboarding: true,
+      balanceRefreshRework: true,
+      assetSection: true,
     },
   },
   lwdWallet40: {
@@ -794,7 +799,11 @@ export const DEFAULT_FEATURES: Features = {
       graphRework: true,
       quickActionCtas: true,
       mainNavigation: true,
+      tour: true,
+      lazyOnboarding: true,
       newReceiveDialog: true,
+      balanceRefreshRework: true,
+      assetSection: true,
     },
   },
   addressPoisoningOperationsFilter: {

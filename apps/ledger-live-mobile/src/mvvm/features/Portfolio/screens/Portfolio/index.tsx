@@ -1,17 +1,25 @@
 import React, { useMemo } from "react";
 import { Platform } from "react-native";
 import Animated from "react-native-reanimated";
-
 import CheckLanguageAvailability from "~/components/CheckLanguageAvailability";
 import CheckTermOfUseUpdate from "~/components/CheckTermOfUseUpdate";
 import CollapsibleHeaderFlatList from "~/components/WalletTab/CollapsibleHeaderFlatList";
 import globalSyncRefreshControl from "~/components/globalSyncRefreshControl";
 import AddAccountDrawer from "LLM/features/Accounts/screens/AddAccount";
+import { useWalletV4TourDrawer, WalletV4TourDrawer } from "LLM/features/WalletV4Tour/Drawer";
 import { renderItem } from "LLM/utils/renderItem";
 import { ScreenName } from "~/const";
 import { BaseComposite, StackNavigatorProps } from "~/components/RootNavigator/types/helpers";
 import { WalletTabNavigatorStackParamList } from "~/components/RootNavigator/types/WalletTabNavigator";
+import {
+  PROGRESS_VIEW_OFFSET_LEGACY_ANDROID,
+  PROGRESS_VIEW_OFFSET_LEGACY_IOS,
+} from "../../constants";
+import { getProgressViewOffset } from "../../utils/getProgressViewOffset";
 import usePortfolioViewModel from "./usePortfolioViewModel";
+
+import { Box } from "@ledgerhq/native-ui";
+import { QuickActionsCtas, TransferDrawer } from "LLM/features/QuickActions";
 
 import {
   PortfolioAllocationsSection,
@@ -28,7 +36,10 @@ type NavigationProps = BaseComposite<
 >;
 
 const RefreshableCollapsibleHeaderFlatList = globalSyncRefreshControl(CollapsibleHeaderFlatList, {
-  progressViewOffset: Platform.OS === "android" ? 64 : 0,
+  progressViewOffset:
+    Platform.OS === "android"
+      ? PROGRESS_VIEW_OFFSET_LEGACY_ANDROID
+      : PROGRESS_VIEW_OFFSET_LEGACY_IOS,
 });
 
 export const PortfolioScreen = ({ navigation }: NavigationProps) => {
@@ -36,6 +47,7 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
     hideEmptyTokenAccount,
     isAWalletCardDisplayed,
     isAccountListUIEnabled,
+    shouldDisplayQuickActionCtas,
     showAssets,
     isLNSUpsellBannerShown,
     isAddModalOpened,
@@ -46,10 +58,24 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
     handleHeightChange,
     onBackFromUpdate,
     goToAnalyticsAllocations,
+    shouldDisplayWallet40MainNav,
   } = usePortfolioViewModel(navigation);
+
+  const progressViewOffset = getProgressViewOffset(Platform.OS, shouldDisplayWallet40MainNav);
+
+  const { isDrawerOpen, handleCloseDrawer, closeDrawer, onSlideChange, slides } =
+    useWalletV4TourDrawer();
 
   const data = useMemo(() => {
     const sections: React.JSX.Element[] = [];
+
+    const heroCtasNode =
+      showAssets && shouldDisplayQuickActionCtas && shouldDisplayGraphRework ? (
+        <>
+          <QuickActionsCtas sourceScreenName={ScreenName.Portfolio} />
+          <TransferDrawer />
+        </>
+      ) : undefined;
 
     sections.push(
       <PortfolioHeaderSection
@@ -57,6 +83,7 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
         showAssets={showAssets}
         hideGraph={shouldDisplayGraphRework}
         onBackFromUpdate={onBackFromUpdate}
+        ctas={heroCtasNode}
       />,
     );
 
@@ -65,6 +92,15 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
         <PortfolioEmptySection key="empty" isLNSUpsellBannerShown={isLNSUpsellBannerShown} />,
       );
       return sections;
+    }
+
+    if (shouldDisplayQuickActionCtas && !shouldDisplayGraphRework) {
+      sections.push(
+        <Box px={6} pt={6} key="quickActions">
+          <QuickActionsCtas sourceScreenName={ScreenName.Portfolio} />
+          <TransferDrawer />
+        </Box>,
+      );
     }
 
     sections.push(
@@ -108,6 +144,7 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
     shouldDisplayGraphRework,
     onBackFromUpdate,
     isLNSUpsellBannerShown,
+    shouldDisplayQuickActionCtas,
     isAccountListUIEnabled,
     hideEmptyTokenAccount,
     openAddModal,
@@ -128,6 +165,8 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
           keyExtractor={(_: unknown, index: number) => String(index)}
           showsVerticalScrollIndicator={false}
           testID={showAssets ? "PortfolioAccountsList" : "PortfolioEmptyList"}
+          useSafeArea={!shouldDisplayWallet40MainNav}
+          overrideRefreshControlProps={{ progressViewOffset }}
         />
         <AddAccountDrawer
           isOpened={isAddModalOpened}
@@ -135,6 +174,13 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
           doesNotHaveAccount={!showAssets}
         />
       </Animated.View>
+      <WalletV4TourDrawer
+        isDrawerOpen={isDrawerOpen}
+        handleCloseDrawer={handleCloseDrawer}
+        closeDrawer={closeDrawer}
+        onSlideChange={onSlideChange}
+        slides={slides}
+      />
     </>
   );
 };

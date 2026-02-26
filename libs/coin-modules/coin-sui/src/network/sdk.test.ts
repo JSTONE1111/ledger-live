@@ -1,7 +1,15 @@
-import * as sdkOriginal from "./sdk";
-import coinConfig from "../config";
-
+import assert, { fail } from "assert";
+import { SuiClient } from "@mysten/sui/client";
+import type {
+  TransactionBlockData,
+  SuiTransactionBlockResponse,
+  SuiTransactionBlockKind,
+  PaginatedTransactionResponse,
+  SuiObjectResponse,
+} from "@mysten/sui/client";
 import { BigNumber } from "bignumber.js";
+import coinConfig from "../config";
+import * as sdkOriginal from "./sdk";
 
 // Create a mutable copy of the sdk module for mocking specific functions
 const mockLoadOperations = jest.fn<
@@ -67,14 +75,6 @@ const sdk = new Proxy(sdkOriginal, {
     return target[prop as keyof typeof target];
   },
 });
-import { SuiClient } from "@mysten/sui/client";
-import type {
-  TransactionBlockData,
-  SuiTransactionBlockResponse,
-  SuiTransactionBlockKind,
-  PaginatedTransactionResponse,
-} from "@mysten/sui/client";
-import assert, { fail } from "assert";
 
 // Mock SUI client for tests
 jest.mock("@mysten/sui/client", () => {
@@ -127,6 +127,7 @@ jest.mock("@mysten/sui/client", () => {
           status: { status: "success" },
         },
       }),
+      multiGetObjects: jest.fn().mockResolvedValue([]),
     })),
     getFullnodeUrl: jest.fn().mockReturnValue("https://mockapi.sui.io"),
   };
@@ -155,6 +156,7 @@ jest.mock("@mysten/sui/transactions", () => {
         },
         build: jest.fn().mockResolvedValue(mockTxb),
         setGasBudgetIfNotSet: jest.fn(),
+        getData: jest.fn().mockImplementation(() => ({ gasData: {}, inputs: [] })),
       };
     }),
   };
@@ -422,7 +424,6 @@ describe("SDK Functions", () => {
 
   test("getOperationDate should return correct date", () => {
     const date = sdk.getOperationDate(mockTransaction);
-    expect(date).toBeDefined();
     expect(date).toBeInstanceOf(Date);
   });
 
@@ -652,7 +653,7 @@ describe("SDK Functions", () => {
     };
 
     const tx = await sdk.createTransaction(address, transaction);
-    expect(tx).toBeDefined();
+    expect(tx).toEqual({ unsigned: { transactionBlock: expect.any(Uint8Array) } });
   });
 
   test("executeTransactionBlock should execute a transaction", async () => {
@@ -662,12 +663,10 @@ describe("SDK Functions", () => {
       options: { showEffects: true },
     });
 
-    expect(result).toHaveProperty("digest", "transaction_digest_123");
-    expect(result?.effects).toBeDefined();
-    if (result?.effects) {
-      expect(result.effects).toHaveProperty("status");
-      expect(result.effects.status).toHaveProperty("status", "success");
-    }
+    expect(result).toEqual({
+      digest: "transaction_digest_123",
+      effects: { status: { status: "success" } },
+    });
   });
 });
 
@@ -807,7 +806,7 @@ describe("Staking Operations", () => {
       };
 
       const tx = await sdk.createTransaction(address, transaction);
-      expect(tx).toBeDefined();
+      expect(tx).toEqual({ unsigned: { transactionBlock: expect.any(Uint8Array) } });
     });
 
     test("createTransaction should build undelegate transaction with specific amount", async () => {
@@ -822,7 +821,7 @@ describe("Staking Operations", () => {
       };
 
       const tx = await sdk.createTransaction(address, transaction);
-      expect(tx).toBeDefined();
+      expect(tx).toEqual({ unsigned: { transactionBlock: expect.any(Uint8Array) } });
     });
 
     test("createTransaction should build undelegate transaction with all amount", async () => {
@@ -837,7 +836,7 @@ describe("Staking Operations", () => {
       };
 
       const tx = await sdk.createTransaction(address, transaction);
-      expect(tx).toBeDefined();
+      expect(tx).toEqual({ unsigned: { transactionBlock: expect.any(Uint8Array) } });
     });
   });
 
@@ -2199,16 +2198,12 @@ describe("getCoinsForAmount", () => {
 
     test("handles no data in asc mode", () => {
       const r = sdk.dedupOperations(outs, ins, "asc");
-      expect(r).toBeDefined();
-      expect(r.operations).toBeDefined();
-      expect(r.operations.length).toBe(0);
+      expect(r).toEqual({ operations: [] });
     });
 
     test("handles no data in desc mode", () => {
       const r = sdk.dedupOperations(outs, ins, "desc");
-      expect(r).toBeDefined();
-      expect(r.operations).toBeDefined();
-      expect(r.operations.length).toBe(0);
+      expect(r).toEqual({ operations: [] });
     });
   });
 
@@ -2277,5 +2272,98 @@ describe("getCoinsForAmount", () => {
       expect(result[3].balance).toBe("100");
       expect(mockApi.getCoins).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe("withBatchedMultiGetObjects", () => {
+  const createMockClient = () => {
+    const multiGetObjects = jest.fn(
+      async (params: { ids: string[]; options?: Record<string, boolean> }) => {
+        if (params.ids.length > 50) {
+          throw new Error("Input exceeds limit of 50");
+        }
+        return params.ids.map(
+          id =>
+            ({
+              data: {
+                objectId: id,
+                version: "1",
+                digest: `digest-${id}`,
+              },
+            }) as SuiObjectResponse,
+        );
+      },
+    );
+    return { client: { multiGetObjects } as unknown as SuiClient, multiGetObjects };
+  };
+
+  it("should pass through when <= 50 objects", async () => {
+    // GIVEN
+    const { client, multiGetObjects } = createMockClient();
+    const ids = Array.from({ length: 30 }, (_, i) => `0xobj${i}`);
+
+    // WHEN
+    const batched = sdk.withBatchedMultiGetObjects(client);
+    const result = await batched.multiGetObjects({ ids, options: { showBcs: true } });
+
+    // THEN
+    expect(multiGetObjects).toHaveBeenCalledTimes(1);
+    expect(result).toHaveLength(30);
+  });
+
+  it("should batch when > 50 objects", async () => {
+    // GIVEN
+    const { client, multiGetObjects } = createMockClient();
+    const ids = Array.from({ length: 120 }, (_, i) => `0xobj${i}`);
+
+    // WHEN
+    const batched = sdk.withBatchedMultiGetObjects(client);
+    const result = await batched.multiGetObjects({ ids, options: { showBcs: true } });
+
+    // THEN
+    expect(multiGetObjects).toHaveBeenCalledTimes(3);
+    expect(multiGetObjects).toHaveBeenNthCalledWith(1, {
+      ids: ids.slice(0, 50),
+      options: { showBcs: true },
+    });
+    expect(multiGetObjects).toHaveBeenNthCalledWith(2, {
+      ids: ids.slice(50, 100),
+      options: { showBcs: true },
+    });
+    expect(multiGetObjects).toHaveBeenNthCalledWith(3, {
+      ids: ids.slice(100, 120),
+      options: { showBcs: true },
+    });
+    expect(result).toHaveLength(120);
+    expect(result[0].data?.objectId).toBe("0xobj0");
+    expect(result[119].data?.objectId).toBe("0xobj119");
+  });
+
+  it("should handle exactly 50 objects without batching", async () => {
+    // GIVEN
+    const { client, multiGetObjects } = createMockClient();
+    const ids = Array.from({ length: 50 }, (_, i) => `0xobj${i}`);
+
+    // WHEN
+    const batched = sdk.withBatchedMultiGetObjects(client);
+    const result = await batched.multiGetObjects({ ids });
+
+    // THEN
+    expect(multiGetObjects).toHaveBeenCalledTimes(1);
+    expect(result).toHaveLength(50);
+  });
+
+  it("should handle exactly 51 objects with batching", async () => {
+    // GIVEN
+    const { client, multiGetObjects } = createMockClient();
+    const ids = Array.from({ length: 51 }, (_, i) => `0xobj${i}`);
+
+    // WHEN
+    const batched = sdk.withBatchedMultiGetObjects(client);
+    const result = await batched.multiGetObjects({ ids });
+
+    // THEN
+    expect(multiGetObjects).toHaveBeenCalledTimes(2);
+    expect(result).toHaveLength(51);
   });
 });

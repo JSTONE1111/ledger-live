@@ -1,6 +1,6 @@
 import useEnv from "@ledgerhq/live-common/hooks/useEnv";
 import { LiveAppManifest } from "@ledgerhq/live-common/platform/types";
-import React, { useRef, forwardRef, useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Platform } from "react-native";
 import { useSelector, useDispatch } from "~/context/hooks";
 import { useTheme } from "styled-components/native";
@@ -23,7 +23,8 @@ import { useDeeplinkCustomHandlers } from "~/components/WebPlatformPlayer/Custom
 import { currentRouteNameRef } from "~/analytics/screenRefs";
 import SafeAreaView from "~/components/SafeAreaView";
 import { WalletAPICustomHandlers } from "@ledgerhq/live-common/wallet-api/types";
-import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
+import { useFeature, useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   manifest: LiveAppManifest;
@@ -58,13 +59,13 @@ export const WebView = forwardRef<WebviewAPI, Props>(
 
     const devMode = exportSettings.developerModeEnabled.toString();
     const lastSeenDevice = useSelector(lastSeenDeviceSelector);
-
-    const currentAccounts = useSelector(flattenAccountsSelector);
-    const stableCurrentAccounts = useRef(currentAccounts).current; // only consider accounts available upon initial WebView load
-    const swapParams = useTranslateToSwapAccount(params, stableCurrentAccounts);
+    const swapParams = useTranslateToSwapAccount(params);
     const llmModularDrawerFF = useFeature("llmModularDrawer");
 
     const isLlmModularDrawer = llmModularDrawerFF?.enabled && llmModularDrawerFF?.params?.live_app;
+
+    const { isEnabled: isLwm40Enabled } = useWalletFeaturesConfig("mobile");
+    const insets = useSafeAreaInsets();
 
     // Capture the initial source to prevent webview refreshes.
     // currentRouteNameRef.current updates when going back and forth inside the navigation stack and returning to the webview
@@ -77,7 +78,6 @@ export const WebView = forwardRef<WebviewAPI, Props>(
           manifest={manifest}
           customHandlers={customHandlers}
           onStateChange={setWebviewState}
-          allowsBackForwardNavigationGestures={false}
           inputs={{
             source: initialSource,
             swapApiBase: SWAP_API_BASE,
@@ -94,6 +94,11 @@ export const WebView = forwardRef<WebviewAPI, Props>(
             shareAnalytics,
             hasSeenAnalyticsOptInPrompt,
             isModularDrawer: isLlmModularDrawer ? "true" : "false",
+            lwm40enabled: isLwm40Enabled ? "true" : "false",
+            safeAreaTop: insets.top.toString(),
+            safeAreaBottom: insets.bottom.toString(),
+            safeAreaLeft: insets.left.toString(),
+            safeAreaRight: insets.right.toString(),
             ...swapParams,
           }}
         />

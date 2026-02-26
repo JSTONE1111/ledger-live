@@ -1,28 +1,19 @@
 import React from "react";
-import { IconButton } from "@ledgerhq/lumen-ui-react";
-import { TopBarAction } from "../types";
-import { TopBarDivider } from "./Divider";
-import Tooltip from "~/renderer/components/Tooltip";
+import { TopBarSlot } from "../types";
+import { NotificationIndicator } from "./NotificationIndicator";
+import { TopBarActionButton } from "./TopBarActionButton";
 
-export const TopBarActionsList = ({ actionsList }: { actionsList: TopBarAction[] }) => {
-  return (
-    <div className="flex items-center" data-testid="top-bar-actions-list">
-      {actionsList.map(({ label, tooltip, icon, isInteractive, onClick }, index) => (
-        <div key={index} className="flex items-center gap-12">
-          <Tooltip content={tooltip} placement="bottom">
-            <IconButton
-              appearance="gray"
-              size="sm"
-              icon={icon}
-              aria-label={label}
-              onClick={onClick}
-              disabled={!isInteractive}
-              data-testid={`topbar-action-button-${label.replace(/\s+/g, "-").toLowerCase()}`}
-            />
-          </Tooltip>
-          <TopBarDivider />
-        </div>
-      ))}
-    </div>
-  );
+type TopBarActionsListProps = {
+  slots: TopBarSlot[];
 };
+
+export const TopBarActionsList = ({ slots }: TopBarActionsListProps) => (
+  <div className="flex items-center gap-12" data-testid="top-bar-actions-list">
+    {slots.map(slot => {
+      if (slot.type === "notification") {
+        return <NotificationIndicator key="notification" />;
+      }
+      return <TopBarActionButton key={slot.action.label} {...slot.action} />;
+    })}
+  </div>
+);

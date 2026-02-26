@@ -13,6 +13,7 @@ setWalletAPIVersion(WALLET_API_VERSION);
 setSupportedCurrencies([
   "aptos",
   "aptos_testnet",
+  "adi",
   "bitcoin",
   "ethereum",
   "bsc",
@@ -45,7 +46,6 @@ setSupportedCurrencies([
   "bitcoin_testnet",
   "bitcoin_regtest",
   "ethereum_sepolia",
-  "ethereum_holesky",
   "ethereum_hoodi",
   "crypto_org",
   "crypto_org_croeseid",
@@ -84,7 +84,6 @@ setSupportedCurrencies([
   "umee",
   "desmos",
   "dydx",
-  "onomy",
   "persistence",
   "quicksilver",
   "vechain",

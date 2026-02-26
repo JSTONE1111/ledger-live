@@ -17,10 +17,8 @@ import { setSelectedTabPortfolioAssets } from "~/actions/settings";
 import Assets from "./Assets";
 import PortfolioQuickActionsBar from "./PortfolioQuickActionsBar";
 import MarketBanner from "LLM/features/MarketBanner";
-import { QuickActionsCtas, TransferDrawer } from "LLM/features/QuickActions";
 import { useFeature, useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
-import useListsAnimation, { type TabListType } from "./useListsAnimation";
-import TabSection, { TAB_OPTIONS } from "./TabSection";
+import TabSection, { TAB_OPTIONS, type TabListType } from "./TabSection";
 import { flattenAccountsSelector } from "~/reducers/accounts";
 import { MarketBanner as MarketBannerFeature } from "@features/market-banner";
 import { PortfolioPerpsEntryPoint } from "LLM/features/Portfolio/components";
@@ -74,26 +72,19 @@ const PortfolioAssets = ({ hideEmptyTokenAccount, openAddModal }: Props) => {
   const blacklistedTokenIds = useSelector(blacklistedTokenIdsSelector);
   const blacklistedTokenIdsSet = useMemo(() => new Set(blacklistedTokenIds), [blacklistedTokenIds]);
 
-  const assetsToDisplay = useMemo(
+  const filteredAssets = useMemo(
     () =>
-      distribution.list
-        .filter(asset => {
-          return (
-            asset.currency.type !== "TokenCurrency" ||
-            !blacklistedTokenIdsSet.has(asset.currency.id)
-          );
-        })
-        .slice(0, maxItemsToDisplay),
+      distribution.list.filter(
+        ({ currency }) =>
+          currency.type !== "TokenCurrency" || !blacklistedTokenIdsSet.has(currency.id),
+      ),
     [distribution, blacklistedTokenIdsSet],
   );
 
-  const {
-    handleButtonLayout,
-    handleAccountsContentSizeChange,
-    handleAssetsContentSizeChange,
-    assetsFullHeight,
-    accountsFullHeight,
-  } = useListsAnimation(selectedTab);
+  const assetsToDisplay = useMemo(
+    () => filteredAssets.slice(0, maxItemsToDisplay),
+    [filteredAssets],
+  );
 
   const showAssets = selectedTab === TAB_OPTIONS.Assets;
 
@@ -134,12 +125,10 @@ const PortfolioAssets = ({ hideEmptyTokenAccount, openAddModal }: Props) => {
   );
 
   const {
-    shouldDisplayMarketBanner,
+    isEnabled: isWallet40Enabled,
     shouldDisplayQuickActionCtas,
-    isEnabled: isLwmWallet40Enabled,
+    shouldDisplayMarketBanner,
   } = useWalletFeaturesConfig("mobile");
-
-  const isLwmWallet40Disabled = !isLwmWallet40Enabled;
 
   return (
     <>
@@ -149,24 +138,17 @@ const PortfolioAssets = ({ hideEmptyTokenAccount, openAddModal }: Props) => {
         discreet={discreetMode}
       />
 
-      {shouldDisplayQuickActionCtas ? (
+      {!shouldDisplayQuickActionCtas && (
         <Box my={24}>
-          <QuickActionsCtas sourceScreenName={ScreenName.Portfolio} />
-          <TransferDrawer />
+          <PortfolioQuickActionsBar />
         </Box>
-      ) : (
-        isLwmWallet40Disabled && (
-          <Box my={24}>
-            <PortfolioQuickActionsBar />
-          </Box>
-        )
       )}
 
-      <Box>
-        <PortfolioPerpsEntryPoint />
-      </Box>
+      {!isWallet40Enabled && <PortfolioPerpsEntryPoint />}
 
       <MarketBanner />
+
+      {isWallet40Enabled && <PortfolioPerpsEntryPoint />}
 
       {shouldDisplayMarketBanner && __DEV__ && (
         <Box my={24}>
@@ -177,16 +159,11 @@ const PortfolioAssets = ({ hideEmptyTokenAccount, openAddModal }: Props) => {
       {isAccountListUIEnabled ? (
         <TabSection
           handleToggle={handleToggle}
-          handleButtonLayout={handleButtonLayout}
-          handleAssetsContentSizeChange={handleAssetsContentSizeChange}
-          handleAccountsContentSizeChange={handleAccountsContentSizeChange}
           onPressButton={onPressButton}
           initialTab={initialSelectedTab}
           showAssets={showAssets}
-          assetsLength={assetsToDisplay.length}
+          assetsLength={filteredAssets.length}
           accountsLength={allAccounts.length}
-          assetsFullHeight={assetsFullHeight}
-          accountsFullHeight={accountsFullHeight}
           maxItemsToDisplay={maxItemsToDisplay}
         />
       ) : (
