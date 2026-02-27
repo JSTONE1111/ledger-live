@@ -308,6 +308,7 @@
     "exchange": "Buy / Sell",
     "swap": "Swap",
     "perps": "Perpetuals",
+    "home": "Home",
     "refer": "Refer a friend",
     "lend": "Lend",
     "catalog": "Discover",
@@ -7556,7 +7557,8 @@
     },
     "selectAccount": {
       "title": "choose account",
-      "addAccount": "Add new or existing account"
+      "addAccount": "Add new or existing account",
+      "perpetualsBanner": "Currently only supported with USDC on Arbitrum chain."
     }
   },
   "customImage": {
@@ -8042,6 +8044,18 @@
     "sell": "Sell",
     "connect": "Connect",
     "buyALedger": "Buy a Ledger"
+  },
+  "assets": {
+    "cryptos": "Cryptos",
+    "stablecoins": "Stablecoins",
+    "columns": {
+      "name": "Name",
+      "price": "Price",
+      "balance": "Balance",
+      "value": "Value",
+      "trend": "1D Trend",
+      "trendTooltip": "24h balance change"
+    }
   },
   "nftEntryPoint": {
     "title": "NFT (Non Fungible Tokens)",
