@@ -5,15 +5,16 @@ import {
 } from "@ledgerhq/types-live";
 import { Icons } from "@ledgerhq/native-ui";
 import { NavigatorName, ScreenName } from "~/const";
+import { getStoreValue } from "~/store";
+import { LedgerRecoverSubscriptionStateEnum } from "~/types/recoverSubscriptionState";
 
 export const assetsTransferAction: PostOnboardingAction = {
   id: PostOnboardingActionId.assetsTransfer,
   disabled: false,
-  featureFlagId: "postOnboardingAssetsTransfer",
   Icon: Icons.Lock,
-  title: "postOnboarding.actions.assetsTransfer.title",
+  title: "postOnboarding.drawer.actions.assetsTransfer.title",
   titleCompleted: "postOnboarding.actions.assetsTransfer.titleCompleted",
-  description: "postOnboarding.actions.assetsTransfer.description",
+  description: "postOnboarding.drawer.actions.assetsTransfer.description",
   buttonLabelForAnalyticsEvent: "Secure your assets on Ledger",
   getNavigationParams: () => [undefined],
   getIsAlreadyCompletedByState: ({ accounts }) => {
@@ -44,9 +45,9 @@ export const buyCryptoAction: PostOnboardingAction = {
 export const customImageAction: PostOnboardingAction = {
   id: PostOnboardingActionId.customImage,
   Icon: Icons.PictureImage,
-  title: "postOnboarding.actions.customImage.title",
+  title: "postOnboarding.drawer.actions.customImage.title",
   titleCompleted: "postOnboarding.actions.customImage.titleCompleted",
-  description: "postOnboarding.actions.customImage.description",
+  description: "postOnboarding.drawer.actions.customImage.description",
   actionCompletedPopupLabel: "postOnboarding.actions.customImage.titleCompleted",
   buttonLabelForAnalyticsEvent: "Set lock screen picture",
   getNavigationParams: ({ deviceModelId, referral }) => [
@@ -67,9 +68,9 @@ export const syncAccountsAction: PostOnboardingAction = {
   featureFlagId: "llmLedgerSyncEntryPoints",
   featureFlagParamId: "postOnboarding",
   Icon: Icons.Refresh,
-  title: "postOnboarding.actions.syncAccounts.title",
+  title: "postOnboarding.drawer.actions.syncAccounts.title",
   titleCompleted: "postOnboarding.actions.syncAccounts.titleCompleted",
-  description: "postOnboarding.actions.syncAccounts.description",
+  description: "postOnboarding.drawer.actions.syncAccounts.description",
   actionCompletedPopupLabel: "postOnboarding.actions.syncAccounts.popupLabel",
   buttonLabelForAnalyticsEvent: "Sync accounts",
   getIsAlreadyCompletedByState: ({ isLedgerSyncActive }) => {
@@ -78,4 +79,34 @@ export const syncAccountsAction: PostOnboardingAction = {
   startAction: ({ openActivationDrawer }: StartActionArgs) => {
     openActivationDrawer?.();
   },
+};
+
+export const recoverAction: PostOnboardingAction = {
+  id: PostOnboardingActionId.recover,
+  Icon: Icons.ShieldCheck,
+  title: "postOnboarding.drawer.actions.recover.title",
+  titleCompleted: "postOnboarding.actions.recover.titleCompleted",
+  description: "postOnboarding.drawer.actions.recover.description",
+  buttonLabelForAnalyticsEvent: "Subscribe to Ledger Recover",
+  actionCompletedPopupLabel: "postOnboarding.actions.recover.popupLabel",
+  getIsAlreadyCompleted: async ({ protectId }) => {
+    try {
+      const recoverSubscriptionState = await getStoreValue("SUBSCRIPTION_STATE", protectId);
+
+      return recoverSubscriptionState === LedgerRecoverSubscriptionStateEnum.BACKUP_DONE;
+    } catch {
+      return false;
+    }
+  },
+  getNavigationParams: ({ protectId }) => [
+    NavigatorName.Base,
+    {
+      screen: ScreenName.Recover,
+      params: {
+        platform: protectId,
+        redirectTo: "upsell",
+        source: "llm-postonboarding-hub",
+      },
+    },
+  ],
 };

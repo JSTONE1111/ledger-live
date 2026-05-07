@@ -64,20 +64,27 @@ jobs:
         uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
         id: setup-caches
         with:
-          install-proto: true
+          use-mise: true
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
           skip-turbo-cache: "false"
+          cache-develop-role-arn: ${{ secrets.AWS_CACHE_OIDC_ROLE_ARN_DEVELOP }}
+          cache-branch-role-arn: ${{ secrets.AWS_CACHE_OIDC_ROLE_ARN_BRANCH }}
+          nx-key: ${{ secrets.NX_KEY }}
           accountId: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
           roleName: ${{ secrets.AWS_CACHE_ROLE_NAME }}
           region: ${{ secrets.AWS_CACHE_REGION }}
           turbo-server-token: ${{ secrets.TURBOREPO_SERVER_TOKEN }}
-      - name: Install node-gyp globally
-        if: runner.os == 'Windows'
-        run: |
-          pnpm add -g node-gyp@3.8.0
+
       - name: Install dependencies
-        run: pnpm i --filter="live-common..." --filter="ledger-live"
+        run: pnpm i --filter="live-common..." --filter="ledger-live" --filter="@ledgerhq/ledger-wallet-framework"
+
       - name: Build
-        run: pnpm build:llc --api="http://127.0.0.1:${{ steps.setup-caches.outputs.port }}" --token="${{ secrets.TURBOREPO_SERVER_TOKEN }}" --team="foo"
+        env:
+          TURBO_API: "http://127.0.0.1:${{ steps.setup-caches.outputs.port }}"
+          TURBO_TOKEN: ${{ secrets.TURBOREPO_SERVER_TOKEN }}
+          TURBO_TEAM: "foo"
+        run: pnpm exec nx run @ledgerhq/live-common:build
+
       - name: Test
         shell: bash
         env:
@@ -88,6 +95,10 @@ jobs:
             echo "families/$COIN" | xargs pnpm common ci-test-integration
             git diff --exit-code libs/ledger-live-common/src
           done
+      - name: Test Ledger Wallet framework
+        shell: bash
+        if: ${{ contains(needs.is-affected.outputs.paths, 'ledger-wallet-framework/') }}
+        run: pnpm --filter @ledgerhq/ledger-wallet-framework test-integ
       - name: (On Failure) Upload live-common snapshots and source
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: failure()

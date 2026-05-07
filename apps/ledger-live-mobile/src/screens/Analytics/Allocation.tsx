@@ -2,9 +2,10 @@ import React, { useCallback, memo } from "react";
 import { FlatList } from "react-native";
 import styled, { useTheme } from "styled-components/native";
 import { Flex, Text } from "@ledgerhq/native-ui";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 import { useTranslation } from "~/context/Locale";
 import RingChart from "./RingChart";
-import { useDistribution } from "~/actions/general";
+import { useNonBlacklistedDistribution } from "~/hooks/useNonBlacklistedDistribution";
 import DistributionCard, { DistributionItem } from "./DistributionCard";
 import { TrackScreen } from "~/analytics";
 import { withDiscreetMode } from "~/context/DiscreetModeContext";
@@ -34,7 +35,11 @@ const AssetWrapperContainer = styled(Flex).attrs({
 const size = normalize(200);
 
 function Allocation() {
-  const distribution = useDistribution({ showEmptyAccounts: true });
+  const { shouldDisplayAggregatedAssets } = useWalletFeaturesConfig("mobile");
+  const list = useNonBlacklistedDistribution({
+    showEmptyAccounts: true,
+    groupBy: shouldDisplayAggregatedAssets ? "asset" : undefined,
+  });
   const { colors } = useTheme();
   const { t } = useTranslation();
 
@@ -47,19 +52,19 @@ function Allocation() {
     <Container isFlex edges={["bottom"]}>
       <Flex px={6}>
         <Flex>
-          <RingChart size={size} data={distribution.list} colors={colors} />
+          <RingChart size={size} data={list} colors={colors} />
         </Flex>
         <AssetWrapperContainer pointerEvents="none">
           <Text variant="h1" fontWeight="medium" color="neutral.c100">
-            {distribution.list.length}
+            {list.length}
           </Text>
           <Text variant="body" fontWeight="medium" color="neutral.c80">
-            {t("distribution.assets", { count: distribution.list.length })}
+            {t("distribution.assets", { count: list.length })}
           </Text>
         </AssetWrapperContainer>
       </Flex>
       <FlatList
-        data={distribution.list}
+        data={list}
         renderItem={renderItem}
         keyExtractor={item => item.currency.id}
         style={{ width: "100%" }}

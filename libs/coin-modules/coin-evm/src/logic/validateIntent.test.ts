@@ -2,7 +2,7 @@ import {
   BufferTxData,
   MemoNotSupported,
   TransactionIntent,
-} from "@ledgerhq/coin-framework/api/types";
+} from "@ledgerhq/coin-module-framework/api/types";
 import {
   AmountRequired,
   ETHAddressNonEIP,
@@ -17,6 +17,8 @@ import {
   PriorityFeeTooHigh,
   PriorityFeeTooLow,
   RecipientRequired,
+  RedelegateDstValAddressRequired,
+  ValAddressRequired,
 } from "@ledgerhq/errors";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { Operation } from "@ledgerhq/types-live";
@@ -24,8 +26,22 @@ import BigNumber from "bignumber.js";
 import { EvmCoinConfig, setCoinConfig } from "../config";
 import ledgerExplorer from "../network/explorer/ledger";
 import ledgerGasTracker from "../network/gasTracker/ledger";
-import ledgerNode from "../network/node/ledger";
+import { getNodeApi } from "../network/node";
+import { mockNodeApi } from "../network/node/node.fixtures";
+import * as computeGasLimitModule from "./computeGasLimit";
 import { validateIntent } from "./validateIntent";
+
+jest.mock("./computeGasLimit", () => ({
+  ...jest.requireActual("./computeGasLimit"),
+  computeEIP7623GasLimit: jest.fn().mockReturnValue(0n),
+}));
+
+jest.mock("../network/node", () => ({
+  ...jest.requireActual("../network/node"),
+  getNodeApi: jest.fn(),
+}));
+
+const mockGetNodeApi = jest.mocked(getNodeApi);
 
 function legacyIntent(
   intent: Omit<Partial<TransactionIntent>, "type">,
@@ -57,21 +73,47 @@ function eip1559Intent(
   };
 }
 
+function stakingIntent(
+  intent: Partial<
+    TransactionIntent<MemoNotSupported, BufferTxData> & {
+      mode: "delegate" | "redelegate" | "undelegate";
+      valAddress?: string;
+      dstValAddress?: string;
+    }
+  >,
+): TransactionIntent<MemoNotSupported, BufferTxData> {
+  return {
+    type: "send-legacy",
+    intentType: "staking",
+    sender: "0xsender",
+    recipient: "0xe2ca7390e76c5A992749bB622087310d2e63ca29",
+    amount: 1n,
+    asset: { type: "native" },
+    mode: "delegate",
+    valAddress: "seivaloper1y82m5y3wevjneamzg0pmx87dzanyxzht0kepvn",
+    data: { type: "buffer", value: Buffer.from([]) },
+    ...intent,
+  } as TransactionIntent<MemoNotSupported, BufferTxData>;
+}
+
 describe("validateIntent", () => {
+  const nodeApiMock = mockNodeApi();
+
   beforeEach(() => {
     setCoinConfig(
       () =>
         ({
           info: {
-            node: { type: "ledger" },
+            node: { type: "ledger", explorerId: "eth" },
             explorer: { type: "ledger" },
             gasTracker: { type: "ledger", explorerId: "eth" },
           },
         }) as unknown as EvmCoinConfig,
     );
 
-    jest.spyOn(ledgerNode, "getGasEstimation").mockResolvedValue(new BigNumber(0));
-    jest.spyOn(ledgerNode, "getFeeData").mockResolvedValue({
+    mockGetNodeApi.mockReturnValue(nodeApiMock);
+    nodeApiMock.getGasEstimation.mockResolvedValue(new BigNumber(0));
+    nodeApiMock.getFeeData.mockResolvedValue({
       maxFeePerGas: null,
       maxPriorityFeePerGas: null,
       gasPrice: null,
@@ -82,6 +124,7 @@ describe("validateIntent", () => {
       lastInternalOperations: [],
       lastNftOperations: [],
       lastTokenOperations: [],
+      nextPagingToken: "",
     });
     jest.spyOn(ledgerGasTracker, "getGasOptions").mockResolvedValue({
       slow: {
@@ -103,10 +146,12 @@ describe("validateIntent", () => {
         nextBaseFee: null,
       },
     });
-    jest.spyOn(ledgerNode, "getTransactionCount").mockResolvedValue(30);
+    nodeApiMock.getTransactionCount.mockResolvedValue(30);
   });
+
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.clearAllMocks();
   });
 
   describe("fee ratio", () => {
@@ -122,7 +167,10 @@ describe("validateIntent", () => {
     ])("%s with too high fees on a %s asset", async (_s, assetType, expectedWarnings) => {
       const res = await validateIntent(
         {} as CryptoCurrency,
-        eip1559Intent({ amount: 1n, asset: { type: assetType } }),
+        eip1559Intent({
+          amount: 1n,
+          asset: { type: assetType },
+        }),
         [{ value: 50n, asset: { type: "native" } }],
         {
           value: 2n,
@@ -238,7 +286,7 @@ describe("validateIntent", () => {
     });
 
     it("detects an intent for token asset sending without amount with an error", async () => {
-      jest.spyOn(ledgerNode, "getTransactionCount").mockResolvedValue(10);
+      nodeApiMock.getTransactionCount.mockResolvedValue(10);
 
       const res = await validateIntent(
         {} as CryptoCurrency,
@@ -275,7 +323,7 @@ describe("validateIntent", () => {
     });
 
     it("detects token asset sending intent with an error", async () => {
-      jest.spyOn(ledgerNode, "getTransactionCount").mockResolvedValue(10);
+      nodeApiMock.getTransactionCount.mockResolvedValue(10);
       jest.spyOn(ledgerExplorer, "getOperations").mockResolvedValue({
         lastCoinOperations: [],
         lastInternalOperations: [],
@@ -283,6 +331,7 @@ describe("validateIntent", () => {
         lastTokenOperations: [
           { contract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" } as Operation,
         ],
+        nextPagingToken: "",
       });
 
       const res = await validateIntent(
@@ -305,6 +354,192 @@ describe("validateIntent", () => {
       expect(res.errors).toEqual(
         expect.objectContaining({
           amount: new NotEnoughBalance(),
+        }),
+      );
+    });
+
+    it("detects NotEnoughBalance when spending would dip into locked funds", async () => {
+      const res = await validateIntent(
+        {} as CryptoCurrency,
+        eip1559Intent({
+          recipient: "0xe2ca7390e76c5A992749bB622087310d2e63ca29",
+          amount: 60n,
+          asset: { type: "native" },
+        }),
+        [{ value: 100n, locked: 50n, asset: { type: "native" } }],
+        {
+          value: 5n,
+          parameters: { gasLimit: 1n, maxFeePerGas: 5n, maxPriorityFeePerGas: 1n },
+        },
+      );
+
+      expect(res.errors).toEqual(
+        expect.objectContaining({
+          amount: new NotEnoughBalance(),
+        }),
+      );
+    });
+
+    it("computes useAllAmount on a locked native balance as value - locked - fees", async () => {
+      jest.spyOn(ledgerExplorer, "getOperations").mockResolvedValue({
+        lastCoinOperations: [],
+        lastInternalOperations: [],
+        lastNftOperations: [],
+        lastTokenOperations: [],
+        nextPagingToken: "",
+      });
+
+      const res = await validateIntent(
+        {} as CryptoCurrency,
+        legacyIntent({
+          recipient: "0xe2ca7390e76c5A992749bB622087310d2e63ca29",
+          useAllAmount: true,
+          asset: { type: "native" },
+        }),
+        [{ value: 20000000n, locked: 8000000n, asset: { type: "native" } }],
+        {
+          value: 105000n,
+          parameters: { gasLimit: 21000n, gasPrice: 5n },
+        },
+      );
+
+      expect(res.errors).toEqual({});
+      expect(res.amount).toBe(20000000n - 8000000n - 105000n);
+      expect(res.totalSpent).toBe(20000000n - 8000000n);
+    });
+  });
+
+  describe("staking", () => {
+    const stakingCurrency = {
+      name: "Ethereum",
+      ticker: "ETH",
+      units: [{ code: "ETH", name: "ETH", magnitude: 18 }],
+    } as CryptoCurrency;
+
+    it("detects missing validator address for delegate with an error", async () => {
+      const intent = stakingIntent({ mode: "delegate" }) as Record<string, unknown>;
+      delete intent.valAddress;
+
+      const res = await validateIntent(
+        stakingCurrency,
+        intent as TransactionIntent<MemoNotSupported, BufferTxData>,
+        [{ value: 50n, asset: { type: "native" } }],
+        {
+          value: 10n,
+          parameters: { gasLimit: 10n, gasPrice: 1n },
+        },
+      );
+
+      expect(res.errors).toEqual(
+        expect.objectContaining({
+          valAddress: new ValAddressRequired(),
+        }),
+      );
+    });
+
+    it("detects missing destination validator address for redelegate with an error", async () => {
+      const intent = stakingIntent({
+        mode: "redelegate",
+        valAddress: "seivaloper1y82m5y3wevjneamzg0pmx87dzanyxzht0kepvn",
+      }) as Record<string, unknown>;
+      delete intent.dstValAddress;
+
+      const res = await validateIntent(
+        stakingCurrency,
+        intent as TransactionIntent<MemoNotSupported, BufferTxData>,
+        [{ value: 50n, asset: { type: "native" } }],
+        {
+          value: 10n,
+          parameters: { gasLimit: 10n, gasPrice: 1n },
+        },
+      );
+
+      expect(res.errors).toEqual(
+        expect.objectContaining({
+          dstValAddress: new RedelegateDstValAddressRequired(),
+        }),
+      );
+    });
+
+    it("detects delegate total spent greater than spendable balance with an error", async () => {
+      const res = await validateIntent(
+        stakingCurrency,
+        stakingIntent({
+          mode: "delegate",
+          amount: 45n,
+          valAddress: "seivaloper1y82m5y3wevjneamzg0pmx87dzanyxzht0kepvn",
+        }),
+        [{ value: 50n, asset: { type: "native" } }],
+        {
+          value: 10n,
+          parameters: { gasLimit: 10n, gasPrice: 1n },
+        },
+      );
+
+      expect(res.errors).toEqual(
+        expect.objectContaining({
+          amount: new NotEnoughBalance(),
+        }),
+      );
+    });
+
+    it("allows undelegate when amount exceeds spendable but fees fit in spendable balance", async () => {
+      const res = await validateIntent(
+        stakingCurrency,
+        stakingIntent({
+          mode: "undelegate",
+          amount: 100n,
+          valAddress: "seivaloper1y82m5y3wevjneamzg0pmx87dzanyxzht0kepvn",
+        }),
+        [{ value: 50n, asset: { type: "native" } }],
+        {
+          value: 10n,
+          parameters: { gasLimit: 10n, gasPrice: 1n },
+        },
+      );
+
+      expect(res.errors.amount).toBeUndefined();
+      expect(res.errors.fees).toBeUndefined();
+    });
+
+    it("allows redelegate when amount exceeds spendable but fees fit in spendable balance", async () => {
+      const res = await validateIntent(
+        stakingCurrency,
+        stakingIntent({
+          mode: "redelegate",
+          amount: 100n,
+          valAddress: "seivaloper1y82m5y3wevjneamzg0pmx87dzanyxzht0kepvn",
+          dstValAddress: "seivaloper1f4cqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",
+        }),
+        [{ value: 50n, asset: { type: "native" } }],
+        {
+          value: 10n,
+          parameters: { gasLimit: 10n, gasPrice: 1n },
+        },
+      );
+
+      expect(res.errors.amount).toBeUndefined();
+      expect(res.errors.fees).toBeUndefined();
+    });
+
+    it("detects staking fees greater than native balance with an error", async () => {
+      const res = await validateIntent(
+        stakingCurrency,
+        stakingIntent({
+          mode: "delegate",
+          amount: 1n,
+          valAddress: "seivaloper1y82m5y3wevjneamzg0pmx87dzanyxzht0kepvn",
+        }),
+        [{ value: 50n, asset: { type: "native" } }],
+        {
+          value: 100n,
+          parameters: { gasLimit: 21000n, gasPrice: 1n },
+        },
+      );
+
+      expect(res.errors).toEqual(
+        expect.objectContaining({
+          fees: new NotEnoughBalance(),
         }),
       );
     });
@@ -446,6 +681,32 @@ describe("validateIntent", () => {
           );
         });
 
+        it("includes additionalFees (L2 L1-data fee) when deciding NotEnoughGas", async () => {
+          // gas fee alone fits in the available balance, but the additionalFees
+          // (e.g. L1 data fee on L2s) push the total above the native balance.
+          const res = await validateIntent(
+            { units: [{ code: "ETH", name: "ETH", magnitude: 18 }] } as CryptoCurrency,
+            createIntent({ recipient: "recipient-address" }),
+            [{ value: 10n, asset: { type: "native" } }],
+            {
+              value: 9n,
+              parameters: {
+                gasLimit: 9n,
+                gasPrice: 1n,
+                maxFeePerGas: 1n,
+                maxPriorityFeePerGas: 1n,
+                additionalFees: 5n,
+              },
+            },
+          );
+
+          expect(res.errors).toEqual(
+            expect.objectContaining({
+              gasPrice: new NotEnoughGas(),
+            }),
+          );
+        });
+
         it("if the recipient has not been set, does not detect gas being too high", async () => {
           const notEnoughBalanceRes = await validateIntent(
             { units: [{ code: "ETH", name: "ETH", magnitude: 18 }] } as CryptoCurrency,
@@ -479,13 +740,18 @@ describe("validateIntent", () => {
         });
 
         it("detects gas limit being too low in a tx with an error", async () => {
+          const eip7623GasLimit = 21000n;
+          (computeGasLimitModule.computeEIP7623GasLimit as jest.Mock).mockReturnValue(
+            eip7623GasLimit,
+          );
+
           const res = await validateIntent(
             {} as CryptoCurrency,
             createIntent({}),
             [{ value: 50n, asset: { type: "native" } }],
             {
               value: 0n,
-              parameters: { gasLimit: 20000n }, // min should be 21000
+              parameters: { gasLimit: eip7623GasLimit - 1n }, // min should be 21000
             },
           );
 
@@ -494,16 +760,23 @@ describe("validateIntent", () => {
               gasLimit: new GasLessThanEstimate(),
             }),
           );
+
+          expect(computeGasLimitModule.computeEIP7623GasLimit).toHaveBeenCalledTimes(1);
         });
 
         it("detects custom gas limit being too low in a tx with an error", async () => {
+          const eip7623GasLimit = 21000n;
+          (computeGasLimitModule.computeEIP7623GasLimit as jest.Mock).mockReturnValue(
+            eip7623GasLimit,
+          );
+
           const res = await validateIntent(
             {} as CryptoCurrency,
             createIntent({}),
             [{ value: 50n, asset: { type: "native" } }],
             {
               value: 0n,
-              parameters: { customGasLimit: 20000n }, // min should be 21000
+              parameters: { customGasLimit: eip7623GasLimit - 1n },
             },
           );
 
@@ -512,6 +785,8 @@ describe("validateIntent", () => {
               gasLimit: new GasLessThanEstimate(),
             }),
           );
+
+          expect(computeGasLimitModule.computeEIP7623GasLimit).toHaveBeenCalledTimes(1);
         });
 
         it("detects customGasLimit being lower than gasLimit with a warning", async () => {
@@ -765,6 +1040,7 @@ describe("validateIntent", () => {
           lastInternalOperations: [],
           lastNftOperations: [],
           lastTokenOperations: [{ contract: "contract-address" } as Operation],
+          nextPagingToken: "",
         });
 
         const res = await validateIntent(
@@ -800,6 +1076,7 @@ describe("validateIntent", () => {
           lastInternalOperations: [],
           lastNftOperations: [],
           lastTokenOperations: [{ contract: "contract-address" } as Operation],
+          nextPagingToken: "",
         });
         jest.spyOn(ledgerGasTracker, "getGasOptions").mockResolvedValue({
           slow: {
@@ -860,6 +1137,7 @@ describe("validateIntent", () => {
           lastInternalOperations: [],
           lastNftOperations: [],
           lastTokenOperations: [{ contract: "contract-address" } as Operation],
+          nextPagingToken: "",
         });
         const getGasOptions = jest.spyOn(ledgerGasTracker, "getGasOptions").mockResolvedValue({
           slow: {

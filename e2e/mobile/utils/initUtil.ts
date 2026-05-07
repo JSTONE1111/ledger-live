@@ -1,8 +1,8 @@
-import { findFreePort, loadConfig, setFeatureFlags } from "../bridge/server";
+import { loadConfig, setFeatureFlags } from "../bridge/server";
 import { isObservable, lastValueFrom, Observable } from "rxjs";
 import { log } from "detox";
 import { SpeculosAppType } from "@ledgerhq/live-common/e2e/enum/AppInfos";
-import { isRemoteIos } from "../helpers/commonHelpers";
+import { isSpeculosRemote, isWallet40 } from "../helpers/commonHelpers";
 import {
   deleteSpeculos,
   launchSpeculos,
@@ -11,7 +11,7 @@ import {
   removeSpeculosAndDeregisterKnownSpeculos,
 } from "./speculosUtils";
 import { waitForSpeculosReady } from "@ledgerhq/live-common/e2e/speculosCI";
-import { SettingsSetOverriddenFeatureFlagsPlayload } from "~/actions/types";
+import type { PartialFeatures } from "@shared/feature-flags";
 import { sanitizeError } from "@ledgerhq/live-common/e2e/index";
 
 function checkTestFailed(): void {
@@ -34,13 +34,12 @@ export type InitOptions = {
   }[];
   userdata?: string;
   testedCurrencies?: string[];
-  featureFlags?: SettingsSetOverriddenFeatureFlagsPlayload;
+  featureFlags?: PartialFeatures;
 };
 
 type Entry = {
   name: string;
   speculosPort: number;
-  proxyPort: number;
   deviceId: string;
 };
 
@@ -72,13 +71,11 @@ async function launchSpeculosDevices(toStart: SpeculosAppType[]): Promise<Record
   const entries: Entry[] = await Promise.all(
     toStart.map(async app => {
       checkTestFailed();
-      const proxyPort = await findFreePort();
       const device = await launchSpeculos(app.name);
 
       return {
         name: app.name,
         speculosPort: device.port,
-        proxyPort,
         deviceId: device.id,
       };
     }),
@@ -95,6 +92,7 @@ async function executeCliCommandsOnApp(
   commandsByApp: Array<{ app: SpeculosAppType; cmds: CliCommand[] }>,
   entryMap: Record<string, Entry>,
   userdataPath: string,
+  mainApp?: SpeculosAppType,
 ): Promise<void> {
   for (const { app, cmds } of commandsByApp) {
     const entry = entryMap[app.name];
@@ -111,14 +109,14 @@ async function executeCliCommandsOnApp(
       attempt++;
 
       try {
-        const { speculosPort, proxyPort, deviceId } = entry;
+        const { speculosPort, deviceId } = entry;
 
         log.info(
           `\n🔄 [${app.name}] Attempt ${attempt}/${maxRetries} - Running ${cmds.length} command(s)`,
         );
 
-        if (isRemoteIos()) await waitForSpeculosReady(entry.deviceId);
-        await registerSpeculos(speculosPort, proxyPort);
+        if (isSpeculosRemote()) await waitForSpeculosReady(entry.deviceId);
+        await registerSpeculos(speculosPort);
 
         for (let i = 0; i < cmds.length; i++) {
           log.info(`  📝 [${app.name}] Executing command ${i + 1}/${cmds.length}`);
@@ -143,7 +141,6 @@ async function executeCliCommandsOnApp(
           entryMap[app.name] = {
             name: app.name,
             speculosPort: device.port,
-            proxyPort: entry.proxyPort,
             deviceId: device.id,
           };
         }
@@ -156,7 +153,9 @@ async function executeCliCommandsOnApp(
       );
     }
 
-    await deleteSpeculos(entry.deviceId);
+    if (mainApp?.name !== app.name) {
+      await deleteSpeculos(entry.deviceId);
+    }
   }
 }
 
@@ -181,9 +180,9 @@ async function setupMainSpeculosApp(
     try {
       log.info(`\n🔄 [${speculosApp.name}] Main setup attempt ${attempt}/${maxRetries}`);
 
-      if (isRemoteIos()) await waitForSpeculosReady(main.deviceId);
-      await registerSpeculos(main.speculosPort, main.proxyPort);
-      await registerKnownSpeculos(main.proxyPort);
+      if (isSpeculosRemote()) await waitForSpeculosReady(main.deviceId);
+      await registerSpeculos(main.speculosPort);
+      await registerKnownSpeculos(main.speculosPort);
       log.info(
         `✅ [${speculosApp.name}] Main Speculos registered successfully on port ${main.speculosPort}`,
       );
@@ -203,7 +202,6 @@ async function setupMainSpeculosApp(
         entryMap[speculosApp.name] = {
           name: main.name,
           speculosPort: device.port,
-          proxyPort: main.proxyPort,
           deviceId: device.id,
         };
       }
@@ -254,7 +252,6 @@ async function executeCliCommands(
         entryMap[speculosApp.name] = {
           name: speculosApp.name,
           speculosPort: device.port,
-          proxyPort: main.proxyPort,
           deviceId: device.id,
         };
         await setupMainSpeculosApp(speculosApp, entryMap);
@@ -294,11 +291,18 @@ export class InitializationManager {
     const commandsByApp = Array.from(commandsByAppMap.values());
 
     // Setup all required Speculos devices in parallel
-    const appsToLaunch = commandsByApp.map(x => x.app).concat(speculosApp ? [speculosApp] : []);
+    const appsToLaunch = [
+      ...new Map(
+        commandsByApp
+          .map(x => x.app)
+          .concat(speculosApp ? [speculosApp] : [])
+          .map(app => [app.name, app]),
+      ).values(),
+    ];
     const speculosDevices = await launchSpeculosDevices(appsToLaunch);
 
     // Execute app-specific commands with retry logic
-    await executeCliCommandsOnApp(commandsByApp, speculosDevices, userdataPath);
+    await executeCliCommandsOnApp(commandsByApp, speculosDevices, userdataPath, speculosApp);
 
     // Setup main Speculos app if specified
     if (speculosApp) {
@@ -314,6 +318,42 @@ export class InitializationManager {
 
     // Finalize setup only after successful global CLI run
     await loadConfig(userdataSpeculos, true);
-    if (featureFlags) await setFeatureFlags(featureFlags);
+    const defaultFlags = {
+      lwmWallet40: {
+        enabled: isWallet40,
+        params: {
+          mainNavigation: isWallet40,
+          marketBanner: isWallet40,
+          graphRework: isWallet40,
+          quickActionCtas: isWallet40,
+          tour: false,
+          lazyOnboarding: isWallet40,
+          balanceRefreshRework: isWallet40,
+          assetSection: false,
+          onboardingWidget: isWallet40,
+          operationsList: false,
+          aggregatedAssets: false,
+          myWallet: isWallet40,
+        },
+      },
+      llmModularDrawer: {
+        enabled: true,
+        params: {
+          add_account: true,
+          live_app: true,
+          live_apps_allowlist: [],
+          live_apps_blocklist: ["revoke-cash"],
+          receive_flow: true,
+          send_flow: false,
+          enableModularization: true,
+          searchDebounceTime: 300,
+          backendEnvironment: "PROD",
+        },
+      },
+    };
+    await setFeatureFlags({
+      ...defaultFlags,
+      ...featureFlags,
+    });
   }
 }

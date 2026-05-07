@@ -1,21 +1,37 @@
 import { Step } from "jest-allure2-reporter/api";
 import { Feature_ModularDrawer } from "@ledgerhq/types-live";
 import { getFlags } from "../../bridge/server";
-import { Account } from "@ledgerhq/live-common/lib/e2e/enum/Account";
+import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
 import { isIos } from "../../helpers/commonHelpers";
 
 export default class ModularDrawer {
+  // TODO - once lumenBottomSheet is activated we can remove the `or` statements
+  bottomSheetId = (component: string) => `bottom-sheet-${component}`;
+
   accountItem = "account-item";
   searchBarId = "modular-drawer-search-input";
   selectCryptoScrollViewId = "modular-drawer-select-crypto-scrollView";
   modularDrawerFlowViewId = "modular-drawer-flow-view";
-  networkBasedTitleIdMAD = "modular-drawer-Network-title";
-  assetBasedTitleIdMAD = "modular-drawer-Asset-title";
+  networkBasedTitleIdMAD = new RegExp(
+    `${this.bottomSheetId("header-title")}|modular-drawer-Network-title`,
+    "i",
+  );
+  assetBasedTitleIdMAD = new RegExp(
+    `${this.bottomSheetId("header-title")}|modular-drawer-Asset-title`,
+    "i",
+  );
   networkSelectionScrollViewId = "modular-drawer-network-selection-scrollView";
   accountTitleIdMAD = "modular-drawer-Account-title";
   addNewOrExistingAccountButton = "add-new-account-button";
-  drawerCloseButtonId = "drawer-close-button";
-  drawerBackButtonId = "drawer-back-button";
+  drawerCloseButtonId = new RegExp(
+    `${this.bottomSheetId("header-close-button")}|drawer-close-button`,
+    "i",
+  );
+  drawerBackButtonId = new RegExp(
+    `${this.bottomSheetId("header-back-button")}|drawer-back-button`,
+    "i",
+  );
+
   accountItemNameId = (name: string) => `account-item-name-${name}`;
 
   searchBar = () => getElementById(this.searchBarId);
@@ -23,6 +39,10 @@ export default class ModularDrawer {
   networkItemIdMAD = (networkId: string) => new RegExp(`network-item-${networkId}`, "i");
 
   private flags: Feature_ModularDrawer | null = null;
+
+  resetFlags(): void {
+    this.flags = null;
+  }
 
   private async loadFlags(): Promise<void> {
     this.flags ??= JSON.parse(await getFlags()).llmModularDrawer;
@@ -79,7 +99,10 @@ export default class ModularDrawer {
 
   @Step("Select network in list if needed")
   async selectNetworkIfAsked(networkName: string): Promise<void> {
-    if (await IsIdVisible(this.networkBasedTitleIdMAD)) {
+    const isPresent = await IsIdPresent(this.modularDrawerFlowViewId);
+    if (!isPresent) return;
+    const modularDrawerAttributes = await getAttributesOfElement(this.modularDrawerFlowViewId, 0);
+    if (modularDrawerAttributes.label?.includes("Select network")) {
       await this.selectNetwork(networkName);
     }
   }
@@ -140,9 +163,17 @@ export default class ModularDrawer {
     const modularDrawerAttributes = await getAttributesOfElement(this.modularDrawerFlowViewId, 0);
     jestExpect(modularDrawerAttributes.label).toMatch(/Select account.*/i);
     if (!accounts) {
-      detoxExpect(getElementById(this.accountItem)).not.toBeVisible();
+      await detoxExpect(getElementById(this.accountItem)).not.toBeVisible();
       return;
     }
+    for (const account of accounts) {
+      const accountItemId = this.accountItemNameId(account);
+      await detoxExpect(getElementById(accountItemId)).toBeVisible();
+    }
+  }
+
+  @Step("Validate account name(s) visible on account list")
+  async validateAccountNames(accounts: string[]): Promise<void> {
     for (const account of accounts) {
       const accountItemId = this.accountItemNameId(account);
       await detoxExpect(getElementById(accountItemId)).toBeVisible();
@@ -178,7 +209,7 @@ export default class ModularDrawer {
 
   @Step("Expect (Select Asset) page")
   async checkSelectAssetPage() {
-    await waitForElementById(this.assetBasedTitleIdMAD);
+    await waitForElement(getElementById(this.assetBasedTitleIdMAD));
     await detoxExpect(getElementById(this.assetBasedTitleIdMAD)).toBeVisible();
     await detoxExpect(this.searchBar()).toBeVisible();
   }
@@ -189,7 +220,7 @@ export default class ModularDrawer {
     if (options.onlyIfVisible && !(await IsIdVisible(this.drawerCloseButtonId))) {
       return;
     }
-    await waitForElementById(this.drawerCloseButtonId);
+    await waitForElement(getElementById(this.drawerCloseButtonId));
     await tapById(this.drawerCloseButtonId);
   }
 }

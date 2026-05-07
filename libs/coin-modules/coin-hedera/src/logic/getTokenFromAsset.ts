@@ -1,6 +1,6 @@
-import type { AssetInfo } from "@ledgerhq/coin-framework/api/types";
-import type { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
+import type { AssetInfo } from "@ledgerhq/coin-module-framework/api/types";
 import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
+import type { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
 
 export async function getTokenFromAsset(
   currency: CryptoCurrency,

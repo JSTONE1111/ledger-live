@@ -1,4 +1,3 @@
-import { findSubAccountById } from "@ledgerhq/coin-framework/account/index";
 import {
   NotEnoughBalance,
   NotEnoughBalanceInParentAccount,
@@ -9,6 +8,7 @@ import {
   FeeTooHigh,
   InvalidAddress,
 } from "@ledgerhq/errors";
+import { findSubAccountById } from "@ledgerhq/ledger-wallet-framework/account/index";
 import { AccountBridge } from "@ledgerhq/types-live";
 import { isValidSuiAddress } from "@mysten/sui/utils";
 import { BigNumber } from "bignumber.js";
@@ -83,7 +83,7 @@ export const getTransactionStatus: AccountBridge<
       errors.recipient = new InvalidAddressBecauseDestinationIsAlsoSource();
     }
 
-    if (totalSpent.eq(0) && transaction.useAllAmount) {
+    if (totalSpent.eq(0) && transaction.useAllAmount && !errors.amount) {
       errors.amount = new NotEnoughBalance();
     }
 
@@ -91,7 +91,7 @@ export const getTransactionStatus: AccountBridge<
       errors.amount = new NotEnoughBalanceInParentAccount();
     }
 
-    if (totalSpent.gt(accountBalance)) {
+    if (totalSpent.gt(accountBalance) && !errors.amount) {
       errors.amount = new NotEnoughBalance();
     }
   }

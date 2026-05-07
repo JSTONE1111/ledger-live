@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/zcash-shielded",
-  "version": "0.4.0",
+  "version": "0.9.0",
   "description": "ZCash library shielded accounts",
   "keywords": [
     "ZCash"
@@ -16,8 +16,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "lib/ZCash.js",
-  "module": "lib-es/ZCash.js",
   "types": "lib/types.d.ts",
   "typesVersions": {
     "*": {
@@ -35,7 +33,23 @@
   "exports": {
     "./lib/*": "./lib/*.js",
     "./lib-es/*": "./lib-es/*.js",
+    "./ZCash": {
+      "react-native": "./src/stubs/ZCash.native.ts",
+      "@ledgerhq/source": "./src/ZCash.ts",
+      "types": "./lib/ZCash.d.ts",
+      "require": "./lib/ZCash.js",
+      "default": "./lib-es/ZCash.js"
+    },
+    "./ZCashNative": {
+      "react-native": "./src/stubs/ZCashNative.native.ts",
+      "@ledgerhq/source": "./src/ZCashNative.ts",
+      "types": "./lib/ZCashNative.d.ts",
+      "require": "./lib/ZCashNative.js",
+      "default": "./lib-es/ZCashNative.js"
+    },
     "./*": {
+      "@ledgerhq/source": "./src/*.ts",
+      "types": "./lib/*.d.ts",
       "require": "./lib/*.js",
       "default": "./lib-es/*.js"
     },
@@ -44,30 +58,36 @@
   "license": "Apache-2.0",
   "scripts": {
     "clean": "rimraf lib lib-es",
-    "build": "tsc && tsc -m esnext --moduleResolution bundler --outDir lib-es",
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es",
     "coverage": "jest --coverage --passWithNoTests",
     "prewatch": "pnpm build",
-    "watch": "tsc --watch",
-    "watch:es": "tsc --watch -m esnext --moduleResolution bundler --outDir lib-es",
+    "watch": "tsc --watch --project tsconfig.build.json",
+    "watch:es": "tsc --watch --project tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es",
     "doc": "documentation readme src/** --section=API --pe ts --re ts --re d.ts",
-    "lint": "eslint ./src --no-error-on-unmatched-pattern --ext .ts,.tsx --cache",
-    "lint:fix": "pnpm lint --fix",
+    "lint": "oxlint src",
+    "lint:fix": "oxfmt src && oxlint src --fix --quiet",
     "test": "jest",
     "test-integ": "jest --config=jest.integ.config.js",
-    "typecheck": "tsc --noEmit",
-    "unimported": "unimported"
+    "typecheck": "tsc --noEmit --customConditions node",
+    "unimported": "unimported",
+    "format": "oxfmt src",
+    "format:check": "oxfmt src --check"
   },
   "devDependencies": {
     "@swc/core": "catalog:",
     "@swc/jest": "catalog:",
     "@types/jest": "catalog:",
+    "@types/node": "catalog:",
     "jest": "catalog:",
-    "msw": "catalog:"
+    "msw": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:"
   },
   "dependencies": {
     "@ledgerhq/live-network": "workspace:^",
     "@ledgerhq/logs": "workspace:^",
-    "@ledgerhq/zcash-decrypt": "0.1.0",
+    "@ledgerhq/zcash-decrypt": "0.2.0",
+    "@ledgerhq/zcash-utils": "catalog:",
     "bignumber.js": "^9.1.2",
     "rxjs": "catalog:"
   }

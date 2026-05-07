@@ -52,6 +52,7 @@ export default function MarketCoinScreen() {
     availableOnBuy,
     availableOnStake,
     availableOnSwap,
+    availableOnSell,
     color,
     dataChart,
     isLoadingDataChart,
@@ -64,6 +65,7 @@ export default function MarketCoinScreen() {
     onSwap,
     onBuy,
     onStake,
+    onSell,
     toggleStar,
     changeCounterCurrency,
   } = useMarketCoin();
@@ -92,7 +94,7 @@ export default function MarketCoinScreen() {
                 <InfiniteLoader />
               </Flex>
             ) : ledgerIds && ledgerIds.length > 0 && ticker ? (
-              <CryptoIcon ledgerId={ledgerIds[0]} ticker={ticker} size="56px" />
+              <CryptoIcon ledgerId={ledgerIds[0]} ticker={ticker} size={56} />
             ) : (
               <img width="56px" height="56px" src={currency?.image} alt={"currency logo"} />
             )}
@@ -115,6 +117,16 @@ export default function MarketCoinScreen() {
               {availableOnBuy && (
                 <Button data-testid="market-coin-buy-button" variant="color" mr={1} onClick={onBuy}>
                   {t("accounts.contextMenu.buy")}
+                </Button>
+              )}
+              {availableOnSell && (
+                <Button
+                  data-testid="market-coin-sell-button"
+                  variant="color"
+                  mr={1}
+                  onClick={onSell}
+                >
+                  {t("accounts.contextMenu.sell")}
                 </Button>
               )}
               {availableOnSwap && (

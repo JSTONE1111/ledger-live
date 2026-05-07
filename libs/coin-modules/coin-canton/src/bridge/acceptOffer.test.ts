@@ -1,4 +1,4 @@
-import { SignerContext } from "@ledgerhq/coin-framework/signer";
+import { SignerContext } from "@ledgerhq/ledger-wallet-framework/signer";
 import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import type { Account } from "@ledgerhq/types-live";
 import * as signTransactionModule from "../common-logic/transaction/sign";
@@ -80,6 +80,7 @@ describe("acceptOffer", () => {
       },
     },
     serialized: "serialized-transaction",
+    step: { type: "single-step" as const },
   };
 
   const mockSignature: CantonSignature = {
@@ -92,7 +93,7 @@ describe("acceptOffer", () => {
   } as unknown as CantonSigner;
 
   const mockSignerContext: SignerContext<CantonSigner> = jest.fn(
-    async (deviceId: string, callback: (signer: CantonSigner) => Promise<CantonSignature>) => {
+    async (_deviceId: string, callback: (signer: CantonSigner) => Promise<CantonSignature>) => {
       return callback(mockSigner);
     },
   ) as unknown as SignerContext<CantonSigner>;
@@ -101,7 +102,10 @@ describe("acceptOffer", () => {
     jest.clearAllMocks();
     mockedGateway.prepareTransferInstruction.mockResolvedValue(mockPreparedTransaction);
     mockedSignTransaction.signTransaction.mockResolvedValue(mockSignature);
-    mockedGateway.submitTransferInstruction.mockResolvedValue({ update_id: "test-update-id" });
+    mockedGateway.submitTransferInstruction.mockResolvedValue({
+      submission_id: "test-submission-id",
+      update_id: "test-update-id",
+    });
     mockedGetTransactionStatus.validateTopology.mockResolvedValue(null);
   });
 

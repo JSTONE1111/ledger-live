@@ -1,9 +1,11 @@
 {
+  "name": "ledger-live-desktop",
   "targets": {
     "build": {
       "cache": false,
       "inputs": [
         "default",
+        "^default",
         "desktopEnv",
         "sharedEnv"
       ]
@@ -14,14 +16,16 @@
         "^build"
       ]
     },
+    "build-lib-deps": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "lint": {
-      "outputs": [
-        "{projectRoot}/lint.json",
-        "{projectRoot}/lint-desktop.json",
-        "{projectRoot}/lint-desktop-external.json"
-      ],
       "inputs": [
         "default",
+        "^default",
         {
           "env": "CI_OS"
         }
@@ -33,6 +37,7 @@
       ],
       "inputs": [
         "default",
+        "^default",
         {
           "env": "CI_OS"
         }

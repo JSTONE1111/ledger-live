@@ -7,19 +7,40 @@ import {
   TOP_BAR_WRAPPER_PADDING_TOP,
 } from "LLM/hooks/useNavigationBarHeights";
 import { useSwapTopBarHeaderViewModel } from "./useSwapTopBarHeaderViewModel";
-import { CustomTopBar, TopBarActionIcon } from "LLM/components/CustomTopBar";
+import {
+  CustomTopBar,
+  TopBarActionIcon,
+  useMyLedgerTopBarAction,
+} from "LLM/components/CustomTopBar";
+import { MyWalletTopBarAction } from "LLM/components/TopBar/components/MyWalletTopBarAction";
 
 import { Clock } from "@ledgerhq/lumen-ui-rnative/symbols";
 
 export function SwapTopBarHeader() {
   const insets = useSafeAreaInsets();
-  const { onMyLedgerPress, onSwapHistoryPress } = useSwapTopBarHeaderViewModel();
+  const {
+    onMyLedgerPress,
+    onMyWalletPress,
+    shouldDisplayMyWallet,
+    hasUnreadNotifications,
+    onSwapHistoryPress,
+  } = useSwapTopBarHeaderViewModel();
+  const myLedgerAction = useMyLedgerTopBarAction(onMyLedgerPress);
   const containerStyle = useMemo(
     () => [styles.container, { marginTop: insets.top + TOP_BAR_WRAPPER_PADDING_TOP }],
     [insets.top],
   );
 
-  const customIcons: readonly TopBarActionIcon[] = useMemo(
+  const leadingElement = shouldDisplayMyWallet ? (
+    <MyWalletTopBarAction onPress={onMyWalletPress} showNotification={hasUnreadNotifications} />
+  ) : undefined;
+
+  const leadingIcons = useMemo(
+    () => (shouldDisplayMyWallet ? [] : [myLedgerAction]),
+    [shouldDisplayMyWallet, myLedgerAction],
+  );
+
+  const trailingIcons: readonly TopBarActionIcon[] = useMemo(
     () => [
       {
         id: "swap-history",
@@ -34,7 +55,11 @@ export function SwapTopBarHeader() {
 
   return (
     <Box style={containerStyle}>
-      <CustomTopBar onMyLedgerPress={onMyLedgerPress} customIcons={customIcons} />
+      <CustomTopBar
+        leadingElement={leadingElement}
+        leadingIcons={leadingIcons}
+        trailingIcons={trailingIcons}
+      />
     </Box>
   );
 }

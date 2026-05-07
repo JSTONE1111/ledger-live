@@ -50,6 +50,7 @@ export function SideBarView({ viewModel }: SideBarViewProps) {
           onActiveChange={viewModel.handleActiveChange}
           collapsed={viewModel.collapsed}
           onCollapsedChange={viewModel.handleCollapsedChange}
+          data-testid="sidebar-navigation"
         >
           <SideBarLeading>
             <SideBarItem value="home" icon={Home} activeIcon={HomeFill} label={t("sidebar.home")} />
@@ -87,17 +88,26 @@ export function SideBarView({ viewModel }: SideBarViewProps) {
             />
           </SideBarLeading>
           <SideBarTrailing>
-            <FeatureToggle featureId="referralProgramDesktopSidebar">
-              <SideBarItem value="refer" icon={Gift} activeIcon={Gift} label={t("sidebar.refer")} />
-            </FeatureToggle>
-            <FeatureToggle featureId="protectServicesDesktop">
-              <SideBarItem
-                value="recover"
-                icon={ShieldCheck}
-                activeIcon={ShieldCheck}
-                label={t("sidebar.recover")}
-              />
-            </FeatureToggle>
+            {viewModel.isMyWalletEnabled ? null : (
+              <>
+                <FeatureToggle featureId="referralProgramDesktopSidebar">
+                  <SideBarItem
+                    value="refer"
+                    icon={Gift}
+                    activeIcon={Gift}
+                    label={t("sidebar.refer")}
+                  />
+                </FeatureToggle>
+                <FeatureToggle featureId="protectServicesDesktop">
+                  <SideBarItem
+                    value="recover"
+                    icon={ShieldCheck}
+                    activeIcon={ShieldCheck}
+                    label={t("sidebar.recover")}
+                  />
+                </FeatureToggle>
+              </>
+            )}
             <SideBarCollapseToggle />
           </SideBarTrailing>
         </SideBar>

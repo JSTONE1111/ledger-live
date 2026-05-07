@@ -48,13 +48,7 @@ const AccountSelectionContent = ({
 
   const renderItem = useCallback(
     ({ item }: { item: RawDetailedAccount }) => {
-      return (
-        <AccountItem
-          account={item}
-          onClick={() => handleAccountSelected(item)}
-          cryptoIconBackgroundColor="transparent"
-        />
-      );
+      return <AccountItem account={item} onClick={() => handleAccountSelected(item)} />;
     },
     [handleAccountSelected],
   );
@@ -91,7 +85,7 @@ const AccountSelectionContent = ({
     <>
       <TrackDrawerScreen page={EVENTS_NAME.MODULAR_ACCOUNT_SELECTION} flow={flow} source={source} />
       {useLumenBottomSheet && (
-        <BottomSheetHeader spacing title={t("modularDrawer.selectAccount")} appearance="expanded" />
+        <BottomSheetHeader spacing title={t("modularDrawer.selectAccount")} density="expanded" />
       )}
       <BottomSheetVirtualizedList
         ref={listRef}

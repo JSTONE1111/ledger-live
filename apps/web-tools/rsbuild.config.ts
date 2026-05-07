@@ -43,20 +43,24 @@ export default defineConfig({
   tools: {
     rspack: (config, { appendPlugins }) => {
       config.resolve ??= {};
+      config.resolve.extensions = [
+        ".web.tsx",
+        ".web.ts",
+        ".web.jsx",
+        ".web.js",
+        ...(config.resolve.extensions ?? []),
+      ];
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
+        module: false,
         net: false,
         vm: false,
         tls: false,
         http2: false,
         dns: false,
       };
-      appendPlugins([
-        new rspack.IgnorePlugin({ resourceRegExp: /^electron$/ }),
-        new rspack.IgnorePlugin({ resourceRegExp: /@grpc\/grpc-js/ }),
-        new rspack.IgnorePlugin({ resourceRegExp: /@grpc\/proto-loader/ }),
-      ]);
+      appendPlugins([new rspack.IgnorePlugin({ resourceRegExp: /^electron$/ })]);
     },
   },
 });

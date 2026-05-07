@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/react-ui",
-  "version": "0.46.0",
+  "version": "0.50.0",
   "description": "Ledger Live - Desktop UI",
   "author": "Ledger Wallet Team <team-live@ledger.fr>",
   "repository": {
@@ -23,10 +23,18 @@
   },
   "exports": {
     "./*": {
+      "@ledgerhq/source": [
+        "./src/*.ts",
+        "./src/*.tsx"
+      ],
       "require": "./lib/cjs/*.js",
       "default": "./lib/*.js"
     },
     "./*.js": {
+      "@ledgerhq/source": [
+        "./src/*.ts",
+        "./src/*.tsx"
+      ],
       "require": "./lib/cjs/*.js",
       "default": "./lib/*.js"
     },
@@ -43,10 +51,12 @@
     "./assets/fonts/Inter-Regular.woff2": "./lib/assets/fonts/Inter-Regular.woff2",
     "./assets/fonts/Inter-SemiBold.woff2": "./lib/assets/fonts/Inter-SemiBold.woff2",
     ".": {
+      "@ledgerhq/source": "./src/index.ts",
       "require": "./lib/cjs/index.js",
       "default": "./lib/index.js"
     },
     "./pre-ldls": {
+      "@ledgerhq/source": "./src/pre-ldls/index.ts",
       "require": "./lib/cjs/pre-ldls/index.js",
       "default": "./lib/pre-ldls/index.js"
     },
@@ -62,14 +72,16 @@
   "scripts": {
     "storybook": "storybook dev -p 6006",
     "build": "tsc -p tsconfig.prod.json && node scripts/transpile && node scripts/postBuild",
-    "prebuild:storybook": "pnpm -F ui-shared -F icons-ui -F crypto-icons-ui build",
+    "prebuild:storybook": "nx run-many -t build -p @ledgerhq/ui-shared,@ledgerhq/icons-ui,@ledgerhq/crypto-icons",
     "build:storybook": "storybook build",
     "watch": "tsc -p tsconfig.prod.json --watch",
     "clean": "rimraf lib",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx --cache",
+    "lint": "oxlint -c ../../.oxlintrc.json ./src",
     "lint:fix": "pnpm lint --fix",
     "lint:css": "stylelint './src/**/*.{js,jsx,ts,tsx}' --fix",
-    "typecheck": "tsc --p . --noEmit",
+    "format": "oxfmt ./src",
+    "format:check": "oxfmt --check ./src",
+    "typecheck": "tsc --p . --noEmit --customConditions node",
     "test": "pnpm -w -F ui build-and-test",
     "test:jest": "jest --maxWorkers=50%",
     "test:jest:coverage": "pnpm test:jest --ci --coverage",
@@ -93,13 +105,27 @@
     "styled-system": "^5.1.5"
   },
   "peerDependencies": {
+    "@ledgerhq/lumen-design-core": ">=0.1.11",
+    "@ledgerhq/lumen-ui-react": ">=0.1.24",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2",
     "styled-components": "^5.3.3"
   },
   "devDependencies": {
     "@babel/core": "7.28.5",
+    "@ledgerhq/lumen-design-core": "catalog:",
+    "@ledgerhq/lumen-ui-react": "catalog:",
     "@babel/preset-env": "7.28.5",
+    "@radix-ui/react-checkbox": "catalog:",
+    "@radix-ui/react-dialog": "catalog:",
+    "@radix-ui/react-dropdown-menu": "catalog:",
+    "@radix-ui/react-slot": "catalog:",
+    "@radix-ui/react-switch": "catalog:",
+    "@radix-ui/react-tooltip": "catalog:",
+    "@tanstack/react-table": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "tailwind-merge": "catalog:",
     "@babel/preset-react": "7.28.5",
     "@babel/preset-typescript": "7.28.5",
     "@rsbuild/core": "catalog:",
@@ -131,9 +157,8 @@
     "csstype": "^3.0.11",
     "embla-carousel": "8.0.0-rc17",
     "storybook-react-rsbuild": "catalog:",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-storybook": "^0.12.0",
+    "oxlint": "catalog:",
+    "oxfmt": "catalog:",
     "fs-extra": "^10.0.1",
     "jest": "catalog:",
     "os-browserify": "0.3.0",

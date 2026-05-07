@@ -5,7 +5,7 @@
  * This file contains only bridge-specific fixtures like ConcordiumAccount, Signer, etc.
  */
 import BigNumber from "bignumber.js";
-import type { SignerContext } from "@ledgerhq/coin-framework/signer";
+import type { SignerContext } from "@ledgerhq/ledger-wallet-framework/signer";
 import type { ConcordiumAccount, ConcordiumResources, ConcordiumSigner } from "../types";
 import { VALID_ADDRESS, PUBLIC_KEY, CRED_ID, createFixtureCurrency } from "../test/fixtures";
 
@@ -32,14 +32,14 @@ export function createFixtureConcordiumAccount(
 ): ConcordiumAccount {
   return {
     type: "Account",
-    id: "js:2:concordium:3a9gh23nNY3kH4k3ajaCqAbM8rcbWMor2VhEzQ6qkn2r17UU7w:",
+    id: "js:2:concordium_testnet:3a9gh23nNY3kH4k3ajaCqAbM8rcbWMor2VhEzQ6qkn2r17UU7w:",
     seedIdentifier: PUBLIC_KEY,
     xpub: PUBLIC_KEY,
     derivationMode: "",
     index: 0,
     currency: createFixtureCurrency(),
     freshAddress: VALID_ADDRESS,
-    freshAddressPath: "m/1105'/0'/0'/0'/0'/0'",
+    freshAddressPath: "44'/1'/0'/0'/0'/0'",
     balance: new BigNumber(10000000),
     spendableBalance: new BigNumber(9900000),
     blockHeight: 1000,
@@ -78,7 +78,7 @@ export function createFixtureSigner(
       serialized: "cc".repeat(128),
     }),
     signCredentialDeployment: jest.fn().mockResolvedValue("bb".repeat(64)),
-    verifyAddress: jest.fn().mockResolvedValue({ verified: true }),
+    verifyAddress: jest.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }

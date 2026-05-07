@@ -6,11 +6,15 @@ import { MODULAR_DIALOG_PAGE_NAME } from "../modularDialog.types";
 import { trackPage } from "~/renderer/analytics/segment";
 
 describe("TrackDialogScreen", () => {
+  beforeEach(() => {
+    jest.mocked(trackPage).mockReset();
+  });
+
   it("calls track page with flow and source", () => {
     const page = MODULAR_DIALOG_PAGE_NAME.MODULAR_ASSET_SELECTION;
     const params = { flow: "flowtest", source: "sourcetest" };
 
-    render(<TrackDialogScreen page={page} />, { initialState: { modularDrawer: params } });
+    render(<TrackDialogScreen page={page} />, { initialState: { modularDialog: params } });
 
     expect(trackPage).toHaveBeenCalledWith(
       "Asset Selection",
@@ -18,6 +22,7 @@ describe("TrackDialogScreen", () => {
       { flow: "flowtest", source: "sourcetest" },
       true,
       true,
+      false,
     );
   });
 
@@ -29,7 +34,7 @@ describe("TrackDialogScreen", () => {
     };
 
     render(<TrackDialogScreen page={page} formatAssetConfig assetsConfig={assetsConfig} />, {
-      initialState: { modularDrawer: params },
+      initialState: { modularDialog: params },
     });
 
     expect(trackPage).toHaveBeenCalledWith(
@@ -42,6 +47,7 @@ describe("TrackDialogScreen", () => {
       },
       true,
       true,
+      false,
     );
   });
 
@@ -53,7 +59,7 @@ describe("TrackDialogScreen", () => {
     };
 
     render(<TrackDialogScreen page={page} formatNetworkConfig networksConfig={networksConfig} />, {
-      initialState: { modularDrawer: params },
+      initialState: { modularDialog: params },
     });
 
     expect(trackPage).toHaveBeenCalledWith(
@@ -70,6 +76,7 @@ describe("TrackDialogScreen", () => {
       },
       true,
       true,
+      false,
     );
   });
 });

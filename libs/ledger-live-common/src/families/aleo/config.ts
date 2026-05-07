@@ -1,5 +1,5 @@
 import { TRANSACTION_TYPE } from "@ledgerhq/coin-aleo/constants";
-import type { TransactionType } from "@ledgerhq/coin-aleo/types";
+import type { RecordPickingStrategy, TransactionType } from "@ledgerhq/coin-aleo/types";
 import type { ConfigInfo } from "@ledgerhq/live-config/LiveConfig";
 import { getEnv } from "@ledgerhq/live-env";
 
@@ -14,6 +14,28 @@ const DEFAULT_FEE_BY_TRANSACTION_TYPE: Record<TransactionType, number> = {
 
 const DEFAULT_FEE_SAFETY_MULTIPLIER = 1;
 
+/**
+ * Controls whether fee sponsorship for single-record private transactions
+ * is enabled (fees paid by a 3rd party on behalf of the user).
+ * @see https://ledgerhq.atlassian.net/browse/LIVE-27354
+ */
+const IS_FEE_SPONSORED = true;
+
+/**
+ * Controls whether encrypted proving is used for broadcasting transactions.
+ * This is the target solution that should be enabled once fix on API side is done.
+ * @see https://ledgerhq.atlassian.net/browse/LIVE-27542
+ */
+const USE_ENCRYPTED_PROVE = true;
+
+/**
+ * Controls how private transaction records are selected.
+ * - "manual": user picks records explicitly via the record picker UI step.
+ * - "auto": records are selected automatically (manual picker step is skipped).
+ * Default is "manual" to preserve existing behaviour.
+ */
+const RECORD_PICKING_STRATEGY: RecordPickingStrategy = "manual";
+
 export const aleoConfig: Record<string, ConfigInfo> = {
   config_currency_aleo: {
     type: "object",
@@ -21,7 +43,6 @@ export const aleoConfig: Record<string, ConfigInfo> = {
       status: {
         type: "active",
       },
-      nodeUrl: getEnv("ALEO_MAINNET_NODE_ENDPOINT"),
       networkType: "mainnet",
       apiUrls: {
         node: getEnv("ALEO_MAINNET_NODE_ENDPOINT"),
@@ -29,6 +50,9 @@ export const aleoConfig: Record<string, ConfigInfo> = {
       },
       feeByTransactionType: DEFAULT_FEE_BY_TRANSACTION_TYPE,
       feeSafetyMultiplier: DEFAULT_FEE_SAFETY_MULTIPLIER,
+      isFeeSponsored: IS_FEE_SPONSORED,
+      useEncryptedProve: USE_ENCRYPTED_PROVE,
+      recordPickingStrategy: RECORD_PICKING_STRATEGY,
     },
   },
   config_currency_aleo_testnet: {
@@ -37,7 +61,6 @@ export const aleoConfig: Record<string, ConfigInfo> = {
       status: {
         type: "active",
       },
-      nodeUrl: getEnv("ALEO_TESTNET_NODE_ENDPOINT"),
       networkType: "testnet",
       apiUrls: {
         node: getEnv("ALEO_TESTNET_NODE_ENDPOINT"),
@@ -45,6 +68,9 @@ export const aleoConfig: Record<string, ConfigInfo> = {
       },
       feeByTransactionType: DEFAULT_FEE_BY_TRANSACTION_TYPE,
       feeSafetyMultiplier: DEFAULT_FEE_SAFETY_MULTIPLIER,
+      isFeeSponsored: IS_FEE_SPONSORED,
+      useEncryptedProve: USE_ENCRYPTED_PROVE,
+      recordPickingStrategy: RECORD_PICKING_STRATEGY,
     },
   },
 };

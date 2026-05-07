@@ -3,7 +3,7 @@ import { CryptoCurrency, CryptoOrTokenCurrency, TokenCurrency } from "@ledgerhq/
 import { Account, AccountLike, AccountRaw, AccountRawLike, Operation } from "@ledgerhq/types-live";
 import { BigNumber } from "bignumber.js";
 import { Result as UseBridgeTransactionResult } from "../../bridge/useBridgeTransaction";
-import { Transaction } from "../../generated/types";
+import { Transaction } from "../../coin-modules/transaction-types";
 
 export type { SwapLiveError } from "@ledgerhq/wallet-api-exchange-module";
 
@@ -183,6 +183,10 @@ export type SwapStatus = {
 // -----
 // Related to Swap state API call (accepted or cancelled)
 
+export type FeatureFlags = {
+  wallet40Ux?: boolean;
+};
+
 type SwapStateRequest = {
   provider: string;
   swapId: string;
@@ -203,6 +207,7 @@ type SwapStateRequest = {
   refundAddress?: string;
   payoutAddress?: string;
   sponsored?: boolean;
+  flags?: FeatureFlags;
 }>;
 
 export type SwapStateAcceptedRequest = SwapStateRequest & {
@@ -326,6 +331,8 @@ export type SwapPayloadRequestData = {
   amountInAtomicUnit: BigNumber;
   quoteId?: string;
   toNewTokenId?: string;
+  flags?: FeatureFlags;
+  correlationId?: string;
 };
 export type SwapPayloadResponse = {
   binaryPayload: string;

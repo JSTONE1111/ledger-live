@@ -4,7 +4,7 @@ import {
   ListItemContent,
   ListItemDescription,
   ListItemLeading,
-  ListItemSpot,
+  Spot,
   ListItemTitle,
   ListItemTrailing,
 } from "@ledgerhq/lumen-ui-react";
@@ -71,12 +71,12 @@ export function AddressListItem({
       onClick={disabled ? undefined : onSelect}
       onContextMenu={onContextMenu}
       data-testid={testId}
-      className={cn("mb-6", {
+      className={cn("mt-6", {
         "cursor-not-allowed opacity-50": disabled,
       })}
     >
       <ListItemLeading>
-        <ListItemSpot appearance="icon" icon={icon} />
+        <Spot appearance="icon" icon={icon} />
         <ListItemContent>
           <ListItemTitle>{title}</ListItemTitle>
           <ListItemDescription>{subtitle}</ListItemDescription>

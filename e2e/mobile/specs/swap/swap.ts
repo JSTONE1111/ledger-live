@@ -1,87 +1,26 @@
 import { SwapType } from "@ledgerhq/live-common/e2e/models/Swap";
-import { swapSetup, waitSwapReady } from "../../bridge/server";
 import { setEnv } from "@ledgerhq/live-env";
 import { performSwapUntilQuoteSelectionStep } from "../../utils/swapUtils";
-import { ABTestingVariants } from "@ledgerhq/types-live";
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
+import { beforeAllFunctionSwap } from "./swap.setup";
 
 setEnv("DISABLE_TRANSACTION_BROADCAST", true);
 
 const beforeAllFunction = async (swap: SwapType) => {
   await app.speculos.setExchangeDependencies(swap);
-  await app.init({
+  await beforeAllFunctionSwap({
     speculosApp: AppInfos.EXCHANGE,
-    featureFlags: {
-      ptxSwapLiveAppMobile: {
-        enabled: true,
-        params: {
-          manifest_id:
-            process.env.PRODUCTION === "true" ? "swap-live-app-aws" : "swap-live-app-stg-aws",
-        },
-      },
-      llmAnalyticsOptInPrompt: {
-        enabled: true,
-        params: {
-          variant: ABTestingVariants.variantA,
-          entryPoints: [],
-        },
-      },
-    },
     cliCommandsOnApp: [
       {
         app: swap.accountToDebit.currency.speculosApp,
-        cmd: async (userdataPath?: string) => {
-          await CLI.liveData({
-            currency: swap.accountToDebit.currency.speculosApp.name,
-            index: swap.accountToDebit.index,
-            add: true,
-            appjson: userdataPath,
-          });
-
-          const { address } = await CLI.getAddress({
-            currency: swap.accountToDebit.currency.speculosApp.name,
-            path: swap.accountToDebit.accountPath,
-            derivationMode: swap.accountToDebit.derivationMode,
-          });
-
-          swap.accountToDebit.address = address;
-          if (swap.accountToDebit.parentAccount) {
-            swap.accountToDebit.parentAccount.address = address;
-          }
-
-          return address;
-        },
+        cmd: liveDataWithAddressCommand(swap.accountToDebit),
       },
       {
         app: swap.accountToCredit.currency.speculosApp,
-        cmd: async (userdataPath?: string) => {
-          await CLI.liveData({
-            currency: swap.accountToCredit.currency.speculosApp.name,
-            index: swap.accountToCredit.index,
-            add: true,
-            appjson: userdataPath,
-          });
-
-          const { address } = await CLI.getAddress({
-            currency: swap.accountToCredit.currency.speculosApp.name,
-            path: swap.accountToCredit.accountPath,
-            derivationMode: swap.accountToCredit.derivationMode,
-          });
-
-          swap.accountToCredit.address = address;
-          if (swap.accountToCredit.parentAccount) {
-            swap.accountToCredit.parentAccount.address = address;
-          }
-          return address;
-        },
+        cmd: liveDataWithAddressCommand(swap.accountToCredit),
       },
     ],
   });
-  await app.portfolio.waitForPortfolioPageToLoad();
-  const readyPromise = waitSwapReady();
-  await app.swap.openViaDeeplink();
-  await swapSetup();
-  await readyPromise;
 };
 
 export function runSwapTest(swap: SwapType, tmsLinks: string[], tags: string[]) {

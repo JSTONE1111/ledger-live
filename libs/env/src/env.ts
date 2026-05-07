@@ -43,7 +43,7 @@ const stringArrayParser = (v: unknown): string[] | undefined => {
 
 const envDefinitions = {
   ADDRESS_POISONING_FAMILIES: {
-    def: "evm,tron",
+    def: "evm,tron,stellar,hedera,algorand,cardano,cosmos,solana,xrp",
     parser: stringParser,
     desc: "List of families impacted by the address poisoning attack",
   },
@@ -106,6 +106,11 @@ const envDefinitions = {
     def: "https://celo.coin.ledger.com/archive/",
     parser: stringParser,
     desc: "Node endpoint for celo",
+  },
+  BITCOIN_STUCK_TRANSACTION_TIMEOUT: {
+    def: 20 * 60 * 1000,
+    parser: intParser,
+    desc: "Time after which an optimistic operation is considered stuck",
   },
   ENABLE_CELO_TOKENS: {
     def: true,
@@ -172,11 +177,6 @@ const envDefinitions = {
     def: 100,
     desc: "Limit of operation that Horizon will fetch per page",
   },
-  API_STELLAR_HORIZON_INITIAL_FETCH_MAX_OPERATIONS: {
-    parser: intParser,
-    def: 1000,
-    desc: "Limit of operation that Horizon will fetch on initial sync",
-  },
   API_STELLAR_HORIZON_STATIC_FEE: {
     def: false,
     parser: boolParser,
@@ -212,10 +212,10 @@ const envDefinitions = {
     def: "https://solana.coin.ledger.com",
     desc: "proxy url for solana API",
   },
-  API_SUI_NODE_PROXY_TEST: {
+  API_SUI_TESTNET_NODE_PROXY: {
     parser: stringParser,
     def: "https://sui.coin.ledger-test.com",
-    desc: "reverse proxy url for sui node",
+    desc: "reverse proxy url for sui testnet node",
   },
   API_SUI_NODE_PROXY: {
     parser: stringParser,
@@ -288,22 +288,22 @@ const envDefinitions = {
     desc: "Thorest API for VeChain",
   },
   ALEO_MAINNET_NODE_ENDPOINT: {
-    def: "https://api.provable.com",
+    def: "https://aleo.coin.ledger.com",
     parser: stringParser,
     desc: "Aleo mainnet node URL",
   },
   ALEO_MAINNET_SDK_ENDPOINT: {
-    def: "https://aleo-backend.api.live.ledger-test.com/network/mainnet",
+    def: "https://aleo-backend.api.live.ledger.com/network/mainnet",
     parser: stringParser,
     desc: "Aleo mainnet SDK URL",
   },
   ALEO_TESTNET_NODE_ENDPOINT: {
-    def: "https://api.provable.com",
+    def: "https://aleo.coin.ledger.com",
     parser: stringParser,
     desc: "Aleo testnet node URL",
   },
   ALEO_TESTNET_SDK_ENDPOINT: {
-    def: "https://aleo-backend.api.live.ledger-test.com/network/testnet",
+    def: "https://aleo-backend.api.live.ledger.com/network/testnet",
     parser: stringParser,
     desc: "Aleo testnet SDK URL",
   },
@@ -326,6 +326,11 @@ const envDefinitions = {
     def: "https://buy.api.live.ledger.com/buy/v1",
     parser: stringParser,
     desc: "Buy crypto API base url - version 1",
+  },
+  SELL_API_BASE: {
+    def: "https://buy.api.live.ledger.com/sell/v1",
+    parser: stringParser,
+    desc: "Sell crypto API base url - version 1",
   },
   CARDANO_API_ENDPOINT: {
     def: "https://cardano.coin.ledger.com/api",
@@ -971,7 +976,7 @@ const envDefinitions = {
   ETHEREUM_STUCK_TRANSACTION_TIMEOUT: {
     def: 5 * 60 * 1000,
     parser: intParser,
-    desc: "Time after which an optimisc operation is considered stuck",
+    desc: "Time after which an optimistic operation is considered stuck",
   },
   EVM_REPLACE_TX_LEGACY_GASPRICE_FACTOR: {
     def: 1.3,
@@ -1023,6 +1028,11 @@ const envDefinitions = {
     parser: boolParser,
     desc: "Enable logs for drawers",
   },
+  LW_ICONS_AVATARS_CDN_BASE_URL: {
+    def: "https://lw-icons.ledger.com/cdn/Avatars/v1/192x192",
+    parser: stringParser,
+    desc: "Base URL for Ledger Wallet icons CDN",
+  },
   SANCTIONED_ADDRESSES_URL: {
     def: "https://compliance.ledger.com/all_sanctioned_addresses_without_ticker.json",
     parser: stringParser,
@@ -1035,9 +1045,9 @@ const envDefinitions = {
   },
 };
 
-export const getDefinition = (name: string): EnvDef<any> => {
+export const getDefinition = (name: string): EnvDef<any> | undefined => {
   if (name in envDefinitions) {
-    return envDefinitions[name];
+    return envDefinitions[name as EnvName];
   }
   return undefined;
 };
@@ -1046,7 +1056,7 @@ const defaults = Object.keys(envDefinitions).reduce<{ [Key in EnvName]: EnvDefs[
   (acc, curr) => {
     return {
       ...acc,
-      [curr]: envDefinitions[curr].def,
+      [curr]: envDefinitions[curr as EnvName].def,
     };
   },
   {} as { [Key in EnvName]: EnvDefs[Key]["def"] },

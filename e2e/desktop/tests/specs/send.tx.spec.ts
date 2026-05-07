@@ -1,19 +1,18 @@
 import { test } from "tests/fixtures/common";
+import { Team } from "@ledgerhq/live-common/e2e/enum/Team";
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
 import { Fee } from "@ledgerhq/live-common/e2e/enum/Fee";
 import { Transaction } from "@ledgerhq/live-common/e2e/models/Transaction";
 import { addBugLink, addTmsLink } from "tests/utils/allureUtils";
 import { getDescription } from "tests/utils/customJsonReporter";
-import { CLI } from "tests/utils/cliUtils";
 import { getFamilyByCurrencyId } from "@ledgerhq/live-common/currencies/helpers";
 import {
   getAccountAddress,
   liveDataWithRecipientAddressCommand,
-} from "tests/utils/cliCommandsUtils";
+  liveDataCommand,
+} from "@ledgerhq/live-common/e2e/cliCommandsUtils";
 import { Addresses } from "@ledgerhq/live-common/e2e/enum/Addresses";
 import { Currency } from "@ledgerhq/live-common/e2e/enum/Currency";
-
-//Warning 🚨: XRP Tests may fail due to API HTTP 429 issue - Jira: LIVE-14237
 
 const transactionsAmountInvalid = [
   {
@@ -44,7 +43,7 @@ const transactionsAmountInvalid = [
   {
     transaction: new Transaction(Account.HEDERA_1, Account.HEDERA_2, "100000", undefined, "noTag"),
     expectedErrorMessage: "Sorry, insufficient funds",
-    xrayTicket: "B2CQA-4281",
+    xrayTicket: "B2CQA-4287",
   },
 ];
 
@@ -161,12 +160,9 @@ const transactionAddressValid = [
 
 const transactionE2E = [
   {
-    transaction: new Transaction(Account.sep_ETH_1, Account.sep_ETH_2, "0.00001", Fee.SLOW),
-    xrayTicket: "B2CQA-2574",
-  },
-  {
     transaction: new Transaction(Account.POL_1, Account.POL_2, "0.001", Fee.SLOW),
     xrayTicket: "B2CQA-2807",
+    bugTickets: ["LIVE-28070"],
   },
   {
     transaction: new Transaction(Account.DOGE_1, Account.DOGE_2, "0.01", Fee.SLOW),
@@ -195,7 +191,7 @@ const transactionE2E = [
   {
     transaction: new Transaction(Account.XLM_1, Account.XLM_2, "0.0001", undefined, "noTag"),
     xrayTicket: "B2CQA-2813",
-    bugTicket: "LIVE-24214",
+    bugTickets: ["LIVE-24214", "LIVE-29554"],
   },
   {
     transaction: new Transaction(Account.ATOM_1, Account.ATOM_2, "0.00001", undefined, "noTag"),
@@ -237,6 +233,7 @@ const transactionE2E = [
   {
     transaction: new Transaction(Account.BASE_1, Account.BASE_2, "0.000001"),
     xrayTicket: "B2CQA-4225",
+    bugTickets: ["LIVE-28070"],
   },
   {
     transaction: new Transaction(Account.VET_1, Account.VET_2, "0.1"),
@@ -250,6 +247,10 @@ const transactionE2E = [
     transaction: new Transaction(Account.HEDERA_1, Account.HEDERA_2, "0.00001", undefined, "noTag"),
     xrayTicket: "B2CQA-4284",
   },
+  {
+    transaction: new Transaction(Account.ICP_1, Account.ICP_2, "0.001"),
+    xrayTicket: "B2CQA-4742",
+  },
 ];
 
 const LNS_UNSUPPORTED_CURRENCIES = new Set([Currency.SUI.id, Currency.VET.id, Currency.HBAR.id]);
@@ -262,7 +263,8 @@ test.describe("Send flows", () => {
   for (const transaction of transactionE2E) {
     test.describe("Send from 1 account to another", () => {
       test.use({
-        userdata: "skip-onboarding",
+        teamOwner: Team.COIN_INTEGRATION,
+        userdata: "skip-onboarding-with-last-seen-device",
         speculosApp: transaction.transaction.accountToDebit.currency.speculosApp,
         cliCommands: [liveDataWithRecipientAddressCommand(transaction.transaction)],
       });
@@ -291,11 +293,11 @@ test.describe("Send flows", () => {
         },
         async ({ app }) => {
           await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
-          if (transaction.bugTicket) {
-            await addBugLink([transaction.bugTicket]);
+          if (transaction.bugTickets) {
+            await addBugLink(transaction.bugTickets);
           }
 
-          await app.layout.goToAccounts();
+          await app.mainNavigation.openTargetFromMainNavigation("accounts");
           await app.accounts.navigateToAccountByName(
             transaction.transaction.accountToDebit.accountName,
           );
@@ -320,15 +322,17 @@ test.describe("Send flows", () => {
   for (const transaction of transactionsAmountInvalid) {
     test.describe("Check invalid amount input error", () => {
       test.use({
-        userdata: "skip-onboarding",
+        teamOwner: Team.COIN_INTEGRATION,
+        userdata: "skip-onboarding-with-last-seen-device",
         speculosApp: transaction.transaction.accountToDebit.currency.speculosApp,
         cliCommands: [liveDataWithRecipientAddressCommand(transaction.transaction)],
       });
 
       const family = getFamilyByCurrencyId(transaction.transaction.accountToDebit.currency.id);
+      const expectedErrorLabel = transaction.expectedErrorMessage ?? "no error message";
 
       test(
-        `Check "${transaction.expectedErrorMessage}" for ${transaction.transaction.accountToDebit.currency.name} - invalid amount ${transaction.transaction.amount} input error`,
+        `Check "${expectedErrorLabel}" for ${transaction.transaction.accountToDebit.currency.name} - invalid amount ${transaction.transaction.amount} input error`,
         {
           tag: [
             "@NanoSP",
@@ -347,15 +351,19 @@ test.describe("Send flows", () => {
         async ({ app }) => {
           await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-          await app.layout.goToAccounts();
+          await app.mainNavigation.openTargetFromMainNavigation("accounts");
           await app.accounts.navigateToAccountByName(
             transaction.transaction.accountToDebit.accountName,
           );
           await app.account.clickSend();
 
           await app.send.craftTx(transaction.transaction);
-          await app.send.checkContinueButtonDisabled();
-          await app.send.checkErrorMessage(transaction.expectedErrorMessage);
+          if (transaction.expectedErrorMessage === null) {
+            await app.send.checkContinueButtonDisabled();
+          } else {
+            await app.send.checkContinueButtonDisabled();
+            await app.send.checkErrorMessage(transaction.expectedErrorMessage);
+          }
         },
       );
     });
@@ -370,7 +378,8 @@ test.describe("Send flows", () => {
     );
 
     test.use({
-      userdata: "skip-onboarding",
+      teamOwner: Team.COIN_INTEGRATION,
+      userdata: "skip-onboarding-with-last-seen-device",
       speculosApp: transactionInputValid.accountToDebit.currency.speculosApp,
       cliCommands: [liveDataWithRecipientAddressCommand(transactionInputValid)],
     });
@@ -398,7 +407,7 @@ test.describe("Send flows", () => {
       async ({ app }) => {
         await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-        await app.layout.goToAccounts();
+        await app.mainNavigation.openTargetFromMainNavigation("accounts");
         await app.accounts.navigateToAccountByName(
           transactionInputValid.accountToDebit.accountName,
         );
@@ -416,7 +425,8 @@ test.describe("Send flows", () => {
   for (const transaction of transactionAddressValid) {
     test.describe("Send funds step 1 (Recipient) - positive cases (Button enabled)", () => {
       test.use({
-        userdata: "skip-onboarding",
+        teamOwner: Team.COIN_INTEGRATION,
+        userdata: "skip-onboarding-with-last-seen-device",
         speculosApp: transaction.transaction.accountToDebit.currency.speculosApp,
         cliCommands: [
           liveDataWithRecipientAddressCommand(transaction.transaction, { useScheme: true }),
@@ -448,7 +458,7 @@ test.describe("Send flows", () => {
         async ({ app }) => {
           await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-          await app.layout.goToAccounts();
+          await app.mainNavigation.openTargetFromMainNavigation("accounts");
           await app.accounts.navigateToAccountByName(
             transaction.transaction.accountToDebit.accountName,
           );
@@ -460,8 +470,12 @@ test.describe("Send flows", () => {
               : transaction.transaction.accountToCredit.address ?? "";
 
           await app.send.fillRecipientInfo(transaction.transaction);
-          await app.send.checkInputWarningMessage(transaction.expectedWarningMessage);
           await app.send.checkContinueButtonEnable();
+          if (transaction.expectedWarningMessage === null) {
+            await app.send.checkInputWarningVisibility("hidden");
+          } else {
+            await app.send.checkInputWarningMessage(transaction.expectedWarningMessage);
+          }
         },
       );
     });
@@ -470,16 +484,12 @@ test.describe("Send flows", () => {
   for (const transaction of transactionsAddressInvalid) {
     test.describe("Send funds step 1 (Recipient) - negative cases (Button disabled)", () => {
       test.use({
-        userdata: "skip-onboarding",
+        teamOwner: Team.COIN_INTEGRATION,
+        userdata: "skip-onboarding-with-last-seen-device",
         speculosApp: transaction.transaction.accountToDebit.currency.speculosApp,
         cliCommands: [
-          async (appjsonPath: string) => {
-            await CLI.liveData({
-              currency: transaction.transaction.accountToDebit.currency.id,
-              index: transaction.transaction.accountToDebit.index,
-              add: true,
-              appjson: appjsonPath,
-            });
+          async (userdataPath?: string) => {
+            await liveDataCommand(transaction.transaction.accountToDebit)(userdataPath);
 
             if (
               transaction.transaction.accountToCredit !== Account.EMPTY &&
@@ -499,9 +509,10 @@ test.describe("Send flows", () => {
       });
 
       const family = getFamilyByCurrencyId(transaction.transaction.accountToDebit.currency.id);
+      const expectedErrorLabel = transaction.expectedErrorMessage ?? "no error message";
 
       test(
-        `Check "${transaction.expectedErrorMessage}" (from ${transaction.transaction.accountToDebit.accountName} to ${transaction.transaction.accountToCredit.accountName}) - invalid address input error`,
+        `Check "${expectedErrorLabel}" (from ${transaction.transaction.accountToDebit.accountName} to ${transaction.transaction.accountToCredit.accountName}) - invalid address input error`,
         {
           tag: [
             "@NanoSP",
@@ -523,15 +534,19 @@ test.describe("Send flows", () => {
         async ({ app }) => {
           await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-          await app.layout.goToAccounts();
+          await app.mainNavigation.openTargetFromMainNavigation("accounts");
           await app.accounts.navigateToAccountByName(
             transaction.transaction.accountToDebit.accountName,
           );
 
           await app.account.clickSend();
           await app.send.fillRecipient(transaction.address);
-          await app.send.checkErrorMessage(transaction.expectedErrorMessage);
-          await app.send.checkContinueButtonDisabled();
+          if (transaction.expectedErrorMessage === null) {
+            await app.send.checkContinueButtonDisabled();
+          } else {
+            await app.send.checkErrorMessage(transaction.expectedErrorMessage);
+            await app.send.checkContinueButtonDisabled();
+          }
         },
       );
     });
@@ -552,7 +567,8 @@ test.describe("Send flows", () => {
     });
 
     test.use({
-      userdata: "skip-onboarding",
+      teamOwner: Team.COIN_INTEGRATION,
+      userdata: "skip-onboarding-with-last-seen-device",
       speculosApp: transactionEnsAddress.accountToDebit.currency.speculosApp,
       cliCommands: [liveDataWithRecipientAddressCommand(transactionEnsAddress)],
     });
@@ -580,7 +596,7 @@ test.describe("Send flows", () => {
       async ({ app }) => {
         await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-        await app.layout.goToAccounts();
+        await app.mainNavigation.openTargetFromMainNavigation("accounts");
         await app.accounts.navigateToAccountByName(
           transactionEnsAddress.accountToDebit.accountName,
         );
@@ -606,5 +622,69 @@ test.describe("Send flows", () => {
         delete process.env.DISABLE_TRANSACTION_BROADCAST;
       }
     });
+  });
+
+  // TODO: LIVE-30321 - Until app-concordium 5.6.0 is released, the test is skipped as it requires a specific app version
+  // with the Concordium testnet support.
+  test.describe.skip("Send Concordium (Testnet)", () => {
+    const ccdTx = new Transaction(Account.CCD_TESTNET_1, Account.CCD_TESTNET_2, "50", undefined);
+
+    test.use({
+      teamOwner: Team.COIN_INTEGRATION,
+      userdata: "skip-onboarding-with-last-seen-device",
+      speculosApp: ccdTx.accountToDebit.currency.speculosApp,
+      cliCommands: [
+        async (userdataPath?: string) => {
+          // CCD-specific: liveData needs --currency concordium_testnet (not the
+          // speculos app name "Concordium"); recipient resolves via wallet-proxy.
+          await liveDataCommand(ccdTx.accountToDebit, {
+            currency: ccdTx.accountToDebit.currency.id,
+          })(userdataPath);
+          const recipientAddress = await getAccountAddress(ccdTx.accountToCredit);
+          ccdTx.accountToCredit.address = recipientAddress;
+          ccdTx.recipientAddress = recipientAddress;
+          return recipientAddress;
+        },
+      ],
+      featureFlags: {
+        currencyConcordiumTestnet: { enabled: true },
+        analyticsOptIn: { enabled: true, params: { policyVersion: 1, consentValidityDays: 365 } },
+      },
+    });
+
+    const family = getFamilyByCurrencyId(ccdTx.accountToDebit.currency.id);
+
+    test(
+      `Send from ${ccdTx.accountToDebit.accountName} to ${ccdTx.accountToCredit.accountName}`,
+      {
+        tag: [
+          "@NanoSP",
+          "@NanoX",
+          "@Stax",
+          "@Flex",
+          "@NanoGen5",
+          `@${ccdTx.accountToDebit.currency.id}`,
+          ...(family ? [`@family-${family}`] : []),
+        ],
+        annotation: { type: "TMS", description: "B2CQA-2949" },
+      },
+      async ({ app }) => {
+        await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
+
+        await app.mainNavigation.openTargetFromMainNavigation("accounts");
+        await app.accounts.navigateToAccountByName(ccdTx.accountToDebit.accountName);
+
+        await app.account.clickSend();
+        await app.send.craftTx(ccdTx);
+        await app.send.continueAmountModal();
+        await app.send.expectTxInfoValidity(ccdTx);
+        await app.send.clickContinueToDevice();
+
+        await app.speculos.signSendTransaction(ccdTx);
+        await app.send.expectTxSent();
+        await app.account.navigateToViewDetails();
+        await app.sendDrawer.addressValueIsVisible(ccdTx.accountToCredit.address);
+      },
+    );
   });
 });

@@ -13,23 +13,18 @@ import IconClock from "~/icons/Clock";
 import { rgba } from "../../../colors";
 import { useSyncAllAccounts } from "../LiveApp/hooks/useSyncAllAccounts";
 import { PendingOperationParamList } from "../types";
-import { useNotifications } from "LLM/features/NotificationsPrompt";
 import { SWAP_VERSION } from "../utils";
 import { NavigationHeaderCloseButton } from "~/components/NavigationHeaderCloseButton";
-
-function hasSwapTabRoute(
-  getState: () => ReturnType<PendingOperationParamList["navigation"]["getState"]> | undefined,
-) {
-  const routeNames = getState()?.routeNames;
-  return Array.isArray(routeNames) && routeNames.includes(ScreenName.SwapTab);
-}
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import { hasSwapTabRoute, navigateBackToSwapTab } from "../navigation/navigateBackToSwapTab";
 
 export function PendingOperation({ route, navigation }: PendingOperationParamList) {
   const { colors } = useTheme();
+  const { shouldDisplayWallet40MainNav } = useWalletFeaturesConfig("mobile");
   const { swapId, provider, toCurrency, fromCurrency } = route.params.swapOperation;
-  const { tryTriggerPushNotificationDrawerAfterAction } = useNotifications();
+  const { isEmbeddedSwap, sponsored } = route.params;
   const syncAccounts = useSyncAllAccounts();
-  const supportsSwapTabRoute = hasSwapTabRoute(() => navigation.getState());
+  const supportsSwapTabRoute = hasSwapTabRoute(navigation.getState());
 
   const navigateToSwapForm = useCallback(() => {
     track("button_clicked", {
@@ -38,18 +33,11 @@ export function PendingOperation({ route, navigation }: PendingOperationParamLis
       swapVersion: SWAP_VERSION,
     });
 
-    if (supportsSwapTabRoute) {
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: ScreenName.SwapTab }],
-        }),
-      );
-      return;
-    }
-
-    navigation.getParent()?.goBack();
-  }, [navigation, supportsSwapTabRoute]);
+    navigateBackToSwapTab({
+      navigation,
+      shouldDisplayWallet40MainNav,
+    });
+  }, [navigation, shouldDisplayWallet40MainNav]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -59,8 +47,7 @@ export function PendingOperation({ route, navigation }: PendingOperationParamLis
 
   useEffect(() => {
     syncAccounts();
-    tryTriggerPushNotificationDrawerAfterAction("swap");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onComplete = useCallback(() => {
@@ -91,6 +78,8 @@ export function PendingOperation({ route, navigation }: PendingOperationParamLis
         providerName={provider}
         targetCurrency={toCurrency?.id}
         sourceCurrency={fromCurrency?.id}
+        isEmbeddedSwap={isEmbeddedSwap !== undefined ? String(isEmbeddedSwap) : undefined}
+        sponsored={sponsored !== undefined ? String(sponsored) : undefined}
         avoidDuplicates={true}
       />
       <View style={styles.wrapper}>

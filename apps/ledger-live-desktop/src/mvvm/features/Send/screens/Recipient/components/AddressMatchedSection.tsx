@@ -1,11 +1,11 @@
 import type { AddressSearchResult } from "@ledgerhq/live-common/flows/send/recipient/types";
 import { formatAddress } from "@ledgerhq/live-common/utils/addressUtils";
-import { Banner, Subheader, SubheaderRow, SubheaderTitle } from "@ledgerhq/lumen-ui-react";
+import { Subheader, SubheaderRow, SubheaderTitle } from "@ledgerhq/lumen-ui-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useFormatRelativeDate } from "../hooks/useFormatRelativeDate";
-import { AccountRowWithBalance } from "./AccountRowWithBalance";
 import { AddressListItem } from "./AddressListItem";
+import { RecentHistoryWarningCard } from "./RecentHistoryWarningCard";
 
 type AddressMatchedSectionProps = Readonly<{
   searchResult: AddressSearchResult;
@@ -27,7 +27,8 @@ export function AddressMatchedSection({
   const { t } = useTranslation();
   const formatRelativeDate = useFormatRelativeDate();
 
-  const { matchedAccounts, ensName, matchedRecentAddress, status, resolvedAddress } = searchResult;
+  const { accountName, matchedAccounts, ensName, matchedRecentAddress, status, resolvedAddress } =
+    searchResult;
 
   const hasMatchedAccounts = matchedAccounts && matchedAccounts.length > 0;
   const hasENS = !!ensName;
@@ -52,13 +53,25 @@ export function AddressMatchedSection({
     return `${ensName} (${formattedAddress})`;
   };
 
-  const getRecentDescription = (): string | undefined => {
+  const getMatchedAccountDisplayTitle = (): string | undefined => {
+    if (hasMatchedAccounts && accountName) {
+      return accountName;
+    }
+    return undefined;
+  };
+
+  const getAlreadyUsedDescription = (): string | undefined => {
     if (matchedRecentAddress) {
       return t("newSendFlow.alreadyUsed", {
         date: formatRelativeDate(matchedRecentAddress.lastUsedAt),
       });
     }
-    return formattedAddress;
+    return undefined;
+  };
+
+  const getMatchedAddressDescription = (): string | undefined => {
+    const alreadyUsedDescription = getAlreadyUsedDescription();
+    return alreadyUsedDescription ?? formattedAddress;
   };
 
   return (
@@ -71,21 +84,8 @@ export function AddressMatchedSection({
         </SubheaderRow>
       </Subheader>
       <div className="-mx-8 flex flex-col">
-        {/* Show all matched Ledger accounts */}
-        {hasMatchedAccounts &&
-          matchedAccounts?.map(({ account }) => (
-            <AccountRowWithBalance
-              key={account.id}
-              account={account}
-              onSelect={() => onSelect(account.freshAddress)}
-              showSendTo
-              disabled={isSanctioned || hasBridgeError}
-              testId="send-matched-address-button"
-            />
-          ))}
-
-        {/* Show ENS result if available and no matched accounts */}
-        {hasENS && !hasMatchedAccounts && (
+        {/* Show ENS result if available */}
+        {hasENS && (
           <AddressListItem
             address={resolvedAddress ?? searchValue}
             name={getENSDisplayTitle()}
@@ -97,19 +97,15 @@ export function AddressMatchedSection({
           />
         )}
 
-        {/* Show recent match if available and no matched accounts or ENS */}
-        {hasRecentMatch && !hasMatchedAccounts && !hasENS && (
+        {/* Show matched address */}
+        {!hasENS && (hasMatchedAccounts || hasRecentMatch) && (
           <AddressListItem
-            address={matchedRecentAddress?.address ?? searchValue}
-            name={formatAddress(matchedRecentAddress?.address ?? searchValue, {
-              prefixLength: 5,
-              suffixLength: 5,
-            })}
-            description={getRecentDescription()}
-            onSelect={() =>
-              onSelect(matchedRecentAddress?.address ?? searchValue, matchedRecentAddress?.ensName)
-            }
+            address={resolvedAddress ?? searchValue}
+            name={getMatchedAccountDisplayTitle()}
+            description={getMatchedAddressDescription()}
+            onSelect={() => onSelect(resolvedAddress ?? searchValue, matchedRecentAddress?.ensName)}
             showSendTo
+            isLedgerAccount={hasMatchedAccounts}
             disabled={isSanctioned || hasBridgeError}
             testId="send-matched-address-button"
           />
@@ -143,13 +139,7 @@ export function AddressMatchedSection({
         {searchResult.isFirstInteraction &&
           !isSanctioned &&
           !hasBridgeError &&
-          isAddressComplete && (
-            <Banner
-              appearance="info"
-              title={t("newSendFlow.firstInteraction.title")}
-              description={t("newSendFlow.firstInteraction.description")}
-            />
-          )}
+          isAddressComplete && <RecentHistoryWarningCard />}
       </div>
     </div>
   );

@@ -46,7 +46,7 @@ describe("genericSignOperation", () => {
       craftTransaction: jest.fn().mockResolvedValue({ transaction: "unsignedTx" }),
       getAccountInfo: jest.fn().mockResolvedValue("pubKey"),
       combine: jest.fn().mockResolvedValue("signedTx"),
-      getSequence: jest.fn().mockResolvedValue(1n),
+      getNextSequence: jest.fn().mockResolvedValue(1n),
     });
 
     (transactionToIntent as jest.Mock).mockReturnValue(txIntent);
@@ -59,6 +59,7 @@ describe("genericSignOperation", () => {
 
   const account = {
     freshAddressPath: "44'/144'/0'/0/0",
+    freshAddress: "rTestAddress",
     address: "rTestAddress",
     currency: { id: "testnet" },
   } as any;
@@ -79,10 +80,11 @@ describe("genericSignOperation", () => {
       },
     });
 
-    expect(transactionToIntent).toHaveBeenCalledWith(account, transaction, undefined);
+    expect(transactionToIntent).toHaveBeenCalledWith(account, transaction, undefined, undefined);
     expect(mockSigner.signTransaction).toHaveBeenCalledWith("44'/144'/0'/0/0", "unsignedTx", {
       domain: "recipient.gen",
       address: "recipient-address",
+      derivationMode: undefined,
     });
     expect(txIntent.memo.memos.get("destinationTag")).toBe("1234");
   });

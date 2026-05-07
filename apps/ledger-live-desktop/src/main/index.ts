@@ -2,16 +2,7 @@ import fs from "fs";
 import path from "path";
 import "./starts-console";
 import "./setup"; // Needs to be imported first
-import {
-  app,
-  Menu,
-  ipcMain,
-  session,
-  webContents,
-  type BrowserWindow,
-  dialog,
-  protocol,
-} from "electron";
+import { app, Menu, ipcMain, session, type BrowserWindow, dialog, protocol } from "electron";
 import Store from "electron-store";
 import menu from "./menu";
 import {
@@ -26,14 +17,17 @@ import { UserDataCleanup } from "./cleanupUserData";
 import debounce from "lodash/debounce";
 import sentry, { setTags } from "~/sentry/main";
 import type { SettingsState } from "~/renderer/reducers/settings";
-import type { User } from "~/renderer/storage";
 import {
   installExtension,
   REDUX_DEVTOOLS,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
 import { setupTransportHandlers, cleanupTransports } from "./transportHandler";
-import { openURL } from "./openURL";
+import {
+  setupZcashNativeHost,
+  cleanupZcashNativeHost,
+} from "@ledgerhq/zcash-shielded/ipc/main-host";
+import { setupWebviewHandlers } from "./webviewHandlers";
 // End import timing, start initialization
 console.timeEnd("T-imports");
 console.time("T-init");
@@ -118,15 +112,21 @@ app.on("ready", async () => {
   // Measure database initialization and first reads
   console.time("T-db");
   const settings = (await db.getKey("app", "settings")) as SettingsState;
-  const user: User = (await db.getKey("app", "user")) as User;
+  const identities = (await db.getKey("app", "identities")) as { userId?: string } | undefined;
+  const user = (await db.getKey("app", "user")) as { id?: string } | undefined;
   console.timeEnd("T-db");
-  const userId = user?.id;
+  const userId = identities?.userId ?? user?.id;
   if (userId) {
     sentry(() => settings?.sentryLogs, userId);
   }
 
   // Set up transport handlers for Speculos and HTTP proxy in main process
   setupTransportHandlers();
+
+  // Set up ZCash native host: lazy-spawn a UtilityProcess hosting the
+  // napi-rs engine, bridged to the renderer via IPC.
+  // See @ledgerhq/zcash-shielded/ipc/main-host.
+  setupZcashNativeHost();
 
   /**
    * Clears the session’s HTTP cache
@@ -173,21 +173,7 @@ app.on("ready", async () => {
   ipcMain.handle("set-sentry-tags", (event, tags) => {
     setTags(tags);
   });
-
-  // To handle opening new windows from webview
-  // cf. https://gist.github.com/codebytere/409738fcb7b774387b5287db2ead2ccb
-  ipcMain.on("webview-dom-ready", (_, id) => {
-    const wc = webContents.fromId(id);
-    wc?.setWindowOpenHandler(({ url }) => {
-      const protocol = new URL(url).protocol;
-      if (["https:", "http:"].includes(protocol)) {
-        openURL(url);
-      }
-      return {
-        action: "deny",
-      };
-    });
-  });
+  setupWebviewHandlers(SUPPORTED_SCHEMES);
   Menu.setApplicationMenu(menu);
 
   // Apply window parameters now that we have DB data
@@ -251,6 +237,7 @@ app.on("before-quit", () => {
 
 app.on("window-all-closed", () => {
   cleanupTransports();
+  cleanupZcashNativeHost();
   app.quit();
 });
 
@@ -338,8 +325,8 @@ async function installExtensions() {
   });
 }
 
-function clearSessionCache(session: Electron.Session): Promise<void> {
-  return session.clearCache();
+function clearSessionCache(targetSession: Electron.Session): Promise<void> {
+  return targetSession.clearCache();
 }
 function show(win: BrowserWindow) {
   win.show();

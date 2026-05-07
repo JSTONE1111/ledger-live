@@ -57,15 +57,19 @@ jobs:
         uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
         id: setup-caches
         with:
-          install-proto: true
+          use-mise: true
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          cache-develop-role-arn: ${{ secrets.AWS_CACHE_OIDC_ROLE_ARN_DEVELOP }}
+          cache-branch-role-arn: ${{ secrets.AWS_CACHE_OIDC_ROLE_ARN_BRANCH }}
+          nx-key: ${{ secrets.NX_KEY }}
           accountId: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
           roleName: ${{ secrets.AWS_CACHE_ROLE_NAME }}
           region: ${{ secrets.AWS_CACHE_REGION }}
-          turbo-server-token: ${{ secrets.TURBOREPO_SERVER_TOKEN }}
+          skip-turbo-cache: "true"
       - name: Install dependencies
         run: pnpm i --filter="!./apps/**"
       - name: run doc
-        run: pnpm doc:ljs --api="http://127.0.0.1:${{ steps.setup-caches.outputs.port }}" --token="${{ secrets.TURBOREPO_SERVER_TOKEN }}" --team="foo"
+        run: pnpm exec nx run-many -t doc --projects=tag:scope:libs-ledgerjs
       - name: status
         id: check-status
         run: echo "status=$(git status --porcelain | wc -l)" >> $GITHUB_OUTPUT
@@ -138,7 +142,7 @@ jobs:
             const {repo: {owner, repo}, run_id} = context
             const issue_number = ${{ inputs.number }}
             const body = `\
-            @${{ inputs.login }}: triggered \`/regen-pods\`
+            @${{ inputs.login }}: triggered \`/regen-doc\`
 
             [Regenerating Documentation: workflow started](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             `;

@@ -13,18 +13,10 @@ import { AppManifest, WalletAPIServer } from "@ledgerhq/live-common/wallet-api/t
 import { useDappLogic } from "@ledgerhq/live-common/wallet-api/useDappLogic";
 import { Operation } from "@ledgerhq/types-live";
 import { ipcRenderer } from "electron";
-import React, {
-  type RefObject,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { type RefObject, forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "LLD/hooks/redux";
-import getUser from "~/helpers/user";
+import { userIdSelector } from "@ledgerhq/client-ids/store";
 import { openExchangeDrawer } from "~/renderer/actions/UI";
 import { currentRouteNameRef } from "~/renderer/analytics/screenRefs";
 import { track } from "~/renderer/analytics/segment";
@@ -39,15 +31,18 @@ import { openModal } from "~/renderer/actions/modals";
 import { flattenAccountsSelector } from "~/renderer/reducers/accounts";
 import BigSpinner from "../BigSpinner";
 import { NetworkErrorScreen } from "./NetworkError";
-import { NoAccountOverlay } from "./NoAccountOverlay";
+import { DappAccountGate } from "./DappAccountGate";
 import { useWebviewState } from "./helpers";
-import { Loader } from "./styled";
+import { Loader as StyledLoader } from "./styled";
 import { WebviewAPI, WebviewProps, WebviewTag } from "./types";
 import { HOOKS_TRACKING_LOCATIONS } from "~/renderer/analytics/hooks/variables";
-import { useModularDrawerVisibility, ModularDrawerLocation } from "LLD/features/ModularDrawer";
-import { setFlowValue, setSourceValue } from "~/renderer/reducers/modularDrawer";
+import { useModularDrawerVisibility } from "@ledgerhq/live-common/modularDrawer/useModularDrawerVisibility";
+import { ModularDrawerLocation } from "@ledgerhq/live-common/modularDrawer/enums";
+import { setFlowValue, setSourceValue } from "~/renderer/reducers/modularDialog";
 import { useDrawerConfiguration } from "@ledgerhq/live-common/dada-client/hooks/useDrawerConfiguration";
 import { useOpenAssetAndAccount } from "LLD/features/ModularDialog/Web3AppWebview/AssetAndAccountDrawer";
+import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
+import { setOriginFlow } from "~/renderer/analytics/originFlow";
 
 const wallet = { name: "ledger-live-desktop", version: __APP_VERSION__ };
 
@@ -69,7 +64,7 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
   const source =
     currentRouteNameRef.current === "Platform Catalog"
       ? "Discover"
-      : currentRouteNameRef.current ?? "Unknown";
+      : (currentRouteNameRef.current ?? "Unknown");
 
   const flow = manifest.name;
 
@@ -82,6 +77,7 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
         drawerConfiguration,
         areCurrenciesFiltered,
         useCase,
+        uiUseCase,
         onSuccess,
         onCancel,
       }) => {
@@ -93,6 +89,7 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
 
         if (modularDrawerVisible) {
           dispatch(setFlowValue(flow));
+          setOriginFlow(flow);
           dispatch(setSourceValue(source));
 
           const finalDrawerConfiguration = createDrawerConfiguration(drawerConfiguration, useCase);
@@ -102,6 +99,7 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
             currencies: areCurrenciesFiltered && shouldUseCurrencies ? currencyIds : undefined,
             areCurrenciesFiltered,
             useCase,
+            uiUseCase,
             onSuccess,
             onCancel,
           });
@@ -310,19 +308,8 @@ function useUiHook(manifest: AppManifest, tracking: TrackingAPI): UiHook {
 }
 
 const useGetUserId = () => {
-  const [userId, setUserId] = useState("");
-
-  useEffect(() => {
-    let mounted = true;
-    getUser().then(({ id }) => {
-      if (mounted) setUserId(id);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return userId;
+  const userId = useSelector(userIdSelector);
+  return userId.exportUserIdForWalletAPI();
 };
 
 function useWebView(
@@ -330,12 +317,17 @@ function useWebView(
     manifest,
     customHandlers,
     currentAccountHistDb,
+    setCurrentAccountHistDb,
     inputs,
-  }: Pick<WebviewProps, "manifest" | "customHandlers" | "currentAccountHistDb" | "inputs">,
+  }: Pick<
+    WebviewProps,
+    "manifest" | "customHandlers" | "currentAccountHistDb" | "setCurrentAccountHistDb" | "inputs"
+  >,
   webviewRef: RefObject<WebviewTag | null>,
   tracking: TrackingAPI,
   serverRef: RefObject<WalletAPIServer | undefined>,
   customWebviewStyle?: React.CSSProperties,
+  manifestDomainCheckEnabled?: boolean,
 ) {
   const accounts = useSelector(flattenAccountsSelector);
   const mevProtected = useSelector(mevProtectionSelector);
@@ -358,11 +350,12 @@ function useWebView(
         const webview = webviewRef.current;
         if (webview) {
           const origin = new URL(webview.src).origin;
+          if (origin === "null") return;
           webview.contentWindow?.postMessage(message, origin);
         }
       },
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const walletState = useSelector(walletSelector);
@@ -381,17 +374,19 @@ function useWebView(
   useEffect(() => {
     serverRef.current = server;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [server]);
 
-  const { onDappMessage, noAccounts } = useDappLogic({
+  const { onDappMessage, noAccounts, isLoadingAccounts } = useDappLogic({
     manifest,
     accounts,
     uiHook,
     postMessage: webviewHook.postMessage,
-    currentAccountHistDb,
+    currentAccountHistDb: currentAccountHistDb,
+    setCurrentAccountHistDb: setCurrentAccountHistDb,
     tracking,
     initialAccountId: inputs?.accountId?.toString(),
+    referrer: inputs?.referrer?.toString(),
     mevProtected,
   });
 
@@ -416,9 +411,12 @@ function useWebView(
     const id = webview.getWebContentsId();
 
     // cf. https://gist.github.com/codebytere/409738fcb7b774387b5287db2ead2ccb
-    window.api?.openWindow(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // When lldWebviewManifestDomainCheck is on, pass manifest.domains so main process enforces origin whitelist
+    globalThis.api?.openWindow(
+      id,
+      manifestDomainCheckEnabled ? (manifest.domains ?? []) : undefined,
+    );
+  }, [manifest.domains, manifestDomainCheckEnabled, webviewRef]);
 
   useEffect(() => {
     const webview = webviewRef.current;
@@ -450,7 +448,7 @@ function useWebView(
     };
   }, [customWebviewStyle, widgetLoaded]);
 
-  return { webviewRef, widgetLoaded, onReload, webviewStyle, noAccounts };
+  return { webviewRef, widgetLoaded, onReload, webviewStyle, noAccounts, isLoadingAccounts };
 }
 
 export const WalletAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
@@ -459,6 +457,8 @@ export const WalletAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
       manifest,
       inputs = {},
       currentAccountHistDb,
+      setCurrentAccountHistDb,
+      currentAccountHistDbLoaded,
       customHandlers,
       onStateChange,
       hideLoader,
@@ -467,6 +467,8 @@ export const WalletAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
     },
     ref,
   ) => {
+    const manifestDomainCheckEnabled = useFeature("lldWebviewManifestDomainCheck")?.enabled;
+
     const tracking = useMemo(
       () =>
         trackingWrapper(
@@ -493,31 +495,49 @@ export const WalletAPIWebview = forwardRef<WebviewAPI, WebviewProps>(
     const serverRef = useRef<WalletAPIServer>(undefined);
 
     const { webviewState, webviewRef, webviewProps, handleRefresh, webviewPartition } =
-      useWebviewState({ manifest, inputs }, ref, serverRef);
+      useWebviewState(
+        {
+          manifest,
+          inputs,
+          manifestDomainCheckEnabled,
+        },
+        ref,
+        serverRef,
+      );
     useEffect(() => {
       if (onStateChange) {
         onStateChange(webviewState);
       }
     }, [webviewState, onStateChange]);
 
-    const { webviewStyle, widgetLoaded, noAccounts } = useWebView(
+    const { webviewStyle, widgetLoaded, noAccounts, isLoadingAccounts } = useWebView(
       {
         manifest,
         customHandlers,
         currentAccountHistDb,
+        setCurrentAccountHistDb,
         inputs,
       },
       webviewRef,
       tracking,
       serverRef,
       customWebviewStyle,
+      manifestDomainCheckEnabled,
     );
 
     const isDapp = !!manifest.dapp;
     const preloader = isDapp ? "webviewDappPreloader" : "webviewPreloader";
 
-    if (isDapp && noAccounts) {
-      return <NoAccountOverlay manifest={manifest} currentAccountHistDb={currentAccountHistDb} />;
+    if (isDapp && noAccounts && setCurrentAccountHistDb) {
+      return (
+        <DappAccountGate
+          manifest={manifest}
+          isLoadingAccounts={isLoadingAccounts}
+          currentAccountHistDbLoaded={currentAccountHistDbLoaded}
+          setCurrentAccountHistDb={setCurrentAccountHistDb}
+          Loader={Loader}
+        />
+      );
     }
 
     return (
@@ -560,9 +580,9 @@ function DefaultLoader({ isLoading }: { isLoading: boolean }) {
   if (!isLoading) return null;
 
   return (
-    <Loader>
+    <StyledLoader>
       <BigSpinner size={50} />
-    </Loader>
+    </StyledLoader>
   );
 }
 

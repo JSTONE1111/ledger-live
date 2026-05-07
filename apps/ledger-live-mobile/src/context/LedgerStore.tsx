@@ -17,8 +17,11 @@ import {
   getAccounts,
   getCountervalues,
   getCryptoAssetsCacheState,
+  getFeatureFlagsState,
+  saveFeatureFlagsState,
   getSettings,
   getBle,
+  getHistory,
   getPostOnboardingState,
   getProtect,
   getMarketState,
@@ -26,6 +29,7 @@ import {
   getWalletExportState,
   getLargeMoverState,
   getIdentities,
+  getUser,
 } from "../db";
 import { importSettings, setSupportedCounterValues } from "~/actions/settings";
 import { importStore as importAccountsRaw } from "~/actions/accounts";
@@ -37,12 +41,14 @@ import { importMarket } from "~/actions/market";
 import { importTrustchainStoreState } from "@ledgerhq/ledger-key-ring-protocol/store";
 import { importWalletState } from "@ledgerhq/live-wallet/store";
 import { importLargeMoverState } from "~/actions/largeMoverLandingPage";
+import { initHistory } from "~/reducers/history";
 import type { SettingsState } from "~/reducers/types";
 import {
   restoreTokensToCache,
   PERSISTENCE_VERSION,
 } from "@ledgerhq/cryptoassets/cal-client/persistence";
-import { identitiesSlice } from "@ledgerhq/client-ids/store";
+import { setAllOverrides, setBannerVisible, type PartialFeatures } from "@shared/feature-flags";
+import { initIdentities } from "../helpers/identities";
 
 interface Props {
   onInitFinished: () => void;
@@ -94,6 +100,9 @@ const LedgerStoreProvider: React.FC<Props> = ({ onInitFinished, children, store 
         largeMoverState,
         cryptoAssetsCache,
         persistedIdentities,
+        persistedFeatureFlags,
+        legacyUser,
+        historyState,
       ] = await Promise.all([
         retry(getBle, MAX_RETRIES, RETRY_DELAY),
         retry(getSettings, MAX_RETRIES, RETRY_DELAY),
@@ -107,6 +116,9 @@ const LedgerStoreProvider: React.FC<Props> = ({ onInitFinished, children, store 
         retry(getLargeMoverState, MAX_RETRIES, RETRY_DELAY),
         retry(getCryptoAssetsCacheState, MAX_RETRIES, RETRY_DELAY),
         retry(getIdentities, MAX_RETRIES, RETRY_DELAY),
+        retry(getFeatureFlagsState, MAX_RETRIES, RETRY_DELAY),
+        retry(getUser, MAX_RETRIES, RETRY_DELAY),
+        retry(getHistory, MAX_RETRIES, RETRY_DELAY),
       ]).finally(() => {
         logStartupEvent<StoreStorageData>(STARTUP_EVENTS.STORE_STORAGE_READ, {
           readTime: Date.now() - readStorageStart,
@@ -168,9 +180,54 @@ const LedgerStoreProvider: React.FC<Props> = ({ onInitFinished, children, store 
         store.dispatch(importLargeMoverState(largeMoverState));
       }
 
-      // Load persisted identities
-      if (persistedIdentities) {
-        store.dispatch(identitiesSlice.actions.initFromPersisted(persistedIdentities));
+      if (historyState) {
+        store.dispatch(initHistory(historyState));
+      }
+
+      // Initialize identities (single source of truth): migrate from legacy "user" if present, then persist under "identities" only
+      await initIdentities(store, persistedIdentities ?? null, legacyUser ?? null);
+
+      if (persistedFeatureFlags) {
+        store.dispatch(setAllOverrides(persistedFeatureFlags.overrides));
+        store.dispatch(setBannerVisible(persistedFeatureFlags.bannerVisible));
+      } else if (settingsData) {
+        // One-time migration from legacy settings fields. Write the new featureFlags key directly
+        // so DBSave does not need saveAtStart and avoids a spurious write on every subsequent boot.
+        // The legacy fields have been removed from SettingsState but may still exist in old persisted payloads.
+        const rawOverrides =
+          "overriddenFeatureFlags" in settingsData &&
+          typeof settingsData["overriddenFeatureFlags"] === "object" &&
+          settingsData["overriddenFeatureFlags"] !== null
+            ? (settingsData["overriddenFeatureFlags"] as Record<string, unknown>)
+            : undefined;
+        const filteredOverrides: PartialFeatures = rawOverrides
+          ? Object.fromEntries(Object.entries(rawOverrides).filter(([, v]) => v !== undefined))
+          : {};
+        const hasLegacyOverrides = Object.keys(filteredOverrides).length > 0;
+        if (hasLegacyOverrides) {
+          store.dispatch(setAllOverrides(filteredOverrides));
+        }
+
+        const legacyBannerVisible =
+          ("featureFlagsBannerVisible" in settingsData &&
+          typeof settingsData["featureFlagsBannerVisible"] === "boolean"
+            ? settingsData["featureFlagsBannerVisible"]
+            : undefined) ??
+          ("featureFlagsButtonVisible" in settingsData &&
+          typeof settingsData["featureFlagsButtonVisible"] === "boolean"
+            ? settingsData["featureFlagsButtonVisible"]
+            : undefined);
+
+        if (typeof legacyBannerVisible === "boolean") {
+          store.dispatch(setBannerVisible(legacyBannerVisible));
+        }
+
+        if (hasLegacyOverrides || typeof legacyBannerVisible === "boolean") {
+          await saveFeatureFlagsState({
+            overrides: filteredOverrides,
+            bannerVisible: legacyBannerVisible ?? false,
+          });
+        }
       }
 
       setInitialCountervalues(initialCountervalues);

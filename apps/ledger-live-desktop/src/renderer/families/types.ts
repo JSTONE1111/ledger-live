@@ -18,6 +18,7 @@ import {
   OperationType,
   TokenAccount,
   TransactionCommon,
+  TransactionCommonRaw,
   MessageProperties,
   AccountLike,
 } from "@ledgerhq/types-live";
@@ -26,6 +27,8 @@ import { StepProps as SendStepProps } from "../modals/Send/types";
 import { StepProps as ReceiveStepProps } from "../modals/Receive/Body";
 import { StepProps as AddAccountsStepProps } from "../modals/AddAccounts";
 import { ModularDrawerAddAccountFlowManagerProps } from "LLD/features/AddAccountDrawer/ModularDrawerAddAccountFlowManager";
+import type { SplitAddressProps } from "../components/OperationsList/AddressCellShared";
+import type { Step } from "~/renderer/components/Stepper";
 
 export type AddressCellProps<O extends Operation> = {
   operation: O;
@@ -74,11 +77,29 @@ export type OperationDetailsExtraProps<A extends Account, O extends Operation> =
   type: OperationType;
 };
 
-export type SummaryNetworkFeesRowProps = {
+export type EditTransactionFeatureFlagConfig = {
+  enabled: boolean;
+  supportedCurrencyIds?: string[];
+};
+
+export type EditTransactionFeatureFlags = Record<string, EditTransactionFeatureFlagConfig>;
+
+export type EditTransactionModalConfig = {
+  modalName: "MODAL_EVM_EDIT_TRANSACTION" | "MODAL_BITCOIN_EDIT_TRANSACTION";
+  params: {
+    account: AccountLike;
+    parentAccount: Account | undefined;
+    transactionRaw: TransactionCommonRaw;
+    transactionHash: string;
+  };
+};
+
+export type SummaryNetworkFeesRowProps<T extends TransactionCommon = TransactionCommon> = {
   feeTooHigh: Error;
   feesUnit: Unit;
   estimatedFees: BigNumber;
   feesCurrency: TokenCurrency | CryptoCurrency;
+  transaction: T;
 };
 
 /**
@@ -153,6 +174,12 @@ export type LLDCoinFamily<
      * Add custom component at the end in operation details drawer
      */
     OperationDetailsPostAlert?: React.ComponentType<OperationDetailsExtraProps<A, O>>;
+
+    /**
+     * Replace split address component for specific operation type
+     * @default SplitAddress from "~/renderer/components/OperationsList/AddressCellShared"
+     */
+    splitAddress?: Partial<Record<OperationType, React.ComponentType<SplitAddressProps>>>;
   };
 
   accountActions?: {
@@ -257,6 +284,21 @@ export type LLDCoinFamily<
   };
 
   /**
+   * Allow to override default send flow steps
+   */
+  createSendSteps?: (disableBacks?: string[]) => Step<string, SendStepProps>[];
+
+  /**
+   * Allow to override the "Recipient" step in the Send modal.
+   */
+  SendStepRecipient?: React.ComponentType<SendStepProps>;
+
+  /**
+   * Allow to override the "Amount" step in the Send modal.
+   */
+  SendStepAmount?: React.ComponentType<SendStepProps>;
+
+  /**
    * Allow to add component below recipient field
    *
    * FIXME: account will have to be A | TokenAccount
@@ -340,14 +382,40 @@ export type LLDCoinFamily<
   StepReceiveFunds?: React.ComponentType<ReceiveStepProps>;
 
   /**
+   * When true, the family override owns the on-device address confirmation
+   * lifecycle and the shared StepReceiveFunds will not auto-trigger
+   * `confirmAddress`. The override is then responsible for invoking
+   * `bridge.receive(verify: true)` itself when needed.
+   */
+  useCustomConfirmAddress?: boolean;
+
+  /**
    * Allow to add component below the confirmation address box on receive step
    */
   StepReceiveFundsPostAlert?: React.ComponentType<ReceiveStepProps>;
 
   /**
-   * Replace Networkfees row on Summary Step
+   * Replace Network fees row on Summary Step
    */
-  StepSummaryNetworkFeesRow?: React.ComponentType<SummaryNetworkFeesRowProps>;
+  StepSummaryNetworkFeesRow?: React.ComponentType<SummaryNetworkFeesRowProps<T>>;
+
+  /**
+   * Allow to override the sender (From) address display on Summary Step
+   */
+  StepSummaryFromAddress?: React.ComponentType<{
+    account: A | TokenAccount;
+    parentAccount: A | null | undefined;
+    transaction: T;
+  }>;
+
+  /**
+   * Allow to override the recipient display in the To row on Summary Step
+   */
+  StepSummaryRecipientValue?: React.ComponentType<{
+    account: A | TokenAccount;
+    parentAccount: A | null | undefined;
+    transaction: T;
+  }>;
 
   /**
    * Allow to add specific component in Send modal below the recipient address
@@ -363,6 +431,11 @@ export type LLDCoinFamily<
     transaction: T;
     status: TS;
   }>;
+
+  /**
+   * Allow to add specific component in Send modal below the total spent block in Summary Step
+   */
+  StepSummaryPostAlert?: React.ComponentType;
 
   /**
    * It was for Hedera specifc, when we do not find any account it show a specific component
@@ -395,6 +468,18 @@ export type LLDCoinFamily<
   message?: {
     getMessageProperties: (message: AnyMessage) => Promise<MessageProperties | null>;
   };
+
+  /**
+   * Optional family-level handler to decide whether an operation can be edited
+   * and provide modal config when it is supported.
+   */
+  handlesEditTransaction?: (_: {
+    account: AccountLike;
+    parentAccount: A | undefined;
+    mainAccount: A;
+    operation: O;
+    featureFlags: EditTransactionFeatureFlags;
+  }) => EditTransactionModalConfig | null;
 
   /**
    * Component allowing to fully customize the add account flow in the drawer

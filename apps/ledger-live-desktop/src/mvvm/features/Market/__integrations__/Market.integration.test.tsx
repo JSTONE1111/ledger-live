@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "tests/testSetup";
+import { render, screen, waitFor, withFlagOverrides } from "tests/testSetup";
 import { server, http, HttpResponse } from "tests/server";
 import Market from "../index";
 import { Order } from "@ledgerhq/live-common/market/utils/types";
@@ -12,6 +12,39 @@ const mockNavigate = jest.fn();
 jest.mock("react-router", () => ({
   ...jest.requireActual("react-router"),
   useNavigate: jest.fn(() => mockNavigate),
+}));
+
+jest.mock("@ledgerhq/live-common/modularDrawer/hooks/useCurrenciesUnderFeatureFlag", () => ({
+  useCurrenciesUnderFeatureFlag: () => ({
+    deactivatedCurrencyIds: new Set<string>(),
+  }),
+}));
+
+const LIST_ITEM_HEIGHT = 73;
+
+jest.mock("LLD/features/Market/hooks/useMarketListVirtualization.ts", () => ({
+  useMarketListVirtualization: ({
+    itemCount,
+    marketData = [],
+  }: {
+    itemCount: number;
+    marketData?: { length: number }[];
+  }) => {
+    const createVirtualizer = () => ({
+      getVirtualItems: () =>
+        Array.from({ length: Math.min(itemCount, marketData?.length ?? 0) }, (_, i) => ({
+          index: i,
+          start: i * LIST_ITEM_HEIGHT,
+          size: LIST_ITEM_HEIGHT,
+          key: i,
+        })),
+      getTotalSize: () => (marketData?.length ?? 0) * LIST_ITEM_HEIGHT,
+    });
+    return {
+      parentRef: { current: null },
+      rowVirtualizer: createVirtualizer(),
+    };
+  },
 }));
 
 const createMarketState = (overrides = {}) => ({
@@ -71,10 +104,9 @@ const createSettingsState = (starredMarketCoins: string[] = []) => ({
       },
     },
   ],
-  overriddenFeatureFlags: {
-    lldRefreshMarketData: { enabled: false },
-  },
 });
+
+const marketFeatureFlagsState = withFlagOverrides({ lldRefreshMarketData: { enabled: false } });
 
 describe("Market Integration", () => {
   beforeEach(() => {
@@ -90,9 +122,11 @@ describe("Market Integration", () => {
     );
 
     render(<Market />, {
+      withRampCatalog: true,
       initialState: {
         market: createMarketState(),
         settings: createSettingsState(),
+        ...marketFeatureFlagsState,
       },
     });
 
@@ -110,9 +144,11 @@ describe("Market Integration", () => {
     );
 
     render(<Market />, {
+      withRampCatalog: true,
       initialState: {
         market: createMarketState(),
         settings: createSettingsState(),
+        ...marketFeatureFlagsState,
       },
     });
 
@@ -131,9 +167,11 @@ describe("Market Integration", () => {
     );
 
     render(<Market />, {
+      withRampCatalog: true,
       initialState: {
         market: createMarketState(),
         settings: createSettingsState(),
+        ...marketFeatureFlagsState,
       },
     });
 
@@ -150,9 +188,11 @@ describe("Market Integration", () => {
     );
 
     render(<Market />, {
+      withRampCatalog: true,
       initialState: {
         market: createMarketState(),
         settings: createSettingsState(),
+        ...marketFeatureFlagsState,
       },
     });
 
@@ -171,9 +211,11 @@ describe("Market Integration", () => {
     );
 
     render(<Market />, {
+      withRampCatalog: true,
       initialState: {
         market: createMarketState(),
         settings: createSettingsState(),
+        ...marketFeatureFlagsState,
       },
     });
 
@@ -198,9 +240,11 @@ describe("Market Integration", () => {
     );
 
     const { user } = render(<Market />, {
+      withRampCatalog: true,
       initialState: {
         market: createMarketState(),
         settings: createSettingsState(),
+        ...marketFeatureFlagsState,
       },
     });
 
@@ -223,9 +267,11 @@ describe("Market Integration", () => {
     );
 
     const { user } = render(<Market />, {
+      withRampCatalog: true,
       initialState: {
         market: createMarketState(),
         settings: createSettingsState(["bitcoin"]),
+        ...marketFeatureFlagsState,
       },
     });
 
@@ -235,5 +281,64 @@ describe("Market Integration", () => {
 
     const starButton = screen.getByTestId("market-star-button");
     await user.click(starButton);
+  });
+
+  it("should show sell button when currency is available for selling", async () => {
+    server.use(
+      http.get(MARKET_API_ENDPOINT, () => {
+        return HttpResponse.json(MOCK_MARKET_CURRENCY_DATA);
+      }),
+    );
+
+    render(<Market />, {
+      withRampCatalog: true,
+      initialState: {
+        market: createMarketState(),
+        settings: createSettingsState(),
+        ...marketFeatureFlagsState,
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("market-list-data")).toBeVisible();
+    });
+
+    const sellButton = screen.getByTestId("market-BTC-sell-button");
+    expect(sellButton).toBeInTheDocument();
+    expect(sellButton).toBeVisible();
+  });
+
+  it("should navigate to exchange with sell state when sell button is clicked", async () => {
+    server.use(
+      http.get(MARKET_API_ENDPOINT, () => {
+        return HttpResponse.json(MOCK_MARKET_CURRENCY_DATA);
+      }),
+    );
+
+    const { user } = render(<Market />, {
+      withRampCatalog: true,
+      initialState: {
+        market: createMarketState(),
+        settings: createSettingsState(),
+        ...marketFeatureFlagsState,
+        accounts: [],
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("market-BTC-sell-button")).toBeVisible();
+    });
+
+    const sellButton = screen.getByTestId("market-BTC-sell-button");
+    await user.click(sellButton);
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/exchange", {
+        state: expect.objectContaining({
+          currency: "bitcoin",
+          mode: "sell",
+        }),
+      });
+    });
   });
 });

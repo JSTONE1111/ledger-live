@@ -10,26 +10,7 @@ const beforeAllFunction = async (delegation: DelegateType) => {
     featureFlags: {
       llmAccountListUI: { enabled: true },
     },
-    cliCommands: [
-      async (userdataPath?: string) => {
-        await CLI.liveData({
-          currency: delegation.account.currency.speculosApp.name,
-          index: delegation.account.index,
-          add: true,
-          appjson: userdataPath,
-        });
-
-        const { address } = await CLI.getAddress({
-          currency: delegation.account.currency.speculosApp.name,
-          path: delegation.account.accountPath,
-          derivationMode: delegation.account.derivationMode,
-        });
-
-        delegation.account.address = address;
-
-        return address;
-      },
-    ],
+    cliCommands: [liveDataWithAddressCommand(delegation.account)],
   });
 
   await app.portfolio.waitForPortfolioPageToLoad();
@@ -54,11 +35,16 @@ export function runDelegateTest(delegation: DelegateType, tmsLinks: string[], ta
       }
 
       await app.portfolio.goToAccounts(delegation.account.currency.name);
+
       await app.common.goToAccountByName(delegation.account.accountName);
       await app.account.tapEarn();
 
       await app.stake.dismissDelegationStart(currencyId);
-      if (delegation.account.currency.name !== Currency.ADA.name) {
+      if (delegation.account.currency.name === Currency.MULTIVERS_X.name) {
+        await app.stake.setAmount(currencyId, delegation.amount);
+        await app.stake.validateAmount(currencyId);
+        await app.stake.selectValidator(currencyId, delegation.provider);
+      } else if (delegation.account.currency.name !== Currency.ADA.name) {
         await app.stake.setAmount(currencyId, delegation.amount);
         await app.stake.validateAmount(currencyId);
       } else {
@@ -79,23 +65,50 @@ export function runDelegateTest(delegation: DelegateType, tmsLinks: string[], ta
   });
 }
 
-export async function runDelegateCelo(
+export function runDelegateDefaultValidatorTest(
+  delegation: DelegateType,
+  tmsLinks: string[],
+  tags: string[],
+) {
+  tmsLinks.forEach(tmsLink => $TmsLink(tmsLink));
+  tags.forEach(tag => $Tag(tag));
+  describe("Delegate - default validator", () => {
+    beforeAll(async () => {
+      await beforeAllFunction(delegation);
+    });
+
+    it(`Defaults to ${delegation.provider} on ${delegation.account.currency.name}`, async () => {
+      const currencyId =
+        getCurrencyManagerApp(delegation.account.currency.id) ?? delegation.account.currency.id;
+
+      await app.portfolio.goToAccounts(delegation.account.currency.name);
+      await app.common.goToAccountByName(delegation.account.accountName);
+      await app.account.tapEarn();
+
+      await app.stake.dismissDelegationStart(currencyId);
+      await app.stake.expectProvider(currencyId, delegation.provider);
+    });
+  });
+}
+
+export async function runLockCelo(
   delegation: DelegateType,
   tmsLinks: string[],
   tags: string[] = ["@NanoSP", "@NanoX", "@Stax", "@Flex", "@NanoGen5", `@celo`, `@family-celo`],
 ) {
   tmsLinks.forEach(tmsLink => $TmsLink(tmsLink));
   tags.forEach(tag => $Tag(tag));
-  describe(`Delegate flow on CELO`, () => {
+  describe(`Lock flow on CELO`, () => {
     beforeAll(async () => {
       await beforeAllFunction(delegation);
     });
 
-    it(`Delegate on CELO`, async () => {
-      const amountWithCode = delegation.amount + " " + delegation.account.currency.ticker;
+    it(`Lock on CELO`, async () => {
+      const amountWithCode = delegation.amount + " " + delegation.account.currency.ticker;
       const currencyId = delegation.account.currency.id;
 
       await app.portfolio.goToAccounts(delegation.account.currency.name);
+
       await app.common.goToAccountByName(delegation.account.accountName);
       await app.account.tapEarn();
 
@@ -110,6 +123,45 @@ export async function runDelegateCelo(
 
       await app.common.successViewDetails();
       await verifyStakeOperationDetailsInfo(delegation, amountWithCode);
+    });
+  });
+}
+
+export async function runVoteCelo(
+  delegation: DelegateType,
+  tmsLinks: string[],
+  tags: string[] = ["@NanoSP", "@NanoX", "@Stax", "@Flex", "@NanoGen5", `@celo`, `@family-celo`],
+) {
+  tmsLinks.forEach(tmsLink => $TmsLink(tmsLink));
+  tags.forEach(tag => $Tag(tag));
+  describe(`Vote flow on CELO`, () => {
+    beforeAll(async () => {
+      await beforeAllFunction(delegation);
+    });
+
+    it(`Vote on CELO with ${delegation.provider}`, async () => {
+      const amountWithCode = delegation.amount + " " + delegation.account.currency.ticker;
+
+      await app.portfolio.goToAccounts(delegation.account.currency.name);
+      await app.common.goToAccountByName(delegation.account.accountName);
+      await app.account.tapEarn();
+
+      await app.celoManageAssets.checkManagePage();
+      await app.celoManageAssets.clickVote();
+
+      await app.stake.openCeloVoteAmount();
+      await app.stake.setCeloVoteAmount(delegation.amount);
+
+      await device.disableSynchronization();
+      await app.stake.validateCeloVoteAmount();
+      await app.stake.celoVoteSummaryContinue();
+
+      await verifyAppValidationStakeInfo(delegation, amountWithCode);
+      await app.speculos.signDelegationTransaction(delegation);
+
+      await app.common.successViewDetails();
+
+      await verifyStakeOperationDetailsInfo(delegation, amountWithCode, undefined, "VOTE");
     });
   });
 }
@@ -137,13 +189,14 @@ export async function runDelegateTezos(
     });
 
     it(`Delegate on TEZOS`, async () => {
-      const amountWithCode = delegation.amount + " " + delegation.account.currency.ticker;
+      const amountWithCode = delegation.amount + " " + delegation.account.currency.ticker;
       const currencyId = delegation.account.currency.id;
 
       await app.speculos.goToSettings();
       await app.speculos.activateExpertMode();
 
       await app.portfolio.goToAccounts(delegation.account.currency.name);
+
       await app.common.goToAccountByName(delegation.account.accountName);
       await app.account.tapEarn();
 

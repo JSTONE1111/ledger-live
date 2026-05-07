@@ -1,3 +1,5 @@
+import { BalanceOptions } from "@ledgerhq/coin-module-framework/api/types";
+import { InvalidParameterError } from "@ledgerhq/errors";
 import type { AlgorandCoinConfig } from "../config";
 import * as logic from "../logic";
 import { createApi } from "./index";
@@ -36,16 +38,18 @@ describe("Algorand API", () => {
         craftTransaction: expect.any(Function),
         craftRawTransaction: expect.any(Function),
         estimateFees: expect.any(Function),
-        getBalance: logic.getBalance,
+        getBalance: expect.any(Function),
         getBlock: expect.any(Function),
         getBlockInfo: expect.any(Function),
         getRewards: expect.any(Function),
-        getSequence: expect.any(Function),
+        getNextSequence: expect.any(Function),
         getStakes: expect.any(Function),
         getValidators: expect.any(Function),
         lastBlock: logic.lastBlock,
         listOperations: expect.any(Function),
+        validateAddress: expect.any(Function),
         validateIntent: expect.any(Function),
+        craftTransactionData: expect.any(Function),
       });
     });
   });
@@ -86,6 +90,12 @@ describe("Algorand API", () => {
 
       expect(logic.getBalance).toHaveBeenCalledWith("TESTADDRESS");
       expect(result).toEqual(mockBalances);
+    });
+
+    it("should throw an exception when options is provided", async () => {
+      await expect(
+        api.getBalance("random address", {} as unknown as BalanceOptions),
+      ).rejects.toThrow(InvalidParameterError);
     });
   });
 
@@ -190,9 +200,9 @@ describe("Algorand API", () => {
       expect(() => api.getBlock(100)).toThrow("getBlock is not supported for Algorand");
     });
 
-    it("getSequence should throw not applicable error", () => {
-      expect(() => api.getSequence("ADDRESS")).toThrow(
-        "getSequence is not applicable for Algorand",
+    it("getNextSequence should throw not applicable error", () => {
+      expect(() => api.getNextSequence("ADDRESS")).toThrow(
+        "getNextSequence is not applicable for Algorand",
       );
     });
 

@@ -1,20 +1,24 @@
 import { Step } from "jest-allure2-reporter/api";
-import { openDeeplink } from "../../helpers/commonHelpers";
+import { isWallet40, openDeeplink } from "../../helpers/commonHelpers";
 import { getFlags } from "../../bridge/server";
 import { Feature_Noah } from "@ledgerhq/types-live";
-
 export default class PortfolioPage {
   addNewOrExistingAccount = "add-new-account-button";
+  assetsListId = "AssetsList";
   baseLink = "portfolio";
   baseAssetItem = "assetItem-";
   zeroBalance = "$0.00";
   graphCardBalanceId = "graphCard-balance";
+  analyticsBalanceAmountId = "analytics-balance-amount";
   graphCardChart = "graphCard-chart";
   assetBalanceId = "asset-balance";
   readOnlyItemsId = "PortfolioReadOnlyItems";
   accountsListView = "PortfolioAccountsList";
   emptyPortfolioListId = "PortfolioEmptyList";
-  portfolioSettingsButtonId = "settings-icon";
+  portfolioSettingsId = "topbar-settings";
+  myWalletHeaderSettingsButtonId = "my-wallet-header-settings-button";
+  topBarMyWalletId = "topbar-mywallet";
+  portfolioListIdRegex = new RegExp(`portfolio-screen|${this.readOnlyItemsId}`);
   addAccountCta = "add-account-cta";
   allocationSectionTitleId = "portfolio-allocation-section";
   transactionHistorySectionTitleId = "portfolio-transaction-history-section";
@@ -26,6 +30,7 @@ export default class PortfolioPage {
   showAllAssetsButton = "assets-button";
   showAllAccountsButton = "show-all-accounts-button";
   seeAllTransactionsButton = "portfolio-seeAll-transaction";
+  operationRowBody = "operationRowBody";
   operationRowDate = "operationRowDate";
   operationRowCounterValue = "operationRow-counterValue-label";
   assetItemRegExp = new RegExp(`${this.baseAssetItem}[^-]+$`);
@@ -54,14 +59,16 @@ export default class PortfolioPage {
   transferBottomSheetSendButton = "transfer-action-send";
   transferBottomSheetBankTransferButton = "transfer-action-bank-transfer";
 
-  portfolioSettingsButton = async () => getElementById(this.portfolioSettingsButtonId);
+  portfolioSettingsButton = async () => getElementById(this.portfolioSettingsId);
   assetItemId = (currencyName: string) => `${this.baseAssetItem}${currencyName}`;
   assetItemBalanceId = (currencyName: string) => `${this.baseAssetItem}${currencyName}-balance`;
   tabSelector = (id: "Accounts" | "Assets") => getElementById(`${this.tabSelectorBase}${id}`);
   walletTabSelector = (id: "Wallet" | "Market") =>
     getElementById(`${this.walletTabSelectorBase}${id}`);
-  operationByType = (operationType?: string) =>
-    getElementByIdAndText(this.operationRowDate, new RegExp(`.*${operationType ?? ""}.*`, "i"));
+  operationByType = (operationType: string | RegExp, accountName?: string) =>
+    accountName
+      ? getElementByIdWithDescendantTexts(this.operationRowBody, accountName, operationType)
+      : getElementByIdWithDescendantTexts(this.operationRowBody, operationType);
 
   private flags: Feature_Noah | null = null;
 
@@ -76,12 +83,17 @@ export default class PortfolioPage {
 
   @Step("Navigate to Settings")
   async navigateToSettings() {
-    await tapByElement(await this.portfolioSettingsButton());
+    if (isWallet40) {
+      await tapById(this.topBarMyWalletId);
+      await tapById(this.myWalletHeaderSettingsButtonId);
+    } else {
+      await tapByElement(await this.portfolioSettingsButton());
+    }
   }
 
   @Step("Wait for portfolio page to load")
-  async waitForPortfolioPageToLoad() {
-    await waitForElementById(this.portfolioSettingsButtonId, 120000);
+  async waitForPortfolioPageToLoad(timeout = 120000) {
+    await waitForElementById(this.portfolioListIdRegex, timeout); // TODO: Remove Regex when legacyWallet is removed from source code
   }
 
   @Step("Expect Portfolio read only")
@@ -105,9 +117,9 @@ export default class PortfolioPage {
     jestExpect(text).toContain(counterValue);
   }
 
-  @Step("Expect chart to be visible")
+  @Step("Expect balance to be visible")
   async expectBalanceToBeVisible() {
-    await detoxExpect(getElementById(this.graphCardBalanceId)).toBeVisible();
+    await detoxExpect(getElementById(this.analyticsBalanceAmountId)).toBeVisible();
   }
 
   @Step("Expect total balance value")
@@ -118,7 +130,7 @@ export default class PortfolioPage {
 
   @Step("Expect balance diff to be visible")
   async expectBalanceDiffToBeVisible() {
-    await detoxExpect(getElementById(this.graphCardBalanceDiffId)).toBeVisible();
+    await waitForElementById(this.graphCardBalanceDiffId);
   }
 
   @Step("Expect balance diff to have the correct counter value")
@@ -142,14 +154,14 @@ export default class PortfolioPage {
   }
 
   @Step("Open Portfolio via deeplink")
-  async openViaDeeplink() {
+  async openViaDeeplink(timeout = 120000) {
     await openDeeplink(this.baseLink);
-    await waitForElementById(this.portfolioSettingsButtonId); // Issue with RN75 : QAA-370
+    await this.waitForPortfolioPageToLoad(timeout); // Issue with RN75 : QAA-370
   }
 
   @Step("Click on Add account button in portfolio")
   async addAccount() {
-    await scrollToId(this.addAccountCta, this.emptyPortfolioListId);
+    await scrollToId(this.addAccountCta, this.emptyPortfolioListId, 500);
     await tapById(this.addAccountCta);
   }
 
@@ -158,18 +170,34 @@ export default class PortfolioPage {
     await detoxExpect(getElementById(this.accountsListView)).toBeVisible();
   }
 
+  @Step("Wait for Portfolio with accounts")
+  async waitForPortfolioWithAccounts() {
+    await waitForElementById(this.accountsListView, 10000);
+  }
+
   @Step("Go to asset's accounts from portfolio")
   async goToAccounts(currencyName: string) {
-    await waitForElementById(this.accountsListView, 10000);
-    await scrollToId(this.allocationSectionTitleId, this.accountsListView, 400);
-
-    if (await IsIdVisible(this.assetItemId(currencyName))) {
-      await tapById(this.assetItemId(currencyName));
+    if (isWallet40) {
+      await this.goToAccountsW40(currencyName);
     } else {
-      await tapById(this.showAllAssetsButton);
-      await scrollToId(this.assetItemId(currencyName), this.accountsListView);
-      await tapById(this.assetItemId(currencyName));
+      await waitForElementById(this.accountsListView, 10000);
+      await scrollToId(this.allocationSectionTitleId, this.accountsListView, 400);
+
+      if (await IsIdVisible(this.assetItemId(currencyName))) {
+        await tapById(this.assetItemId(currencyName));
+      } else {
+        await tapById(this.showAllAssetsButton);
+        await scrollToId(this.assetItemId(currencyName), this.accountsListView);
+        await tapById(this.assetItemId(currencyName));
+      }
     }
+  }
+
+  @Step("Go to asset's accounts from portfolio wallet 40")
+  async goToAccountsW40(currencyName: string) {
+    await waitForElementById(this.accountsListView, 10000);
+    await scrollToId(this.assetItemId(currencyName));
+    await tapById(this.assetItemId(currencyName));
   }
 
   @Step("Check quick action buttons visibility")
@@ -219,7 +247,7 @@ export default class PortfolioPage {
 
   @Step("Navigate asset Page")
   async goToSpecificAsset(currencyName: string) {
-    await scrollToId(this.allocationSectionTitleId, this.accountsListView);
+    await scrollToId(this.assetsListId);
     if (await IsIdVisible(this.showAllAssetsButton)) {
       await tapById(this.showAllAssetsButton);
       await scrollToId(this.assetItemId(currencyName), this.accountsListView);
@@ -239,8 +267,8 @@ export default class PortfolioPage {
   }
 
   @Step("Click on selected last operation")
-  async selectAndClickOnLastOperation(operationType?: string) {
-    await tapByElement(this.operationByType(operationType));
+  async selectAndClickOnLastOperation(operationType: string | RegExp, accountName?: string) {
+    await tapByElement(this.operationByType(operationType, accountName).atIndex(0));
   }
 
   @Step("Tap on tab selector")

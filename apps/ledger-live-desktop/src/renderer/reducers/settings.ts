@@ -12,9 +12,8 @@ import { getEnv } from "@ledgerhq/live-env";
 import { CryptoCurrency, Currency, Unit } from "@ledgerhq/types-cryptoassets";
 import {
   AccountLike,
+  DeviceInfo,
   DeviceModelInfo,
-  Feature,
-  FeatureId,
   FirmwareUpdateContext,
   PortfolioRange,
 } from "@ledgerhq/types-live";
@@ -34,12 +33,17 @@ import regionsByKey from "~/renderer/screens/settings/sections/General/regions.j
 import { State } from ".";
 import {
   PURGE_EXPIRED_ANONYMOUS_USER_NOTIFICATIONS,
+  SET_PRODUCT_TOUR_COMPLETED,
   TOGGLE_MEMOTAG_INFO,
   TOGGLE_MEV,
   UPDATE_ANONYMOUS_USER_NOTIFICATIONS,
 } from "../actions/constants";
 import { OnboardingUseCase } from "../components/Onboarding/OnboardingUseCase";
 import { Handlers } from "./types";
+import {
+  needsConsentRenewal,
+  resolveAnalyticsOptInParams,
+} from "@ledgerhq/live-common/analyticsConsent/index";
 
 /* Initial state */
 
@@ -48,6 +52,11 @@ export type VaultSigner = {
   host: string;
   workspace: string;
   token: string;
+};
+
+export type AnalyticsConsentInfo = {
+  consentDate: string | null;
+  privacyPolicyVersion: number | null;
 };
 
 export type SettingsState = {
@@ -78,7 +87,8 @@ export type SettingsState = {
   developerMode: boolean;
   shareAnalytics: boolean;
   sharePersonalizedRecommandations: boolean;
-  sentryLogs: boolean;
+  analyticsConsentInfo: AnalyticsConsentInfo;
+  sentryLogs: boolean; // also used for Datadog RUM opt-in
   lastUsedVersion: string;
   dismissedBanners: string[];
   accountsViewMode: "card" | "list";
@@ -110,10 +120,6 @@ export type SettingsState = {
     selectableCurrencies: string[];
     acceptedProviders: string[];
   };
-  overriddenFeatureFlags: {
-    [key in FeatureId]: Feature;
-  };
-  featureFlagsButtonVisible: boolean;
   vaultSigner: VaultSigner;
   supportedCounterValues: SupportedCountervaluesData[];
   hasSeenAnalyticsOptInPrompt: boolean;
@@ -127,7 +133,12 @@ export type SettingsState = {
   alwaysShowMemoTagInfo: boolean;
   anonymousUserNotifications: { LNSUpsell?: number } & Record<string, number>;
   hasSeenWalletV4Tour: boolean;
+  productTourCompleted: boolean;
+  hasClickedRecover: boolean;
   doNotAskAgainSkipMemo: boolean;
+  deprecationDoNotRemind: string[];
+  lastAnalyticsConsentDate: string | null;
+  privacyPolicyVersion: number | null;
 };
 
 export const getInitialLanguageAndLocale = (): { language: Language; locale: Locale } => {
@@ -157,7 +168,7 @@ export const INITIAL_STATE: SettingsState = {
   hasCompletedOnboarding: false,
   counterValue: "USD",
   ...getInitialLanguageAndLocale(),
-  theme: null,
+  theme: "dark",
   region: null,
   orderAccounts: "balance|desc",
   countervalueFirst: false,
@@ -169,6 +180,10 @@ export const INITIAL_STATE: SettingsState = {
   loaded: false,
   shareAnalytics: true,
   sharePersonalizedRecommandations: true,
+  analyticsConsentInfo: {
+    consentDate: null,
+    privacyPolicyVersion: null,
+  },
   hasSeenAnalyticsOptInPrompt: false,
   sentryLogs: true,
   lastUsedVersion: __APP_VERSION__,
@@ -206,10 +221,6 @@ export const INITIAL_STATE: SettingsState = {
     acceptedProviders: [],
     selectableCurrencies: [],
   },
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  overriddenFeatureFlags: {} as Record<FeatureId, Feature>,
-  featureFlagsButtonVisible: false,
-
   // Vault
   vaultSigner: { enabled: false, host: "", token: "", workspace: "" },
   supportedCounterValues: [],
@@ -227,13 +238,31 @@ export const INITIAL_STATE: SettingsState = {
   alwaysShowMemoTagInfo: true,
   anonymousUserNotifications: {},
   hasSeenWalletV4Tour: false,
+  productTourCompleted: false,
+  hasClickedRecover: false,
   doNotAskAgainSkipMemo: false,
+  deprecationDoNotRemind: [],
+  lastAnalyticsConsentDate: null,
+  privacyPolicyVersion: null,
+};
+
+export const AFTER_ONBOARDING_STATE: SettingsState = {
+  ...INITIAL_STATE,
+  hasCompletedOnboarding: true,
+  loaded: true,
+  lastSeenDevice: {
+    modelId: DeviceModelId.nanoS,
+    deviceInfo: {} as DeviceInfo,
+    apps: [],
+  },
 };
 
 /* Handlers */
 
 type HandlersPayloads = {
   SAVE_SETTINGS: Partial<SettingsState>;
+  /** Merges into `analyticsConsentInfo` and keeps `lastAnalyticsConsentDate` / `privacyPolicyVersion` in sync. */
+  SAVE_ANALYTICS_CONSENT_INFO: Partial<AnalyticsConsentInfo>;
   FETCH_SETTINGS: Partial<SettingsState>;
   SETTINGS_DISMISS_BANNER: string;
   SHOW_TOKEN: string;
@@ -249,18 +278,6 @@ type HandlersPayloads = {
     imageSize: number;
     imageHash: string;
   };
-  SET_OVERRIDDEN_FEATURE_FLAG: {
-    key: FeatureId;
-    value: Feature;
-  };
-  SET_OVERRIDDEN_FEATURE_FLAGS: {
-    overriddenFeatureFlags: {
-      [key in FeatureId]: Feature;
-    };
-  };
-  SET_FEATURE_FLAGS_BUTTON_VISIBLE: {
-    featureFlagsButtonVisible: boolean;
-  };
   SET_VAULT_SIGNER: VaultSigner;
   SET_SUPPORTED_COUNTER_VALUES: SupportedCountervaluesData[];
   SET_HAS_SEEN_ANALYTICS_OPT_IN_PROMPT: boolean;
@@ -273,6 +290,7 @@ type HandlersPayloads = {
 
   MARKET_ADD_STARRED_COINS: string;
   MARKET_REMOVE_STARRED_COINS: string;
+  DEPRECATION_DO_NOT_REMIND: string;
 
   SET_HAS_BEEN_UPSOLD_RECOVER: boolean;
   SET_ONBOARDING_USE_CASE: OnboardingUseCase;
@@ -286,6 +304,8 @@ type HandlersPayloads = {
     notifications: Record<string, number>;
   };
   SET_HAS_SEEN_WALLET_V4_TOUR: boolean;
+  [SET_PRODUCT_TOUR_COMPLETED]: boolean;
+  SET_HAS_CLICKED_RECOVER: boolean;
 };
 type SettingsHandlers<PreciseKey = true> = Handlers<SettingsState, HandlersPayloads, PreciseKey>;
 
@@ -313,16 +333,34 @@ const handlers: SettingsHandlers = {
   SAVE_SETTINGS: (state, { payload }) => {
     if (!payload) return state;
     const filteredPayload = filterValidSettings(payload);
+    const { analyticsConsentInfo, ...rest } = filteredPayload;
+
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const changed = (Object.keys(filteredPayload) as (keyof typeof filteredPayload)[]).some(
-      key => filteredPayload[key] !== state[key],
+    const changed = (Object.keys(rest) as (keyof typeof rest)[]).some(
+      key => rest[key] !== state[key],
     );
     if (!changed) return state;
+
+    return { ...state, ...rest };
+  },
+
+  SAVE_ANALYTICS_CONSENT_INFO: (state, { payload }) => {
+    if (!payload) return state;
+    const merged: AnalyticsConsentInfo = { ...state.analyticsConsentInfo, ...payload };
+    if (
+      merged.consentDate === state.analyticsConsentInfo.consentDate &&
+      merged.privacyPolicyVersion === state.analyticsConsentInfo.privacyPolicyVersion
+    ) {
+      return state;
+    }
     return {
       ...state,
-      ...filteredPayload,
+      analyticsConsentInfo: merged,
+      lastAnalyticsConsentDate: merged.consentDate,
+      privacyPolicyVersion: merged.privacyPolicyVersion,
     };
   },
+
   FETCH_SETTINGS: (state, { payload: settings }) => {
     const filteredSettings = filterValidSettings(settings);
     return {
@@ -387,21 +425,6 @@ const handlers: SettingsHandlers = {
       [payload.key]: payload.value,
     },
   }),
-  SET_OVERRIDDEN_FEATURE_FLAG: (state: SettingsState, { payload }) => ({
-    ...state,
-    overriddenFeatureFlags: {
-      ...state.overriddenFeatureFlags,
-      [payload.key]: payload.value,
-    },
-  }),
-  SET_OVERRIDDEN_FEATURE_FLAGS: (state: SettingsState, { payload }) => ({
-    ...state,
-    overriddenFeatureFlags: payload.overriddenFeatureFlags,
-  }),
-  SET_FEATURE_FLAGS_BUTTON_VISIBLE: (state: SettingsState, { payload }) => ({
-    ...state,
-    featureFlagsButtonVisible: payload.featureFlagsButtonVisible,
-  }),
   SET_VAULT_SIGNER: (state: SettingsState, { payload }) => ({
     ...state,
     vaultSigner: payload,
@@ -418,6 +441,12 @@ const handlers: SettingsHandlers = {
       ...state,
       supportedCounterValues: payload,
       counterValue: activeCounterValue,
+    };
+  },
+  DEPRECATION_DO_NOT_REMIND: (state: SettingsState, { payload }) => {
+    return {
+      ...state,
+      deprecationDoNotRemind: [...state.deprecationDoNotRemind, payload],
     };
   },
   SET_HAS_SEEN_ANALYTICS_OPT_IN_PROMPT: (state: SettingsState, { payload }) => ({
@@ -505,6 +534,14 @@ const handlers: SettingsHandlers = {
   SET_HAS_SEEN_WALLET_V4_TOUR: (state: SettingsState, { payload }) => ({
     ...state,
     hasSeenWalletV4Tour: payload,
+  }),
+  [SET_PRODUCT_TOUR_COMPLETED]: (state: SettingsState, { payload }) => ({
+    ...state,
+    productTourCompleted: payload,
+  }),
+  SET_HAS_CLICKED_RECOVER: (state: SettingsState, { payload }) => ({
+    ...state,
+    hasClickedRecover: payload,
   }),
 };
 
@@ -616,10 +653,10 @@ export const countervalueFirstSelector = createSelector(
 );
 export const developerModeSelector = (state: State): boolean => state.settings.developerMode;
 export const lastUsedVersionSelector = (state: State): string => state.settings.lastUsedVersion;
-export const userThemeSelector = (state: State): "dark" | "light" | undefined | null => {
+export const userThemeSelector = (state: State): "dark" | "light" | null => {
   const savedVal = state.settings.theme;
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return ["dark", "light"].includes(savedVal as string) ? (savedVal as "dark" | "light") : "dark";
+  if (savedVal === "dark" || savedVal === "light") return savedVal;
+  return null;
 };
 
 type LanguageAndUseSystemLanguage = {
@@ -738,10 +775,31 @@ export const autoLockTimeoutSelector = (state: State) => state.settings.autoLock
 export const shareAnalyticsSelector = (state: State) => state.settings.shareAnalytics;
 export const sharePersonalizedRecommendationsSelector = (state: State) =>
   state.settings.sharePersonalizedRecommandations;
-export const trackingEnabledSelector = createSelector(
-  settingsStoreSelector,
-  s => s.shareAnalytics || s.sharePersonalizedRecommandations,
-);
+
+export const analyticsConsentInfoSelector = (state: State): AnalyticsConsentInfo =>
+  state.settings.analyticsConsentInfo ?? {
+    consentDate: null,
+    privacyPolicyVersion: null,
+  };
+
+// Plain selector (not createSelector): wall-clock "now" is not in Redux, so the consent window must be recomputed on every read.
+export const trackingEnabledSelector = (state: State) => {
+  const s = state.settings;
+  const analyticsOptIn = state.featureFlags?.resolved?.analyticsOptIn;
+
+  if (analyticsOptIn?.enabled) {
+    if (!s.lastAnalyticsConsentDate) {
+      return false;
+    }
+
+    const { consentValidityDays } = resolveAnalyticsOptInParams(analyticsOptIn);
+    if (needsConsentRenewal(s.lastAnalyticsConsentDate, consentValidityDays)) {
+      return false;
+    }
+  }
+
+  return s.shareAnalytics || s.sharePersonalizedRecommandations;
+};
 export const selectedTimeRangeSelector = (state: State) => state.settings.selectedTimeRange;
 export const hasInstalledAppsSelector = (state: State) => state.settings.hasInstalledApps;
 export const USBTroubleshootingIndexSelector = (state: State) =>
@@ -770,17 +828,14 @@ export const lastSeenDeviceSelector = (state: State): DeviceModelInfo | null | u
     return null;
   return lastSeenDevice;
 };
-export const hasOnboardedDeviceSelector = (state: State) => lastSeenDeviceSelector(state) !== null;
 export const devicesModelListSelector = (state: State): DeviceModelId[] =>
   state.settings.devicesModelList;
 export const latestFirmwareSelector = (state: State) => state.settings.latestFirmware;
 export const swapSelectableCurrenciesSelector = (state: State) =>
   state.settings.swap.selectableCurrencies;
 export const showClearCacheBannerSelector = (state: State) => state.settings.showClearCacheBanner;
-export const overriddenFeatureFlagsSelector = (state: State) =>
-  state.settings.overriddenFeatureFlags;
-export const featureFlagsButtonVisibleSelector = (state: State) =>
-  state.settings.featureFlagsButtonVisible;
+export const overriddenFeatureFlagsSelector = (state: State) => state.featureFlags.overrides;
+export const featureFlagsButtonVisibleSelector = (state: State) => state.featureFlags.bannerVisible;
 export const vaultSignerSelector = (state: State) => state.settings.vaultSigner;
 export const supportedCounterValuesSelector = (state: State) =>
   state.settings.supportedCounterValues;
@@ -801,3 +856,10 @@ export const alwaysShowMemoTagInfoSelector = (state: State) => state.settings.al
 export const anonymousUserNotificationsSelector = (state: State) =>
   state.settings.anonymousUserNotifications;
 export const hasSeenWalletV4TourSelector = (state: State) => state.settings.hasSeenWalletV4Tour;
+export const productTourCompletedSelector = (state: State) => state.settings.productTourCompleted;
+export const hasClickedRecoverSelector = (state: State) => state.settings.hasClickedRecover;
+
+// Last onboarded device is the device set when a user goes through the onboarding flow.
+// Last seen device is the device set when a user performs a device action (e.g. pairing, firmware update, etc.).
+export const hasOnboardedDeviceSelector = (state: State) =>
+  !!lastOnboardedDeviceSelector(state) || lastSeenDeviceSelector(state) !== null;

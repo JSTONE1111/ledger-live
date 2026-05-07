@@ -46,7 +46,6 @@ export type AccountItemProps = {
   rightElement?: RightElement;
   showIcon?: boolean;
   backgroundColor?: string;
-  cryptoIconBackgroundColor: string;
 };
 
 const ICON_BUTTONS_SIZE = 32;
@@ -64,7 +63,7 @@ const Wrapper = styled(Pressable)<{ backgroundColor?: string; isClickable: boole
   align-items: center;
   width: 100%;
   overflow: hidden;
-  ${(props) => props.backgroundColor && `background-color: ${props.backgroundColor};`}
+  ${props => props.backgroundColor && `background-color: ${props.backgroundColor};`}
 `;
 
 const ContentContainer = styled(View)`
@@ -151,7 +150,6 @@ export const AccountItem = ({
   rightElement,
   showIcon = true,
   backgroundColor,
-  cryptoIconBackgroundColor,
 }: AccountItemProps) => {
   const theme = useTheme();
   const colorType = theme.colors.type === "dark" ? "dark" : "light";
@@ -220,7 +218,6 @@ export const AccountItem = ({
             ticker={ticker}
             parentId={parentId}
             showIcon={showIcon}
-            backgroundColor={cryptoIconBackgroundColor}
           />
         </AccountInfoContainer>
 

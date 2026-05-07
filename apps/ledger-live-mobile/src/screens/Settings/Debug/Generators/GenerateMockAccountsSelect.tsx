@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { v4 as uuid } from "uuid";
 import { genAccount } from "@ledgerhq/live-common/mock/account";
 import { listSupportedCurrencies } from "@ledgerhq/live-common/currencies/index";
 import { useNavigation } from "@react-navigation/native";
@@ -9,8 +10,10 @@ import { CryptoCurrency, CryptoCurrencyId } from "@ledgerhq/types-cryptoassets";
 import { Account } from "@ledgerhq/types-live";
 import SettingsRow from "~/components/SettingsRow";
 import { reboot } from "~/actions/appstate";
-import { useDispatch } from "~/context/hooks";
+import { useDispatch, useStore } from "~/context/hooks";
 import { replaceAccounts } from "~/actions/accounts";
+import { exportSelector } from "~/reducers/accounts";
+import { saveAccounts } from "~/db";
 import { ScreenName } from "~/const";
 import CurrencyIcon from "~/components/CurrencyIcon";
 import { SettingsNavigatorStackParamList } from "~/components/RootNavigator/types/SettingsNavigator";
@@ -29,7 +32,7 @@ const generateMockAccounts = (currencies: CryptoCurrency[], tokens: string): Acc
   const tokenIds = tokens.split(",").map(t => t.toLowerCase().trim());
 
   return currencies.map(currency =>
-    genAccount(String(Math.random()), {
+    genAccount(uuid(), {
       currency,
       tokenIds,
     }),
@@ -40,6 +43,7 @@ const currencies = listSupportedCurrencies().sort((a, b) => a.name.localeCompare
 
 export const GenerateMockAccountSelectScreen = () => {
   const dispatch = useDispatch();
+  const store = useStore();
   const [tokens, setTokens] = useState<string>("");
 
   const [checkedCurrencies, setCheckedCurrencies] = useState<Record<string, boolean>>({});
@@ -57,11 +61,10 @@ export const GenerateMockAccountSelectScreen = () => {
   const handlePressContinue = useCallback(() => {
     const selectedCurrencies = currencies.filter(({ id }) => checkedCurrencies[id]);
 
-    const onPress = () => {
+    const onPress = async () => {
       const mockAccounts = generateMockAccounts(selectedCurrencies, tokens);
-
       dispatch(replaceAccounts(mockAccounts));
-
+      await saveAccounts(await exportSelector(store.getState()));
       dispatch(reboot());
     };
 
@@ -78,7 +81,7 @@ export const GenerateMockAccountSelectScreen = () => {
       ],
       { cancelable: true },
     );
-  }, [checkedCurrencies, dispatch, tokens]);
+  }, [checkedCurrencies, dispatch, tokens, store]);
 
   const insets = useSafeAreaInsets();
   return (

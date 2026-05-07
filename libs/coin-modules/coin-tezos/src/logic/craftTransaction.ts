@@ -11,7 +11,13 @@ export type TransactionFee = {
   gasLimit?: string;
   storageLimit?: string;
 };
-export type TransactionType = "OUT" | "DELEGATE" | "UNDELEGATE";
+export type TransactionType =
+  | "OUT"
+  | "DELEGATE"
+  | "UNDELEGATE"
+  | "STAKE"
+  | "UNSTAKE"
+  | "FINALIZE_UNSTAKE";
 
 export async function craftTransaction(
   account: {
@@ -19,10 +25,19 @@ export async function craftTransaction(
     counter?: number;
   },
   transaction: {
-    type: "send" | "delegate" | "undelegate";
+    type:
+      | "send"
+      | "delegate"
+      | "undelegate"
+      | "send_token"
+      | "stake"
+      | "unstake"
+      | "finalize_unstake";
     recipient: string;
     amount: bigint;
     fee: TransactionFee;
+    contractAddress?: string;
+    tokenId?: number;
   },
   publicKey?: {
     publicKey: string;
@@ -109,6 +124,37 @@ export async function craftTransaction(
       });
       break;
     }
+    case "send_token": {
+      if (!transaction.contractAddress || transaction.tokenId === undefined) {
+        throw new Error("FA2 transfer requires contractAddress and tokenId");
+      }
+      type = "OUT";
+      const tokenContract = await tezosToolkit.contract.at(transaction.contractAddress);
+      const transferParams = tokenContract.methods
+        .transfer([
+          {
+            from_: address,
+            txs: [
+              {
+                to_: transaction.recipient,
+                token_id: transaction.tokenId,
+                amount: transaction.amount,
+              },
+            ],
+          },
+        ])
+        .toTransferParams({ mutez: true });
+      contents.push({
+        kind: OpKind.TRANSACTION,
+        source: address,
+        destination: transaction.contractAddress,
+        amount: "0",
+        counter: (counter + 1 + contents.length).toString(),
+        parameters: transferParams.parameter,
+        ...transactionFees,
+      });
+      break;
+    }
     case "delegate": {
       type = "DELEGATE";
       contents.push({
@@ -128,6 +174,26 @@ export async function craftTransaction(
         kind: OpKind.DELEGATION,
         source: address,
         counter: (counter + 1).toString(),
+        ...transactionFees,
+      });
+      break;
+    }
+    case "stake":
+    case "unstake":
+    case "finalize_unstake": {
+      const typeMap = {
+        stake: "STAKE",
+        unstake: "UNSTAKE",
+        finalize_unstake: "FINALIZE_UNSTAKE",
+      } as const;
+      type = typeMap[transaction.type];
+      contents.push({
+        kind: OpKind.TRANSACTION,
+        amount: transaction.type === "finalize_unstake" ? "0" : transaction.amount.toString(),
+        destination: address,
+        source: address,
+        counter: (counter + 1 + contents.length).toString(),
+        parameters: { entrypoint: transaction.type, value: { prim: "Unit" } },
         ...transactionFees,
       });
       break;

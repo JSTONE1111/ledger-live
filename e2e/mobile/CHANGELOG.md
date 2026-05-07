@@ -1,5 +1,175 @@
 # ledger-live-mobile-e2e-tests
 
+## 0.21.0
+
+### Minor Changes
+
+- [#16248](https://github.com/LedgerHQ/ledger-live/pull/16248) [`17d7027`](https://github.com/LedgerHQ/ledger-live/commit/17d7027e38a4f67c869d6ecc24e914cb4d94dba2) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Skip swap network-fee validation E2E cases while the sponsored program is active
+
+- [#16049](https://github.com/LedgerHQ/ledger-live/pull/16049) [`11cd80f`](https://github.com/LedgerHQ/ledger-live/commit/11cd80f7c262f3e44fbbb19a8b034e9767c02db6) Thanks [@henri-ly](https://github.com/henri-ly)! - remove Ledger default validator for MultiversX
+
+- [#16084](https://github.com/LedgerHQ/ledger-live/pull/16084) [`50e1fc6`](https://github.com/LedgerHQ/ledger-live/commit/50e1fc618cee9ec01603108e230358a6b7b6a91e) Thanks [@sergiubreban](https://github.com/sergiubreban)! - test: add e2e tests for earn v2 on mobile
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+## 0.21.0-next.0
+
+### Minor Changes
+
+- [#16248](https://github.com/LedgerHQ/ledger-live/pull/16248) [`17d7027`](https://github.com/LedgerHQ/ledger-live/commit/17d7027e38a4f67c869d6ecc24e914cb4d94dba2) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Skip swap network-fee validation E2E cases while the sponsored program is active
+
+- [#16049](https://github.com/LedgerHQ/ledger-live/pull/16049) [`11cd80f`](https://github.com/LedgerHQ/ledger-live/commit/11cd80f7c262f3e44fbbb19a8b034e9767c02db6) Thanks [@henri-ly](https://github.com/henri-ly)! - remove Ledger default validator for MultiversX
+
+- [#16084](https://github.com/LedgerHQ/ledger-live/pull/16084) [`50e1fc6`](https://github.com/LedgerHQ/ledger-live/commit/50e1fc618cee9ec01603108e230358a6b7b6a91e) Thanks [@sergiubreban](https://github.com/sergiubreban)! - test: add e2e tests for earn v2 on mobile
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+## 0.20.0
+
+### Minor Changes
+
+- [#15753](https://github.com/LedgerHQ/ledger-live/pull/15753) [`3093380`](https://github.com/LedgerHQ/ledger-live/commit/3093380655b975b6d62f9b201b6a06889392bb11) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Enhance mobile E2E test coverage: add Celo lock/vote tests, character-set validation for language change, and re-enable account rename test
+
+- [#15938](https://github.com/LedgerHQ/ledger-live/pull/15938) [`6d55392`](https://github.com/LedgerHQ/ledger-live/commit/6d5539208dcdde2c166cba895092f54c68f3fb93) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Fix flaky expectCharacterSet using detox native assertion
+
+- [#15966](https://github.com/LedgerHQ/ledger-live/pull/15966) [`7f5b6a1`](https://github.com/LedgerHQ/ledger-live/commit/7f5b6a18cf8f67f1d84cc1feb87acfaaeb0df264) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Fix incorrect celo manage assets page assertions and vote flow
+
+- [#15884](https://github.com/LedgerHQ/ledger-live/pull/15884) [`f42c78b`](https://github.com/LedgerHQ/ledger-live/commit/f42c78bd02b8ebde6b5b787a406c36e13515da45) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - test: send icp support
+
+- [#15244](https://github.com/LedgerHQ/ledger-live/pull/15244) [`bacf788`](https://github.com/LedgerHQ/ledger-live/commit/bacf788d12d75ae2a2d5e9da8686041fb1220043) Thanks [@liviuciulinaru](https://github.com/liviuciulinaru)! - Add accessibility metadata and stable test IDs in swap flows across desktop and mobile, including swap history.
+
+- [#15979](https://github.com/LedgerHQ/ledger-live/pull/15979) [`82d076e`](https://github.com/LedgerHQ/ledger-live/commit/82d076e3fe0a8192d1e6a10302cae36af7975556) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Move spec helper functions into page object files for better test structure
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+### Patch Changes
+
+- Updated dependencies [[`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8)]:
+  - @ledgerhq/logs@6.17.0
+
+## 0.20.0-next.0
+
+### Minor Changes
+
+- [#15753](https://github.com/LedgerHQ/ledger-live/pull/15753) [`3093380`](https://github.com/LedgerHQ/ledger-live/commit/3093380655b975b6d62f9b201b6a06889392bb11) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Enhance mobile E2E test coverage: add Celo lock/vote tests, character-set validation for language change, and re-enable account rename test
+
+- [#15938](https://github.com/LedgerHQ/ledger-live/pull/15938) [`6d55392`](https://github.com/LedgerHQ/ledger-live/commit/6d5539208dcdde2c166cba895092f54c68f3fb93) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Fix flaky expectCharacterSet using detox native assertion
+
+- [#15966](https://github.com/LedgerHQ/ledger-live/pull/15966) [`7f5b6a1`](https://github.com/LedgerHQ/ledger-live/commit/7f5b6a18cf8f67f1d84cc1feb87acfaaeb0df264) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Fix incorrect celo manage assets page assertions and vote flow
+
+- [#15884](https://github.com/LedgerHQ/ledger-live/pull/15884) [`f42c78b`](https://github.com/LedgerHQ/ledger-live/commit/f42c78bd02b8ebde6b5b787a406c36e13515da45) Thanks [@hedi-edelbloute](https://github.com/hedi-edelbloute)! - test: send icp support
+
+- [#15244](https://github.com/LedgerHQ/ledger-live/pull/15244) [`bacf788`](https://github.com/LedgerHQ/ledger-live/commit/bacf788d12d75ae2a2d5e9da8686041fb1220043) Thanks [@liviuciulinaru](https://github.com/liviuciulinaru)! - Add accessibility metadata and stable test IDs in swap flows across desktop and mobile, including swap history.
+
+- [#15979](https://github.com/LedgerHQ/ledger-live/pull/15979) [`82d076e`](https://github.com/LedgerHQ/ledger-live/commit/82d076e3fe0a8192d1e6a10302cae36af7975556) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Move spec helper functions into page object files for better test structure
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+### Patch Changes
+
+- Updated dependencies [[`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8)]:
+  - @ledgerhq/logs@6.17.0-next.0
+
+## 0.19.0
+
+### Minor Changes
+
+- [#15690](https://github.com/LedgerHQ/ledger-live/pull/15690) [`b037edf`](https://github.com/LedgerHQ/ledger-live/commit/b037edf31c35b6caa0fe18b39b65b2dde960f045) Thanks [@ishaba](https://github.com/ishaba)! - feat: add mobile send E2E test for Sui
+
+## 0.19.0-next.0
+
+### Minor Changes
+
+- [#15690](https://github.com/LedgerHQ/ledger-live/pull/15690) [`b037edf`](https://github.com/LedgerHQ/ledger-live/commit/b037edf31c35b6caa0fe18b39b65b2dde960f045) Thanks [@ishaba](https://github.com/ishaba)! - feat: add mobile send E2E test for Sui
+
+## 0.18.0
+
+### Minor Changes
+
+- [#15392](https://github.com/LedgerHQ/ledger-live/pull/15392) [`703907c`](https://github.com/LedgerHQ/ledger-live/commit/703907cacf6c37d5530b12e443dc1279d1a7ab04) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Update e2e test currencies: replace Sepolia ETH with mainnet ETH and BTC Legacy with BTC Native SegWit
+
+- [#15291](https://github.com/LedgerHQ/ledger-live/pull/15291) [`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - feat: add `ledger-wallet-framework`
+
+- [#14907](https://github.com/LedgerHQ/ledger-live/pull/14907) [`dd98891`](https://github.com/LedgerHQ/ledger-live/commit/dd98891e9c2e1bd4795b8adcb64b3c8c45b9eb75) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Replace usages of Math.random() for id generation by uuid()
+
+## 0.18.0-next.0
+
+### Minor Changes
+
+- [#15392](https://github.com/LedgerHQ/ledger-live/pull/15392) [`703907c`](https://github.com/LedgerHQ/ledger-live/commit/703907cacf6c37d5530b12e443dc1279d1a7ab04) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Update e2e test currencies: replace Sepolia ETH with mainnet ETH and BTC Legacy with BTC Native SegWit
+
+- [#15291](https://github.com/LedgerHQ/ledger-live/pull/15291) [`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - feat: add `ledger-wallet-framework`
+
+- [#14907](https://github.com/LedgerHQ/ledger-live/pull/14907) [`dd98891`](https://github.com/LedgerHQ/ledger-live/commit/dd98891e9c2e1bd4795b8adcb64b3c8c45b9eb75) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Replace usages of Math.random() for id generation by uuid()
+
+## 0.17.0
+
+### Minor Changes
+
+- [#15038](https://github.com/LedgerHQ/ledger-live/pull/15038) [`20a2915`](https://github.com/LedgerHQ/ledger-live/commit/20a2915559e589c838600366b26394fad669a712) Thanks [@cunhabruno](https://github.com/cunhabruno)! - Adapt mobile E2E tests to support Wallet 4.0 feature flag toggle via CI checkbox or env var
+
+- [#15151](https://github.com/LedgerHQ/ledger-live/pull/15151) [`868bd15`](https://github.com/LedgerHQ/ledger-live/commit/868bd158de9a5242c5edd3f1ffabe6cc0f1a5c22) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Update speculos-x-other-account E2E test userdata with current blockchain state
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025)]:
+  - @ledgerhq/logs@6.16.0
+
+## 0.17.0-next.0
+
+### Minor Changes
+
+- [#15038](https://github.com/LedgerHQ/ledger-live/pull/15038) [`20a2915`](https://github.com/LedgerHQ/ledger-live/commit/20a2915559e589c838600366b26394fad669a712) Thanks [@cunhabruno](https://github.com/cunhabruno)! - Adapt mobile E2E tests to support Wallet 4.0 feature flag toggle via CI checkbox or env var
+
+- [#15151](https://github.com/LedgerHQ/ledger-live/pull/15151) [`868bd15`](https://github.com/LedgerHQ/ledger-live/commit/868bd158de9a5242c5edd3f1ffabe6cc0f1a5c22) Thanks [@VicAlbr](https://github.com/VicAlbr)! - Update speculos-x-other-account E2E test userdata with current blockchain state
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025)]:
+  - @ledgerhq/logs@6.16.0-next.0
+
+## 0.16.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+- [#15201](https://github.com/LedgerHQ/ledger-live/pull/15201) [`96415c0`](https://github.com/LedgerHQ/ledger-live/commit/96415c06aaf69381811987eb13cd00d1b59b4c4d) Thanks [@martijnhjk](https://github.com/martijnhjk)! - Update speculos-x-other-account E2E test userdata with current blockchain state
+
+### Patch Changes
+
+- Updated dependencies [[`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/logs@6.15.0
+
+## 0.16.0-next.1
+
+### Minor Changes
+
+- [#15201](https://github.com/LedgerHQ/ledger-live/pull/15201) [`96415c0`](https://github.com/LedgerHQ/ledger-live/commit/96415c06aaf69381811987eb13cd00d1b59b4c4d) Thanks [@martijnhjk](https://github.com/martijnhjk)! - Update speculos-x-other-account E2E test userdata with current blockchain state
+
+## 0.16.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/logs@6.15.0-next.0
+
+## 0.15.0
+
+### Minor Changes
+
+- [#14666](https://github.com/LedgerHQ/ledger-live/pull/14666) [`e239c48`](https://github.com/LedgerHQ/ledger-live/commit/e239c4866a194cc4db90247eee7d84389ac2333f) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Bump lumen for mobile and desktop + fix e2e marketbanner
+
+## 0.15.0-next.0
+
+### Minor Changes
+
+- [#14666](https://github.com/LedgerHQ/ledger-live/pull/14666) [`e239c48`](https://github.com/LedgerHQ/ledger-live/commit/e239c4866a194cc4db90247eee7d84389ac2333f) Thanks [@LucasWerey](https://github.com/LucasWerey)! - Bump lumen for mobile and desktop + fix e2e marketbanner
+
 ## 0.14.0
 
 ### Minor Changes

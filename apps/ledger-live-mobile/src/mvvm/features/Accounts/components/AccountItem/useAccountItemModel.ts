@@ -1,4 +1,4 @@
-import { getTagDerivationMode } from "@ledgerhq/coin-framework/lib/derivation";
+import { getTagDerivationMode } from "@ledgerhq/ledger-wallet-framework/derivation";
 import {
   getAccountCurrency,
   getParentAccount,
@@ -19,6 +19,7 @@ export interface AccountItemProps {
   showUnit?: boolean;
   hideBalanceInfo?: boolean;
   withPlaceholder?: boolean;
+  squaredIcon?: boolean;
 }
 
 const useAccountItemModel = ({
@@ -27,6 +28,7 @@ const useAccountItemModel = ({
   showUnit,
   hideBalanceInfo,
   withPlaceholder,
+  squaredIcon,
 }: AccountItemProps) => {
   const allAccount = useSelector(accountsSelector);
   const isTokenAccount = isTokenAccountChecker(account);
@@ -60,6 +62,7 @@ const useAccountItemModel = ({
     hideBalanceInfo,
     withPlaceholder,
     accountId,
+    squaredIcon,
   };
 };
 

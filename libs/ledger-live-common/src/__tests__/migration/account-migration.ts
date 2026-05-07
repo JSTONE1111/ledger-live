@@ -28,6 +28,7 @@ setSupportedCurrencies([
   "ripple",
   "litecoin",
   "polygon",
+  "polygon_amoy",
   "bitcoin_cash",
   "stellar",
   "dogecoin",
@@ -67,6 +68,8 @@ setSupportedCurrencies([
   "energy_web",
   "astar",
   "metis",
+  "mantle",
+  "mantle_sepolia",
   "boba",
   "moonriver",
   "velas_evm",
@@ -198,7 +201,7 @@ const testSync = async (currencyId: string, xpubOrAddress: string) => {
       .pipe(reduce((acc, f: (arg0: Account) => Account) => f(acc), mockAccount)),
   );
 
-  const accountRaw = toAccountRaw(syncedAccount);
+  const accountRaw = await toAccountRaw(syncedAccount);
 
   console.log("finishing sync on", currencyId, xpubOrAddress);
   return accountRaw;
@@ -218,7 +221,7 @@ const testSyncAccount = async (account: Account) => {
       .pipe(reduce((acc, f: (arg0: Account) => Account) => f(acc), account)),
   );
 
-  const accountRaw = toAccountRaw(syncedAccount);
+  const accountRaw = await toAccountRaw(syncedAccount);
 
   console.log("finishing sync on", account.currency.id, account.xpub ?? account.freshAddress);
   return accountRaw;

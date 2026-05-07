@@ -1,20 +1,5 @@
 import { recoverHandler, recoverRestoreFlowHandler } from "../recover.handler";
-import { DeeplinkHandlerContext } from "../../types";
-
-const createMockContext = (
-  overrides: Partial<DeeplinkHandlerContext> = {},
-): DeeplinkHandlerContext => ({
-  dispatch: jest.fn(),
-  accounts: [],
-  navigate: jest.fn(),
-  openAddAccountFlow: jest.fn(),
-  openAssetFlow: jest.fn(),
-  openSendFlow: jest.fn(),
-  postOnboardingDeeplinkHandler: jest.fn(),
-  tryRedirectToPostOnboardingOrRecover: jest.fn(() => false),
-  currentPathname: "/",
-  ...overrides,
-});
+import { createMockContext } from "./test-utils";
 
 describe("recover.handler", () => {
   beforeEach(() => {
@@ -52,7 +37,34 @@ describe("recover.handler", () => {
       expect(context.navigate).toHaveBeenCalledWith("/recover/platform", undefined, "?step=2");
     });
 
-    it("handles empty path", () => {
+    it("merges location state and bumps recoverDeeplinkAt when already on the same recover URL", () => {
+      const context = createMockContext({
+        currentPathname: "/recover/platform",
+        currentSearch: "?step=2",
+        currentLocationState: { deviceId: "device-1", fromOnboarding: true },
+      });
+
+      recoverHandler(
+        {
+          type: "recover",
+          path: "platform",
+          search: "?step=2",
+        },
+        context,
+      );
+
+      expect(context.navigate).toHaveBeenCalledWith(
+        "/recover/platform",
+        expect.objectContaining({
+          deviceId: "device-1",
+          fromOnboarding: true,
+          recoverDeeplinkAt: expect.any(String),
+        }),
+        "?step=2",
+      );
+    });
+
+    it("handles empty path by navigating to /recover/ when no recoverAppId in context", () => {
       const context = createMockContext();
 
       recoverHandler(
@@ -65,6 +77,21 @@ describe("recover.handler", () => {
       );
 
       expect(context.navigate).toHaveBeenCalledWith("/recover/", undefined, "");
+    });
+
+    it("uses recoverAppId from context when path is empty (e.g. ledgerwallet://recover)", () => {
+      const context = createMockContext({ recoverAppId: "protect-id" });
+
+      recoverHandler(
+        {
+          type: "recover",
+          path: "",
+          search: "",
+        },
+        context,
+      );
+
+      expect(context.navigate).toHaveBeenCalledWith("/recover/protect-id", undefined, "");
     });
   });
 

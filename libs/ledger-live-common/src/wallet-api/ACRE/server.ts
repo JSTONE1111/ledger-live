@@ -6,7 +6,7 @@ import {
   getMainAccount,
   makeEmptyTokenAccount,
   isTokenAccount,
-} from "@ledgerhq/coin-framework/account/index";
+} from "@ledgerhq/ledger-wallet-framework/account/index";
 import { Account, AccountLike, AnyMessage, Operation, SignedOperation } from "@ledgerhq/types-live";
 import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
@@ -22,7 +22,7 @@ import {
   RegisterYieldBearingEthereumAddressParams,
   RegisterYieldBearingEthereumAddressResult,
 } from "@ledgerhq/wallet-api-acre-module";
-import { Transaction } from "../../generated/types";
+import { Transaction } from "../../coin-modules/transaction-types";
 import { AppManifest } from "../types";
 import { TrackingAPI } from "./tracking";
 import {
@@ -240,7 +240,7 @@ export const handlers = ({
       ? await getCryptoAssetsStore().findTokenById(tokenCurrency)
       : null;
     const signerAccount = currency ? makeEmptyTokenAccount(mainAccount, currency) : account;
-    const { canEditFees, liveTx, hasFeesProvided } = getWalletAPITransactionSignFlowInfos({
+    const { canEditFees, liveTx, hasFeesProvided } = await getWalletAPITransactionSignFlowInfos({
       walletApiTransaction: transaction,
       account,
     });
@@ -389,7 +389,7 @@ export const handlers = ({
       const mainAccount = getMainAccount(account, parentAccount);
       const signerAccount = currency ? makeEmptyTokenAccount(mainAccount, currency) : account;
 
-      const bridge = getAccountBridge(signerAccount, parentAccount);
+      const bridge = await getAccountBridge(signerAccount, parentAccount);
       const broadcastAccount = getMainAccount(signerAccount, parentAccount);
 
       const networkId =

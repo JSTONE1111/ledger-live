@@ -60,10 +60,13 @@ export const CURRENCY_DEFAULT_FEATURES = {
   currencyKlaytnBaobab: DEFAULT_FEATURE,
   currencyLukso: DEFAULT_FEATURE,
   currencyMetis: DEFAULT_FEATURE,
+  currencyMantle: DEFAULT_FEATURE,
+  currencyMantleSepolia: DEFAULT_FEATURE,
   currencyMoonriver: DEFAULT_FEATURE,
   currencyOptimism: DEFAULT_FEATURE,
   currencyOptimismSepolia: DEFAULT_FEATURE,
   currencyPersistence: DEFAULT_FEATURE,
+  currencyPolygonAmoy: DEFAULT_FEATURE,
   currencyPolygonZkEvm: DEFAULT_FEATURE,
   currencyPolygonZkEvmTestnet: DEFAULT_FEATURE,
   currencyQuicksilver: DEFAULT_FEATURE,
@@ -97,6 +100,7 @@ export const CURRENCY_DEFAULT_FEATURES = {
   currencySonicBlaze: DEFAULT_FEATURE,
   currencySonic: DEFAULT_FEATURE,
   currencySui: DEFAULT_FEATURE,
+  currencySuiTestnet: DEFAULT_FEATURE,
   currencyMina: DEFAULT_FEATURE,
   currencyBabylon: DEFAULT_FEATURE,
   currencySeiNetworkEvm: DEFAULT_FEATURE,
@@ -128,9 +132,7 @@ export const CURRENCY_DEFAULT_FEATURES = {
 export const DEFAULT_FEATURES: Features = {
   ...CURRENCY_DEFAULT_FEATURES,
   nanoOnboardingFundWallet: DEFAULT_FEATURE,
-  welcomeScreenVideoCarousel: DEFAULT_FEATURE,
   portfolioExchangeBanner: DEFAULT_FEATURE,
-  postOnboardingAssetsTransfer: DEFAULT_FEATURE,
   counterValue: DEFAULT_FEATURE,
   mockFeature: DEFAULT_FEATURE,
   ptxServiceCtaExchangeDrawer: DEFAULT_FEATURE,
@@ -159,6 +161,7 @@ export const DEFAULT_FEATURES: Features = {
     enabled: false,
     params: { record_sessions_percent: 100 },
   }),
+  llmNanoSDeprecation: DEFAULT_FEATURE,
 
   ptxSwapDetailedView: initFeature({
     enabled: false,
@@ -189,6 +192,16 @@ export const DEFAULT_FEATURES: Features = {
   editEvmTx: {
     enabled: false,
     params: { supportedCurrencyIds: ["ethereum"] },
+  },
+
+  evmNativeStaking: {
+    enabled: false,
+    params: { supportedCurrencyIds: [] },
+  },
+
+  editBitcoinTx: {
+    enabled: false,
+    params: { supportedCurrencyIds: ["bitcoin"] },
   },
 
   referralProgramDesktopSidebar: {
@@ -487,6 +500,13 @@ export const DEFAULT_FEATURES: Features = {
     },
   },
 
+  ptxBorrowLiveApp: {
+    enabled: false,
+    params: {
+      manifest_id: "borrow",
+    },
+  },
+
   ptxEarnLiveApp: {
     enabled: true,
     params: {
@@ -526,6 +546,14 @@ export const DEFAULT_FEATURES: Features = {
     params: {
       variant: ABTestingVariants.variantA,
       entryPoints: ["Onboarding", "Portfolio"],
+    },
+  },
+
+  analyticsOptIn: {
+    enabled: false,
+    params: {
+      policyVersion: 1,
+      consentValidityDays: 365,
     },
   },
 
@@ -620,6 +648,7 @@ export const DEFAULT_FEATURES: Features = {
   },
   lwmLedgerSyncOptimisation: DEFAULT_FEATURE,
   lwdLedgerSyncOptimisation: DEFAULT_FEATURE,
+  lwdProductTour: DEFAULT_FEATURE,
   lwmNewWordingOptInNotificationsDrawer: {
     ...DEFAULT_FEATURE,
     params: { variant: ABTestingVariants.variantA },
@@ -686,6 +715,8 @@ export const DEFAULT_FEATURES: Features = {
       enableDialogDesktop: false,
     },
   },
+  lldWebviewManifestDomainCheck: DEFAULT_FEATURE,
+  llmWebviewManifestDomainCheck: DEFAULT_FEATURE,
   llmModularDrawer: {
     ...DEFAULT_FEATURE,
     params: {
@@ -709,6 +740,7 @@ export const DEFAULT_FEATURES: Features = {
     },
   },
   ldmkSolanaSigner: DEFAULT_FEATURE,
+  ldmkCosmosSigner: DEFAULT_FEATURE,
   ldmkConnectApp: DEFAULT_FEATURE,
   lldNetworkBasedAddAccount: DEFAULT_FEATURE,
   llmDatadog: {
@@ -735,6 +767,17 @@ export const DEFAULT_FEATURES: Features = {
       vitalsUpdateFrequency: "AVERAGE",
     },
   },
+  lldDatadog: {
+    ...DEFAULT_FEATURE,
+    params: {
+      sessionSamplingRate: 100,
+      sessionReplaySampleRate: 0,
+      defaultPrivacyLevel: "mask-user-input",
+      traceSampleRate: 100,
+      allowedTracingUrls: ["/^https:\\/\\/[^/]+\\.ledger\\.com(\\/|$)/"],
+      profilingSampleRate: 25,
+    },
+  },
   llmSentry: { enabled: true },
   onboardingIgnoredOsUpdates: {
     ...DEFAULT_FEATURE,
@@ -756,21 +799,14 @@ export const DEFAULT_FEATURES: Features = {
     ...DEFAULT_FEATURE,
     params: {
       families: [],
+      excludedCurrencyIds: [],
     },
   },
-  cantonSkipPreapprovalStep: DEFAULT_FEATURE,
   zcashShielded: DEFAULT_FEATURE,
   llmNanoOnboardingFundWallet: DEFAULT_FEATURE,
   lldRebornABtest: DEFAULT_FEATURE,
   llmRebornABtest: DEFAULT_FEATURE,
   lifiSolana: DEFAULT_FEATURE,
-  llmAnimatedSplashScreen: {
-    enabled: true,
-    params: {
-      ios: true,
-      android: true,
-    },
-  },
   llmOnboardingEnableSync: initFeature({
     enabled: false,
     params: {
@@ -778,17 +814,26 @@ export const DEFAULT_FEATURES: Features = {
       touchscreens: false,
     },
   }),
+  lwdGenericAwarenessModal: DEFAULT_FEATURE,
+  lwmGenericAwarenessModal: DEFAULT_FEATURE,
+  lwmProductTour: DEFAULT_FEATURE,
   lwmWallet40: {
     ...DEFAULT_FEATURE,
     params: {
       marketBanner: true,
       graphRework: true,
       quickActionCtas: true,
+      quickActionsCtasVariant: false,
       tour: true,
       mainNavigation: true,
       lazyOnboarding: true,
       balanceRefreshRework: true,
       assetSection: true,
+      onboardingWidget: true,
+      brazePlacement: true,
+      operationsList: true,
+      aggregatedAssets: true,
+      myWallet: true,
     },
   },
   lwdWallet40: {
@@ -797,12 +842,18 @@ export const DEFAULT_FEATURES: Features = {
       marketBanner: true,
       graphRework: true,
       quickActionCtas: true,
+      quickActionsCtasVariant: false,
       mainNavigation: true,
       tour: true,
       lazyOnboarding: true,
       newReceiveDialog: true,
       balanceRefreshRework: true,
       assetSection: true,
+      operationsList: true,
+      brazePlacement: true,
+      aggregatedAssets: true,
+      myWallet: true,
+      finishOnboardingWidget: false,
     },
   },
   addressPoisoningOperationsFilter: {
@@ -822,6 +873,20 @@ export const DEFAULT_FEATURES: Features = {
       ],
     },
   },
+  concordiumVerifyAddress: DEFAULT_FEATURE,
+  lldHideSmallValueTokenOperations: {
+    ...DEFAULT_FEATURE,
+    enabled: true,
+    params: {
+      thresholdUsd: 0.5,
+    },
+  },
+  llmTransferButtonCopyVariant: {
+    enabled: false,
+    params: { variantId: "control" },
+  },
+  lldTezosStaking: DEFAULT_FEATURE,
+  llmTezosStaking: DEFAULT_FEATURE,
 };
 
 // Firebase SDK treat JSON values as strings

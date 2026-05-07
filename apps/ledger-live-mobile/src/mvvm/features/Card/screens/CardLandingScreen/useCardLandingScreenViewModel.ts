@@ -10,6 +10,9 @@ import { PAGE_NAME, CARD_APP_ID, CL_CARD_APP_ID } from "../../constants";
 import { NavigatorName, ScreenName } from "~/const";
 import { useNavigation } from "@react-navigation/core";
 import { useNavigationBarHeights } from "LLM/hooks/useNavigationBarHeights";
+import { ImageSourcePropType } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useExperimental } from "~/experimental";
 
 const HEADER_HEIGHT = 48;
 
@@ -21,9 +24,9 @@ export interface CardLandingScreenViewModelResult {
   readonly topInset: number;
   readonly bottomInset: number;
   readonly backgroundColor: string;
-  readonly isWallet40DarkMode: boolean;
   readonly imageLoaded: boolean;
   readonly onImageLoaded: () => void;
+  readonly backgroundImageSource: ImageSourcePropType;
 }
 
 const TRACKING_BUTTON_EVENT = "button_clicked";
@@ -35,6 +38,8 @@ export const useCardLandingScreenViewModel = (): CardLandingScreenViewModelResul
   const [imageLoaded, setImageLoaded] = useState(false);
   const navigation = useNavigation();
   const { bottomBarHeight } = useNavigationBarHeights();
+  const { top: safeAreaTop } = useSafeAreaInsets();
+  const hasExperimentalHeader = useExperimental();
 
   const onImageLoaded = useCallback(() => setImageLoaded(true), []);
 
@@ -87,7 +92,14 @@ export const useCardLandingScreenViewModel = (): CardLandingScreenViewModelResul
     [t, handleExploreCardsPress, handleIHaveACardPress],
   );
 
-  const topInset = HEADER_HEIGHT;
+  const backgroundImageSource = useMemo(() => {
+    if (isWallet40DarkMode) {
+      return require("~/images/card/card-bg.webp");
+    }
+    return require("~/images/portfolio/v4-light.webp");
+  }, [isWallet40DarkMode]);
+
+  const topInset = hasExperimentalHeader ? safeAreaTop + HEADER_HEIGHT : HEADER_HEIGHT;
   const bottomInset = bottomBarHeight;
 
   return {
@@ -98,8 +110,8 @@ export const useCardLandingScreenViewModel = (): CardLandingScreenViewModelResul
     topInset,
     bottomInset,
     backgroundColor: lumenTheme.colors.bg.base,
-    isWallet40DarkMode,
     imageLoaded,
     onImageLoaded,
+    backgroundImageSource,
   };
 };

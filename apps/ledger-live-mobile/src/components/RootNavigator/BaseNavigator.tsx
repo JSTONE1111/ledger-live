@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
@@ -24,7 +24,9 @@ import UnfreezeNavigator from "./UnfreezeNavigator";
 import ClaimRewardsNavigator from "./ClaimRewardsNavigator";
 import ExchangeLiveAppNavigator from "./ExchangeLiveAppNavigator";
 import { CardLiveAppNavigator } from "LLM/features/Card";
+import BorrowLiveAppNavigator from "./BorrowLiveAppNavigator";
 import EarnLiveAppNavigator from "./EarnLiveAppNavigator";
+import { useWallet40Theme } from "LLM/hooks/useWallet40Theme";
 import PlatformExchangeNavigator from "./PlatformExchangeNavigator";
 import AccountSettingsNavigator from "./AccountSettingsNavigator";
 import PasswordAddFlowNavigator from "./PasswordAddFlowNavigator";
@@ -63,6 +65,7 @@ import { readOnlyModeEnabledSelector } from "~/reducers/settings";
 import { hasNoAccountsSelector } from "~/reducers/accounts";
 import { BaseNavigatorStackParamList } from "./types/BaseNavigator";
 import DeviceConnect, { deviceConnectHeaderOptions } from "~/screens/DeviceConnect";
+import PerpsSign from "LLM/features/Perps/screens/PerpsSign/PerpsSignScreen";
 import NoFundsFlowNavigator from "./NoFundsFlowNavigator";
 import StakeFlowNavigator from "./StakeFlowNavigator";
 import { RecoverPlayer } from "~/screens/Protect/Player";
@@ -74,6 +77,7 @@ import {
 } from "../NavigationHeaderCloseButton";
 import { RootDrawer } from "../RootDrawer/RootDrawer";
 import EditTransactionNavigator from "~/families/evm/EditTransactionFlow/EditTransactionNavigator";
+import BitcoinEditTransactionNavigator from "~/families/bitcoin/EditTransactionFlow/EditTransactionNavigator";
 import { DrawerProps } from "../RootDrawer/types";
 import AnalyticsOptInPromptNavigator from "./AnalyticsOptInPromptNavigator";
 import LandingPagesNavigator from "./LandingPagesNavigator";
@@ -82,20 +86,23 @@ import EditCurrencyUnits from "~/screens/Settings/CryptoAssets/Currencies/EditCu
 import CustomErrorNavigator from "./CustomErrorNavigator";
 import WalletSyncNavigator from "LLM/features/WalletSync/WalletSyncNavigator";
 import { LedgerSyncDeepLinkHandler } from "LLM/features/WalletSync/LedgerSyncDeepLinkHandler";
+import { DeviceSelectionScreen as DeeplinkInstallAppDeviceSelection } from "LLM/features/DeeplinkInstallApp";
 import Web3HubNavigator from "LLM/features/Web3Hub/Navigator";
 import Web3HubTabNavigator from "LLM/features/Web3Hub/TabNavigator";
 import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
 import MyLedgerNavigator from "./MyLedgerNavigator";
+import MyWalletNavigator from "LLM/features/MyWallet/Navigator";
 import DiscoverNavigator from "./DiscoverNavigator";
 import AddAccountsV2Navigator from "LLM/features/Accounts/Navigator";
 import DeviceSelectionNavigator from "LLM/features/DeviceSelection/Navigator";
+import AssetDetailNavigator from "LLM/features/AssetDetail/Navigator";
 import AssetsListNavigator from "LLM/features/Assets/Navigator";
 import AnalyticsNavigator from "LLM/features/Analytics/Navigator";
+import OperationsHistoryNavigator from "LLM/features/OperationsHistory/Navigator";
 import FeesNavigator from "./FeesNavigator";
 import { getStakeLabelLocaleBased } from "~/helpers/getStakeLabelLocaleBased";
 import SignRawTransactionNavigator from "./SignRawTransactionNavigator";
-import { useNotifications } from "LLM/features/NotificationsPrompt";
-import { AppState } from "react-native";
+import LiveAppModalScreen from "LLM/features/LiveAppModal";
 
 const Stack = createNativeStackNavigator<BaseNavigatorStackParamList>();
 
@@ -168,6 +175,7 @@ export default function BaseNavigator() {
     }>
   >();
   const { colors } = useTheme();
+  const { backgroundColor } = useWallet40Theme("mobile");
   const stackNavigationConfig = useMemo(() => getStackNavigatorConfig(colors, true), [colors]);
   const nativeStackScreenOptions: Partial<NativeStackNavigationOptions> = stackNavigationConfig;
   const noNanoBuyNanoWallScreenOptions = useNoNanoBuyNanoWallScreenOptions();
@@ -175,28 +183,6 @@ export default function BaseNavigator() {
   const readOnlyModeEnabled = useSelector(readOnlyModeEnabledSelector) && isAccountsEmpty;
   const web3hub = useFeature("web3hub");
   const llmAccountListUI = useFeature("llmAccountListUI");
-
-  const { initPushNotificationsData, tryTriggerPushNotificationDrawerAfterInactivity } =
-    useNotifications();
-
-  useEffect(() => {
-    // This feature requires the user to be past onboarding, that's why it lives in the BaseNavigator for onboarded users only
-    initPushNotificationsData().then(tryTriggerPushNotificationDrawerAfterInactivity);
-
-    // No dependency because we only want to run it once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    // This catches when the user is redirected back from toggling on notifications in the os settings
-    const subscription = AppState.addEventListener("change", nextAppState => {
-      if (nextAppState === "active") {
-        initPushNotificationsData();
-      }
-    });
-
-    return () => subscription.remove();
-  }, [initPushNotificationsData]);
 
   return (
     <>
@@ -206,6 +192,11 @@ export default function BaseNavigator() {
         <Stack.Screen
           name={NavigatorName.MyLedger}
           component={MyLedgerNavigator}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name={NavigatorName.MyWallet}
+          component={MyWalletNavigator}
           options={{ headerShown: false }}
         />
 
@@ -569,6 +560,11 @@ export default function BaseNavigator() {
           })}
         />
         <Stack.Screen
+          name={ScreenName.PerpsSign}
+          component={PerpsSign}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name={ScreenName.RedirectToOnboardingRecoverFlow}
           options={{ ...TransparentHeaderNavigationOptions, title: "" }}
           component={RedirectToOnboardingRecoverFlowScreen}
@@ -588,6 +584,33 @@ export default function BaseNavigator() {
                   headerRight: () => null,
                 }
               : { headerShown: false };
+          }}
+        />
+        <Stack.Screen
+          name={NavigatorName.Borrow}
+          component={BorrowLiveAppNavigator}
+          options={props => {
+            return {
+              headerShown: true,
+              closable: false,
+              headerLeft: () => (
+                <NavigationHeaderBackButton
+                  onPress={nav => {
+                    nav.navigate(NavigatorName.Borrow, {
+                      screen: ScreenName.Borrow,
+                      params: {
+                        ...props.route?.params?.params,
+                        action: "go-back",
+                      },
+                    });
+                  }}
+                />
+              ),
+              headerTitle: t("borrow.title"),
+              headerRight: () => null,
+              headerStyle: { backgroundColor },
+              contentStyle: { backgroundColor },
+            };
           }}
         />
         <Stack.Screen
@@ -612,6 +635,11 @@ export default function BaseNavigator() {
           name={NavigatorName.EvmEditTransaction}
           options={{ headerShown: false }}
           component={EditTransactionNavigator}
+        />
+        <Stack.Screen
+          name={NavigatorName.BitcoinEditTransaction}
+          options={{ headerShown: false }}
+          component={BitcoinEditTransactionNavigator}
         />
         <Stack.Screen
           name={NavigatorName.AnalyticsOptInPrompt}
@@ -646,6 +674,12 @@ export default function BaseNavigator() {
           options={{ headerShown: false }}
         />
 
+        <Stack.Screen
+          name={ScreenName.DeeplinkInstallAppDeviceSelection}
+          component={DeeplinkInstallAppDeviceSelection}
+          options={{ headerShown: false }}
+        />
+
         {llmAccountListUI?.enabled && (
           <Stack.Screen
             name={NavigatorName.Assets}
@@ -655,9 +689,31 @@ export default function BaseNavigator() {
         )}
 
         <Stack.Screen
+          name={NavigatorName.AssetDetail}
+          component={AssetDetailNavigator}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
           name={NavigatorName.Analytics}
           component={AnalyticsNavigator}
           options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name={NavigatorName.OperationsHistory}
+          component={OperationsHistoryNavigator}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name={ScreenName.LiveAppModal}
+          component={LiveAppModalScreen}
+          options={{
+            headerShown: false,
+            presentation: "modal",
+            gestureEnabled: true,
+          }}
         />
       </Stack.Navigator>
     </>

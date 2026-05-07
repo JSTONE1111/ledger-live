@@ -4,7 +4,7 @@ import { CantonCurrencyBridge, CantonAccount } from "@ledgerhq/coin-canton/types
 import { isCantonAccount } from "@ledgerhq/coin-canton";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { Account, AccountLike } from "@ledgerhq/types-live";
-import { getParentAccount } from "@ledgerhq/coin-framework/account/helpers";
+import { getParentAccount } from "@ledgerhq/ledger-wallet-framework/account/helpers";
 import BigNumber from "bignumber.js";
 
 export type UseCantonAcceptOrRejectOfferOptions = {
@@ -29,13 +29,12 @@ export function useCantonAcceptOrRejectOffer({
   account,
   partyId,
 }: UseCantonAcceptOrRejectOfferOptions) {
-  const cantonBridge = getCurrencyBridge(currency) as CantonCurrencyBridge;
-
   const transferInstruction = useCallback(
-    (
+    async (
       { contractId, deviceId, reason }: TransferInstructionParams,
       type: TransferInstructionType,
     ) => {
+      const cantonBridge = (await getCurrencyBridge(currency)) as CantonCurrencyBridge;
       return cantonBridge.transferInstruction(
         currency,
         deviceId,
@@ -46,7 +45,7 @@ export function useCantonAcceptOrRejectOffer({
         reason,
       );
     },
-    [cantonBridge, currency, account, partyId],
+    [currency, account, partyId],
   );
 
   return transferInstruction;

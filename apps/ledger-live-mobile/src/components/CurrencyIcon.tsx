@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { Currency } from "@ledgerhq/types-cryptoassets";
 import { Flex } from "@ledgerhq/native-ui";
-import styled, { useTheme } from "styled-components/native";
+import styled from "styled-components/native";
 import { CryptoIcon } from "@ledgerhq/native-ui/pre-ldls";
 import { getValidCryptoIconSizeNative } from "@ledgerhq/live-common/helpers/cryptoIconSize";
 
@@ -16,10 +16,10 @@ type Props = {
   size: number;
   disabled?: boolean;
   hideNetwork?: boolean;
+  squared?: boolean;
 };
 
-const CurrencyIcon = ({ size, currency, disabled, hideNetwork }: Props) => {
-  const { colors } = useTheme();
+const CurrencyIcon = ({ size, currency, disabled, hideNetwork, squared }: Props) => {
   const validIconSize = getValidCryptoIconSizeNative(size);
 
   if (currency.type === "FiatCurrency") {
@@ -35,15 +35,15 @@ const CurrencyIcon = ({ size, currency, disabled, hideNetwork }: Props) => {
         ledgerId={ledgerId}
         ticker={ticker}
         size={validIconSize}
-        backgroundColor={colors.background.main}
         network={currency.parentCurrency.id}
+        shape={squared ? "square" : undefined}
       />
     ) : (
       <CryptoIcon
         ledgerId={ledgerId}
         ticker={ticker}
         size={validIconSize}
-        backgroundColor={colors.background.main}
+        shape={squared ? "square" : undefined}
       />
     );
 

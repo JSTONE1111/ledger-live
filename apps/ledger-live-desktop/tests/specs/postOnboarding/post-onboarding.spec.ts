@@ -13,7 +13,6 @@ test.use({
     lwdWallet40: {
       enabled: false,
     },
-    welcomeScreenVideoCarousel: { enabled: false },
     noah: { enabled: false },
   },
 });
@@ -99,7 +98,7 @@ test("PostOnboarding state logic", async ({ page }) => {
     await postOnboarding.goToDashboard();
     await postOnboarding.postOnboardingHubContainer.waitFor({ state: "detached" });
     await expect(page).toHaveScreenshot(
-      `${generateScreenshotPrefix()}postonboarding-done-no-banner-in-dashboard.png`,
+      `${generateScreenshotPrefix()}postonboarding-done-with-banner-in-dashboard.png`,
       {
         mask: [page.locator("canvas")],
       },

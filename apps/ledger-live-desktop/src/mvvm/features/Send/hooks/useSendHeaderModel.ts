@@ -13,6 +13,7 @@ import {
 } from "../context/SendFlowContext";
 import { SendStepConfig } from "../types";
 import BigNumber from "bignumber.js";
+import { useMaybeAccountName } from "~/renderer/reducers/wallet";
 
 type UseSendHeaderModelParams = Readonly<{
   availableText: string;
@@ -36,17 +37,20 @@ export function useSendHeaderModel({
   resetViewState,
 }: UseSendHeaderModelParams): UseSendHeaderModelResult {
   const wizard = useFlowWizard<SendFlowStep, SendFlowBusinessContext, SendStepConfig>();
-  const { state, uiConfig, recipientSearch } = useSendFlowData();
+  const { state, uiConfig, recipientSearch, isRecipientAddressComplete } = useSendFlowData();
   const { close, transaction } = useSendFlowActions();
 
   const currencyName = state.account.currency?.ticker ?? "";
+  const accountName = useMaybeAccountName(state.account.account ?? undefined);
 
   const { navigation, currentStep } = wizard;
   const currentStepConfig = wizard.currentStepConfig;
-
   const showRecipientInput = currentStepConfig?.addressInput ?? false;
   const showMemoControls = Boolean(
-    showRecipientInput && uiConfig.hasMemo && recipientSearch.value.length > 0,
+    showRecipientInput &&
+      uiConfig.hasMemo &&
+      recipientSearch.value.length > 0 &&
+      isRecipientAddressComplete,
   );
 
   const backTarget = currentStepConfig?.backTarget;
@@ -54,21 +58,20 @@ export function useSendHeaderModel({
   const showBackButton = navigation.canGoBack();
 
   const showTitle = currentStepConfig?.showTitle !== false;
-  const titleKey = currentStepConfig?.titleKey;
-
-  let title: string;
-  if (titleKey) {
-    title = t(titleKey);
-  } else if (showTitle) {
-    title = t("newSendFlow.title", { currency: currencyName });
-  } else {
-    title = "";
-  }
-  const descriptionText =
-    showTitle && availableText ? t("newSendFlow.available", { amount: availableText }) : "";
-
   const isRecipientStep = currentStep === SEND_FLOW_STEP.RECIPIENT;
   const isAmountStep = currentStep === SEND_FLOW_STEP.AMOUNT;
+
+  const accountSummary = useMemo(() => {
+    if (accountName && availableText) return `${accountName} · ${availableText}`;
+    return accountName || availableText || "";
+  }, [accountName, availableText]);
+
+  const titleKey = currentStepConfig?.titleKey ?? "newSendFlow.title";
+  const showAvailable = currentStepConfig?.showAvailable ?? true;
+
+  const title = showTitle ? t(titleKey, { currency: currencyName }) : "";
+
+  const descriptionText = showTitle && showAvailable && accountSummary ? accountSummary : "";
 
   const handleBack = useCallback(() => {
     // Per-step state cleanup that runs regardless of whether navigation uses backTarget

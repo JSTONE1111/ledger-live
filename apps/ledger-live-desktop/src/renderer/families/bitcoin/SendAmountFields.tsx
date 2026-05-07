@@ -1,7 +1,7 @@
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
 import { useFeesStrategy } from "@ledgerhq/live-common/families/bitcoin/react";
 import { Transaction } from "@ledgerhq/live-common/families/bitcoin/types";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { track } from "~/renderer/analytics/segment";
@@ -33,7 +33,7 @@ const Fields: Props = ({
   mapStrategies,
   trackProperties = {},
 }) => {
-  const bridge = getAccountBridge(account);
+  const bridge = useAccountBridge<Transaction>(account);
   const { t } = useTranslation();
   const [coinControlOpened, setCoinControlOpened] = useState(false);
   const [isAdvanceMode, setAdvanceMode] = useState(
@@ -45,17 +45,6 @@ const Fields: Props = ({
   const { item } = useBitcoinPickingStrategy(transaction.utxoStrategy.strategy);
   const canNext = account.bitcoinResources?.utxos?.length;
 
-  /* TODO: How do we set default RBF to be true ? (@gre)
-   * Meanwhile, using this trick (please don't kill me)
-   */
-  useEffect(() => {
-    updateTransaction((t: Transaction) =>
-      bridge.updateTransaction(t, {
-        rbf: true,
-      }),
-    );
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   const onFeeStrategyClick = useCallback(
     ({ amount, feesStrategy }: OnClickType) => {
       track("button_clicked2", {
@@ -66,11 +55,11 @@ const Fields: Props = ({
       updateTransaction((transaction: Transaction) =>
         bridge.updateTransaction(transaction, {
           feePerByte: amount,
-          feesStrategy,
+          feesStrategy: feesStrategy as Transaction["feesStrategy"],
         }),
       );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [updateTransaction, bridge],
   );
   const setAdvanceModeAndTrack = useCallback(
@@ -135,7 +124,6 @@ const Fields: Props = ({
             <CoinControlModal
               transaction={transaction}
               account={account}
-              // @ts-expect-error We use the same onChangeTrack function on 2 components yet their onChange signature is different, please halp
               onChange={onChangeAndTrack}
               status={status}
               isOpened={coinControlOpened}

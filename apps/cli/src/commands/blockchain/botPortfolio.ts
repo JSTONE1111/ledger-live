@@ -1,5 +1,5 @@
 import { from, defer, throwError } from "rxjs";
-import { catchError, filter, map, mergeAll, timeout } from "rxjs/operators";
+import { catchError, filter, map, mergeAll, mergeMap, timeout } from "rxjs/operators";
 import { listSupportedCurrencies } from "@ledgerhq/live-common/currencies/index";
 import { getCurrencyBridge } from "@ledgerhq/live-common/bridge/index";
 import { accountFormatters } from "@ledgerhq/live-common/account/index";
@@ -20,30 +20,34 @@ export default {
     return from(listSupportedCurrencies()).pipe(
       filter(c => !blacklist.includes(c.id) && !c.isTestnetFor),
       map(currency =>
-        defer(() =>
-          getCurrencyBridge(currency)
-            .scanAccounts({
-              currency,
-              deviceId: `speculos:nanos:${currency.id}`,
-              syncConfig: {
-                paginationConfig: {},
-              },
-            })
-            .pipe(
-              timeout({
-                each: 200 * 1000,
-                with: () => throwError(() => new Error("scan account timeout")),
-              }),
-              catchError(e => {
-                console.error("scan accounts failed for " + currency.id, e);
-                return from([]);
-              }),
-            ),
+        defer(() => Promise.resolve(getCurrencyBridge(currency))).pipe(
+          mergeMap(bridge =>
+            bridge
+              .scanAccounts({
+                currency,
+                deviceId: `speculos:nanos:${currency.id}`,
+                syncConfig: {
+                  paginationConfig: {},
+                },
+              })
+              .pipe(
+                timeout({
+                  each: 200 * 1000,
+                  with: () => throwError(() => new Error("scan account timeout")),
+                }),
+                catchError(e => {
+                  console.error("scan accounts failed for " + currency.id, e);
+                  return from([]);
+                }),
+              ),
+          ),
         ),
       ),
       mergeAll(5),
       filter(e => e.type === "discovered"),
-      map(e => (accountFormatters[opts.format] || accountFormatters.default)(e.account)),
+      mergeMap(async e =>
+        (accountFormatters[opts.format] || accountFormatters.default)(e.account),
+      ),
     );
   },
 };

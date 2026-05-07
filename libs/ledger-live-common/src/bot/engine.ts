@@ -26,7 +26,7 @@ import {
   releaseSpeculosDevice,
   findAppCandidate,
 } from "../load/speculos";
-import type { AppCandidate } from "@ledgerhq/coin-framework/bot/types";
+import type { AppCandidate } from "@ledgerhq/ledger-wallet-framework/bot/types";
 import { formatReportForConsole, formatTime, formatAppCandidate, formatError } from "./formatters";
 import type {
   AppSpec,
@@ -49,8 +49,8 @@ import type {
   SignOperationEvent,
   TransactionCommon,
 } from "@ledgerhq/types-live";
-import type { TransactionStatus } from "../generated/types";
-import { botTest } from "@ledgerhq/coin-framework/bot/bot-test-context";
+import type { TransactionStatus } from "../coin-modules/transaction-types";
+import { botTest } from "@ledgerhq/ledger-wallet-framework/bot/bot-test-context";
 import { getDefaultAccountNameForCurrencyIndex } from "@ledgerhq/live-wallet/accountName";
 
 let appCandidates;
@@ -130,7 +130,7 @@ export async function runWithAppSpec<T extends TransactionCommon>(
   try {
     device = await createSpeculosDevice(deviceParams);
     appReport.appPath = device.appPath;
-    const bridge = getCurrencyBridge(currency);
+    const bridge = await getCurrencyBridge(currency);
     const syncConfig = {
       paginationConfig: {},
     };
@@ -275,7 +275,7 @@ export async function runWithAppSpec<T extends TransactionCommon>(
           }
         }
         // eslint-disable-next-line no-console
-        console.log(formatReportForConsole(report as any));
+        console.log(await formatReportForConsole(report as any));
         mutationReports.push(report);
         appReport.mutations = mutationReports;
 
@@ -374,7 +374,7 @@ export async function runOnAccount<T extends TransactionCommon>({
   };
 
   try {
-    const accountBridge = getAccountBridge(account);
+    const accountBridge = await getAccountBridge(account);
     const accountBeforeTransaction = account;
     report.account = account;
     log("engine", `spec ${spec.name}/${getDefaultAccountNameForCurrencyIndex(account)}`);
@@ -737,8 +737,9 @@ export async function runOnAccount<T extends TransactionCommon>({
 }
 
 async function syncAccount(initialAccount: Account): Promise<Account> {
+  const bridge = await getAccountBridge(initialAccount);
   const acc = await firstValueFrom(
-    getAccountBridge(initialAccount)
+    bridge
       .sync(initialAccount, {
         paginationConfig: {},
       })

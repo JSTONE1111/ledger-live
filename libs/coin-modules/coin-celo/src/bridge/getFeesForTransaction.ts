@@ -1,15 +1,15 @@
-import { findSubAccountById } from "@ledgerhq/coin-framework/account/index";
+import { findSubAccountById } from "@ledgerhq/ledger-wallet-framework/account/index";
 import { BigNumber } from "bignumber.js";
-import type { CeloAccount, RevokeTxo, Transaction } from "../types";
-import { celoKit } from "../network/sdk";
-import { getPendingStakingOperationAmounts, getVote } from "../logic";
-import buildTransaction from "./buildTransaction";
 import {
   CELO_STABLE_TOKENS,
   getStableTokenEnum,
   MAX_FEES_THRESHOLD_MULTIPLIER,
   MIN_GAS_FOR_NATIVE_TRANSFER,
 } from "../constants";
+import { getPendingStakingOperationAmounts, getVote } from "../logic";
+import { celoKit } from "../network/sdk";
+import type { CeloAccount, RevokeTxo, Transaction } from "../types";
+import buildTransaction from "./buildTransaction";
 import { valueToHex } from "./utils";
 
 const getFeesForTransaction = async ({
@@ -42,7 +42,7 @@ const getFeesForTransaction = async ({
   const maxPriorityFeePerGas = await kit.connection.getMaxPriorityFeePerGas();
 
   // Align with @celo/connect setFeeMarketGas: used for final fee for all modes.
-  const gasPrice = await kit.connection.gasPrice();
+  const gasPrice = await kit.connection.gasPrice(transaction.feeCurrency ?? undefined);
   const maxFeePerGas =
     ((BigInt(gasPrice) - BigInt(maxPriorityFeePerGas)) * BigInt(120)) / BigInt(100) +
     BigInt(maxPriorityFeePerGas);
@@ -137,6 +137,11 @@ const getFeesForTransaction = async ({
       maxFeePerGas: maxFeePerGas.toString(),
       maxPriorityFeePerGas,
       value: valueToHex(value),
+      ...(transaction.feeCurrency
+        ? {
+            feeCurrency: transaction.feeCurrency,
+          }
+        : {}),
     };
 
     gas = Number(

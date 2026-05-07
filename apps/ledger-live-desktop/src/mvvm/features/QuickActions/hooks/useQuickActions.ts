@@ -15,12 +15,12 @@ import { useTranslation } from "react-i18next";
 import { useAccountStatus } from "LLD/hooks/useAccountStatus";
 import { QuickAction } from "../types";
 import { useOpenAssetFlow } from "../../ModularDialog/hooks/useOpenAssetFlow";
-import { ModularDrawerLocation } from "../../ModularDrawer";
+import { ModularDrawerLocation } from "@ledgerhq/live-common/modularDrawer/enums";
 import { track } from "~/renderer/analytics/segment";
 import { hasOnboardedDeviceSelector } from "~/renderer/reducers/settings";
-import { urls } from "~/config/urls";
-import { useLocalizedUrl } from "~/renderer/hooks/useLocalizedUrls";
-import { openURL } from "~/renderer/linking";
+import { useLazyOnboardingActions } from "LLD/hooks/useLazyOnboardingActions";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import { getAccountsSidebarPath } from "LLD/components/SideBar/utils";
 
 export const useQuickActions = (trackingPageName: string): { actionsList: QuickAction[] } => {
   const openSendFlow = useOpenSendFlow();
@@ -30,8 +30,9 @@ export const useQuickActions = (trackingPageName: string): { actionsList: QuickA
   const { t } = useTranslation();
   const { hasAccount, hasFunds } = useAccountStatus();
   const hasOnboardedDevice = useSelector(hasOnboardedDeviceSelector);
-  const urlLedgerShop = useLocalizedUrl(urls.ledgerShop);
-  const openLedgerShop = useCallback(() => openURL(urlLedgerShop), [urlLedgerShop]);
+  const { handleConnect, handleBuyDevice } = useLazyOnboardingActions();
+  const { shouldDisplayAssetSection } = useWalletFeaturesConfig("desktop");
+  const accountsPath = getAccountsSidebarPath(shouldDisplayAssetSection);
 
   const { openAssetFlow } = useOpenAssetFlow(
     { location: ModularDrawerLocation.ADD_ACCOUNT },
@@ -48,23 +49,24 @@ export const useQuickActions = (trackingPageName: string): { actionsList: QuickA
   );
 
   const maybeRedirectToAccounts = useCallback(() => {
-    return location.pathname === "/manager" && push("/accounts");
-  }, [location.pathname, push]);
+    return location.pathname === "/manager" && push(accountsPath);
+  }, [accountsPath, location.pathname, push]);
 
   const onSend = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action",
-      flow: "send",
+      button: "send",
+      buttonLocation: "quick_action",
       page: trackingPageName,
+      flow: "send",
     });
     maybeRedirectToAccounts();
-    openSendFlow();
+    openSendFlow({ source: trackingPageName });
   }, [maybeRedirectToAccounts, openSendFlow, trackingPageName]);
 
   const onReceive = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action",
-      flow: "receive",
+      button: "receive",
+      buttonLocation: "quick_action",
       page: trackingPageName,
     });
     maybeRedirectToAccounts();
@@ -79,48 +81,50 @@ export const useQuickActions = (trackingPageName: string): { actionsList: QuickA
 
   const onBuy = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action",
-      flow: "buy",
+      button: "buy",
+      buttonLocation: "quick_action",
       page: trackingPageName,
     });
     navigate("/exchange", {
       state: {
         mode: "buy",
+        returnTo: location.pathname,
       },
     });
-  }, [navigate, trackingPageName]);
+  }, [navigate, trackingPageName, location.pathname]);
 
   const onSell = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action",
-      flow: "sell",
+      button: "sell",
+      buttonLocation: "quick_action",
       page: trackingPageName,
     });
     navigate("/exchange", {
       state: {
         mode: "sell",
+        returnTo: location.pathname,
       },
     });
-  }, [navigate, trackingPageName]);
+  }, [navigate, trackingPageName, location.pathname]);
 
   const onConnect = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action",
-      flow: "connect",
+      button: "connect",
+      buttonLocation: "quick_action",
       page: trackingPageName,
     });
 
-    navigate("/onboarding/select-device", { state: { fromQuickAction: true } });
-  }, [navigate, trackingPageName]);
+    handleConnect();
+  }, [handleConnect, trackingPageName]);
 
   const onBuyALedger = useCallback(() => {
     track("button_clicked", {
-      button: "quick_action",
-      flow: "buy_ledger",
+      button: "buy_ledger",
+      buttonLocation: "quick_action",
       page: trackingPageName,
     });
-    openLedgerShop();
-  }, [trackingPageName, openLedgerShop]);
+    handleBuyDevice();
+  }, [trackingPageName, handleBuyDevice]);
 
   const actionsList = useMemo((): QuickAction[] => {
     if (!hasOnboardedDevice) {
@@ -172,7 +176,7 @@ export const useQuickActions = (trackingPageName: string): { actionsList: QuickA
         buttonAppearance: "transparent",
       },
     ];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [hasOnboardedDevice, hasFunds, hasAccount]);
 
   return { actionsList };

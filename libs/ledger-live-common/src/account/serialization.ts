@@ -12,13 +12,13 @@ import type {
   TokenAccount,
   TransactionCommon,
 } from "@ledgerhq/types-live";
-import { decodeAccountId } from "@ledgerhq/coin-framework/account/index";
+import { decodeAccountId } from "@ledgerhq/ledger-wallet-framework/account/index";
 import {
   fromAccountRaw as commonFromAccountRaw,
   toAccountRaw as commonToAccountRaw,
   fromOperationRaw as commonFromOperationRaw,
   toOperationRaw as commonToOperationRaw,
-} from "@ledgerhq/coin-framework/serialization/index";
+} from "@ledgerhq/ledger-wallet-framework/serialization/index";
 import { getAccountBridge } from "../bridge";
 import { getAccountBridgeByFamily } from "../bridge/impl";
 
@@ -43,18 +43,18 @@ export const toOperationRaw = (
   return commonToOperationRaw(operation, preserveSubOperation, toOperationRaw);
 };
 
-export const fromOperationRaw = (
+export const fromOperationRaw = async (
   operationRaw: OperationRaw,
   accountId: string,
   subAccounts?: TokenAccount[] | null | undefined,
-): Operation => {
+): Promise<Operation> => {
   let fromOperationRaw: AccountBridge<TransactionCommon>["fromOperationExtraRaw"] | undefined;
 
   if (operationRaw.extra) {
     const family = inferFamilyFromAccountId(operationRaw.accountId);
 
     if (family) {
-      const bridge = getAccountBridgeByFamily(family, accountId);
+      const bridge = await getAccountBridgeByFamily(family, accountId);
       fromOperationRaw = bridge.fromOperationExtraRaw;
     }
   }
@@ -73,8 +73,8 @@ export async function fromAccountRaw(rawAccount: AccountRaw): Promise<Account> {
   });
 }
 
-export function toAccountRaw(account: Account, userData?: AccountUserData): AccountRaw {
-  const bridge = getAccountBridge(account);
+export async function toAccountRaw(account: Account, userData?: AccountUserData): Promise<AccountRaw> {
+  const bridge = await getAccountBridge(account);
 
   const commonAccountRaw = commonToAccountRaw(account, {
     assignToAccountRaw: bridge.assignToAccountRaw,

@@ -176,6 +176,21 @@
       "title" : "奖励少于领取奖金的估算费用。",
       "description" : ""
     },
+    "ConcordiumInsufficientFunds" : {
+      "title" : "抱歉，资金不足"
+    },
+    "ConcordiumMemoTooLong" : {
+      "title" : "备注长度超出最大限制",
+      "description" : "您的的备注长度为 {{memoLength}} 字节，但允许的最大长度为 {{maxLength}} 字节。请缩短备注长度。"
+    },
+    "ConcordiumPairingExpiredError" : {
+      "title" : "配对已过期",
+      "description" : "与 Concordium ID 应用程序的连接已超时。请重试。"
+    },
+    "ConcordiumSessionExpiredError" : {
+      "title" : "会话已过期",
+      "description" : "Concordium ID 应用程序的会话不再活跃。请重新配对。"
+    },
     "CosmosBroadcastCodeInternal" : {
       "title" : "出了点问题 (Error #1)",
       "description" : "请使用下面的按钮保存您的日志，并将其提供给 Ledger 客服。"
@@ -278,6 +293,11 @@
     "DeviceSocketFail" : {
       "title" : "抱歉，连接失败",
       "description" : "请再次尝试。"
+    },
+    "CounterfeitDevice" : {
+      "title" : "{{productName}} 未通过正品检查",
+      "description" : "使用这个 Ledger 设备并不安全。请联系 Ledger 客服。",
+      "contactSupportCTA" : "联系 Ledger 客服"
     },
     "DeviceSocketNoBulkStatus" : {
       "title" : "连接失败",
@@ -400,8 +420,8 @@
       "description" : "与您的设备交换信息时出现问题。请重试，如果问题仍然存在，请联系 Ledger 客服。"
     },
     "AlreadySendingApduError" : {
-      "title" : "通信错误",
-      "description" : "与您的设备交换信息时出现问题。请重试，如果问题仍然存在，请联系 Ledger 客服。"
+      "title" : "请在您的 Ledger 设备上完成操作",
+      "description" : "在您的设备上完成此操作。"
     },
     "UnknownDeviceExchangeError" : {
       "title" : "通信错误",
@@ -938,6 +958,9 @@
     "SolanaAccountNotFunded" : {
       "title" : "账户没有资金"
     },
+    "SolanaRecipientAccountNotFunded" : {
+      "title" : "数额太低。发送至少 {{minimumAmount}}。"
+    },
     "SolanaTokenAccountHoldsAnotherToken" : {
       "title" : "该关联代币账户持有另一种代币"
     },
@@ -1287,7 +1310,7 @@
     },
     "noAccounts" : {
       "title" : "您需要使用账户才能访问此应用程序。",
-      "add" : "添加账户"
+      "select" : "选择账户"
     }
   },
   "location" : {
@@ -1575,12 +1598,49 @@
     "bannerButtonTitle2" : "购买 Ledger 设备",
     "setupCta" : "我已经有一个 Ledger 设备，对该设备进行设置"
   },
+  "rebornBuyDevice" : {
+    "title" : "连接 Ledger 设备",
+    "desc" : "连接 Ledger 设备，解锁 Ledger Wallet 的全部功能。",
+    "0" : {
+      "title" : "完全所有权",
+      "desc" : "您的私钥由您掌控。"
+    },
+    "1" : {
+      "title" : "安全交易",
+      "desc" : "在安全屏幕上验证交易。"
+    },
+    "2" : {
+      "title" : "使用功能强大的钱包",
+      "desc" : "一站式管理数千种资产。"
+    },
+    "cta" : "连接",
+    "buyCta" : "购买 Ledger 设备"
+  },
   "postBuyDeviceSetupNanoWall" : {
     "title" : "拿到您的 Ledger 设备了吗？",
     "desc" : "拿到您的 Ledger 设备后，请完成设置，以解锁 Ledger Wallet 应用程序的所有功能。",
     "cta" : "设置我的 Ledger 设备",
     "bannerTitle" : "已收到您的 Ledger 设备？",
     "bannerCta" : "开始设置",
+    "continue" : "继续"
+  },
+  "deviceDeprecation" : {
+    "warning" : {
+      "title" : "{{device}}™ 无法清晰透明地签署此交易",
+      "subtitle" : "使用任何其他 Ledger 设备验证此交易的详请后再签名。没有透明签名，您可能会失去所有资产。",
+      "continue" : "继续操作，风险自担"
+    },
+    "info" : {
+      "title" : "自 {{date}} 起，{{device}}™ 将终止通过 Ledger Live™ 支持 {{coinName}}",
+      "subtitle" : "立即升级到较新的 Ledger 设备，以确保可以访问所有 Ledger Live 服务提供商并优化客户服务",
+      "reminder" : "不再提醒"
+    },
+    "error" : {
+      "title" : "{{device}}™ 不支持此功能",
+      "subtitle" : "立即升级到较新的 Ledger 设备，以确保可以访问所有最新的 Ledger Live 功能。"
+    },
+    "update" : "探索您的升级计划",
+    "learnMore" : "了解更多",
     "continue" : "继续"
   },
   "purchaseDevice" : {
@@ -2633,6 +2693,7 @@
     "accounts" : "账户",
     "transfer" : "转移",
     "manager" : "我的 Ledger",
+    "myWallet" : "我的钱包",
     "settings" : "设置",
     "platform" : "Live 应用程序",
     "discover" : "探索",
@@ -2691,11 +2752,21 @@
     },
     "walletBalance" : "钱包余额",
     "balance" : {
-      "noSigner" : "最安全的\n钱包",
-      "noFund" : "保护您的\n加密货币"
+      "noSigner" : "您的安全\n加密钱包",
+      "noAccounts" : "首先为您的\n钱包充值"
     },
     "seeAllAssets" : "查看所有资产",
+    "cryptoAddresses" : {
+      "title" : "账户",
+      "count_one" : "{{count}} 个账户",
+      "count_other" : "{{count}} 个账户",
+      "noAccountsYet" : "尚无账户",
+      "add" : "添加"
+    },
     "seeAllAccounts" : "查看所有账户",
+    "assetSection" : {
+      "connectionFailed" : "连接失败"
+    },
     "marketPriceSection" : {
       "title" : "{{currencyTicker}} 市场价格",
       "currencyPrice" : "1 {{currencyTicker}} 价格",
@@ -2721,12 +2792,14 @@
       "buy" : "买入",
       "connect" : "连接",
       "buyLedger" : "购买 Ledger 设备",
+      "receive" : "接收",
+      "send" : "发送",
       "transferDrawer" : {
         "title" : "转移",
-        "receiveCrypto" : "接收加密货币",
+        "receiveCrypto" : "通过加密货币地址接收",
         "sendCrypto" : "发送加密货币",
-        "bankTransfer" : "银行转账",
-        "bankTransferDescription" : "通过发送现金接收稳定币"
+        "bankTransfer" : "通过银行转账接收",
+        "bankTransferDescription" : "只需发送现金即可接收稳定币。"
       }
     },
     "recoverBanner" : {
@@ -2739,6 +2812,12 @@
       "connectDevice" : {
         "title" : "您尚未备份钱包访问权限"
       }
+    },
+    "refreshStatus" : {
+      "refreshing" : "刷新中...",
+      "upToDate" : "资产组合已更新",
+      "syncError" : "无法加载某些账户数据",
+      "offline" : "您已离线。请检查您的连接"
     }
   },
   "addAccountsModal" : {
@@ -2852,6 +2931,10 @@
       "UPDATE_ACCOUNT" : "已更新的账户"
     }
   },
+  "operationsList" : {
+    "to" : "到",
+    "from" : "从"
+  },
   "operationDetails" : {
     "title" : "交易详情",
     "account" : "账户",
@@ -2928,6 +3011,8 @@
   },
   "operationList" : {
     "noOperations" : "不作操作",
+    "emptyTitle" : "暂无交易",
+    "emptySubtitle" : "请稍后再来查看您的交易。",
     "noMoreTransactions" : "无其他交易"
   },
   "selectableAccountsList" : {
@@ -3128,6 +3213,18 @@
   "assets" : {
     "title" : "多种资产"
   },
+  "cryptoAddresses" : {
+    "title" : "账户",
+    "addAccount" : "添加账户",
+    "emptyState" : "尚无账户",
+    "errorState" : "加载您的账户时出错"
+  },
+  "crypto" : {
+    "title" : "加密货币",
+    "stablecoinTitle" : "稳定币",
+    "errorState" : "加载您的资产时出错",
+    "emptyState" : "没有可显示的资产"
+  },
   "accounts" : {
     "title" : "账户",
     "cryptoAccountsTitle" : "{{currencyTicker}} 账户",
@@ -3248,13 +3345,13 @@
       "reportErrorsDesc" : "自动发送报告来帮助 Ledger 改进其产品。",
       "developerMode" : "开发者模式",
       "developerModeDesc" : "在“我的 Ledger”中显示开发者应用程序并启用测试网应用程序。",
-      "analytics" : "数据分析",
-      "analyticsDesc" : "允许 Ledger 收集应用程序使用数据，以便我们衡量 Ledger Wallet 的性能，优化应用程序并提升您的体验。",
+      "analytics" : "应用性能",
+      "analyticsDesc" : "允许 Ledger 收集应用程序使用数据以优化用户体验",
       "mevProtection" : "MEV 保护",
       "mevProtectionDesc" : "启用 MEV Protection，确保以太坊上的交易更加可靠。",
       "mevProtectionLearnMore" : "隐私声明",
       "personalizedRecommendations" : "个性化体验",
-      "personalizedRecommendationsDesc" : "允许 Ledger 收集应用程序使用数据，以便我们提供符合您偏好的个性化推荐及内容，帮助我们衡量营销活动的效果。",
+      "personalizedRecommendationsDesc" : "允许 Ledger 收集应用程序使用情况，以便提供个性化内容",
       "analyticsModal" : {
         "title" : "分享数据分析",
         "desc" : "允许数据分析以帮助 Ledger 改善用户体验",
@@ -3363,6 +3460,14 @@
       "transactionsAlerts" : {
         "title" : "交易提醒（测试版）",
         "desc" : "获取以太坊、Polygon、BNB 链、雪崩链和以太坊经典的交易通知"
+      },
+      "totalMarketCap" : {
+        "title" : "总市值",
+        "desc" : "当加密货币总市值发生显著变化时，您将收到通知"
+      },
+      "topGainersLosers" : {
+        "title" : "涨幅和跌幅",
+        "desc" : "每周回顾市场上涨幅和跌幅最大的代币"
       },
       "price" : {
         "title" : "价格提醒",
@@ -3506,8 +3611,14 @@
         "description" : "本地内容卡会显示在“资产组合”页面（及其他位置），无需使用 Braze。这些卡会一直显示，直至您手动关闭或在此处清除。",
         "addSampleBanner" : "添加示例横幅",
         "addSampleBannerDesc" : "在“资产组合”页面添加一个示例主页横幅。",
-        "addSampleActionCarousel" : "添加示例操作轮播",
-        "addSampleActionCarouselDesc" : "在“资产组合”页面添加一个操作卡轮播（买入、互换、质押）。",
+        "addSampleActionCarouselIcon" : "添加操作轮播（图标）",
+        "addSampleActionCarouselIconDesc" : "每次点按即可添加一张 ContentBanner 卡。与图片变体同一行——在一个轮播中混合使用图标卡和图片卡。循环买入→互换→质押。需要 Braze 位标记。",
+        "addSampleActionCarouselImageBackground" : "添加操作轮播（图片）",
+        "addSampleActionCarouselImageBackgroundDesc" : "每次点按即可添加一张 MediaBanner 卡。与图标变体在同一行——在一个轮播中混合使用两者。循环买入→互换→质押。需要 Braze 位标记。",
+        "addSampleWalletCarouselPicto" : "添加底部钱包轮播（图标）",
+        "addSampleWalletCarouselPictoDesc" : "一个示例卡片组件，包含加密图标、标题、图片及链接不接入 Braze。",
+        "addSampleWalletCarouselTag" : "添加底部钱包轮播（标签）",
+        "addSampleWalletCarouselTagDesc" : "一个示例卡片组件，包含标签、标题、图片及链接不接入 Braze。",
         "dismissAll" : "关闭所有本地卡",
         "dismissAllDesc" : "移除所有本地生成的内容卡。"
       }
@@ -3580,7 +3691,8 @@
         },
         "fiat" : {
           "title" : "通过银行转账",
-          "description" : "通过现金转稳定币账户接收稳定币需要注册"
+          "description" : "只需发送现金即可接收稳定币。",
+          "description_legacy" : "通过现金转稳定币账户接收稳定币需要注册"
         }
       },
       "memoTag" : {
@@ -4163,7 +4275,9 @@
       "placeholderNoENS" : "输入地址",
       "editRecipientAccessibilityLabel" : "编辑接收方",
       "recent" : "最近",
+      "recentDetail" : "最近详情",
       "myAccounts" : "我的账户",
+      "account" : "账户",
       "sendTo" : "发送到 {{address}}",
       "addressMatched" : "已匹配地址",
       "addressNotFound" : "未找到地址",
@@ -4229,6 +4343,39 @@
       "gasOptionsSync" : {
         "warningTitle" : "无法刷新网络费用",
         "warningDescription" : "费用预设可能已过期。"
+      },
+      "customFees" : {
+        "title" : "自定义费用",
+        "confirm" : "确认",
+        "maxFee" : "最高费用 ({{unit}})",
+        "maxPriorityFee" : "最高优先费用 ({{unit}})",
+        "gasLimit" : "Gas 限值 ({{unit}})",
+        "feePerByte" : "费用数额 ({{unit}})",
+        "suggested" : "建议",
+        "nextBlock" : "下一个区块",
+        "networkFeesInFiat" : "网络费用为 {{currency}}",
+        "invalidValue" : "输入有效的数字",
+        "belowMinimum" : "最小值为 {{min}}",
+        "maxFeeBelowPriorityFee" : "最高费用必须大于或等于最高优先费用"
+      },
+      "coinControl" : {
+        "title" : "币控制（UTXO 管理）",
+        "strategy" : "策略",
+        "learnMore" : "了解更多",
+        "coinToSend" : "发送币种",
+        "changeToReturn" : "要返还的零钱",
+        "enterAmount" : "输入数额",
+        "selectSufficientCoins" : "选择足够的加密货币",
+        "amountToSendInCurrency" : "发送数额为 ({{ticker}})",
+        "amountInputLabel" : "发送数额",
+        "bitcoin" : {
+          "pickingStrategyLabels" : {
+            "DEEP_OUTPUTS_FIRST" : "旧币优先（先入先出）",
+            "OPTIMIZE_SIZE" : "令费用最小化（优化大小）",
+            "MERGE_OUTPUTS" : "令未来费用最小化（合并硬币）",
+            "CUSTOM" : "自定义币种选择"
+          }
+        }
       }
     },
     "pendingTxWarning" : "您有待处理的传入交易。请注意，待处理交易可以撤销。",
@@ -4283,7 +4430,8 @@
       "useMax" : "使用最大值",
       "loadingNetwork" : "正在加载网络费用...",
       "noRateProvider" : "缺货",
-      "quantityAvailable" : "可用数量"
+      "quantityAvailable" : "可用数量",
+      "toggleCurrency" : "切换货币"
     },
     "summary" : {
       "solanaRawTransaction" : {
@@ -4343,6 +4491,12 @@
       "required" : "需要费用",
       "chooseGas" : "选择 gas 价格",
       "higherFaster" : "较高的 gas 价格意味着更加快速地确认。",
+      "medium" : "标准",
+      "fast" : "快速",
+      "slow" : "慢速",
+      "custom" : "自定义",
+      "customFees" : "自定义费用",
+      "coinControl" : "交易输入选择",
       "edit" : {
         "title" : "选择单位"
       },
@@ -4383,7 +4537,7 @@
     },
     "cancel" : {
       "title" : "取消",
-      "description" : "发送 0 {{ticker}} 到您自己的地址。"
+      "description" : "发送 0 {{ticker}} 到您自己的地址。不保证取消。如果网络在此次取消请求之前处理了您的原始交易，资金仍会发送给接收方。"
     },
     "error" : {
       "notEnoughFundsToCancel" : "无法取消交易，因为您的账户中没有足够的资金。",
@@ -4392,6 +4546,10 @@
       "TransactionHasBeenValidatedError" : {
         "title" : "无法加速或取消",
         "description" : "此交易已经过验证"
+      },
+      "InvalidTransactionError" : {
+        "title" : "无效交易",
+        "description" : "该交易不再与区块链状态相匹配。请重新开始流程。"
       }
     }
   },
@@ -4996,6 +5154,14 @@
   },
   "FirmwareUpdate" : {
     "banner" : {
+      "wallet40" : {
+        "title" : {
+          "default" : "有可用的系统更新",
+          "manager" : "Ledger OS 有可用更新"
+        },
+        "version" : "版本 {{firmwareVersion}}",
+        "cta" : "更新"
+      },
       "title" : "操作系统有更新",
       "descriptionDeviceName" : "点按将“{{deviceName}}”更新到操作系统版本 {{firmwareVersion}}。",
       "descriptionProductName" : "点按将您的 {{productName}} 更新到操作系统版本 {{firmwareVersion}}。"
@@ -5647,6 +5813,9 @@
     "alerts" : {
       "withdrawableAssets" : "您有可提取余额。",
       "activatableVotes" : "您有现在可激活的投票。"
+    },
+    "send" : {
+      "feeCurrency" : "费用币种"
     }
   },
   "cosmos" : {
@@ -7241,7 +7410,8 @@
         "website" : "网站"
       },
       "back" : {
-        "card" : "所有卡片"
+        "card" : "所有卡片",
+        "cardTab" : "卡"
       }
     }
   },
@@ -7648,6 +7818,10 @@
       "description" : "保护您的资产，探索更多可能。",
       "buttonLabel" : "查看后续步骤"
     },
+    "widget" : {
+      "title" : "接着，完成钱包设置",
+      "subtitle" : "首先为您的钱包充值。"
+    },
     "actions" : {
       "deviceOnboarded" : {
         "titleCompleted" : "设置您的 Ledger 设备"
@@ -7670,6 +7844,12 @@
         "description" : "将您最喜欢的数字艺术或照片设置为设备锁屏界面。",
         "popupLabel" : "已成功自定义锁屏界面"
       },
+      "recover" : {
+        "title" : "完成保护您的备份",
+        "titleCompleted" : "备份已受保护",
+        "description" : "完成激活 Ledger Recover",
+        "popupLabel" : "已成功订阅 Ledger Recover"
+      },
       "syncAccounts" : {
         "title" : "同步您的加密货币账户",
         "titleCompleted" : "您的账户已同步",
@@ -7681,6 +7861,7 @@
   "wallet" : {
     "tabs" : {
       "crypto" : "加密货币",
+      "stablecoins" : "稳定币",
       "market" : "市场"
     },
     "referralProgram" : "$20"
@@ -7926,6 +8107,44 @@
         }
       }
     }
+  },
+  "analyticsConsentDrawer" : {
+    "fresh" : {
+      "title" : "帮助我们改进 Ledger",
+      "description" : "征得您的同意后，我们将收集使用数据，以改进功能并提供个性化体验。",
+      "ctaAcceptAll" : "全部接受",
+      "ctaRefuseAll" : "全部拒绝"
+    },
+    "reconfirm" : {
+      "title" : "继续改进 Ledger？",
+      "description" : "您想继续分享使用数据以帮助我们改进 Ledger 吗？这些数据用于改进功能并个性化您的体验。",
+      "ctaContinue" : "可以，继续",
+      "ctaStop" : "不想，停止"
+    },
+    "privacy" : {
+      "title" : "我们正在更新我们的隐私政策",
+      "descriptionLead" : "请查看我们的 ",
+      "descriptionLinkLabel" : "隐私政策",
+      "descriptionTrail" : " 了解发生了什么变化。您可以随时在设置中更新您的偏好。",
+      "ctaGotIt" : "知道了"
+    },
+    "setPreferences" : "设置偏好",
+    "footer" : {
+      "lead" : "您可以随时在设置中撤回您的同意。",
+      "privacyLink" : "隐私政策"
+    }
+  },
+  "analyticsPreferencesSettings" : {
+    "screenTitle" : "设置偏好",
+    "appPerformance" : {
+      "title" : "应用性能",
+      "description" : "允许 Ledger 收集应用程序使用数据以优化用户体验。"
+    },
+    "personalizedExperience" : {
+      "title" : "个性化体验",
+      "description" : "允许 Ledger 收集应用程序使用数据，以提供个性化内容。"
+    },
+    "confirmCta" : "确认"
   },
   "walletSync" : {
     "title" : "Ledger Sync",
@@ -8281,6 +8500,7 @@
     "emptyAssetList" : "未找到资产",
     "accountCount_one" : "{{count}} 个账户",
     "accountCount_other" : "{{count}} 个账户",
+    "perpetualsBanner" : "目前仅支持 Arbitrum 链上的 USDC。",
     "errors" : {
       "title" : "连接失败",
       "backend" : "我们这边出错了。请稍后重试",
@@ -8372,6 +8592,10 @@
     "swapRateExpiredError" : {
       "title" : "费率已过期",
       "description" : "汇率已过期。请刷新并重试。"
+    },
+    "details" : {
+      "code" : "错误代码",
+      "correlationId" : "参考 ID "
     },
     "default" : {
       "title" : "出错了",
@@ -8482,15 +8706,69 @@
       }
     }
   },
+  "concordium" : {
+    "receive" : {
+      "messageIfSkipped" : "目前无法核实您的 Concordium 地址。请务必将地址粘贴到 Concordium 浏览器中进行仔细核对。",
+      "verifyLink" : "验证"
+    },
+    "onboard" : {
+      "title" : "Concordium 引导流程",
+      "acknowledge" : {
+        "title" : "确认声明",
+        "description" : "Concordium 需要进行外部身份验证。请阅读以下重要安全提示：",
+        "list" : {
+          "1" : {
+            "title" : "无地址核实",
+            "description" : "Ledger 设备无法核实 Concordium 接收地址。接收资金之前，请人工核实地址。"
+          },
+          "2" : {
+            "title" : "Concordium ID 应用程序使用单独的种子助记词",
+            "description" : "您将在 Concordium 应用程序中创建新的 24 个助记词。切勿使用您的 Ledger 助记词。"
+          },
+          "3" : {
+            "title" : "您将被重定向到 Ledger Wallet 之外",
+            "description" : "身份验证将在外部 Concordium Wallet 应用程序中完成。这是 Concordium 区块链协议的要求。"
+          },
+          "4" : {
+            "title" : "交易签署安全无虞",
+            "description" : "只有您的 Ledger 设备可以签署交易和创建账户。"
+          }
+        },
+        "guide" : "请在继续操作之前阅读指南：",
+        "allow" : "同意"
+      },
+      "pair" : {
+        "title" : "连接到 Concordium ID 应用程序",
+        "connecting" : "正在连接...",
+        "scanQRCodeOrDownload" : "请使用另一台设备扫描二维码，或下载 Concordium ID 应用程序以继续。",
+        "openIdApp" : "打开 Concordium ID 应用程序",
+        "success" : "已成功连接到 Concordium ID 应用程序。",
+        "continue" : "继续",
+        "error" : "无法连接到 Concordium ID 应用程序。请重试。"
+      },
+      "create" : {
+        "title" : "添加 Concordium 账户",
+        "prepare" : {
+          "title" : "要创建账户，请在 Concordium ID 应用程序中匹配以下代码",
+          "resendButton" : "重新发送确认",
+          "resendDescription" : "重新发送将在 {{count}} 秒后可用"
+        },
+        "submitting" : "正在创建账户...",
+        "keepDeviceNearby" : "在您的 Ledger 设备上批准交易。将您的 Ledger 放在附近。",
+        "success" : "您的 Concordium 账户已成功创建。",
+        "error" : "账户创建失败。请重试。"
+      }
+    }
+  },
   "fearAndGreed" : {
     "title" : "情绪指数",
-    "description" : "情绪指数反映了市场的情绪状态。其数值范围为 0 至 100，数值越低表示越恐惧，数值越高表示越贪婪。",
+    "description" : "根据趋势和活动显示整体市场情绪（从 0 到 100）。以此了解市场表现：数值较低表示恐惧，数值较高表示贪婪。",
     "levels" : {
-      "extremeFear" : "恐惧+",
       "fear" : "恐惧",
+      "cautious" : "谨慎",
       "neutral" : "中立",
-      "greed" : "贪婪",
-      "extremeGreed" : "贪婪+"
+      "optimistic" : "乐观",
+      "greedy" : "贪婪"
     },
     "tileTitle" : "情绪"
   },
@@ -8517,20 +8795,20 @@
     "title" : "探索您的全新资产组合",
     "slides" : {
       "portfolio" : {
-        "title" : "焕然一新的资产组合体验",
-        "description" : "我们已精简优化了主屏幕。找不到图表？点按余额下方即可查看。"
+        "title" : "更清楚地展示您的资产组合",
+        "description" : "一目了然地查看您的总余额，点按“今天”可深入了解。"
       },
       "navigation" : {
-        "title" : "一切井然有序",
-        "description" : "“我的 Ledger”和“探索”现已置于顶部。“互换”和“卡”已移至底部，方便快速访问。"
+        "title" : "更快访问关键操作功能",
+        "description" : "快速访问互换、转账和买入功能。“赚取”和您的\"卡\"位于底部导航栏。"
       },
       "actions" : {
-        "title" : "操作响应，与市场同速",
-        "description" : "通过全新横幅洞察市场趋势，即时交易。"
+        "title" : "快速查看市场趋势",
+        "description" : "快速查看您资产组合中的热门趋势，并从洞察转向行动。"
       }
     },
     "cta" : {
-      "continue" : "继续",
+      "continue" : "下一步",
       "explore" : "探索我的全新资产组合"
     }
   },
@@ -8538,6 +8816,91 @@
     "home" : "首页",
     "swap" : "互换",
     "earn" : "赚取",
+    "yield" : "收益率",
     "card" : "卡"
+  },
+  "syncIndicator" : {
+    "accessibilityLabel" : {
+      "error" : "同步错误",
+      "syncing" : "同步中",
+      "default" : "同步"
+    },
+    "bottomSheet" : {
+      "title" : "无法加载某些账户数据",
+      "description" : "您的资产安全无虞。出现临时同步问题。\n受影响的账户： {{accounts}}",
+      "tryToRefresh" : "尝试刷新",
+      "close" : "关闭"
+    }
+  },
+  "deeplinkInstallApp" : {
+    "confirmation" : {
+      "title" : "安装 {{appName}}？",
+      "genericDescription" : "{{appName}} 应用程序将安装在您的 Ledger 设备上。",
+      "recoveryKeyDescription" : "您将能够直接在您的 Ledger Stax 上使用 Recovery Key Updater 应用程序进行更新。",
+      "installCTA" : "安装 {{appName}}"
+    },
+    "deviceSelection" : {
+      "title" : "选择 Ledger"
+    },
+    "installing" : {
+      "title" : "正在安装 {{appName}}……",
+      "description" : "请保持 {{productName}} 连接",
+      "resolving" : "正在准备安装……",
+      "connecting" : "正在连接设备……"
+    },
+    "success" : {
+      "title" : "{{appName}} 已成功安装",
+      "genericDescription" : "您现在可以在您的 Ledger 设备上使用 {{appName}} 应用程序。",
+      "recoveryKeyDescription" : "在您的 Ledger 设备上打开应用程序，以检查是否有 Ledger Recovery Key 更新。"
+    },
+    "error" : {
+      "title" : "安装 {{appName}} 失败",
+      "description" : "安装过程中出错了。请重试。"
+    }
+  },
+  "myWallet" : {
+    "quickActions" : {
+      "recover" : "[L] Recover",
+      "backup" : "备份",
+      "help" : "帮助",
+      "referral" : "推荐"
+    },
+    "help" : {
+      "title" : "帮助",
+      "sections" : {
+        "supportAndLearning" : "支持与学习",
+        "more" : "更多"
+      },
+      "rows" : {
+        "ledgerSupport" : {
+          "title" : "Ledger 客服",
+          "description" : "通过常见问题解答或聊天获取帮助"
+        },
+        "ledgerAcademy" : {
+          "title" : "Ledger 学院",
+          "description" : "学习加密货币"
+        },
+        "saveLogs" : {
+          "title" : "保存日志",
+          "description" : "保存 Ledger Wallet 日志以便排除故障"
+        },
+        "ledgerStatus" : {
+          "title" : "Ledger 状态",
+          "description" : "检查我们的系统状态"
+        },
+        "clearCache" : {
+          "title" : "清除缓存",
+          "description" : "扫描交易并重新计算余额"
+        }
+      }
+    },
+    "deviceSection" : {
+      "title" : "我的设备",
+      "add" : "添加",
+      "addDevice" : "添加 Ledger 设备",
+      "exploreAllDevices" : "探索所有 Ledger 设备",
+      "available" : "可用",
+      "unavailable" : "未连接"
+    }
   }
 }

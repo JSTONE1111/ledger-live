@@ -1,5 +1,207 @@
 # @ledgerhq/live-dmk-mobile
 
+## 0.21.3
+
+### Patch Changes
+
+- Updated dependencies [[`78acbfa`](https://github.com/LedgerHQ/ledger-live/commit/78acbfae7319c5b3fb1453f8727e2210e895669c), [`1bd0cac`](https://github.com/LedgerHQ/ledger-live/commit/1bd0cac7957422fa06e18424e9e2706c39072078), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`4cf9b8c`](https://github.com/LedgerHQ/ledger-live/commit/4cf9b8cde388aebfe04a894e9a35584856d1713d), [`f36e748`](https://github.com/LedgerHQ/ledger-live/commit/f36e74881c03a25164c0eac24b13765bbbbbb440)]:
+  - @ledgerhq/live-env@2.33.0
+  - @ledgerhq/errors@6.34.0
+  - @ledgerhq/devices@8.14.1
+  - @ledgerhq/hw-transport@6.35.1
+  - @ledgerhq/live-dmk-shared@0.22.2
+
+## 0.21.3-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`78acbfa`](https://github.com/LedgerHQ/ledger-live/commit/78acbfae7319c5b3fb1453f8727e2210e895669c), [`1bd0cac`](https://github.com/LedgerHQ/ledger-live/commit/1bd0cac7957422fa06e18424e9e2706c39072078), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`4cf9b8c`](https://github.com/LedgerHQ/ledger-live/commit/4cf9b8cde388aebfe04a894e9a35584856d1713d), [`f36e748`](https://github.com/LedgerHQ/ledger-live/commit/f36e74881c03a25164c0eac24b13765bbbbbb440)]:
+  - @ledgerhq/live-env@2.33.0-next.0
+  - @ledgerhq/errors@6.34.0-next.0
+  - @ledgerhq/devices@8.14.1-next.0
+  - @ledgerhq/hw-transport@6.35.1-next.0
+  - @ledgerhq/live-dmk-shared@0.22.2-next.0
+
+## 0.21.2
+
+### Patch Changes
+
+- Updated dependencies [[`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71), [`53df748`](https://github.com/LedgerHQ/ledger-live/commit/53df74819753f084ed3df4a2ab9082d398b54920), [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8)]:
+  - @ledgerhq/live-env@2.32.0
+  - @ledgerhq/errors@6.33.0
+  - @ledgerhq/devices@8.14.0
+  - @ledgerhq/hw-transport@6.35.0
+  - @ledgerhq/logs@6.17.0
+  - @ledgerhq/types-devices@6.31.0
+  - @ledgerhq/live-dmk-shared@0.22.1
+
+## 0.21.2-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71), [`53df748`](https://github.com/LedgerHQ/ledger-live/commit/53df74819753f084ed3df4a2ab9082d398b54920), [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8)]:
+  - @ledgerhq/live-env@2.32.0-next.0
+  - @ledgerhq/errors@6.33.0-next.0
+  - @ledgerhq/devices@8.14.0-next.0
+  - @ledgerhq/hw-transport@6.35.0-next.0
+  - @ledgerhq/logs@6.17.0-next.0
+  - @ledgerhq/types-devices@6.31.0-next.0
+  - @ledgerhq/live-dmk-shared@0.22.1-next.0
+
+## 0.21.1
+
+### Patch Changes
+
+- Updated dependencies [[`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20)]:
+  - @ledgerhq/live-env@2.31.0
+
+## 0.21.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20)]:
+  - @ledgerhq/live-env@2.31.0-next.0
+
+## 0.21.0
+
+### Minor Changes
+
+- [#14420](https://github.com/LedgerHQ/ledger-live/pull/14420) [`2fd7069`](https://github.com/LedgerHQ/ledger-live/commit/2fd7069608cc9a2987fc8476a6201c3c77033c75) Thanks [@OlivierFreyssinet](https://github.com/OlivierFreyssinet)! - Expose DiscoveredDevice in SelectDevice2 and BleDevicePairingFlow for DMK-based connections
+
+### Patch Changes
+
+- Updated dependencies [[`be83068`](https://github.com/LedgerHQ/ledger-live/commit/be83068b1580be86b1e97c1eb4c6b19db54ff2a4), [`982d4af`](https://github.com/LedgerHQ/ledger-live/commit/982d4afbeb7faf3814c3e96ffb6e3e88b58dfe73), [`6dac7f9`](https://github.com/LedgerHQ/ledger-live/commit/6dac7f974c28dcae409c110a60061996490c5088), [`8ce1cb7`](https://github.com/LedgerHQ/ledger-live/commit/8ce1cb755b3e68c8688f9e828596d3c2605ef3cb)]:
+  - @ledgerhq/live-dmk-shared@0.22.0
+  - @ledgerhq/devices@8.13.0
+  - @ledgerhq/errors@6.32.0
+  - @ledgerhq/hw-transport@6.34.1
+
+## 0.21.0-next.0
+
+### Minor Changes
+
+- [#14420](https://github.com/LedgerHQ/ledger-live/pull/14420) [`2fd7069`](https://github.com/LedgerHQ/ledger-live/commit/2fd7069608cc9a2987fc8476a6201c3c77033c75) Thanks [@OlivierFreyssinet](https://github.com/OlivierFreyssinet)! - Expose DiscoveredDevice in SelectDevice2 and BleDevicePairingFlow for DMK-based connections
+
+### Patch Changes
+
+- Updated dependencies [[`be83068`](https://github.com/LedgerHQ/ledger-live/commit/be83068b1580be86b1e97c1eb4c6b19db54ff2a4), [`982d4af`](https://github.com/LedgerHQ/ledger-live/commit/982d4afbeb7faf3814c3e96ffb6e3e88b58dfe73), [`6dac7f9`](https://github.com/LedgerHQ/ledger-live/commit/6dac7f974c28dcae409c110a60061996490c5088), [`8ce1cb7`](https://github.com/LedgerHQ/ledger-live/commit/8ce1cb755b3e68c8688f9e828596d3c2605ef3cb)]:
+  - @ledgerhq/live-dmk-shared@0.22.0-next.0
+  - @ledgerhq/devices@8.13.0-next.0
+  - @ledgerhq/errors@6.32.0-next.0
+  - @ledgerhq/hw-transport@6.34.1-next.0
+
+## 0.20.1
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025), [`fd24208`](https://github.com/LedgerHQ/ledger-live/commit/fd242082615ef0af25f0f5f96389b7406fc194dc), [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d), [`e5096c1`](https://github.com/LedgerHQ/ledger-live/commit/e5096c1c6730707de81e958e000333f06058bf07)]:
+  - @ledgerhq/devices@8.12.0
+  - @ledgerhq/errors@6.31.0
+  - @ledgerhq/hw-transport@6.34.0
+  - @ledgerhq/logs@6.16.0
+  - @ledgerhq/types-devices@6.30.0
+  - @ledgerhq/live-env@2.30.0
+  - @ledgerhq/live-dmk-shared@0.21.0
+
+## 0.20.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025), [`fd24208`](https://github.com/LedgerHQ/ledger-live/commit/fd242082615ef0af25f0f5f96389b7406fc194dc), [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d), [`e5096c1`](https://github.com/LedgerHQ/ledger-live/commit/e5096c1c6730707de81e958e000333f06058bf07)]:
+  - @ledgerhq/devices@8.12.0-next.0
+  - @ledgerhq/errors@6.31.0-next.0
+  - @ledgerhq/hw-transport@6.34.0-next.0
+  - @ledgerhq/logs@6.16.0-next.0
+  - @ledgerhq/types-devices@6.30.0-next.0
+  - @ledgerhq/live-env@2.30.0-next.0
+  - @ledgerhq/live-dmk-shared@0.21.0-next.0
+
+## 0.20.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`0dbbca3`](https://github.com/LedgerHQ/ledger-live/commit/0dbbca3f0226347b5abc034a066fe4ad89bfe462), [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/errors@6.30.0
+  - @ledgerhq/types-devices@6.29.0
+  - @ledgerhq/hw-transport@6.33.0
+  - @ledgerhq/devices@8.11.0
+  - @ledgerhq/logs@6.15.0
+  - @ledgerhq/live-dmk-shared@0.20.0
+
+## 0.20.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`0dbbca3`](https://github.com/LedgerHQ/ledger-live/commit/0dbbca3f0226347b5abc034a066fe4ad89bfe462), [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/errors@6.30.0-next.0
+  - @ledgerhq/types-devices@6.29.0-next.0
+  - @ledgerhq/hw-transport@6.33.0-next.0
+  - @ledgerhq/devices@8.11.0-next.0
+  - @ledgerhq/logs@6.15.0-next.0
+  - @ledgerhq/live-dmk-shared@0.20.0-next.0
+
+## 0.19.0
+
+### Minor Changes
+
+- [#14260](https://github.com/LedgerHQ/ledger-live/pull/14260) [`45c33f6`](https://github.com/LedgerHQ/ledger-live/commit/45c33f630249e48371252e7bd745c934d212f143) Thanks [@OlivierFreyssinet](https://github.com/OlivierFreyssinet)! - Remove legacy React Native HID transport code and make DMK always enabled
+
+  Since the `ldmkTransport` feature flag is now enabled by default in all environments, the Device Management Kit (DMK) transport is always used. This removes all dead code related to the legacy HID transport:
+
+  - Removed `@ledgerhq/react-native-hid` dependency from LLM
+  - Removed `getHidTransport.ts` (legacy HID transport selector)
+  - Removed `useLdmkFeatureFlagInitiallyEnabled` hook from live-common
+  - Removed `dmkEnabled` prop from `DeviceManagementKitProvider`
+  - Removed `useDeviceManagementKitEnabled` hook
+  - Removed `DeviceManagementKitHIDTransport.listen()` method (discovery now handled by new hook)
+
+  New additions:
+
+  - Added `useHidDevicesDiscovery` hook in live-dmk-mobile for direct DMK-based USB device discovery
+  - Added `HIDDiscoveredDevice` type
+
+  Note: The `@ledgerhq/react-native-hid` package itself (in `libs/ledgerjs/`) is not removed — it will be deprecated in a separate PR.
+
+### Patch Changes
+
+- Updated dependencies [[`ec8a2d6`](https://github.com/LedgerHQ/ledger-live/commit/ec8a2d619b85117e2d74c595c6eae5cae6fda433), [`2ca4f6c`](https://github.com/LedgerHQ/ledger-live/commit/2ca4f6c337a29cd81874261c697d74c82a312eee), [`3bb5c2e`](https://github.com/LedgerHQ/ledger-live/commit/3bb5c2e335c05945b1a7bc8c77d19d0ea03156a6), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d)]:
+  - @ledgerhq/live-env@2.29.0
+
+## 0.19.0-next.0
+
+### Minor Changes
+
+- [#14260](https://github.com/LedgerHQ/ledger-live/pull/14260) [`45c33f6`](https://github.com/LedgerHQ/ledger-live/commit/45c33f630249e48371252e7bd745c934d212f143) Thanks [@OlivierFreyssinet](https://github.com/OlivierFreyssinet)! - Remove legacy React Native HID transport code and make DMK always enabled
+
+  Since the `ldmkTransport` feature flag is now enabled by default in all environments, the Device Management Kit (DMK) transport is always used. This removes all dead code related to the legacy HID transport:
+
+  - Removed `@ledgerhq/react-native-hid` dependency from LLM
+  - Removed `getHidTransport.ts` (legacy HID transport selector)
+  - Removed `useLdmkFeatureFlagInitiallyEnabled` hook from live-common
+  - Removed `dmkEnabled` prop from `DeviceManagementKitProvider`
+  - Removed `useDeviceManagementKitEnabled` hook
+  - Removed `DeviceManagementKitHIDTransport.listen()` method (discovery now handled by new hook)
+
+  New additions:
+
+  - Added `useHidDevicesDiscovery` hook in live-dmk-mobile for direct DMK-based USB device discovery
+  - Added `HIDDiscoveredDevice` type
+
+  Note: The `@ledgerhq/react-native-hid` package itself (in `libs/ledgerjs/`) is not removed — it will be deprecated in a separate PR.
+
+### Patch Changes
+
+- Updated dependencies [[`ec8a2d6`](https://github.com/LedgerHQ/ledger-live/commit/ec8a2d619b85117e2d74c595c6eae5cae6fda433), [`2ca4f6c`](https://github.com/LedgerHQ/ledger-live/commit/2ca4f6c337a29cd81874261c697d74c82a312eee), [`3bb5c2e`](https://github.com/LedgerHQ/ledger-live/commit/3bb5c2e335c05945b1a7bc8c77d19d0ea03156a6), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d)]:
+  - @ledgerhq/live-env@2.29.0-next.0
+
 ## 0.18.4
 
 ### Patch Changes

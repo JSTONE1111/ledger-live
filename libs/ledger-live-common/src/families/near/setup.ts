@@ -7,9 +7,8 @@ import { NearAccount, Transaction, TransactionStatus } from "@ledgerhq/coin-near
 import Near from "@ledgerhq/hw-app-near";
 import Transport from "@ledgerhq/hw-transport";
 import type { Bridge } from "@ledgerhq/types-live";
-import { NearSigner } from "@ledgerhq/coin-near/lib/signer";
-import { NearCoinConfig } from "@ledgerhq/coin-near/lib/config";
-import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
+import { NearSigner } from "@ledgerhq/coin-near/signer";
+import { NearCoinConfig } from "@ledgerhq/coin-near/config";
 import { CreateSigner, createResolver, executeWithSigner } from "../../bridge/setup";
 import type { Resolver } from "../../hw/getAddress/types";
 import { getCurrencyConfiguration } from "../../config";
@@ -19,7 +18,7 @@ const createSigner: CreateSigner<NearSigner> = (transport: Transport) => {
 };
 
 const getCoinConfig: NearCoinConfig = () =>
-  getCurrencyConfiguration<ReturnType<NearCoinConfig>>(getCryptoCurrencyById("near"));
+  getCurrencyConfiguration<ReturnType<NearCoinConfig>>("near");
 
 const bridge: Bridge<Transaction, NearAccount, TransactionStatus> = createBridges(
   executeWithSigner(createSigner),

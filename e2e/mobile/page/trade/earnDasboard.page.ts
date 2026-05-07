@@ -1,13 +1,12 @@
 import { Step } from "jest-allure2-reporter/api";
 import { normalizeText } from "../../helpers/commonHelpers";
-import { Provider } from "@ledgerhq/live-common/lib/e2e/enum/Provider";
+import { Provider } from "@ledgerhq/live-common/e2e/enum/Provider";
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
 
 export default class EarnDashboardPage {
   amountAvailableAssetsText = "Amount available to earn";
   amountAvailableToEarnBalanceCard = "Amount available to earn-balance-card";
   assetsTitleId = "assets-title-text";
-  earnButtonSelector = '[data-testid^="stake-"][data-testid$="-button"]';
   getAssetsPlaceholderHero = "get-assets-placeholder-hero";
   rewardsPotentialBalanceCard = "Rewards you could earn-balance-card";
   rewardsPotentialText = "Rewards you could earn";
@@ -22,6 +21,7 @@ export default class EarnDashboardPage {
   totalRewardsBalanceCard = "Total rewards-balance-card";
   totalRewardsText = "Total rewards";
 
+  earnButtonSelector = (ticker: string) => `[data-testid$="${ticker}-stake-button"]`;
   stakingProviderTitle = (providerName: string) => `staking-provider-${providerName}-title`;
   assetsTitleText = (withStaking: boolean) =>
     withStaking ? "Deposited assets" : "Available assets";
@@ -33,13 +33,13 @@ export default class EarnDashboardPage {
         name: "Stader Labs",
         url: `staderlabs.com/${account.currency.ticker.toLowerCase()}`,
       },
-      Kiln_staking_Pool: { name: "Kiln staking Pool", url: "kiln.fi%2F%3Ffocus%3Dpooled" },
+      Kiln_staking_Pool: { name: "Kiln staking Pool", url: "ledger-staking.widget.kiln.fi/earn" },
     };
   };
 
   @Step("Click on earn button")
-  async clickEarnCurrencyButton() {
-    const elem = getWebElementByCssSelector(this.earnButtonSelector);
+  async clickEarnCurrencyButton(account: Account) {
+    const elem = getWebElementByCssSelector(this.earnButtonSelector(account.currency.ticker));
     await tapWebElementByElement(elem);
   }
 
@@ -72,8 +72,10 @@ export default class EarnDashboardPage {
         break;
       }
       case this.providers(account).Kiln_staking_Pool.name: {
-        jestExpect(url).toContain(account.currency.id);
         jestExpect(url).toContain(this.providers(account).Kiln_staking_Pool.url);
+        jestExpect(url).toContain("focus=pooled");
+        jestExpect(url).toContain(account.currency.id);
+        jestExpect(url).toContain(account.address);
         break;
       }
       default:
@@ -111,20 +113,24 @@ export default class EarnDashboardPage {
 
   @Step("Verify 'available assets' is visible")
   async verifyAvailableAssets(account: Account) {
-    const assetTitleElement = getWebElementByTestId(this.assetsTitleId, 0, "data-test-id");
+    const assetTitleElement = getWebElementByTestId(this.assetsTitleId, {
+      testIdAttribute: "data-test-id",
+    });
     await detoxExpect(assetTitleElement).toExist();
     await detoxExpect(assetTitleElement).toHaveText(this.assetsTitleText(false));
     const rowsContent = await getWebElementsText(this.tableEarnMoreSelector);
     const normalizedText = normalizeText(rowsContent.join(" "));
     jestExpect(normalizedText).toContain(`${account.accountName} ${account.currency.ticker}`);
-    const earnButton = getWebElementByCssSelector(this.earnButtonSelector);
+    const earnButton = getWebElementByCssSelector(this.earnButtonSelector(account.currency.ticker));
     await detoxExpect(earnButton).toExist();
     await detoxExpect(earnButton).toHaveText("Earn");
   }
 
   @Step("Verify Deposited assets is visible")
   async verifyDepositedAssets(account: Account) {
-    const assetTitleElement = getWebElementByTestId(this.assetsTitleId, 0, "data-test-id");
+    const assetTitleElement = getWebElementByTestId(this.assetsTitleId, {
+      testIdAttribute: "data-test-id",
+    });
     await detoxExpect(assetTitleElement).toExist();
     await detoxExpect(assetTitleElement).toHaveText(this.assetsTitleText(true));
 
@@ -138,8 +144,8 @@ export default class EarnDashboardPage {
   async goToTab(tabName: "My Rewards" | "Earn Opportunities") {
     const tabTestId = tabName === "My Rewards" ? "tab-assets" : "tab-earn-more";
     try {
-      const button = getWebElementByTestId(tabTestId, 0, "data-test-id");
-      await tapWebElementByElement(button);
+      const button = getWebElementByTestId(tabTestId, { testIdAttribute: "data-test-id" });
+      await tapWebElementByElement(button, 10000);
     } catch {
       console.log(`${tabName} tab is not visible`);
     }
@@ -147,7 +153,9 @@ export default class EarnDashboardPage {
 
   @Step("Verify earn by stacking button is visible")
   async verifyEarnByStackingButton() {
-    const earnButton = getWebElementByTestId(this.stakeCryptoAssetsButton, 0, "data-test-id");
+    const earnButton = getWebElementByTestId(this.stakeCryptoAssetsButton, {
+      testIdAttribute: "data-test-id",
+    });
     await scrollToWebElement(earnButton);
     await tapWebElementByElement(earnButton);
     await app.stake.verifyChooseAssetPage();

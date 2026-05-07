@@ -1,28 +1,13 @@
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/index";
 import { findCryptoCurrencyByKeyword } from "@ledgerhq/live-common/currencies/index";
 import { addAccountHandler } from "../addAccount.handler";
-import { DeeplinkHandlerContext } from "../../types";
+import { createMockContext } from "./test-utils";
 
 jest.mock("@ledgerhq/live-common/currencies/index", () => ({
   findCryptoCurrencyByKeyword: jest.fn(),
 }));
 
 const mockFindCryptoCurrencyByKeyword = jest.mocked(findCryptoCurrencyByKeyword);
-
-const createMockContext = (
-  overrides: Partial<DeeplinkHandlerContext> = {},
-): DeeplinkHandlerContext => ({
-  dispatch: jest.fn(),
-  accounts: [],
-  navigate: jest.fn(),
-  openAddAccountFlow: jest.fn(),
-  openAssetFlow: jest.fn(),
-  openSendFlow: jest.fn(),
-  postOnboardingDeeplinkHandler: jest.fn(),
-  tryRedirectToPostOnboardingOrRecover: jest.fn(() => false),
-  currentPathname: "/",
-  ...overrides,
-});
 
 describe("addAccount.handler", () => {
   beforeEach(() => {
@@ -41,13 +26,14 @@ describe("addAccount.handler", () => {
       expect(context.openAddAccountFlow).toHaveBeenCalledWith(mockCurrency, true);
     });
 
-    it("does not open add account flow when currency not found", () => {
+    it("opens add account modal via openAssetFlow when currency not found", () => {
       mockFindCryptoCurrencyByKeyword.mockReturnValue(null);
       const context = createMockContext();
 
       addAccountHandler({ type: "add-account", currency: "unknowncoin" }, context);
 
       expect(context.openAddAccountFlow).not.toHaveBeenCalled();
+      expect(context.openAssetFlow).toHaveBeenCalled();
     });
 
     it("handles case-insensitive currency parameter", () => {
@@ -61,7 +47,7 @@ describe("addAccount.handler", () => {
       expect(context.openAddAccountFlow).toHaveBeenCalledWith(mockCurrency, true);
     });
 
-    it("does nothing when currency is not provided", () => {
+    it("opens add account modal via openAssetFlow when currency is not provided", () => {
       mockFindCryptoCurrencyByKeyword.mockReturnValue(null);
       const context = createMockContext();
 
@@ -69,6 +55,7 @@ describe("addAccount.handler", () => {
 
       expect(mockFindCryptoCurrencyByKeyword).toHaveBeenCalledWith("");
       expect(context.openAddAccountFlow).not.toHaveBeenCalled();
+      expect(context.openAssetFlow).toHaveBeenCalled();
     });
   });
 });

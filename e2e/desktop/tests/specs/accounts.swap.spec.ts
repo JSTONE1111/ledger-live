@@ -1,4 +1,5 @@
 import test from "tests/fixtures/common";
+import { Team } from "@ledgerhq/live-common/e2e/enum/Team";
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
 import { AppInfos } from "@ledgerhq/live-common/e2e/enum/AppInfos";
 import { setExchangeDependencies } from "@ledgerhq/live-common/e2e/speculos";
@@ -14,7 +15,7 @@ import {
 import { DeviceModelId } from "@ledgerhq/types-devices";
 import { getFamilyByCurrencyId } from "@ledgerhq/live-common/currencies/helpers";
 import { getModularSelector } from "tests/utils/modularSelectorUtils";
-import { liveDataWithAddressCommand } from "tests/utils/cliCommandsUtils";
+import { liveDataWithAddressCommand } from "@ledgerhq/live-common/e2e/cliCommandsUtils";
 import { Addresses } from "@ledgerhq/live-common/e2e/enum/Addresses";
 
 const app: AppInfos = AppInfos.EXCHANGE;
@@ -32,7 +33,8 @@ test.describe("Swap - Default currency when landing on swap", () => {
   });
 
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.SWAP,
+    userdata: "skip-onboarding-with-last-seen-device",
     speculosApp: app,
 
     cliCommandsOnApp: [
@@ -67,12 +69,14 @@ test.describe("Swap - Default currency when landing on swap", () => {
       ],
       annotation: { type: "TMS", description: "B2CQA-3079" },
     },
-    async ({ app, electronApp }) => {
+    async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.swap.goAndWaitForSwapToBeReady(() => app.layout.goToSwap());
-      await app.swap.checkAssetFrom(electronApp, "BTC");
-      await app.swap.checkAssetTo(electronApp, "");
+      await app.swap.goAndWaitForSwapToBeReady(() =>
+        app.mainNavigation.openTargetFromMainNavigation("swap"),
+      );
+      await app.swap.checkAssetFromContains("BTC");
+      await app.swap.checkAssetToContains("Choose asset");
     },
   );
 
@@ -93,18 +97,20 @@ test.describe("Swap - Default currency when landing on swap", () => {
       ],
       annotation: { type: "TMS", description: "B2CQA-3080" },
     },
-    async ({ app, electronApp }) => {
+    async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
       const minAmount = await app.swap.getMinimumAmount(fromAccount, toAccount);
       const swap = new Swap(fromAccount, toAccount, minAmount);
 
-      await performSwapUntilQuoteSelectionStep(app, electronApp, swap, minAmount);
-      await app.layout.goToAccounts();
+      await performSwapUntilQuoteSelectionStep(app, swap, minAmount);
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
       await app.accounts.expectAccountsTitleVisibility();
-      await app.swap.goAndWaitForSwapToBeReady(() => app.layout.goToSwap());
-      await app.swap.checkAssetFrom(electronApp, swap.accountToDebit.currency.ticker);
-      await app.swap.checkAssetTo(electronApp, swap.accountToCredit.currency.ticker);
+      await app.swap.goAndWaitForSwapToBeReady(() =>
+        app.mainNavigation.openTargetFromMainNavigation("swap"),
+      );
+      await app.swap.checkAssetFromContains(swap.accountToDebit.currency.ticker);
+      await app.swap.checkAssetToContains(swap.accountToCredit.currency.ticker);
     },
   );
 });
@@ -123,7 +129,8 @@ test.describe("Swap - Rejected on device", () => {
   });
 
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.SWAP,
+    userdata: "skip-onboarding-with-last-seen-device",
     speculosApp: app,
 
     cliCommandsOnApp: [
@@ -158,16 +165,16 @@ test.describe("Swap - Rejected on device", () => {
       ],
       annotation: { type: "TMS", description: "B2CQA-2212" },
     },
-    async ({ app, electronApp }) => {
+    async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
       const minAmount = await app.swap.getMinimumAmount(fromAccount, toAccount);
       const rejectedSwap = new Swap(fromAccount, toAccount, minAmount);
 
-      await performSwapUntilQuoteSelectionStep(app, electronApp, rejectedSwap, minAmount);
-      await app.swap.selectExchangeWithoutKyc(electronApp);
+      await performSwapUntilQuoteSelectionStep(app, rejectedSwap, minAmount);
+      await app.swap.selectExchangeWithoutKyc();
 
-      await app.swap.clickExchangeButton(electronApp);
+      await app.swap.clickExchangeButton();
       await app.speculos.verifyAmountsAndRejectSwap(rejectedSwap, minAmount);
       await app.swapDrawer.verifyExchangeErrorTextContent("Operation denied on device");
     },
@@ -231,6 +238,7 @@ for (const {
     setupEnv(true);
 
     test.use({
+      teamOwner: Team.SWAP,
       userdata: "speculos-x-other-account",
       speculosApp: app,
     });
@@ -262,7 +270,7 @@ for (const {
         ],
         annotation: { type: "TMS", description: xrayTicket },
       },
-      async ({ app, electronApp }) => {
+      async ({ app }) => {
         const tmsDescription = getDescription(test.info().annotations, "TMS");
         await addTmsLink(tmsDescription.split(", "));
         swap.accountToDebit.address = addressFrom;
@@ -273,11 +281,10 @@ for (const {
           swap.accountToCredit,
         );
 
-        await performSwapUntilQuoteSelectionStep(app, electronApp, swap, minAmount);
+        await performSwapUntilQuoteSelectionStep(app, swap, minAmount);
 
         await handleSwapErrorOrSuccess(
           app,
-          electronApp,
           swap,
           minAmount,
           errorMessage ?? null,
@@ -295,7 +302,8 @@ test.describe("Swap a coin for which you have no account yet - from present to n
   const xrayTicket = "B2CQA-3353";
 
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.SWAP,
+    userdata: "skip-onboarding-with-last-seen-device",
     speculosApp: account2.currency.speculosApp,
     cliCommandsOnApp: [
       [
@@ -325,17 +333,19 @@ test.describe("Swap a coin for which you have no account yet - from present to n
       ],
       annotation: { type: "TMS", description: xrayTicket },
     },
-    async ({ app, electronApp }) => {
+    async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
-      await app.swap.goAndWaitForSwapToBeReady(() => app.layout.goToSwap());
+      await app.swap.goAndWaitForSwapToBeReady(() =>
+        app.mainNavigation.openTargetFromMainNavigation("swap"),
+      );
 
-      await app.swap.selectFromAccountCoinSelector(electronApp);
+      await app.swap.selectFromAccountCoinSelector();
 
       const selector = await getModularSelector(app, "ASSET");
       if (selector) {
         await selectAccountMAD(selector, account1);
 
-        await app.swap.selectToAccountCoinSelector(electronApp);
+        await app.swap.selectToAccountCoinSelector();
         await selector.selectAsset(account2.currency);
         await selector.selectNetwork(account2.currency);
         await selector.clickOnAddAndExistingAccount();
@@ -343,18 +353,18 @@ test.describe("Swap a coin for which you have no account yet - from present to n
         await app.scanAccountsDrawer.selectFirstAccount();
         await app.scanAccountsDrawer.clickContinueButton();
       } else {
-        await app.swap.selectAssetFrom(electronApp, account1.currency.name);
+        await app.swap.selectAssetFrom(account1.currency.name);
         await app.swapDrawer.selectAccountByName(account1);
 
-        await app.swap.selectAssetTo(electronApp, account2.currency.name);
+        await app.swap.selectAssetTo(account2.currency.name);
         await app.swapDrawer.clickOnAddAccountButton();
 
         await app.addAccount.addAccounts();
         await app.addAccount.done();
         await app.swapDrawer.selectAccountByName(account2);
       }
-      await app.swap.checkAssetFrom(electronApp, account1.currency.name);
-      await app.swap.checkAssetTo(electronApp, account2.currency.name);
+      await app.swap.checkAssetFromContains(account1.currency.name);
+      await app.swap.checkAssetToContains(account2.currency.name);
     },
   );
 });
@@ -366,7 +376,8 @@ test.describe("Swap a coin for which you have no account yet - from not present 
   const xrayTicket = "B2CQA-3354";
 
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.SWAP,
+    userdata: "skip-onboarding-with-last-seen-device",
     speculosApp: account1.currency.speculosApp,
     cliCommandsOnApp: [
       [
@@ -396,11 +407,13 @@ test.describe("Swap a coin for which you have no account yet - from not present 
       ],
       annotation: { type: "TMS", description: xrayTicket },
     },
-    async ({ app, electronApp }) => {
+    async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
-      await app.swap.goAndWaitForSwapToBeReady(() => app.layout.goToSwap());
+      await app.swap.goAndWaitForSwapToBeReady(() =>
+        app.mainNavigation.openTargetFromMainNavigation("swap"),
+      );
 
-      await app.swap.selectFromAccountCoinSelector(electronApp);
+      await app.swap.selectFromAccountCoinSelector();
       const selector = await getModularSelector(app, "ASSET");
       if (selector) {
         await selector.selectAsset(account1.currency);
@@ -410,21 +423,21 @@ test.describe("Swap a coin for which you have no account yet - from not present 
         await app.scanAccountsDrawer.selectFirstAccount();
         await app.scanAccountsDrawer.clickContinueButton();
 
-        await app.swap.selectToAccountCoinSelector(electronApp);
+        await app.swap.selectToAccountCoinSelector();
         await selectAccountMAD(selector, account2);
       } else {
-        await app.swap.selectAssetFrom(electronApp, account1.currency.name);
+        await app.swap.selectAssetFrom(account1.currency.name);
         await app.swapDrawer.clickOnAddAccountButton();
 
         await app.addAccount.addAccounts();
         await app.addAccount.done();
         await app.swapDrawer.selectAccountByName(account1);
 
-        await app.swap.selectAssetTo(electronApp, account2.currency.name);
+        await app.swap.selectAssetTo(account2.currency.name);
         await app.swapDrawer.selectAccountByName(account2);
       }
-      await app.swap.checkAssetFrom(electronApp, account1.currency.name);
-      await app.swap.checkAssetTo(electronApp, account2.currency.name);
+      await app.swap.checkAssetFromContains(account1.currency.name);
+      await app.swap.checkAssetToContains(account2.currency.name);
     },
   );
 });
@@ -437,6 +450,7 @@ test.describe("Swap a coin for which you have no account yet - both not present"
   setupEnv(true);
 
   test.use({
+    teamOwner: Team.SWAP,
     userdata: "1AccountDOT",
     speculosApp: account2.currency.speculosApp,
   });
@@ -457,11 +471,13 @@ test.describe("Swap a coin for which you have no account yet - both not present"
       ],
       annotation: { type: "TMS", description: xrayTicket },
     },
-    async ({ app, electronApp }) => {
+    async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
-      await app.swap.goAndWaitForSwapToBeReady(() => app.layout.goToSwap());
+      await app.swap.goAndWaitForSwapToBeReady(() =>
+        app.mainNavigation.openTargetFromMainNavigation("swap"),
+      );
 
-      await app.swap.selectFromAccountCoinSelector(electronApp);
+      await app.swap.selectFromAccountCoinSelector();
 
       const selector = await getModularSelector(app, "ASSET");
       if (selector) {
@@ -472,15 +488,15 @@ test.describe("Swap a coin for which you have no account yet - both not present"
         await app.scanAccountsDrawer.selectFirstAccount();
         await app.scanAccountsDrawer.clickContinueButton();
 
-        await app.swap.selectToAccountCoinSelector(electronApp);
+        await app.swap.selectToAccountCoinSelector();
         await selector.selectAsset(account2.currency);
         await selector.selectNetwork(account2.currency);
         await selector.clickOnAddAndExistingAccount();
 
         await app.scanAccountsDrawer.selectFirstAccount();
         await app.scanAccountsDrawer.clickContinueButton();
-        await app.swap.checkAssetFrom(electronApp, account1.currency.name);
-        await app.swap.checkAssetTo(electronApp, account2.currency.name);
+        await app.swap.checkAssetFromContains(account1.currency.name);
+        await app.swap.checkAssetToContains(account2.currency.name);
       }
     },
   );
@@ -503,6 +519,7 @@ test.describe("Swap - Switch You send and You receive currency", () => {
   });
 
   test.use({
+    teamOwner: Team.SWAP,
     userdata: "speculos-tests-app",
     speculosApp: app,
   });
@@ -527,13 +544,13 @@ test.describe("Swap - Switch You send and You receive currency", () => {
         description: "B2CQA-2136",
       },
     },
-    async ({ app, electronApp }) => {
+    async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await performSwapUntilQuoteSelectionStep(app, electronApp, swap, swap.amount ?? "0");
-      await app.swap.switchYouSendAndYouReceive(electronApp);
-      await app.swap.checkAssetFrom(electronApp, swap.accountToCredit.currency.ticker);
-      await app.swap.checkAssetTo(electronApp, swap.accountToDebit.currency.ticker);
+      await performSwapUntilQuoteSelectionStep(app, swap, swap.amount ?? "0");
+      await app.swap.switchYouSendAndYouReceive();
+      await app.swap.checkAssetFromContains(swap.accountToCredit.currency.ticker);
+      await app.swap.checkAssetToContains(swap.accountToDebit.currency.ticker);
     },
   );
 });

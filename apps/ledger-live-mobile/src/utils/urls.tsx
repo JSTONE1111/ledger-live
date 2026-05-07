@@ -18,17 +18,17 @@ export const urls = {
     pt: "https://shop.ledger.com/pt-br/pages/ledger-live-terms-of-use?utm_source=ledger-live-mobile",
   },
   privacyPolicy: {
-    en: "https://www.ledger.com/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    fr: "https://www.ledger.com/fr/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    de: "https://www.ledger.com/de/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    es: "https://www.ledger.com/es/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    tr: "https://www.ledger.com/tr/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    ar: "https://www.ledger.com/ar/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    ja: "https://www.ledger.com/ja/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    zh: "https://www.ledger.com/zh-hans/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    ko: "https://www.ledger.com/ko/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    ru: "https://www.ledger.com/ru/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
-    pt: "https://www.ledger.com/pt-br/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    en: "https://shop.ledger.com/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    fr: "https://shop.ledger.com/fr/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    de: "https://shop.ledger.com/de/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    es: "https://shop.ledger.com/es/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    tr: "https://shop.ledger.com/tr/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    ar: "https://shop.ledger.com/ar/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    ja: "https://shop.ledger.com/ja/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    zh: "https://shop.ledger.com/zh-hans/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    ko: "https://shop.ledger.com/ko/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    ru: "https://shop.ledger.com/ru/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
+    pt: "https://shop.ledger.com/pt-br/pages/privacy-policy?utm_content=privacy&utm_medium=self_referral&utm_source=ledger_live_mobile",
   },
   reborn:
     "https://shop.ledger.com/pages/unlock-ledger-wallet-mobile?utm_source=ledger_wallet_mobile&utm_medium=self_referral&utm_content=onboarding-2",
@@ -65,6 +65,8 @@ export const urls = {
     "https://shop.ledger.com/products/ledger-nano-x?utm_source=ledger_live_mobile&utm_medium=self_referral&utm_content=onboarding",
   buyFlex:
     "https://shop.ledger.com/products/ledger-flex?utm_source=ledger_live_mobile&utm_medium=self_referral&utm_content=onboarding",
+  exploreLedgerDevices:
+    "https://shop.ledger.com/pages/hardware-wallets-comparison?utm_source=ledger_wallet_mobile&utm_medium=page_my_wallet&utm_content=explore_ledger_devices",
   hardwareWallet:
     "https://shop.ledger.com/pages/hardware-wallet?utm_source=ledger_live_mobile&utm_medium=self_referral&utm_content=swap",
   playstore: "https://play.google.com/store/apps/details?id=com.ledger.live",
@@ -157,6 +159,10 @@ export const urls = {
       nearintents: {
         main: "https://www.near.org/intents",
         tos: "https://swapkit.dev/terms-of-service/",
+      },
+      swapsxyz: {
+        main: "https://swaps.xyz/",
+        tos: "https://docs.swaps.xyz/resources/terms-of-service",
       },
       oneinch: {
         main: "https://1inch.com/",
@@ -260,6 +266,13 @@ export const urls = {
   canton: {
     learnMore: "https://support.ledger.com/article/Canton-Network",
   },
+  concordium: {
+    learnMore: "https://support.ledger.com/article/Concordium-CCD",
+    idApp: {
+      appStore: "https://apps.apple.com/app/concordium-id/id6746754485",
+      playStore: "https://play.google.com/store/apps/details?id=com.idwallet.app",
+    },
+  },
   fwUpdateReleaseNotes: {
     nanoS: "https://support.ledger.com/article/360010446000-zd",
     nanoSP: "https://support.ledger.com/article/4494540771997-zd",
@@ -274,6 +287,10 @@ export const urls = {
   domainService: "https://support.ledger.com/article/9710787581469-zd",
   editEvmTx: {
     learnMore: "https://support.ledger.com/article/9756122596765-zd",
+  },
+  editBitcoinTx: {
+    learnMore:
+      "https://support.ledger.com/article/how-to-speed-up-or-cancel-pending-bitcoin-transactions",
   },
   genuineCheck: {
     learnMore: "https://support.ledger.com/article/4404389367057-zd",
@@ -291,4 +308,9 @@ export const urls = {
   },
   nanoSUpgradeProgram: "https://shop.ledger.com/pages/ledger-nano-s-upgrade-program",
   nanoSLimitations: "https://support.ledger.com/article/Ledger-Nano-S-Limitations",
+  deviceDeprecation: {
+    shop: "https://shop.ledger.com/pages/ledger-nano-s-upgrade-program",
+    learnMore: "https://support.ledger.com/article/Ledger-Nano-S-Limitations",
+  },
+  coinControl: "https://support.ledger.com/article/360015996580-zd",
 };

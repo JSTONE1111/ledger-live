@@ -114,7 +114,7 @@ export default function RecoverBanner({ children }: { children?: React.ReactNode
     <Wrapper>
       <ActionCard
         leftContent={
-          <Flex alignItems="center" justifyContent="center" ml={3} width={40}>
+          <Flex alignItems="center" justifyContent="center" ml={3} width={40} height={40}>
             <ProgressLoader
               progress={(stepNumber * 100) / maxStepNumber}
               radius={20}
@@ -126,8 +126,7 @@ export default function RecoverBanner({ children }: { children?: React.ReactNode
               <Icons.WarningFill color="warning.c70" size="XS" />
             ) : (
               <Text
-                display="block"
-                flex={1}
+                className="flex items-center justify-center h-full"
                 textAlign="center"
                 fontSize="12px"
                 lineHeight="15px"
@@ -145,10 +144,14 @@ export default function RecoverBanner({ children }: { children?: React.ReactNode
             label: recoverBannerSelected.primaryCta,
             action: onRedirectRecover,
           },
-          dismiss: {
-            label: recoverBannerSelected.secondaryCta,
-            action: onCloseBanner,
-          },
+          ...(recoverBannerSelected.secondaryCta
+            ? {
+                dismiss: {
+                  label: recoverBannerSelected.secondaryCta,
+                  action: onCloseBanner,
+                },
+              }
+            : {}),
         }}
       />
     </Wrapper>

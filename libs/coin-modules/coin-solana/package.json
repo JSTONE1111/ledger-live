@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/coin-solana",
-  "version": "0.45.1",
+  "version": "0.51.1",
   "description": "Ledger Solana Coin integration",
   "keywords": [
     "Ledger",
@@ -28,15 +28,23 @@
       "lib-es/*": [
         "lib-es/*"
       ],
+      "api": [
+        "lib/api/index"
+      ],
       "*": [
         "lib/*"
       ]
     }
   },
   "exports": {
+    "./api": {
+      "require": "./lib/api/index.js",
+      "default": "./lib-es/api/index.js"
+    },
     "./lib/*": "./lib/*.js",
     "./lib-es/*": "./lib-es/*.js",
     "./*": {
+      "@ledgerhq/source": "./src/*.ts",
       "require": "./lib/*.js",
       "default": "./lib-es/*.js"
     },
@@ -44,10 +52,11 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@ledgerhq/coin-framework": "workspace:^",
+    "@ledgerhq/coin-module-framework": "catalog:",
     "@ledgerhq/cryptoassets": "workspace:^",
     "@ledgerhq/devices": "workspace:*",
     "@ledgerhq/errors": "workspace:^",
+    "@ledgerhq/ledger-wallet-framework": "workspace:^",
     "@ledgerhq/live-env": "workspace:^",
     "@ledgerhq/live-network": "workspace:^",
     "@ledgerhq/logs": "workspace:^",
@@ -63,38 +72,42 @@
     "lodash": "^4.17.21",
     "rxjs": "catalog:",
     "semver": "catalog:",
-    "superstruct": "0.16.7"
+    "superstruct": "0.16.7",
+    "uuid": "11.1.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@ledgerhq/disable-network-setup": "workspace:^",
+    "@swc/core": "catalog:",
+    "@swc/jest": "catalog:",
     "@types/bs58": "catalog:",
     "@types/invariant": "^2.2.2",
     "@types/jest": "catalog:",
     "@types/lodash": "^4.14.191",
+    "@types/node": "catalog:",
     "@types/semver": "catalog:",
     "axios": "catalog:",
-    "eslint-plugin-jest": "^27.4.2",
     "jest": "catalog:",
     "msw": "catalog:",
-    "@swc/jest": "catalog:",
-    "@swc/core": "catalog:",
-    "uuid": "11.1.0"
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:"
   },
   "scripts": {
     "clean": "rimraf lib lib-es",
-    "build": "tsc --outDir lib --module commonjs --moduleResolution node10 && tsc -m ES6 --outDir lib-es",
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es",
     "coverage": "jest --coverage",
     "prewatch": "pnpm build",
-    "watch": "tsc --watch",
-    "watch:es": "tsc --watch -m ES6 --outDir lib-es",
+    "watch": "tsc --watch --project tsconfig.build.json",
+    "watch:es": "tsc --watch --project tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es",
     "doc": "documentation readme src/** --section=API --pe ts --re ts --re d.ts",
-    "lint": "eslint ./src --no-error-on-unmatched-pattern --ext .ts,.tsx --cache",
-    "lint:fix": "pnpm lint --fix",
+    "lint": "oxlint src",
+    "lint:fix": "oxfmt src && oxlint src --fix --quiet",
     "test": "jest",
     "test-integ": "jest --config=jest.integ.config.js",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
-    "typecheck": "tsc --noEmit",
-    "unimported": "unimported"
+    "typecheck": "tsc --noEmit --customConditions node",
+    "unimported": "unimported",
+    "format": "oxfmt src",
+    "format:check": "oxfmt src --check"
   }
 }

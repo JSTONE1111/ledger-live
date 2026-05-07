@@ -37,9 +37,6 @@ import {
   SettingsActionTypes,
   SettingsSetWalletTabNavigatorLastVisitedTabPayload,
   SettingsSetDismissedDynamicCardsPayload,
-  SettingsSetOverriddenFeatureFlagPlayload,
-  SettingsSetOverriddenFeatureFlagsPlayload,
-  SettingsSetFeatureFlagsBannerVisiblePayload,
   SettingsSetDebugAppLevelDrawerOpenedPayload,
   SettingsFilterTokenOperationsZeroAmountPayload,
   SettingsLastSeenDeviceLanguagePayload,
@@ -67,6 +64,9 @@ import {
   SettingsIsOnboardingFlowReceiveSuccessPayload,
   SettingsIsPostOnboardingFlowPayload,
   SettingsSetHasSeenWalletV4TourPayload,
+  SettingsSetProductTourCompletedPayload,
+  SettingsSetAnalyticsConsentInfoPayload,
+  SettingsSetHasClickedRecoverPayload,
 } from "./types";
 import { ImageType } from "~/components/CustomImage/types";
 
@@ -118,6 +118,7 @@ export const clearLastSeenCustomImage = () =>
 export const completeOnboarding = createAction<SettingsCompleteOnboardingPayload>(
   SettingsActionTypes.SETTINGS_COMPLETE_ONBOARDING,
 );
+export const addCompletionDate = createAction(SettingsActionTypes.SETTINGS_ADD_COMPLETION_DATE);
 export const setIsOnboardingFlow = createAction<SettingsIsOnboardingFlowPayload>(
   SettingsActionTypes.SETTINGS_SET_IS_ONBOARDING_FlOW,
 );
@@ -220,16 +221,6 @@ export const setWalletTabNavigatorLastVisitedTab =
 export const setDateFormat = createAction<SettingsSetDateFormatPayload>(
   SettingsActionTypes.SETTINGS_SET_DATE_FORMAT,
 );
-export const setOverriddenFeatureFlag = createAction<SettingsSetOverriddenFeatureFlagPlayload>(
-  SettingsActionTypes.SET_OVERRIDDEN_FEATURE_FLAG,
-);
-export const setOverriddenFeatureFlags = createAction<SettingsSetOverriddenFeatureFlagsPlayload>(
-  SettingsActionTypes.SET_OVERRIDDEN_FEATURE_FLAGS,
-);
-export const setFeatureFlagsBannerVisible =
-  createAction<SettingsSetFeatureFlagsBannerVisiblePayload>(
-    SettingsActionTypes.SET_FEATURE_FLAGS_BANNER_VISIBLE,
-  );
 export const setDebugAppLevelDrawerOpened =
   createAction<SettingsSetDebugAppLevelDrawerOpenedPayload>(
     SettingsActionTypes.SET_DEBUG_APP_LEVEL_DRAWER_OPENED,
@@ -262,6 +253,10 @@ export const setHasSeenAnalyticsOptInPrompt = createAction<SettingsSetHasSeenAna
   SettingsActionTypes.SET_HAS_SEEN_ANALYTICS_OPT_IN_PROMPT,
 );
 
+export const setAnalyticsConsentInfo = createAction<SettingsSetAnalyticsConsentInfoPayload>(
+  SettingsActionTypes.SET_ANALYTICS_CONSENT_INFO,
+);
+
 export const setDismissedContentCard = createAction<SettingsSetDismissedContentCardsPayload>(
   SettingsActionTypes.SET_DISMISSED_CONTENT_CARD,
 );
@@ -292,6 +287,14 @@ export const setSelectedTabPortfolioAssets =
 
 export const setHasSeenWalletV4Tour = createAction<SettingsSetHasSeenWalletV4TourPayload>(
   SettingsActionTypes.SET_HAS_SEEN_WALLET_V4_TOUR,
+);
+
+export const setProductTourCompleted = createAction<SettingsSetProductTourCompletedPayload>(
+  SettingsActionTypes.SET_PRODUCT_TOUR_COMPLETED,
+);
+
+export const setHasClickedRecover = createAction<SettingsSetHasClickedRecoverPayload>(
+  SettingsActionTypes.SET_HAS_CLICKED_RECOVER,
 );
 
 type PortfolioRangeOption = {

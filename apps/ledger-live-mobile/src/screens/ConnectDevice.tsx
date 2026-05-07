@@ -56,6 +56,7 @@ import { SignedOperation } from "@ledgerhq/types-live";
 import { HOOKS_TRACKING_LOCATIONS } from "~/analytics/hooks/variables";
 import { SuiStakingFlowParamList } from "~/families/sui/StakingFlow/types";
 import { SuiUnstakingFlowParamList } from "~/families/sui/UnstakingFlow/types";
+import type { EvmDelegationFlowParamList } from "~/families/evm/DelegationFlow/types";
 import { useAccountScreen } from "LLM/hooks/useAccountScreen";
 
 type Props =
@@ -121,10 +122,8 @@ type Props =
   | StackNavigatorProps<HederaDelegationFlowParamList, ScreenName.HederaDelegationConnectDevice>
   | StackNavigatorProps<HederaUndelegationFlowParamList, ScreenName.HederaUndelegationConnectDevice>
   | StackNavigatorProps<HederaRedelegationFlowParamList, ScreenName.HederaRedelegationConnectDevice>
-  | StackNavigatorProps<
-      HederaClaimRewardsFlowParamList,
-      ScreenName.HederaClaimRewardsConnectDevice
-    >;
+  | StackNavigatorProps<HederaClaimRewardsFlowParamList, ScreenName.HederaClaimRewardsConnectDevice>
+  | StackNavigatorProps<EvmDelegationFlowParamList, ScreenName.EvmDelegationConnectDevice>;
 
 export const navigateToSelectDevice = (navigation: Props["navigation"], route: Props["route"]) =>
   // Assumes that it will always navigate to a "SelectDevice"
@@ -199,7 +198,7 @@ export default function ConnectDevice({ route, navigation }: Props) {
           />
         </SafeAreaView>
       ) : null, // prevent rerendering caused by optimistic update (i.e. exclude account related deps)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [status, transaction, tokenCurrency, route.params.device],
   );
 }

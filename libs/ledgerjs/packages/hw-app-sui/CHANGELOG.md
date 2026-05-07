@@ -1,5 +1,53 @@
 # @ledgerhq/hw-app-sui
 
+## 1.10.0
+
+### Minor Changes
+
+- [#15591](https://github.com/LedgerHQ/ledger-live/pull/15591) [`c591323`](https://github.com/LedgerHQ/ledger-live/commit/c591323bd9c746ddee1df5f36070c0c442dd5c44) Thanks [@ishaba](https://github.com/ishaba)! - feat: update hw-app-sui
+
+## 1.10.0-next.0
+
+### Minor Changes
+
+- [#15591](https://github.com/LedgerHQ/ledger-live/pull/15591) [`c591323`](https://github.com/LedgerHQ/ledger-live/commit/c591323bd9c746ddee1df5f36070c0c442dd5c44) Thanks [@ishaba](https://github.com/ishaba)! - feat: update hw-app-sui
+
+## 1.9.0
+
+### Minor Changes
+
+- [#15796](https://github.com/LedgerHQ/ledger-live/pull/15796) [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - Replace ESLint/Prettier with oxlint and document oxfmt for LedgerJS packages under libs/ledgerjs/packages.
+
+## 1.9.0-next.0
+
+### Minor Changes
+
+- [#15796](https://github.com/LedgerHQ/ledger-live/pull/15796) [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - Replace ESLint/Prettier with oxlint and document oxfmt for LedgerJS packages under libs/ledgerjs/packages.
+
+## 1.8.0
+
+### Minor Changes
+
+- [#15304](https://github.com/LedgerHQ/ledger-live/pull/15304) [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Bump Node.js runtime to 24. Proto/toolchain and pnpm catalog use Node 24 and @types/node 24; engines and .nvmrc updated. TSConfig lib set to ES2022 where needed; Jest configs updated for ESM (imports, \_\_dirname, createRequire). CI: Linux build deps in setup-caches/setup-build-desktop; optional native deps (cpu-features, node-hid, usb, unrs-resolver) removed from onlyBuiltDependencies so install succeeds.
+
+## 1.8.0-next.0
+
+### Minor Changes
+
+- [#15304](https://github.com/LedgerHQ/ledger-live/pull/15304) [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Bump Node.js runtime to 24. Proto/toolchain and pnpm catalog use Node 24 and @types/node 24; engines and .nvmrc updated. TSConfig lib set to ES2022 where needed; Jest configs updated for ESM (imports, \_\_dirname, createRequire). CI: Linux build deps in setup-caches/setup-build-desktop; optional native deps (cpu-features, node-hid, usb, unrs-resolver) removed from onlyBuiltDependencies so install succeeds.
+
+## 1.7.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+## 1.7.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
 ## 1.6.0
 
 ### Minor Changes

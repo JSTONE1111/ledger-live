@@ -1,4 +1,7 @@
-import buildCoinConfig, { type CurrencyConfig } from "@ledgerhq/coin-framework/config";
+import buildCoinConfig, {
+  type CoinConfig,
+  type CurrencyConfig,
+} from "@ledgerhq/coin-module-framework/config";
 import { ConfigInfo } from "@ledgerhq/live-config/LiveConfig";
 
 type CosmosConfig = Record<string, ConfigInfo>;
@@ -148,7 +151,7 @@ export const cosmosConfig: CosmosConfig = {
     type: "object",
     default: {
       lcd: "https://api.mantrachain.io",
-      minGasPrice: 0.01,
+      minGasPrice: 40000000000,
       ledgerValidator: "mantravaloper13cyn4zgugjz7pta8s7wkrxqp4cdrp7ygeem3fq",
       status: {
         type: "active",
@@ -179,7 +182,7 @@ export const cosmosConfig: CosmosConfig = {
   config_currency_zenrock: {
     type: "object",
     default: {
-      lcd: "https://api.diamond.zenrocklabs.io",
+      lcd: "https://zenrock.api.m.stavr.tech",
       minGasPrice: 2.5,
       status: {
         type: "active",
@@ -189,7 +192,7 @@ export const cosmosConfig: CosmosConfig = {
   config_currency_babylon: {
     type: "object",
     default: {
-      lcd: "https://babylon.nodes.guru/api",
+      lcd: "https://babylon.coin.ledger.com",
       minGasPrice: 0.002, // source: https://www.mintscan.io/babylon/parameters
       status: {
         type: "active",
@@ -200,5 +203,8 @@ export const cosmosConfig: CosmosConfig = {
 };
 
 export type CosmosCoinConfig = CurrencyConfig & CosmosConfig;
-const coinConfig = buildCoinConfig<CosmosCoinConfig>();
+const coinConfig: {
+  setCoinConfig: (config: CoinConfig<CosmosCoinConfig>) => void;
+  getCoinConfig: (currencyId?: string) => CosmosCoinConfig;
+} = buildCoinConfig<CosmosCoinConfig>();
 export default coinConfig;

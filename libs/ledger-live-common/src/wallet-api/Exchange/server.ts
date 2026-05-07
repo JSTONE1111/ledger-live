@@ -3,7 +3,7 @@ import {
   getMainAccount,
   getParentAccount,
   makeEmptyTokenAccount,
-} from "@ledgerhq/coin-framework/account/index";
+} from "@ledgerhq/ledger-wallet-framework/account/index";
 import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
 import { decodeSwapPayload } from "@ledgerhq/hw-app-exchange";
 import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
@@ -27,15 +27,17 @@ import {
   ExchangeType,
   SwapLiveError,
   SwapResult,
+  type GetQuotesResponse,
+  type GetQuotesWireArgs,
 } from "@ledgerhq/wallet-api-exchange-module";
 import { customWrapper, RPCHandler } from "@ledgerhq/wallet-api-server";
 import { BigNumber } from "bignumber.js";
 import { getAccountBridge } from "../../bridge";
 import { retrieveSwapPayload } from "../../exchange/swap/api/v5/actions";
 import { transactionStrategy } from "../../exchange/swap/transactionStrategies";
-import { ExchangeSwap } from "../../exchange/swap/types";
+import { ExchangeSwap, FeatureFlags } from "../../exchange/swap/types";
 import { Exchange } from "../../exchange/types";
-import { Transaction } from "../../generated/types";
+import { Transaction } from "../../coin-modules/transaction-types";
 import {
   getAccountIdFromWalletAccountId,
   getWalletAPITransactionSignFlowInfos,
@@ -59,6 +61,8 @@ import { createStepError, StepError, toError } from "./parser";
 import { handleErrors } from "./handleSwapErrors";
 import get from "lodash/get";
 import { SwapError } from "./SwapError";
+import { getQuotes } from "./quotes";
+import { fetchSpotPrices } from "./quotes/service/fetchSpotPrices";
 
 export { ExchangeType };
 
@@ -71,6 +75,7 @@ type Handlers = {
   "custom.exchange.error": RPCHandler<void, SwapLiveError>;
   "custom.isReady": RPCHandler<void, void>;
   "custom.exchange.swap": RPCHandler<SwapResult, ExchangeSwapParams>;
+  "custom.exchange.getQuotes": RPCHandler<GetQuotesResponse, GetQuotesWireArgs>;
 };
 
 export type CompleteExchangeUiRequest = {
@@ -87,6 +92,7 @@ export type CompleteExchangeUiRequest = {
   refundAddress?: string;
   payoutAddress?: string;
   sponsored?: boolean;
+  isEmbeddedSwap?: boolean;
 };
 type FundStartParamsUiRequest = {
   exchangeType: "FUND";
@@ -116,6 +122,7 @@ export type SwapUiRequest = CompleteExchangeUiRequest & {
   fromAccountId?: string;
   toAccountId?: string;
   tokenCurrency?: string;
+  correlationId?: string;
 };
 
 type ExchangeUiHooks = {
@@ -146,6 +153,7 @@ export const handlers = ({
   accounts,
   tracking,
   manifest,
+  flags,
   uiHooks: {
     "custom.exchange.start": uiExchangeStart,
     "custom.exchange.complete": uiExchangeComplete,
@@ -157,6 +165,7 @@ export const handlers = ({
   accounts: AccountLike[];
   tracking: TrackingAPI;
   manifest: AppManifest;
+  flags?: FeatureFlags;
   uiHooks: ExchangeUiHooks;
 }) =>
   ({
@@ -282,7 +291,7 @@ export const handlers = ({
 
         const transaction = deserializeTransaction(params.rawTransaction);
 
-        const { liveTx } = getWalletAPITransactionSignFlowInfos({
+        const { liveTx } = await getWalletAPITransactionSignFlowInfos({
           walletApiTransaction: transaction,
           account: fromAccount,
         });
@@ -295,7 +304,7 @@ export const handlers = ({
           );
         }
 
-        const accountBridge = getAccountBridge(fromAccount, fromParentAccount);
+        const accountBridge = await getAccountBridge(fromAccount, fromParentAccount);
 
         /**
          * 'subAccountId' is used for ETH and it's ERC-20 tokens.
@@ -396,6 +405,7 @@ export const handlers = ({
           swapAppVersion,
           sponsored,
           isEmbedded,
+          correlationId,
         } = params;
 
         const trackingParams = {
@@ -463,6 +473,7 @@ export const handlers = ({
           const wrappedError = createStepError({
             error: toError(rawError),
             step: StepError.NONCE,
+            correlationId: params?.correlationId,
           });
           throw wrappedError;
         }
@@ -496,12 +507,14 @@ export const handlers = ({
           amountInAtomicUnit: fromAmountAtomic,
           quoteId,
           toNewTokenId,
+          flags,
+          correlationId,
         }).catch((error: Error) => {
           const wrappedError = createStepError({
             error: get(error, "response.data.error", error),
             step: StepError.PAYLOAD,
+            correlationId: params?.correlationId,
           });
-
           throw wrappedError;
         });
 
@@ -544,7 +557,7 @@ export const handlers = ({
           );
         }
 
-        const accountBridge = getAccountBridge(fromAccount, fromParentAccount);
+        const accountBridge = await getAccountBridge(fromAccount, fromParentAccount);
 
         /**
          * 'subAccountId' is used for ETH and it's ERC-20 tokens.
@@ -604,6 +617,8 @@ export const handlers = ({
               refundAddress,
               payoutAddress,
               sponsored,
+              isEmbeddedSwap: isEmbedded,
+              ...(correlationId && { correlationId }),
             },
             onSuccess: ({ operationHash, swapId }: { operationHash: string; swapId: string }) => {
               tracking.completeExchangeSuccess({
@@ -621,6 +636,7 @@ export const handlers = ({
                 fromAccountAddress,
                 toAccountAddress,
                 fromAmount,
+                flags,
               });
 
               resolve({ operationHash, swapId });
@@ -661,6 +677,7 @@ export const handlers = ({
                 data: (transaction as EvmTransaction).data
                   ? `0x${padHexString((transaction as EvmTransaction).data?.toString("hex") || "")}`
                   : "0x",
+                flags,
               });
 
               reject(completeExchangeError);
@@ -690,7 +707,7 @@ export const handlers = ({
             });
           });
 
-        await handleErrors(error, {
+        handleErrors(error, {
           onDisplayError: displayError,
         });
 
@@ -710,6 +727,23 @@ export const handlers = ({
         }),
       );
     }),
+
+    "custom.exchange.getQuotes": customWrapper<GetQuotesWireArgs, GetQuotesResponse>(
+      async params => {
+        if (!params) {
+          throw new ServerError(createUnknownError({ message: "params is undefined" }));
+        }
+        const spotPrices = await fetchSpotPrices({
+          currencyIds: [
+            params.data.sendCurrencyId,
+            params.data.receiveCurrencyId,
+            params.data.networkFeesCurrencyId,
+          ],
+          counterValue: params.data.counterValueCurrency || "usd",
+        });
+        return getQuotes(params, { accounts, spotPrices });
+      },
+    ),
   }) as const satisfies Handlers;
 
 async function extractSwapStartParam(

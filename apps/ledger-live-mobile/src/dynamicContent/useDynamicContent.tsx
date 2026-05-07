@@ -8,6 +8,7 @@ import {
   mobileCardsSelector,
   mobileCardsFromBrazeSelector,
   localMobileCardsSelector,
+  localWalletCardsSelector,
   notificationsCardsSelector,
   walletCardsSelector,
   landingPageStickyCtaCardsSelector,
@@ -19,7 +20,7 @@ import {
   LandingPageUseCase,
   WalletContentCard,
 } from "./types";
-import { track } from "../analytics";
+import { flush, track } from "../analytics";
 import { setDismissedDynamicCards } from "../actions/settings";
 import { setDynamicContentMobileCards, removeLocalCard } from "~/actions/dynamicContent";
 
@@ -33,6 +34,7 @@ const useDynamicContent = () => {
   const mobileCards = useSelector(mobileCardsSelector);
   const mobileCardsFromBraze = useSelector(mobileCardsFromBrazeSelector);
   const localMobileCards = useSelector(localMobileCardsSelector);
+  const localWalletCards = useSelector(localWalletCardsSelector);
   const hiddenCards: string[] = useSelector(dismissedDynamicCardsSelector);
 
   const { logClickCard, logDismissCard, logImpressionCard, refreshDynamicContent } =
@@ -75,7 +77,8 @@ const useDynamicContent = () => {
   const dismissCard = useCallback(
     (cardId: string) => {
       dispatch(setDismissedDynamicCards([...hiddenCards, cardId]));
-      const isLocal = localMobileCards.some(c => c.id === cardId);
+      const isLocal =
+        localMobileCards.some(c => c.id === cardId) || localWalletCards.some(c => c.id === cardId);
       if (isLocal) {
         dispatch(removeLocalCard(cardId));
       } else {
@@ -83,19 +86,32 @@ const useDynamicContent = () => {
       }
       logDismissCard(cardId);
     },
-    [dispatch, hiddenCards, localMobileCards, mobileCardsFromBraze, logDismissCard],
+    [dispatch, hiddenCards, localMobileCards, localWalletCards, mobileCardsFromBraze, logDismissCard],
   );
 
   const trackContentCardEvent = useCallback(
-    (
+    async (
       event: "contentcard_clicked" | "contentcard_dismissed",
       params: Record<string, string | number | undefined>,
     ) => {
       const cardId = params.campaign;
-      if (typeof cardId === "string" && localMobileCards.some(c => c.id === cardId)) return;
-      track(event, params);
+      if (
+        typeof cardId === "string" &&
+        (localMobileCards.some(c => c.id === cardId) || localWalletCards.some(c => c.id === cardId))
+      )
+        return;
+      try {
+        await track(event, params);
+        if (event === "contentcard_clicked") {
+          // Flush immediately because content card clicks often open a link
+          // and background the app before Segment flushes queued events itself.
+          await flush();
+        }
+      } catch {
+        // Analytics must never block the user action that follows.
+      }
     },
-    [localMobileCards],
+    [localMobileCards, localWalletCards],
   );
 
   return {

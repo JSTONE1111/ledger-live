@@ -1,7 +1,8 @@
 import React, { memo, useEffect, useMemo, useState } from "react";
 import { getRegistriesForDomain } from "@ledgerhq/domain-service/registries/index";
 import { isError, isLoaded } from "@ledgerhq/domain-service/hooks/logic";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/impl";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
+import type { Transaction as GeneratedTransaction } from "@ledgerhq/live-common/generated/types";
 import { Transaction } from "@ledgerhq/live-common/generated/types";
 import { useDomain } from "@ledgerhq/domain-service/hooks/index";
 import { Platform, StyleSheet, View } from "react-native";
@@ -15,7 +16,7 @@ import Alert from "~/components/Alert";
 import { urls } from "~/utils/urls";
 import LText from "~/components/LText";
 import TranslatedError from "~/components/TranslatedError";
-import { AddressesSanctionedError } from "@ledgerhq/coin-framework/sanction/errors";
+import { AddressesSanctionedError } from "@ledgerhq/ledger-wallet-framework/sanction/errors";
 import SupportLinkError from "~/components/SupportLinkError";
 
 type Props = {
@@ -41,7 +42,7 @@ const DomainServiceRecipientInput = ({
   warning,
   error,
 }: Props) => {
-  const bridge = getAccountBridge(account, parentAccount);
+  const bridge = useAccountBridge<GeneratedTransaction>(account, parentAccount);
 
   const domainServiceResponse = useDomain(value, "ens");
   const lowerCaseValue = useMemo(() => value.toLowerCase(), [value]);

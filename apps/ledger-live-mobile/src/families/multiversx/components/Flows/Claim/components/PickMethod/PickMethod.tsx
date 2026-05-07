@@ -3,9 +3,9 @@ import { View, TouchableOpacity } from "react-native";
 import { useTheme } from "@react-navigation/native";
 import { Trans } from "~/context/Locale";
 import { BigNumber } from "bignumber.js";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
 import { handleTransactionStatus } from "@ledgerhq/live-common/families/multiversx/helpers";
-import { getAccountCurrency, getMainAccount } from "@ledgerhq/coin-framework/account";
+import { getAccountCurrency, getMainAccount } from "@ledgerhq/ledger-wallet-framework/account";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
 import { MIN_DELEGATION_AMOUNT } from "@ledgerhq/live-common/families/multiversx/constants";
 
@@ -43,7 +43,7 @@ const PickMethod = (props: PickMethodPropsType) => {
 
   const mainAccount = getMainAccount(account, undefined);
   const currency = getAccountCurrency(mainAccount);
-  const bridge: AccountBridge<Transaction> = getAccountBridge(account);
+  const bridge: AccountBridge<Transaction> = useAccountBridge(account);
   const unit = useAccountUnit(mainAccount);
   const methods = [TransactionMethodEnum.claimRewards, TransactionMethodEnum.reDelegateRewards];
 

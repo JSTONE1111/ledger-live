@@ -150,7 +150,7 @@ export default function BalanceInfos({
       counterValueId
         ? getAvailableAccountsById(counterValueId, flattenedAccounts).find(Boolean)
         : undefined,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [counterValueId, flattenedAccounts],
   );
 
@@ -167,10 +167,11 @@ export default function BalanceInfos({
     setTrackingSource("Page Portfolio");
     navigate("/exchange", {
       state: {
-        mode: "buy", // buy or sell
+        mode: "buy",
+        returnTo: location.pathname,
       },
     });
-  }, [navigate]);
+  }, [navigate, location.pathname]);
   const onSwap = useCallback(() => {
     setTrackingSource("Page Portfolio");
     navigate("/swap", {

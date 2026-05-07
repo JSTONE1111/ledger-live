@@ -1,27 +1,43 @@
 import { Account } from "@ledgerhq/live-common/e2e/enum/Account";
-import { Provider } from "@ledgerhq/live-common/lib/e2e/enum/Provider";
+import { Provider } from "@ledgerhq/live-common/e2e/enum/Provider";
 import { setEnv } from "@ledgerhq/live-env";
 import { waitEarnReady } from "../../bridge/server";
-import { ApplicationOptions } from "page";
+import { isWallet40 } from "../../helpers/commonHelpers";
+
+import type { ApplicationOptions } from "page";
+import type { PartialFeatures } from "@shared/feature-flags";
 
 setEnv("DISABLE_TRANSACTION_BROADCAST", true);
 
+const FF_STAKE_PROGRAM_OVERRIDE: PartialFeatures = {
+  // TODO: sync Firebase environments and remove this override when final variant is chosen
+  stakePrograms: {
+    enabled: true,
+    params: {
+      list: ["ethereum", "cosmos"],
+      redirects: {
+        "ethereum/erc20/usd__coin": {
+          platform: "earn",
+          name: "Earn - Deposit",
+          queryParams: {
+            cryptoAssetId: "ethereum/erc20/usd__coin",
+            intent: "deposit",
+            deposit: "stablecoin",
+          },
+        },
+      },
+    },
+  },
+};
+
+const FF_PTX_EARN_UI_V1: PartialFeatures = {
+  ptxEarnUi: { enabled: false, params: { value: "v1" } },
+};
+
 let earnReady: Promise<string>;
 
-const liveDataCommand = (currencyApp: { name: string }, index: number) => (userdataPath?: string) =>
-  CLI.liveData({
-    currency: currencyApp.name,
-    index,
-    add: true,
-    appjson: userdataPath,
-  });
-
 async function beforeAllFunction(options: ApplicationOptions) {
-  await app.init({
-    userdata: options.userdata,
-    speculosApp: options.speculosApp,
-    cliCommands: options.cliCommands,
-  });
+  await app.init(options);
 
   await app.portfolio.waitForPortfolioPageToLoad();
   earnReady = waitEarnReady();
@@ -37,14 +53,21 @@ export async function runInlineAddAccountTest(
       await beforeAllFunction({
         userdata: "skip-onboarding",
         speculosApp: account.currency.speculosApp,
+        featureFlags: FF_STAKE_PROGRAM_OVERRIDE,
       });
     });
 
     tmsLinks.forEach(tmsLink => $TmsLink(tmsLink));
     tags.forEach(tag => $Tag(tag));
     it(`Inline Add Account [${account.currency.speculosApp.name}]`, async () => {
-      await app.transferMenuDrawer.open();
-      await app.transferMenuDrawer.navigateToStake();
+      if (isWallet40) {
+        await app.mainNavigation.tapWallet40Tab("earn");
+        await earnReady;
+        await app.earnDashboard.verifyEarnByStackingButton();
+      } else {
+        await app.transferMenuDrawer.open();
+        await app.transferMenuDrawer.navigateToStake();
+      }
 
       const isModularDrawer = await app.modularDrawer.isFlowEnabled("live_app");
 
@@ -79,33 +102,28 @@ export async function runStartETHStakingFromEarnDashboardTest(
   tmsLinks: string[],
   tags: string[],
 ) {
-  describe("Start ETH staking flow from Earn Dashboard", () => {
+  describe("Earn V1 - Start ETH staking flow from Earn Dashboard", () => {
     beforeAll(async () => {
       await beforeAllFunction({
         userdata: "skip-onboarding",
         speculosApp: account.currency.speculosApp,
-        cliCommands: [
-          async (userdataPath?: string) => {
-            await CLI.liveData({
-              currency: account.currency.speculosApp.name,
-              index: account.index,
-              add: true,
-              appjson: userdataPath,
-            });
-            account.address = await CLI.getAddressForAccount(account);
-            return account.address;
-          },
-        ],
+        featureFlags: {
+          ...FF_PTX_EARN_UI_V1,
+          ...FF_STAKE_PROGRAM_OVERRIDE,
+        },
+        cliCommands: [liveDataWithAddressCommand(account)],
       });
     });
 
     tmsLinks.forEach(tmsLink => $TmsLink(tmsLink));
     tags.forEach(tag => $Tag(tag));
     it(`ETH staking flow - Earn Dashboard - Provider : ${provider.uiName}`, async () => {
-      await app.portfolio.openEarnTab();
+      if (isWallet40) await app.mainNavigation.tapWallet40Tab("earn");
+      else await app.portfolio.openEarnTab();
+
       await earnReady;
       await app.earnDashboard.goToTab("Earn Opportunities");
-      await app.earnDashboard.clickEarnCurrencyButton();
+      await app.earnDashboard.clickEarnCurrencyButton(account);
       await app.earnDashboard.expectStakingProviderModalTitle("Select staking provider");
       await app.earnDashboard.goToProviderLiveApp(provider);
       await app.earnDashboard.verifyProviderURL(provider, account);
@@ -119,19 +137,23 @@ export async function runCorrectEarnPageIsLoadedDependingOnUserStakingSituationT
   tmsLinks: string[],
   tags: string[],
 ) {
-  describe("Correct Earn page is loaded depending on user's staking situation", () => {
+  describe("Earn V1 - Correct Earn Page is loaded depending on user's staking situation", () => {
     beforeAll(async () => {
       await beforeAllFunction({
         userdata: "skip-onboarding",
         speculosApp: account.currency.speculosApp,
-        cliCommands: [liveDataCommand(account.currency.speculosApp, account.index)],
+        cliCommands: [liveDataCommand(account)],
+        featureFlags: {
+          ...FF_PTX_EARN_UI_V1,
+        },
       });
     });
 
     tmsLinks.forEach(tmsLink => $TmsLink(tmsLink));
     tags.forEach(tag => $Tag(tag));
     it(`Correct Earn page - ${account.currency.ticker} - staking situation: ${staking}`, async () => {
-      await app.portfolio.openEarnTab();
+      if (isWallet40) await app.mainNavigation.tapWallet40Tab("earn");
+      else await app.portfolio.openEarnTab();
       await earnReady;
       if (staking) {
         await app.earnDashboard.goToTab("My Rewards");

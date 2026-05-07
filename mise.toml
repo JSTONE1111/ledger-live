@@ -1,0 +1,103 @@
+min_version = '2026.3.1'
+
+[settings]
+experimental = true
+lockfile = true
+# Download the pre-compiled binaries
+ruby.compile = false
+
+[plugins]
+bundler = "jonathanmorley/asdf-bundler"
+cocoapods = "mise-plugins/mise-cocoapods"
+
+
+[tools]
+node = '24.14.0'
+pnpm = '10.24.0'
+npm = '10.3.0'
+bun = '1.3.11'
+gitleaks = '8.30.1'
+hk = '1.40.0'
+pkl = '0.31.1'
+
+
+# Mobile dev ecosystem, this is only done on macos and linux. 
+# We can ignore these tools on Windows 
+# ruby = { version = "3.3.7", os = ["linux", "macos"] }
+# bundler = { version = "2.5.7", os = ["linux", "macos"] }
+# cocoapods = { version = "1.14.3", os = ["linux", "macos"] }
+# java = { version = "zulu-17.64.17.0", os = ["linux", "macos"] }
+
+# Fix activesupport version to resolve cocoapods compatibility
+# "gem:activesupport" = { version = "7.0.8.4", os = ["linux", "macos"] }
+
+[env]
+_.path = ['{{config_root}}/node_modules/.bin']
+# Load .env file if it exists.
+_.file = ".env"
+
+# Use the project name derived from the current directory
+PROJECT_NAME = "{{ config_root | basename }}"
+
+# Set up the path for node module binaries
+BIN_PATH = "{{ config_root }}/node_modules/.bin"
+# NODE_ENV = "{{ env.NODE_ENV | default(value='development') }}"
+
+# Hooks
+HK_MISE = 1
+
+[hooks]
+# hk + Nx cache config: local only (skip in CI; CI uses setup-caches / configure-nx-remote-cache-profile).
+postinstall = [
+  """
+{% if env.CI is defined %}
+  # skip for CI
+{% else %}
+  hk install --mise
+  pnpm nx:write-cache-config
+{% endif %}
+""",
+]
+
+[task_config]
+includes = [".mise/tasks/pnpm.toml", ".mise/tasks/nx.toml", ".mise/tasks"]
+
+[tasks.info]
+description = "Display installed tools, versions, and project name"
+run = '''
+  echo 'Project Name: {{env.PROJECT_NAME}}'
+  echo '============='
+  echo "NODE_ENV: $NODE_ENV"
+  echo "BIN_PATH: $BIN_PATH"
+  echo '============='
+  echo 'Installed Tools:'
+  echo ''
+  mise ls --installed --local
+  echo ''
+  echo 'Tool Locations:'
+  echo ''
+  mise ls --installed --local | awk 'NR>1 {print $1}' | while read -r tool; do
+  echo "$tool: $(mise where "$tool" 2>/dev/null)"
+  done
+  echo ''
+  echo 'Missing Tools:'
+  echo ''
+  mise ls --missing --local
+'''
+
+[tasks.setup]
+description = "Clean project and install all dependencies"
+alias = "s"
+run = [
+  "mise install",
+  "mise reshim",
+  { task = "pnpm:install" },
+  "pnpm build:llm:deps",
+]
+depends = ["clean"]
+
+[tasks.clean]
+description = "Removes build artifacts, untracked files, and dependencies (ignored files are preserved)"
+alias = "c"
+depends = ['pnpm:clean']
+run = "git clean -fd"

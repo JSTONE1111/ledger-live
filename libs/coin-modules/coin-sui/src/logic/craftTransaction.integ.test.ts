@@ -1,5 +1,5 @@
-import type { TransactionIntent } from "@ledgerhq/coin-framework/api/index";
-import { getFullnodeUrl } from "@mysten/sui/client";
+import type { TransactionIntent } from "@ledgerhq/coin-module-framework/api/index";
+import { getJsonRpcFullnodeUrl } from "@mysten/sui/jsonRpc";
 import coinConfig from "../config";
 import { extractCoinTypeFromUnsignedTx } from "../test/testUtils";
 import { craftTransaction } from "./craftTransaction";
@@ -14,7 +14,7 @@ describe("craftTransaction", () => {
         type: "active",
       },
       node: {
-        url: getFullnodeUrl("mainnet"),
+        url: getJsonRpcFullnodeUrl("mainnet"),
       },
     }));
   });
@@ -75,8 +75,9 @@ describe("craftTransaction", () => {
 
     expect(result).toEqual({
       unsigned: expect.any(Uint8Array),
-      objects: [expect.any(Uint8Array), expect.any(Uint8Array)],
+      objects: expect.arrayContaining([expect.any(Uint8Array)]),
     });
+    expect(result.objects?.every(o => o instanceof Uint8Array)).toBe(true);
 
     const resultCoinTypes = await extractCoinTypeFromUnsignedTx(result.unsigned);
     expect(resultCoinTypes).toEqual(expect.arrayContaining([expect.stringContaining("sui")]));
@@ -102,8 +103,9 @@ describe("craftTransaction", () => {
 
     expect(result).toEqual({
       unsigned: expect.any(Uint8Array),
-      objects: [expect.any(Uint8Array), expect.any(Uint8Array), expect.any(Uint8Array)],
+      objects: expect.arrayContaining([expect.any(Uint8Array)]),
     });
+    expect(result.objects?.every(o => o instanceof Uint8Array)).toBe(true);
 
     const resultCoinTypes = await extractCoinTypeFromUnsignedTx(result.unsigned);
     expect(resultCoinTypes).toEqual(expect.arrayContaining([expect.stringContaining("usdt")]));

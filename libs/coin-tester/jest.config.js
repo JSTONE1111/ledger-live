@@ -3,7 +3,6 @@ module.exports = {
   testEnvironment: "node",
   testRegex: ".(test|spec).[jt]sx?$",
   moduleDirectories: ["node_modules"],
-  setupFiles: ["dotenv/config"],
   transform: {
     "^.+\\.(t|j)sx?$": [
       "@swc/jest",
@@ -14,4 +13,5 @@ module.exports = {
       },
     ],
   },
+  reporters: ["default", ...(process.env.CI ? ["github-actions"] : [])],
 };

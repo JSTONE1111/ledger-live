@@ -1,4 +1,4 @@
-import type { AddressValidationCurrencyParameters } from "@ledgerhq/types-live";
+import type { AddressValidationCurrencyParameters } from "@ledgerhq/coin-module-framework/api/types";
 import { isValidAddress } from "algosdk";
 
 export async function validateAddress(

@@ -6,7 +6,7 @@ import { GestureResponderEvent } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Button, IconsLegacy, Box } from "@ledgerhq/native-ui";
 import { useDistribution } from "~/actions/general";
-import { track, TrackScreen } from "~/analytics";
+import { track } from "~/analytics";
 import { NavigatorName, ScreenName } from "~/const";
 import {
   blacklistedTokenIdsSelector,
@@ -16,7 +16,6 @@ import {
 import { setSelectedTabPortfolioAssets } from "~/actions/settings";
 import Assets from "./Assets";
 import PortfolioQuickActionsBar from "./PortfolioQuickActionsBar";
-import MarketBanner from "LLM/features/MarketBanner";
 import { useFeature, useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 import TabSection, { TAB_OPTIONS, type TabListType } from "./TabSection";
 import { flattenAccountsSelector } from "~/reducers/accounts";
@@ -88,12 +87,28 @@ const PortfolioAssets = ({ hideEmptyTokenAccount, openAddModal }: Props) => {
 
   const showAssets = selectedTab === TAB_OPTIONS.Assets;
 
+  const {
+    isEnabled: isWallet40Enabled,
+    shouldDisplayQuickActionCtas,
+    shouldDisplayMarketBanner,
+    shouldDisplayAssetSection,
+  } = useWalletFeaturesConfig("mobile");
+
   const onPressButton = useCallback(
     (_uiEvent: GestureResponderEvent) => {
       track("button_clicked", {
         button: showAssets ? "See all assets" : "See all accounts",
         page: "Wallet",
       });
+      if (!showAssets && shouldDisplayAssetSection) {
+        navigation.navigate(NavigatorName.Accounts, {
+          screen: ScreenName.CryptoAddresses,
+          params: {
+            sourceScreenName: ScreenName.Portfolio,
+          },
+        });
+        return;
+      }
       if (!showAssets && isAccountListUIEnabled) {
         navigation.navigate(NavigatorName.Accounts, {
           screen: ScreenName.AccountsList,
@@ -121,22 +136,11 @@ const PortfolioAssets = ({ hideEmptyTokenAccount, openAddModal }: Props) => {
         });
       }
     },
-    [showAssets, isAccountListUIEnabled, navigation],
+    [showAssets, shouldDisplayAssetSection, isAccountListUIEnabled, navigation],
   );
-
-  const {
-    isEnabled: isWallet40Enabled,
-    shouldDisplayQuickActionCtas,
-    shouldDisplayMarketBanner,
-  } = useWalletFeaturesConfig("mobile");
 
   return (
     <>
-      <TrackScreen
-        category="Wallet"
-        accountsLength={distribution.list && distribution.list.length}
-        discreet={discreetMode}
-      />
 
       {!shouldDisplayQuickActionCtas && (
         <Box my={24}>
@@ -145,10 +149,6 @@ const PortfolioAssets = ({ hideEmptyTokenAccount, openAddModal }: Props) => {
       )}
 
       {!isWallet40Enabled && <PortfolioPerpsEntryPoint />}
-
-      <MarketBanner />
-
-      {isWallet40Enabled && <PortfolioPerpsEntryPoint />}
 
       {shouldDisplayMarketBanner && __DEV__ && (
         <Box my={24}>

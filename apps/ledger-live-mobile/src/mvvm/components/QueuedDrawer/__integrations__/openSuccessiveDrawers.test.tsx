@@ -1,5 +1,5 @@
 import React from "react";
-import { render, LONG_TIMEOUT, waitForElementToBeRemoved } from "@tests/test-renderer";
+import { render, LONG_TIMEOUT, waitForElementToBeRemoved, waitFor } from "@tests/test-renderer";
 import { TestPages } from "./shared";
 import { TestIdPrefix, testIds } from "../TestScreens";
 
@@ -17,11 +17,13 @@ describe("QueuedDrawer", () => {
     jest.useFakeTimers();
   });
 
-  const mainTestIds = testIds(TestIdPrefix.Main);
-  const inDrawer1TestIds = testIds(TestIdPrefix.InDrawer1);
-  const inDrawer4TestIds = testIds(TestIdPrefix.InDrawer4);
+  const withEnabledPrefix = <T extends Record<string, string>>(ids: T): T =>
+    Object.fromEntries(Object.entries(ids).map(([k, v]) => [k, `enabled-${v}`])) as T;
+  const mainTestIds = withEnabledPrefix(testIds(TestIdPrefix.Main));
+  const inDrawer1TestIds = withEnabledPrefix(testIds(TestIdPrefix.InDrawer1));
+  const inDrawer4TestIds = withEnabledPrefix(testIds(TestIdPrefix.InDrawer4));
   const modalCloseButtonId = "modal-close-button";
-  const navigateBackButtonId = "navigate-back-button";
+  const navigateBackButtonId = "enabled-navigate-back-button";
 
   const drawer1Text = "Drawer 1";
   const drawer2Text = "Drawer 2";
@@ -62,18 +64,24 @@ describe("QueuedDrawer", () => {
         await renderResult.user.press(elements.mainDrawer1Button());
         expect(await renderResult.findByText(drawer1Text)).toBeVisible();
       },
-      expectAllDrawersClosed: () => {
-        expect(renderResult.queryByText(drawer1Text)).toBeNull();
-        expect(renderResult.queryByText(drawer2Text)).toBeNull();
-        expect(renderResult.queryByText(drawer3Text)).toBeNull();
-        expect(renderResult.queryByText(drawer4Text)).toBeNull();
-        expect(renderResult.queryByText(drawerOnScreen1Text)).toBeNull();
-      },
-      expectDrawersClosed: (...drawerTexts: string[]) => {
-        drawerTexts.forEach(text => {
-          expect(renderResult.queryByText(text)).toBeNull();
-        });
-      },
+      expectAllDrawersClosed: () =>
+        waitFor(() => {
+          expect(renderResult.queryByText(drawer1Text)).toBeNull();
+          expect(renderResult.queryByText(drawer2Text)).toBeNull();
+          expect(renderResult.queryByText(drawer3Text)).toBeNull();
+          expect(renderResult.queryByText(drawer4Text)).toBeNull();
+          expect(renderResult.queryByText(drawerOnScreen1Text)).toBeNull();
+        }),
+      expectDrawersClosed: (...drawerTexts: string[]) =>
+        waitFor(() => {
+          drawerTexts.forEach(text => {
+            expect(renderResult.queryByText(text)).toBeNull();
+          });
+        }),
+      expectDrawerClosed: (drawerText: string) =>
+        waitFor(() => {
+          expect(renderResult.queryByText(drawerText)).toBeNull();
+        }),
       waitForMainScreenDisappear: async () => {
         const mainButton = renderResult.queryByTestId(mainTestIds.drawer1Button);
         if (mainButton) {
@@ -96,11 +104,11 @@ describe("QueuedDrawer", () => {
   };
 
   it("opens one drawer, then close it with close button", async () => {
-    const { user, elements, helpers, queryByText } = setupTest();
+    const { user, elements, helpers } = setupTest();
 
     await helpers.openDrawer1();
     await user.press(elements.closeButton());
-    expect(queryByText(drawer1Text)).toBeNull();
+    await helpers.expectDrawerClosed(drawer1Text);
     await helpers.openDrawer1();
   });
 
@@ -112,7 +120,7 @@ describe("QueuedDrawer", () => {
     expect(queryByText(drawer2Text)).toBeNull();
     await user.press(elements.inDrawer1Drawer2Button());
     await user.press(elements.inDrawer1Drawer1Button());
-    helpers.expectAllDrawersClosed();
+    await helpers.expectAllDrawersClosed();
     await helpers.openDrawer1();
   });
 
@@ -126,21 +134,21 @@ describe("QueuedDrawer", () => {
     await user.press(elements.closeButton());
     expect(await findByText(drawer2Text)).toBeVisible();
     await user.press(elements.closeButton());
-    helpers.expectAllDrawersClosed();
+    await helpers.expectAllDrawersClosed();
     await helpers.openDrawer1();
   });
 
   it("opens two drawers, then request to close the second one, then close the first one", async () => {
-    const { user, elements, helpers, findByText, queryByText } = setupTest();
+    const { user, elements, helpers, findByText } = setupTest();
 
     await helpers.openDrawer1();
     await user.press(elements.inDrawer1Drawer2Button());
-    expect(queryByText(drawer2Text)).toBeNull();
+    await helpers.expectDrawerClosed(drawer2Text);
     await user.press(elements.closeButton());
-    expect(queryByText(drawer1Text)).toBeNull();
     expect(await findByText(drawer2Text)).toBeVisible();
+    await helpers.expectDrawerClosed(drawer1Text);
     await user.press(elements.closeButton());
-    helpers.expectAllDrawersClosed();
+    await helpers.expectAllDrawersClosed();
     await helpers.openDrawer1();
   });
 
@@ -154,15 +162,15 @@ describe("QueuedDrawer", () => {
     expect(queryByText(drawer3Text)).toBeNull();
     await user.press(elements.inDrawer1Drawer4ForcingButton());
     expect(await findByText(drawer4Text)).toBeVisible();
-    helpers.expectDrawersClosed(drawer1Text, drawer2Text, drawer3Text);
+    await helpers.expectDrawersClosed(drawer1Text, drawer2Text, drawer3Text);
     await user.press(elements.closeButton());
-    expect(queryByText(drawer4Text)).toBeNull();
-    helpers.expectAllDrawersClosed();
+    await helpers.expectDrawerClosed(drawer4Text);
+    await helpers.expectAllDrawersClosed();
     await helpers.openDrawer1();
   });
 
   it("opens one drawer at app level (out of navigation stack) and navigate to another screen", async () => {
-    const { user, elements, helpers, findByText, queryByText } = setupTest();
+    const { user, elements, helpers, findByText } = setupTest();
 
     await helpers.openDrawer1();
     expect(elements.inDrawer1AppLevelButton()).toBeVisible();
@@ -171,11 +179,11 @@ describe("QueuedDrawer", () => {
     await user.press(elements.closeButton());
     expect(await findByText(appLevelDrawerText)).toBeVisible();
     await user.press(elements.closeButton());
-    expect(queryByText(appLevelDrawerText)).toBeNull();
+    await helpers.expectDrawerClosed(appLevelDrawerText);
     await user.press(elements.navigateToEmptyButton());
-    helpers.expectAllDrawersClosed();
+    await helpers.expectAllDrawersClosed();
     await user.press(elements.navigateBackButton());
-    expect(queryByText(emptyScreenText)).toBeNull();
+    await helpers.expectDrawerClosed(emptyScreenText);
     expect(elements.mainDrawer1Button()).toBeVisible();
     await helpers.openDrawer1();
   });
@@ -203,14 +211,14 @@ describe("QueuedDrawer", () => {
     await user.press(elements.inDrawer1Drawer2Button());
     expect(queryByText(drawer2Text)).toBeNull();
     await user.press(elements.closeAllDrawersButton());
-    helpers.expectAllDrawersClosed();
+    await helpers.expectAllDrawersClosed();
     await helpers.openDrawer1();
     await user.press(elements.closeButton());
-    expect(queryByText(drawer1Text)).toBeNull();
+    await helpers.expectDrawerClosed(drawer1Text);
     await helpers.openDrawer1();
     await user.press(elements.inDrawer1Drawer2Button());
     await user.press(elements.closeButton());
-    expect(queryByText(drawer1Text)).toBeNull();
+    await helpers.expectDrawerClosed(drawer1Text);
     expect(await findByText(drawer2Text)).toBeVisible();
   });
 
@@ -222,7 +230,7 @@ describe("QueuedDrawer", () => {
     expect(queryByText(drawer2Text)).toBeNull();
     await user.press(elements.inDrawer1NavigateToEmptyButton());
     await helpers.waitForMainScreenDisappear();
-    expect(queryByText(drawer1Text)).toBeNull();
+    await helpers.expectDrawerClosed(drawer1Text);
     await user.press(elements.navigateBackButton());
     await helpers.expectBackOnMainScreen();
     await helpers.openDrawer1();
@@ -236,10 +244,10 @@ describe("QueuedDrawer", () => {
     expect(queryByText(drawer2Text)).toBeNull();
     await user.press(elements.inDrawer1NavigateToScreen1Button());
     await helpers.waitForMainScreenDisappear();
-    helpers.expectDrawersClosed(drawer1Text, drawer2Text);
+    await helpers.expectDrawersClosed(drawer1Text, drawer2Text);
     expect(await findByText(drawerOnScreen1Text)).toBeVisible();
     await user.press(elements.closeButton());
-    helpers.expectDrawersClosed(drawerOnScreen1Text, drawer1Text, drawer2Text);
+    await helpers.expectDrawersClosed(drawerOnScreen1Text, drawer1Text, drawer2Text);
     await user.press(elements.navigateBackButton());
     await helpers.expectBackOnMainScreen();
     await helpers.openDrawer1();
@@ -253,12 +261,17 @@ describe("QueuedDrawer", () => {
     expect(queryByText(drawer2Text)).toBeNull();
     await user.press(elements.inDrawer1Drawer4ForcingButton());
     expect(await findByText(drawer4Text)).toBeVisible();
-    helpers.expectDrawersClosed(drawer1Text, drawer2Text);
+    await helpers.expectDrawersClosed(drawer1Text, drawer2Text);
     await user.press(elements.inDrawer4NavigateToScreen1Button());
     await helpers.waitForMainScreenDisappear();
     expect(await findByText(drawerOnScreen1Text)).toBeVisible();
     await user.press(elements.closeButton());
-    helpers.expectDrawersClosed(drawerOnScreen1Text, drawer1Text, drawer2Text, drawer4Text);
+    await helpers.expectDrawersClosed(
+      drawerOnScreen1Text,
+      drawer1Text,
+      drawer2Text,
+      drawer4Text,
+    );
     await user.press(elements.navigateBackButton());
     await helpers.expectBackOnMainScreen();
     await helpers.openDrawer1();
@@ -272,13 +285,13 @@ describe("QueuedDrawer", () => {
     expect(queryByText(drawer2Text)).toBeNull();
     await user.press(elements.inDrawer1Drawer4ForcingButton());
     expect(await findByText(drawer4Text)).toBeVisible();
-    helpers.expectDrawersClosed(drawer1Text, drawer2Text);
+    await helpers.expectDrawersClosed(drawer1Text, drawer2Text);
     await user.press(elements.inDrawer4NavigateToScreen1Button());
     await helpers.waitForMainScreenDisappear();
     expect(await findByText(drawerOnScreen1Text)).toBeVisible();
-    helpers.expectDrawersClosed(drawer1Text, drawer2Text, drawer4Text);
+    await helpers.expectDrawersClosed(drawer1Text, drawer2Text, drawer4Text);
     await user.press(elements.closeButton());
-    helpers.expectDrawersClosed(drawerOnScreen1Text, drawer1Text, drawer2Text);
+    await helpers.expectDrawersClosed(drawerOnScreen1Text, drawer1Text, drawer2Text);
     await user.press(elements.navigateBackButton());
     await helpers.expectBackOnMainScreen();
     await helpers.openDrawer1();

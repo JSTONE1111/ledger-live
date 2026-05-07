@@ -1,19 +1,25 @@
 import React from "react";
-import { render, screen, waitFor } from "tests/testSetup";
+import { render, screen, waitFor, withFlagOverrides } from "tests/testSetup";
 import { WalletV4TourDialog } from "../Drawer/WalletV4TourDialog";
 import { useWalletV4TourDrawerViewModel } from "../Drawer/hooks/useWalletV4TourDrawerViewModel";
 
 function TestHarness({ isOnPortfolioPage = false }: { isOnPortfolioPage?: boolean }) {
-  const { isDialogOpen, handleOpenDialog, handleCloseDialog } = useWalletV4TourDrawerViewModel({
-    isOnPortfolioPage,
-  });
+  const { isDialogOpen, handleOpenDialog, closeDrawer, completeDrawer, onSlideChange } =
+    useWalletV4TourDrawerViewModel({
+      isOnPortfolioPage,
+    });
 
   return (
     <div>
       <button data-testid="open-dialog" onClick={handleOpenDialog}>
         Open
       </button>
-      <WalletV4TourDialog isOpen={isDialogOpen} onClose={handleCloseDialog} />
+      <WalletV4TourDialog
+        isOpen={isDialogOpen}
+        onClose={closeDrawer}
+        onComplete={completeDrawer}
+        onSlideChange={onSlideChange}
+      />
     </div>
   );
 }
@@ -27,13 +33,12 @@ const tourEnabledOverrides = {
 
 function getTourTestInitialState(overrides?: {
   hasSeenWalletV4Tour?: boolean;
-  overriddenFeatureFlags?: typeof tourEnabledOverrides;
+  featureFlagOverrides?: typeof tourEnabledOverrides;
 }) {
   return {
+    ...withFlagOverrides(overrides?.featureFlagOverrides ?? tourEnabledOverrides),
     settings: {
-      hasSeenWalletV4Tour: false,
-      overriddenFeatureFlags: tourEnabledOverrides,
-      ...overrides,
+      hasSeenWalletV4Tour: overrides?.hasSeenWalletV4Tour ?? false,
     },
   };
 }
@@ -64,7 +69,7 @@ describe("WalletV4Tour Drawer", () => {
   it("should not open dialog when tour is disabled (lwdWallet40.tour false)", async () => {
     const { user } = render(<TestHarness />, {
       initialState: getTourTestInitialState({
-        overriddenFeatureFlags: {
+        featureFlagOverrides: {
           lwdWallet40: { enabled: true, params: { tour: false } },
         },
       }),

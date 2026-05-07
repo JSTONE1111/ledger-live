@@ -1,7 +1,7 @@
-import { BigNumber } from "bignumber.js";
-import { CardanoAccount, CardanoDelegation } from "../types";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { BalanceHistoryCache } from "@ledgerhq/types-live";
+import { BigNumber } from "bignumber.js";
+import { CardanoAccount, CardanoDelegation } from "../types";
 
 export const getCardanoAccountFixture = (params: {
   delegation?: Partial<CardanoDelegation>;
@@ -23,6 +23,7 @@ export const getCardanoAccountFixture = (params: {
   currency: {
     id: "cardano_testnet",
     units: [{ name: "Cardano", code: "ADA", magnitude: 6 }],
+    ticker: "ADA",
   } as CryptoCurrency,
   operationsCount: 0,
   operations: [],

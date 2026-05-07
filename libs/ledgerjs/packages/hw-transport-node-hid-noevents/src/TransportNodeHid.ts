@@ -6,10 +6,13 @@ import Transport, {
   Subscription,
   Device as TransportDevice,
 } from "@ledgerhq/hw-transport";
-import { ledgerUSBVendorId } from "@ledgerhq/devices";
+import {
+  DeviceModel,
+  identifyProductName,
+  identifyUSBProductId,
+  ledgerUSBVendorId,
+} from "@ledgerhq/devices";
 import hidFraming from "@ledgerhq/devices/hid-framing";
-import { identifyUSBProductId, identifyProductName } from "@ledgerhq/devices";
-import { DeviceModel } from "@ledgerhq/devices";
 import {
   TransportError,
   DisconnectedDevice,
@@ -107,7 +110,7 @@ export default class TransportNodeHidNoEvents extends Transport {
     }
   };
 
-  writeHID = (content: Buffer): Promise<void> => {
+  writeHID = (content: Uint8Array): Promise<void> => {
     const data = [0x00];
 
     for (let i = 0; i < content.length; i++) {

@@ -5,7 +5,7 @@ import { useSelector } from "~/context/hooks";
 
 import { useNavigation } from "@react-navigation/native";
 import { Flex } from "@ledgerhq/native-ui";
-import { CurrentAccountHistDB, safeGetRefValue } from "@ledgerhq/live-common/wallet-api/react";
+import { CurrentAccountHistDB } from "@ledgerhq/live-common/wallet-api/react";
 import { handlers as loggerHandlers } from "@ledgerhq/live-common/wallet-api/CustomLogger/server";
 import { WebviewAPI, WebviewState } from "../Web3AppWebview/types";
 
@@ -21,7 +21,11 @@ import { usePTXCustomHandlers } from "../WebPTXPlayer/CustomHandlers";
 import { WalletAPICustomHandlers } from "@ledgerhq/live-common/wallet-api/types";
 import { useCurrentAccountHistDB } from "~/screens/Platform/v2/hooks";
 import { flattenAccountsSelector } from "~/reducers/accounts";
-import { useACRECustomHandlers, useDeeplinkCustomHandlers } from "./CustomHandlers";
+import {
+  useACRECustomHandlers,
+  useDeeplinkCustomHandlers,
+  useLiveAppModalCustomHandlers,
+} from "./CustomHandlers";
 
 type Props = {
   manifest: LiveAppManifest;
@@ -36,13 +40,15 @@ const WebPlatformPlayer = ({ manifest, inputs }: Props) => {
   const navigation =
     useNavigation<RootNavigationComposite<StackNavigatorNavigation<BaseNavigatorStackParamList>>>();
 
-  const currentAccountHistDb: CurrentAccountHistDB = useCurrentAccountHistDB();
+  const [
+    currentAccountHistDb,
+    setCurrentAccountHistDb,
+    currentAccountHistDbLoaded,
+  ]: CurrentAccountHistDB = useCurrentAccountHistDB();
 
   const handleHardwareBackPress = useCallback(() => {
-    const webview = safeGetRefValue(webviewAPIRef);
-
-    if (webviewState.canGoBack) {
-      webview.goBack();
+    if (webviewState.canGoBack && webviewAPIRef?.current) {
+      webviewAPIRef.current.goBack();
       return true; // prevent default behavior (native navigation)
     }
 
@@ -86,6 +92,7 @@ const WebPlatformPlayer = ({ manifest, inputs }: Props) => {
   const customACREHandlers = useACRECustomHandlers(manifest, accounts);
   const customPTXHandlers = usePTXCustomHandlers(manifest, accounts);
   const customDeeplinkHandlers = useDeeplinkCustomHandlers();
+  const customLiveAppModalHandlers = useLiveAppModalCustomHandlers(manifest);
 
   const customHandlers = useMemo<WalletAPICustomHandlers>(() => {
     return {
@@ -93,8 +100,9 @@ const WebPlatformPlayer = ({ manifest, inputs }: Props) => {
       ...customACREHandlers,
       ...customPTXHandlers,
       ...customDeeplinkHandlers,
+      ...customLiveAppModalHandlers,
     };
-  }, [customACREHandlers, customPTXHandlers, customDeeplinkHandlers]);
+  }, [customACREHandlers, customPTXHandlers, customDeeplinkHandlers, customLiveAppModalHandlers]);
 
   return (
     <SafeAreaView style={[styles.root]}>
@@ -102,13 +110,15 @@ const WebPlatformPlayer = ({ manifest, inputs }: Props) => {
         ref={webviewAPIRef}
         manifest={manifest}
         currentAccountHistDb={currentAccountHistDb}
+        setCurrentAccountHistDb={setCurrentAccountHistDb}
+        currentAccountHistDbLoaded={currentAccountHistDbLoaded}
         inputs={inputs}
         onStateChange={setWebviewState}
         customHandlers={customHandlers}
       />
       <BottomBar
         manifest={manifest}
-        currentAccountHistDb={currentAccountHistDb}
+        setCurrentAccountHistDb={setCurrentAccountHistDb}
         webviewAPIRef={webviewAPIRef}
         webviewState={webviewState}
       />

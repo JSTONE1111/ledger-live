@@ -16,7 +16,7 @@ import {
   getDerivationScheme,
   runDerivationScheme,
   asDerivationMode,
-} from "@ledgerhq/coin-framework/derivation";
+} from "@ledgerhq/ledger-wallet-framework/derivation";
 import type { Account, DerivationMode } from "@ledgerhq/types-live";
 
 const localCache: Record<string, unknown> = {};
@@ -71,7 +71,7 @@ function inferAccount(id: string): Account {
 
 async function syncAccount(id: string) {
   const account = inferAccount(id);
-  const bridge = getAccountBridge(account);
+  const bridge = await getAccountBridge(account);
   await bridgeCache.prepareCurrency(account.currency);
   const syncConfig = {
     paginationConfig: {},

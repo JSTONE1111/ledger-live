@@ -1,14 +1,31 @@
-import { AccountShapeInfo } from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import { SignerContext } from "@ledgerhq/coin-framework/signer";
 import { MinaUnsignedTransaction } from "@ledgerhq/coin-mina/types";
 import { MinaSigner } from "@ledgerhq/coin-mina/types";
-import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/lib/currencies";
+import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
+import { AccountShapeInfo } from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
+import { SignerContext } from "@ledgerhq/ledger-wallet-framework/signer";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { Account } from "@ledgerhq/types-live";
 import { DeviceId } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
-import { RosettaBlockInfoResponse, RosettaTransaction } from "../api/rosetta/types";
+import { RosettaBlockInfoResponse, RosettaTransaction } from "../network/types";
 import { Transaction } from "../types";
+
+export const signatureJsonToHex = (sig: { field: string; scalar: string }): string => {
+  const toLE32Hex = (decimal: string): string => {
+    let n = BigInt(decimal);
+    const bytes: string[] = [];
+    for (let i = 0; i < 32; i++) {
+      bytes.push(
+        Number(n & 0xffn)
+          .toString(16)
+          .padStart(2, "0"),
+      );
+      n >>= 8n;
+    }
+    return bytes.join("");
+  };
+  return toLE32Hex(sig.field) + toLE32Hex(sig.scalar);
+};
 
 // Mock account data
 export const mockAccountData = {
@@ -222,5 +239,3 @@ export const createMockSignerContext = (
     };
     return cb(mockSigner);
   });
-
-// ... existing code ...

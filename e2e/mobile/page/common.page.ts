@@ -8,7 +8,7 @@ import ErrorPage from "./error.page";
 export default class CommonPage {
   assetScreenFlatlistId = "asset-screen-flatlist";
   searchBarId = "common-search-field";
-  successViewDetailsButtonId = "success-view-details-button";
+  successViewDetailsButtonId = "enabled-success-view-details-button";
   validateSuccessScreenId = "validate-success-screen";
   proceedButtonId = "proceed-button";
   accountCardPrefix = "account-card-";
@@ -19,10 +19,13 @@ export default class CommonPage {
   walletApiWebview = "wallet-api-webview";
   closeWithConfirmationButtonId = "button-close-add-account";
   errorPage = new ErrorPage();
+  seeAllTransactionButton = "portfolio-seeAll-transaction";
 
   searchBar = () => getElementById(this.searchBarId);
   closeButton = () => getElementById("NavigationHeaderCloseButton");
   backButton = () => getElementById("navigation-header-back-button");
+  seeAllOperationsButtonElement = () => getElementById(this.seeAllTransactionButton);
+  assetScreenFlatlistElement = () => getElementById(this.assetScreenFlatlistId);
   accountCardRegExp = (id = ".*") => new RegExp(this.accountCardPrefix + id);
   accountItemRegExp = (id = ".*(?<!-name)$") => new RegExp(`${this.accountItemId}${id}`);
   accountItem = (id: string) => getElementById(this.accountItemRegExp(id));
@@ -45,7 +48,7 @@ export default class CommonPage {
   async selectAccount(account: Account) {
     const accountId = this.accountId(account);
     await waitForElementById(accountId);
-    await tapById(accountId);
+    await tapByIdAndExpectToDisappear(accountId);
   }
 
   @Step("Expect search")
@@ -118,10 +121,12 @@ export default class CommonPage {
 
   @Step("Select a known device")
   async selectKnownDevice(index = 0) {
-    const proxyUrl = process.env.DEVICE_PROXY_URL;
-    const elementId = proxyUrl ? this.deviceItem(`httpdebug|${proxyUrl}`) : this.deviceItemRegex;
+    const speculosAddress = process.env.DEVICE_PROXY_URL;
+    const elementId = speculosAddress
+      ? this.deviceItem(`speculos|${speculosAddress}`)
+      : this.deviceItemRegex;
     await waitForElementById(elementId);
-    await tapById(elementId, proxyUrl ? undefined : index);
+    await tapById(elementId, speculosAddress ? undefined : index);
   }
 
   @Step("Tap proceed button")
@@ -135,5 +140,12 @@ export default class CommonPage {
 
   async enableSynchronization() {
     await device.enableSynchronization();
+  }
+
+  @Step("Press on see all operations button")
+  async pressOnSeeAllOperationsButton() {
+    await detoxExpect(this.assetScreenFlatlistElement()).toBeVisible();
+    await scrollToId(this.seeAllTransactionButton, this.assetScreenFlatlistId);
+    await tapByElement(this.seeAllOperationsButtonElement());
   }
 }

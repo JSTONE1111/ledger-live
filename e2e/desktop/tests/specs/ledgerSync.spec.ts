@@ -1,4 +1,5 @@
 import { test } from "tests/fixtures/common";
+import { Team } from "@ledgerhq/live-common/e2e/enum/Team";
 import { AppInfos } from "@ledgerhq/live-common/e2e/enum/AppInfos";
 import { addTmsLink } from "tests/utils/allureUtils";
 import { getDescription } from "tests/utils/customJsonReporter";
@@ -46,9 +47,24 @@ function initializeTrustchain() {
 test.describe(`[${app.name}] Sync Accounts`, () => {
   setupSeed();
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.WALLET_XP,
+    userdata: "skip-onboarding-with-last-seen-device",
     speculosApp: app,
     cliCommands: [...initializeThenDeleteTrustchain(), ...initializeTrustchain()],
+    featureFlags: {
+      lldWalletSync: {
+        enabled: true,
+        params: {
+          environment: "STAGING",
+          watchConfig: {
+            pollingInterval: 2_000,
+            initialTimeout: 500,
+          },
+          learnMoreLink: "",
+        },
+      },
+      lldLedgerSyncEntryPoints: { enabled: true },
+    },
   });
 
   test(
@@ -63,11 +79,10 @@ test.describe(`[${app.name}] Sync Accounts`, () => {
     async ({ app, page }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.layout.goToAccounts();
-      await app.accounts.expectAccountsCount(0);
+      await app.portfolio.checkAddAccountButtonVisibility();
 
-      await app.layout.goToSettings();
-      await app.settings.openManageLedgerSync();
+      await app.mainNavigation.openSettings();
+      await app.settings.enableWalletSync();
       await app.ledgerSync.expectSyncAccountsButtonExist();
 
       await app.ledgerSync.syncAccounts();
@@ -75,8 +90,11 @@ test.describe(`[${app.name}] Sync Accounts`, () => {
       await app.ledgerSync.expectSynchronizationSuccess();
       await app.ledgerSync.closeLedgerSync();
 
-      await app.layout.goToAccounts();
-      await app.accounts.expectAccountsCount(2);
+      // Success copy can appear before the watch loop finishes importing every descriptor (retries use backoff).
+      await app.accounts.expectReduxAccountsLength(2);
+
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
+      await app.accounts.expectAccountsCount(2, 60_000);
 
       await app.accounts.navigateToAccountByName(firstAccountName);
       await app.account.expectAccountVisibility(firstAccountName);
@@ -84,12 +102,17 @@ test.describe(`[${app.name}] Sync Accounts`, () => {
       await app.accounts.navigateToAccountByName(secondAccountName);
       await app.account.expectAccountVisibility(secondAccountName);
       await app.account.renameAccount(secondAccountName + "_renamed");
-      await app.layout.syncAccounts();
+
+      if (await app.layout.topbarSynchronizeButton.isEnabled()) {
+        // trigger sync if not triggered automatically
+        await app.layout.syncAccounts();
+      }
 
       expect(await LedgerSyncCliHelper.checkSynchronizationSuccess(page, app)).toBeDefined();
 
-      await app.layout.goToAccounts();
-      await app.accounts.expectAccountsCount(1);
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
+      await app.accounts.expectReduxAccountsLength(1);
+      await app.accounts.expectAccountsCount(1, 60_000);
 
       const pulledData = await CLI.ledgerSync({
         ...LedgerSyncCliHelper.ledgerKeyRingProtocolArgs,
@@ -98,7 +121,7 @@ test.describe(`[${app.name}] Sync Accounts`, () => {
 
       const parsedData = LedgerSyncCliHelper.parseData(pulledData);
 
-      await app.layout.goToSettings();
+      await app.mainNavigation.openSettings();
       await app.settings.openManageLedgerSync();
       await app.ledgerSync.manageInstances();
       await app.ledgerSync.removeCLIMember();
@@ -106,7 +129,7 @@ test.describe(`[${app.name}] Sync Accounts`, () => {
       await app.ledgerSync.expectMemberRemoval();
       await app.drawer.closeDrawer();
 
-      await app.layout.goToSettings();
+      await app.mainNavigation.openSettings();
       await app.settings.openManageLedgerSync();
       await app.ledgerSync.destroyTrustchain();
       await app.ledgerSync.expectBackupDeletion();

@@ -1,6 +1,6 @@
+import { formatCurrencyUnit } from "@ledgerhq/coin-module-framework/currencies/index";
+import { getAccountCurrency } from "@ledgerhq/ledger-wallet-framework/account/index";
 import invariant from "invariant";
-import { getAccountCurrency } from "@ledgerhq/coin-framework/account/index";
-import { formatCurrencyUnit } from "@ledgerhq/coin-framework/currencies/index";
 import { CardanoAccount } from "./types";
 
 export function formatAccountSpecifics(account: CardanoAccount): string {

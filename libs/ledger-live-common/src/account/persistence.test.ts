@@ -1,10 +1,44 @@
 import { getCryptoCurrencyById, setSupportedCurrencies } from "../currencies";
-import { genAccount } from "@ledgerhq/coin-framework/mocks/account";
+import { Account } from "@ledgerhq/types-live";
+import { genAccount } from "@ledgerhq/ledger-wallet-framework/mocks/account";
 import { accountPersistedStateChanged, accountsPersistedStateChanged } from "./persistence";
 
 setSupportedCurrencies(["ethereum"]);
 
 const Ethereum = getCryptoCurrencyById("ethereum");
+type PrivateInfoTestShape = {
+  ufvk: string;
+  balance: Account["balance"];
+  birthday: number;
+  lastSyncTimestamp: number;
+  lastSyncBlock: number;
+  syncState: string;
+  lastProcessedBlock: number;
+  currentSync?: {
+    state?: string;
+    lastBlockDownloaded?: number;
+    lastProcessedBlock?: number;
+  };
+  transactions?: unknown[];
+};
+
+type AccountWithPrivateInfo = Account & { privateInfo?: PrivateInfoTestShape };
+
+const createPrivateInfo = (balance: Account["balance"]): PrivateInfoTestShape => ({
+  ufvk: "ufvk-1",
+  balance,
+  birthday: 10,
+  lastSyncTimestamp: 20,
+  lastSyncBlock: 30,
+  syncState: "synced",
+  lastProcessedBlock: 40,
+  currentSync: {
+    state: "idle",
+    lastBlockDownloaded: 41,
+    lastProcessedBlock: 40,
+  },
+  transactions: [{ hash: "tx1" }],
+});
 
 describe("account persistence predicates", () => {
   describe("accountPersistedStateChanged", () => {
@@ -46,7 +80,7 @@ describe("account persistence predicates", () => {
         ...account,
         subAccounts: [...(account.subAccounts ?? []), { ...account, id: account.id + "+token" }],
       };
-      expect(accountPersistedStateChanged(withOneSub, withExtraSub)).toBe(true);
+      expect(accountPersistedStateChanged(withOneSub, withExtraSub as Account)).toBe(true);
     });
 
     it("returns false when same account (reference equality)", () => {
@@ -58,6 +92,32 @@ describe("account persistence predicates", () => {
       const a = genAccount("seed1", { currency: Ethereum });
       const b = genAccount("seed2", { currency: Ethereum });
       expect(accountPersistedStateChanged(a, b)).toBe(true);
+    });
+
+    it("returns true when privateInfo exists only on one account", () => {
+      const base = genAccount("seed", { currency: Ethereum }) as AccountWithPrivateInfo;
+      const withPrivateInfo: AccountWithPrivateInfo = {
+        ...base,
+        privateInfo: createPrivateInfo(base.balance),
+      };
+      const withoutPrivateInfo: AccountWithPrivateInfo = { ...base, privateInfo: undefined };
+      expect(accountPersistedStateChanged(withPrivateInfo, withoutPrivateInfo)).toBe(true);
+      expect(accountPersistedStateChanged(withoutPrivateInfo, withPrivateInfo)).toBe(true);
+    });
+
+    it("returns false when privateInfo fields are identical", () => {
+      const base = genAccount("seed", { currency: Ethereum }) as AccountWithPrivateInfo;
+      const privateInfo = createPrivateInfo(base.balance);
+      const prev: AccountWithPrivateInfo = { ...base, privateInfo };
+      const next: AccountWithPrivateInfo = {
+        ...base,
+        privateInfo: {
+          ...privateInfo,
+          currentSync: { ...privateInfo.currentSync },
+          transactions: [...(privateInfo.transactions ?? [])],
+        },
+      };
+      expect(accountPersistedStateChanged(prev, next)).toBe(false);
     });
   });
 

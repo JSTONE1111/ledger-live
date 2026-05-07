@@ -1,8 +1,8 @@
 import { WrongDeviceForAccount } from "@ledgerhq/errors";
-import { Observable } from "rxjs";
-import { isSegwitDerivationMode } from "@ledgerhq/coin-framework/derivation";
-import { GetAddressFn } from "@ledgerhq/coin-framework/bridge/getAddressWrapper";
+import { GetAddressFn } from "@ledgerhq/ledger-wallet-framework/bridge/getAddressWrapper";
+import { isSegwitDerivationMode } from "@ledgerhq/ledger-wallet-framework/derivation";
 import type { Account, AccountBridge, DerivationMode } from "@ledgerhq/types-live";
+import { Observable } from "rxjs";
 import { Transaction } from "../types";
 
 /*  this is due to libs/coin-modules/coin-hedera/src/hw-getAddress.ts
@@ -10,7 +10,7 @@ import { Transaction } from "../types";
     we resort to this check instead
     we rely on seedIdentifier being the public key for Hedera accounts
     TODO: document where the seedIdentifier for hedera is set
-    looks like it's set to the publickey in makeScanAccount here: libs/coin-framework/src/bridge/jsHelpers.ts */
+    looks like it's set to the publickey in makeScanAccount here: libs/ledger-wallet-framework/src/bridge/jsHelpers.ts */
 
 export const receive =
   (getAddress: GetAddressFn): AccountBridge<Transaction>["receive"] =>

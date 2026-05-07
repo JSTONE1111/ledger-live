@@ -17,16 +17,26 @@ export type Transaction = TransactionCommon & {
   fees: BigNumber;
 } & (
     | {
-        type: typeof TRANSACTION_TYPE.TRANSFER_PUBLIC;
+        mode: typeof TRANSACTION_TYPE.TRANSFER_PUBLIC;
+        properties?: never;
       }
     | {
-        type: typeof TRANSACTION_TYPE.TRANSFER_PRIVATE;
+        mode: typeof TRANSACTION_TYPE.TRANSFER_PRIVATE;
+        properties: {
+          amountRecordCommitments: string[];
+          feeRecordCommitment: string | null;
+        };
       }
     | {
-        type: typeof TRANSACTION_TYPE.CONVERT_PUBLIC_TO_PRIVATE;
+        mode: typeof TRANSACTION_TYPE.CONVERT_PUBLIC_TO_PRIVATE;
+        properties?: never;
       }
     | {
-        type: typeof TRANSACTION_TYPE.CONVERT_PRIVATE_TO_PUBLIC;
+        mode: typeof TRANSACTION_TYPE.CONVERT_PRIVATE_TO_PUBLIC;
+        properties: {
+          amountRecordCommitments: string[];
+          feeRecordCommitment: string | null;
+        };
       }
   );
 
@@ -35,16 +45,26 @@ export type TransactionRaw = TransactionCommonRaw & {
   fees: string;
 } & (
     | {
-        type: typeof TRANSACTION_TYPE.TRANSFER_PUBLIC;
+        mode: typeof TRANSACTION_TYPE.TRANSFER_PUBLIC;
+        properties?: never;
       }
     | {
-        type: typeof TRANSACTION_TYPE.TRANSFER_PRIVATE;
+        mode: typeof TRANSACTION_TYPE.TRANSFER_PRIVATE;
+        properties: {
+          amountRecordCommitments: string[];
+          feeRecordCommitment: string | null;
+        };
       }
     | {
-        type: typeof TRANSACTION_TYPE.CONVERT_PUBLIC_TO_PRIVATE;
+        mode: typeof TRANSACTION_TYPE.CONVERT_PUBLIC_TO_PRIVATE;
+        properties?: never;
       }
     | {
-        type: typeof TRANSACTION_TYPE.CONVERT_PRIVATE_TO_PUBLIC;
+        mode: typeof TRANSACTION_TYPE.CONVERT_PRIVATE_TO_PUBLIC;
+        properties: {
+          amountRecordCommitments: string[];
+          feeRecordCommitment: string | null;
+        };
       }
   );
 
@@ -84,20 +104,43 @@ export type AleoOperationExtra = {
   patched?: boolean;
 };
 
+export type OperationDetailsExtraField = {
+  key: keyof AleoOperationExtra;
+  value: string | number;
+};
+
 export type AleoOperation = Operation<AleoOperationExtra>;
 
 export type TransactionTransfer = Extract<
   Transaction,
   {
-    type: typeof TRANSACTION_TYPE.TRANSFER_PUBLIC | typeof TRANSACTION_TYPE.TRANSFER_PRIVATE;
+    mode: typeof TRANSACTION_TYPE.TRANSFER_PUBLIC | typeof TRANSACTION_TYPE.TRANSFER_PRIVATE;
   }
 >;
 
 export type TransactionSelfTransfer = Extract<
   Transaction,
   {
-    type:
+    mode:
       | typeof TRANSACTION_TYPE.CONVERT_PRIVATE_TO_PUBLIC
       | typeof TRANSACTION_TYPE.CONVERT_PUBLIC_TO_PRIVATE;
+  }
+>;
+
+export type TransactionPublic = Extract<
+  Transaction,
+  {
+    mode:
+      | typeof TRANSACTION_TYPE.CONVERT_PUBLIC_TO_PRIVATE
+      | typeof TRANSACTION_TYPE.TRANSFER_PUBLIC;
+  }
+>;
+
+export type TransactionPrivate = Extract<
+  Transaction,
+  {
+    mode:
+      | typeof TRANSACTION_TYPE.CONVERT_PRIVATE_TO_PUBLIC
+      | typeof TRANSACTION_TYPE.TRANSFER_PRIVATE;
   }
 >;

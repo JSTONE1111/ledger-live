@@ -8,6 +8,7 @@ export const initialState: PostOnboardingState = {
   deviceModelId: null,
   walletEntryPointDismissed: false,
   entryPointFirstDisplayedDate: null,
+  walletEntryPointEligibleForPortfolio: null,
   actionsToComplete: [],
   actionsCompleted: {},
   lastActionCompleted: null,
@@ -19,24 +20,55 @@ type InitPayload = {
   deviceModelId: DeviceModelId;
   actionsIds: PostOnboardingActionId[];
 };
+type AddPayload = {
+  actionId: PostOnboardingActionId;
+};
 type SetActionCompletedPayload = {
   actionId: PostOnboardingActionId;
 };
-export type Payload = undefined | PartialNewStatePayload | InitPayload | SetActionCompletedPayload;
+
+export type Payload =
+  | undefined
+  | PartialNewStatePayload
+  | InitPayload
+  | SetActionCompletedPayload
+  | AddPayload
+  | boolean;
 
 const handlers: ReducerMap<PostOnboardingState, Payload> = {
-  POST_ONBOARDING_IMPORT_STATE: (_, { payload }): PostOnboardingState =>
-    (payload as PartialNewStatePayload).newState as PostOnboardingState,
+  POST_ONBOARDING_IMPORT_STATE: (_, { payload }): PostOnboardingState => ({
+    ...initialState,
+    ...(payload as PartialNewStatePayload).newState,
+  }),
   POST_ONBOARDING_INIT: (_, { payload }) => {
     const { deviceModelId, actionsIds } = payload as InitPayload;
     return {
       deviceModelId,
       walletEntryPointDismissed: false,
       entryPointFirstDisplayedDate: new Date(),
+      walletEntryPointEligibleForPortfolio: null,
       actionsToComplete: actionsIds,
       actionsCompleted: Object.fromEntries(actionsIds.map(id => [id, false])),
       lastActionCompleted: null,
       postOnboardingInProgress: true,
+    };
+  },
+  POST_ONBOARDING_ADD_ACTION: (state, { payload }) => {
+    const { actionId } = payload as AddPayload;
+    const hasAction = state.actionsToComplete.includes(actionId);
+    const actionsToComplete = hasAction
+      ? state.actionsToComplete
+      : [...state.actionsToComplete, actionId];
+    const actionsCompleted = hasAction
+      ? state.actionsCompleted
+      : {
+          ...state.actionsCompleted,
+          [actionId]: state.actionsCompleted[actionId] ?? false,
+        };
+    return {
+      ...state,
+      actionsToComplete,
+      actionsCompleted,
     };
   },
   POST_ONBOARDING_SET_ACTION_COMPLETED: (state, { payload }) => {
@@ -48,6 +80,17 @@ const handlers: ReducerMap<PostOnboardingState, Payload> = {
       lastActionCompleted: actionId,
     };
   },
+  POST_ONBOARDING_REMOVE_ACTION_COMPLETED: (state, { payload }) => {
+    const { actionId } = payload as SetActionCompletedPayload;
+    const actionsCompleted = { ...state.actionsCompleted, [actionId]: false };
+    const lastActionCompleted =
+      state.lastActionCompleted === actionId ? null : state.lastActionCompleted;
+    return {
+      ...state,
+      actionsCompleted,
+      lastActionCompleted,
+    };
+  },
   POST_ONBOARDING_CLEAR_LAST_ACTION_COMPLETED: state => ({
     ...state,
     lastActionCompleted: null,
@@ -57,6 +100,14 @@ const handlers: ReducerMap<PostOnboardingState, Payload> = {
     walletEntryPointDismissed: true,
     entryPointFirstDisplayedDate: null,
   }),
+
+  POST_ONBOARDING_SET_WALLET_ENTRY_POINT_ELIGIBILITY: (state, { payload }) => {
+    if (typeof payload !== "boolean") return state;
+    return {
+      ...state,
+      walletEntryPointEligibleForPortfolio: payload,
+    };
+  },
 
   POST_ONBOARDING_SET_FINISHED: state => ({
     ...state,
@@ -122,4 +173,9 @@ export const walletPostOnboardingEntryPointDismissedSelector = createSelector(
 export const entryPointFirstDisplayedDateSelector = createSelector(
   postOnboardingSelector,
   postOnboarding => postOnboarding.entryPointFirstDisplayedDate,
+);
+
+export const walletEntryPointEligibleForPortfolioSelector = createSelector(
+  postOnboardingSelector,
+  postOnboarding => postOnboarding.walletEntryPointEligibleForPortfolio,
 );

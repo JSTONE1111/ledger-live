@@ -1,9 +1,9 @@
-import { device } from "detox";
-import { closeProxy } from "./bridge/proxy";
-import { close as closeBridge } from "./bridge/server";
+import { device, log } from "detox";
 import { launchApp, setupEnvironment } from "./helpers/commonHelpers";
+import { sanitizeError } from "@ledgerhq/live-common/e2e/index";
+import { close as closeBridge } from "./bridge/server";
 import { getEnv, setEnv } from "@ledgerhq/live-env";
-import { allure } from "jest-allure2-reporter/api";
+import { setAllureDescription } from "./helpers/allure/allure-helper";
 
 const broadcastOriginalValue = getEnv("DISABLE_TRANSACTION_BROADCAST");
 setupEnvironment();
@@ -14,15 +14,26 @@ beforeAll(
     await device.reverseTcpPort(8081);
     await device.reverseTcpPort(port);
     await device.reverseTcpPort(52619); // To allow the android emulator to access the dummy app
-    const testFileName = expect.getState().testPath?.replace(/^.*\/(.+?)(?:\.spec)?\.[^.]+$/, "$1");
-    await allure.description("Test file : " + testFileName);
+    setAllureDescription();
   },
   process.env.CI ? 150000 : 120000,
 );
 
 afterAll(async () => {
+  if (process.env.CI) {
+    try {
+      await app.portfolio.openViaDeeplink(5000);
+      await device.terminateApp();
+    } catch (e) {
+      log.warn(`setup afterAll terminateApp failed: ${sanitizeError(e)}`);
+    }
+  }
+
   setEnv("DISABLE_TRANSACTION_BROADCAST", broadcastOriginalValue);
   closeBridge();
-  closeProxy();
-  await app.common.removeSpeculos();
+  try {
+    await app.common.removeSpeculos();
+  } catch (e) {
+    log.warn(`setup afterAll removeSpeculos failed: ${sanitizeError(e)}`);
+  }
 });

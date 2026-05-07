@@ -34,6 +34,9 @@ export default function Home() {
         <li>
           <Link to="/crypto-icons">Crypto Icons</Link>
         </li>
+        <li>
+          <Link to="/dev-tools">Dev Tools</Link>
+        </li>
       </ul>
     </main>
   );

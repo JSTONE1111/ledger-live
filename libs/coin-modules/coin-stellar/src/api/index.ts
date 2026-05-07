@@ -1,21 +1,19 @@
+import { rejectBalanceOptions } from "@ledgerhq/coin-module-framework/api/getBalance/rejectBalanceOptions";
 import {
-  Api,
-  Block,
-  BlockInfo,
-  Cursor,
-  ListOperationsOptions,
-  Page,
-  Validator,
-  FeeEstimation,
-  Operation,
-  Stake,
-  Reward,
-  TransactionIntent,
+  AlpacaApi,
+  BalanceOptions,
   CraftedTransaction,
-} from "@ledgerhq/coin-framework/api/index";
-import { LedgerAPI4xx } from "@ledgerhq/errors";
-import { getEnv } from "@ledgerhq/live-env";
-import { log } from "@ledgerhq/logs";
+  Cursor,
+  FeeEstimation,
+  ListOperationsOptions,
+  Operation,
+  Page,
+  Reward,
+  Stake,
+  TransactionIntent,
+  Validator,
+} from "@ledgerhq/coin-module-framework/api/index";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
 import { xdr } from "@stellar/stellar-sdk";
 import coinConfig, { type StellarConfig } from "../config";
 import {
@@ -24,18 +22,19 @@ import {
   craftTransaction,
   estimateFees,
   getBalance,
-  validateIntent,
+  getBlock,
+  getBlockInfo,
   lastBlock,
-  listOperations,
-  STELLAR_BURN_ADDRESS,
-  getTokenFromAsset,
-  getAssetFromToken,
+  validateIntent,
 } from "../logic";
-import { fetchSequence } from "../network";
-import { StellarBurnAddressError, StellarMemo } from "../types";
+import { operationsFromHeight } from "../logic/operationsFromHeight";
+import { validateAddress } from "../logic/validateAddress";
+import { fetchSequence, registerHorizonInterceptors } from "../network";
+import { StellarMemo } from "../types";
 
-export function createApi(config: StellarConfig): Api<StellarMemo> {
+export function createApi(config: StellarConfig): AlpacaApi<StellarMemo> {
   coinConfig.setCoinConfig(() => ({ ...config, status: { type: "active" } }));
+  registerHorizonInterceptors();
 
   return {
     broadcast,
@@ -50,15 +49,12 @@ export function createApi(config: StellarConfig): Api<StellarMemo> {
       throw new Error("craftRawTransaction is not supported");
     },
     estimateFees: estimate,
-    getBalance,
+    getBalance: (address: string, options?: BalanceOptions) =>
+      rejectBalanceOptions(() => getBalance(address), options),
     lastBlock,
     listOperations: operations,
-    getBlock(_height): Promise<Block> {
-      throw new Error("getBlock is not supported");
-    },
-    getBlockInfo(_height: number): Promise<BlockInfo> {
-      throw new Error("getBlockInfo is not supported");
-    },
+    getBlock,
+    getBlockInfo,
     getStakes(_address: string, _cursor?: Cursor): Promise<Page<Stake>> {
       throw new Error("getStakes is not supported");
     },
@@ -66,27 +62,15 @@ export function createApi(config: StellarConfig): Api<StellarMemo> {
       throw new Error("getRewards is not supported");
     },
     validateIntent,
-    getSequence: async (address: string) => {
+    getNextSequence: async (address: string) => {
       const sequence = await fetchSequence(address);
-      // NOTE: might not do plus one here, or if we do, rename to getNextValidSequence
       return BigInt(sequence.plus(1).toFixed());
     },
-    getTokenFromAsset,
-    getAssetFromToken,
-    getChainSpecificRules: () => ({
-      getAccountShape: (address: string) => {
-        // NOTE: https://github.com/LedgerHQ/ledger-live/pull/2058
-        if (address === STELLAR_BURN_ADDRESS) {
-          throw new StellarBurnAddressError();
-        }
-      },
-      getTransactionStatus: {
-        throwIfPendingOperation: true,
-      },
-    }),
     getValidators(_cursor?: Cursor): Promise<Page<Validator>> {
       throw new Error("getValidators is not supported");
     },
+    validateAddress,
+    craftTransactionData,
   };
 }
 
@@ -139,64 +123,10 @@ async function estimate(_transactionIntent: TransactionIntent): Promise<FeeEstim
 
 async function operations(
   address: string,
-  { minHeight, cursor }: ListOperationsOptions,
+  { minHeight }: ListOperationsOptions,
 ): Promise<Page<Operation>> {
-  if (minHeight) {
-    const [items, next] = await operationsFromHeight(address, minHeight);
-    return { items, next: next || undefined };
-  }
-  const isInitSync = !cursor || cursor === "";
-  // FIXME: why bother creating limit and pagingToken here, something is off?!
-  const newPagination = isInitSync
-    ? { limit: getEnv("API_STELLAR_HORIZON_INITIAL_FETCH_MAX_OPERATIONS"), minHeight: 0 }
-    : { pagingToken: cursor, minHeight: 0 };
-  const [items, next] = await operationsFromHeight(address, newPagination.minHeight);
+  const { items, next } = await operationsFromHeight(address, minHeight);
   return { items, next: next || undefined };
-}
-
-type PaginationState = {
-  readonly pageSize: number;
-  readonly heightLimit: number;
-  continueIterations: boolean;
-  apiNextCursor?: string;
-  accumulator: Operation[];
-};
-
-async function operationsFromHeight(
-  address: string,
-  minHeight: number,
-): Promise<[Operation[], string]> {
-  const state: PaginationState = {
-    pageSize: 200,
-    heightLimit: minHeight,
-    continueIterations: true,
-    accumulator: [],
-  };
-
-  // unfortunately, the stellar API does not support an option to filter by min height
-  // so the only strategy to get ALL operations is to iterate over all of them in descending order
-  // until we reach the desired minHeight
-  while (state.continueIterations) {
-    const options: ListOperationsOptions = { limit: state.pageSize, order: "desc", minHeight };
-    if (state.apiNextCursor) {
-      options.cursor = state.apiNextCursor;
-    }
-    try {
-      const [operations, nextCursor] = await listOperations(address, options);
-      state.accumulator.push(...operations);
-      state.apiNextCursor = nextCursor;
-      state.continueIterations = nextCursor !== "";
-    } catch (e: unknown) {
-      if (e instanceof LedgerAPI4xx && (e as unknown as { status: number }).status === 429) {
-        log("coin:stellar", "(api/operations): TooManyRequests, retrying in 4s");
-        await new Promise(resolve => setTimeout(resolve, 4000));
-      } else {
-        throw e;
-      }
-    }
-  }
-
-  return [state.accumulator, state.apiNextCursor ? state.apiNextCursor : ""];
 }
 
 /**

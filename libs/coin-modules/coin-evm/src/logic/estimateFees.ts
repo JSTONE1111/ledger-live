@@ -3,7 +3,7 @@ import type {
   FeeEstimation,
   MemoNotSupported,
   TransactionIntent,
-} from "@ledgerhq/coin-framework/api/index";
+} from "@ledgerhq/coin-module-framework/api/index";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import BigNumber from "bignumber.js";
 import { Transaction, TransactionLike } from "ethers";
@@ -13,7 +13,7 @@ import { getNodeApi } from "../network/node";
 import { ApiFeeData, ApiGasOptions, FeeData, GasOptions, TransactionTypes } from "../types";
 import { isEthAddress } from "../utils";
 import { prepareUnsignedTxParams } from "./common";
-import { getSequence } from "./getSequence";
+import { getNextSequence } from "./getNextSequence";
 
 async function computeAdditionalFees(
   currency: CryptoCurrency,
@@ -124,7 +124,7 @@ export async function estimateFees(
   const nonce =
     typeof transactionIntent.sequence === "bigint" && transactionIntent.sequence >= 0n
       ? transactionIntent.sequence
-      : await getSequence(currency, transactionIntent.sender);
+      : await getNextSequence(currency, transactionIntent.sender);
   const chainId = currency.ethereumLikeInfo?.chainId ?? 0;
 
   const { finalFeeData, finalGasOptions } = await (async (): Promise<{

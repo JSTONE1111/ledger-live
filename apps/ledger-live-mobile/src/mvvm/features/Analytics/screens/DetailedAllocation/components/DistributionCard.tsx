@@ -4,7 +4,6 @@ import { useNavigation } from "@react-navigation/native";
 import styled, { useTheme } from "styled-components/native";
 import { getCurrencyColor } from "@ledgerhq/live-common/currencies/index";
 import { Flex, Text } from "@ledgerhq/native-ui";
-import { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { ensureContrast } from "~/colors";
 import CounterValue from "~/components/CounterValue";
 import CurrencyIcon from "~/components/CurrencyIcon";
@@ -14,12 +13,8 @@ import { NavigatorName, ScreenName } from "~/const";
 import { withDiscreetMode } from "~/context/DiscreetModeContext";
 import { track } from "~/analytics";
 import { DETAILED_ALLOCATION_PAGE } from "../../../const";
-
-export type DistributionItem = Readonly<{
-  currency: CryptoCurrency | TokenCurrency;
-  amount: number;
-  distribution: number;
-}>;
+import type { DistributionItem } from "../../../types/distribution";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 
 type Props = Readonly<{
   item: DistributionItem;
@@ -65,6 +60,7 @@ const DistributionRow = styled(Flex).attrs({
 function DistributionCard({ item: { currency, amount, distribution } }: Props) {
   const { colors } = useTheme();
   const navigation = useNavigation();
+  const { shouldDisplayAggregatedAssets } = useWalletFeaturesConfig("mobile");
 
   const color = useMemo(
     () => ensureContrast(getCurrencyColor(currency), colors.background.main),
@@ -90,7 +86,7 @@ function DistributionCard({ item: { currency, amount, distribution } }: Props) {
     <Container onPress={navigateToAccounts}>
       <Flex flexDirection="row">
         <IconContainer>
-          <CurrencyIcon currency={currency} size={35} />
+          <CurrencyIcon currency={currency} size={35} hideNetwork={shouldDisplayAggregatedAssets} />
         </IconContainer>
         <CoinInfoContainer>
           <CurrencyRow>

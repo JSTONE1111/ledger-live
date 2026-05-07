@@ -1,17 +1,20 @@
 import React, { useEffect, useReducer, useState } from "react";
-import { act, render, screen, waitFor } from "@tests/test-renderer";
-import { useNotifications } from "../hooks/useNotifications";
+import { act, render, screen, waitFor, withFlagOverrides } from "@tests/test-renderer";
+import {
+  NotificationsPromptProvider,
+  NotificationsPromptWrapper,
+  setPushNotificationsDataOfUserInStorage,
+  useNotifications,
+} from "LLM/features/NotificationsPrompt";
 
 import storage from "LLM/storage";
 import { add, sub, type Duration } from "date-fns";
 import { ABTestingVariants } from "@ledgerhq/types-live";
 import { Button, Text } from "@ledgerhq/lumen-ui-rnative";
-import { NotificationsPromptDrawer } from "../screens/NotificationsPromptDrawer";
-import { setPushNotificationsDataOfUserInStorage } from "../utils/storage";
 import { NotificationsState } from "~/reducers/types";
 
 // Mock QueuedDrawer to bypass animation issues with Reanimated 4 in tests
-jest.mock("~/components/QueuedDrawer", () => {
+jest.mock("LLM/components/QueuedDrawer", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -116,7 +119,7 @@ describe("NotificationsPrompt Integration", () => {
           .then(() => setIsReady(true));
 
         // No dependency because we only want to run it once.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
       }, [reloadCount]);
 
       if (!isReady) {
@@ -134,90 +137,105 @@ describe("NotificationsPrompt Integration", () => {
     }
 
     const rendered = render(
-      <>
-        <NotificationsPromptDrawer />
+      <NotificationsPromptProvider>
         <SetupComponent />
-      </>,
+        <NotificationsPromptWrapper />
+      </NotificationsPromptProvider>,
       {
-        overrideInitialState: state => ({
-          ...state,
-          settings: {
-            ...state.settings,
-            notifications: {
-              ...state.settings.notifications,
-              areNotificationsAllowed: appNotifications,
-            },
-            overriddenFeatureFlags: {
-              ...state.settings.overriddenFeatureFlags,
-              brazePushNotifications: {
-                enabled: true,
-                params: {
-                  action_events: {
-                    complete_onboarding: {
-                      enabled: true,
-                      timer: 0,
-                    },
-
-                    add_favorite_coin: {
-                      enabled: true,
-                      timer: 0,
-                    },
-
-                    send: {
-                      enabled: true,
-                      timer: 0,
-                    },
-                    receive: {
-                      enabled: true,
-                      timer: 0,
-                    },
-                    buy: {
-                      enabled: true,
-                      timer: 0,
-                    },
-                    swap: {
-                      enabled: true,
-                      timer: 0,
-                    },
-                    stake: {
-                      enabled: true,
-                      timer: 0,
-                    },
+        overrideInitialState: withFlagOverrides(
+          {
+            brazePushNotifications: {
+              enabled: true,
+              params: {
+                action_events: {
+                  complete_onboarding: {
+                    enabled: true,
+                    timer: 0,
                   },
-                  reprompt_schedule: REPROMPT_SCHEDULE,
 
-                  notificationsCategories: [
-                    {
-                      displayed: true,
-                      category: "announcementsCategory",
-                    },
-                    {
-                      displayed: true,
-                      category: "recommendationsCategory",
-                    },
-                    {
-                      displayed: true,
-                      category: "largeMoverCategory",
-                    },
-                    {
-                      displayed: true,
-                      category: "transactionsAlertsCategory",
-                    },
-                  ],
+                  add_favorite_coin: {
+                    enabled: true,
+                    timer: 0,
+                  },
 
-                  inactivity_enabled: true,
-                  inactivity_reprompt: INACTIVITY_REPROMPT,
+                  send: {
+                    enabled: true,
+                    timer: 0,
+                  },
+                  receive: {
+                    enabled: true,
+                    timer: 0,
+                  },
+                  buy: {
+                    enabled: true,
+                    timer: 0,
+                  },
+                  swap: {
+                    enabled: true,
+                    timer: 0,
+                  },
+                  stake: {
+                    enabled: true,
+                    timer: 0,
+                  },
                 },
+                reprompt_schedule: REPROMPT_SCHEDULE.map(s => ({
+                  months: 0,
+                  hours: 0,
+                  minutes: 0,
+                  seconds: 0,
+                  days: "days" in s ? s.days : 0,
+                })),
+
+                notificationsCategories: [
+                  {
+                    displayed: true,
+                    category: "announcementsCategory",
+                  },
+                  {
+                    displayed: true,
+                    category: "recommendationsCategory",
+                  },
+                  {
+                    displayed: true,
+                    category: "largeMoverCategory",
+                  },
+                  {
+                    displayed: true,
+                    category: "transactionsAlertsCategory",
+                  },
+                  {
+                    displayed: true,
+                    category: "totalMarketCap",
+                  },
+                  {
+                    displayed: true,
+                    category: "topGainersLosers",
+                  },
+                ],
+
+                inactivity_enabled: true,
+                inactivity_reprompt: { months: 6, days: 0, hours: 0, minutes: 0, seconds: 0 },
               },
-              lwmNewWordingOptInNotificationsDrawer: {
-                enabled: true,
-                params: {
-                  variant,
-                },
+            },
+            lwmNewWordingOptInNotificationsDrawer: {
+              enabled: true,
+              params: {
+                variant,
               },
             },
           },
-        }),
+          state => ({
+            ...state,
+            settings: {
+              ...state.settings,
+              notifications: {
+                ...state.settings.notifications,
+                areNotificationsAllowed: appNotifications,
+              },
+            },
+          }),
+        ),
       },
     );
 

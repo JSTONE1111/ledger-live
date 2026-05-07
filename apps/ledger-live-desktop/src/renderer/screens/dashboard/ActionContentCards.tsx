@@ -9,6 +9,7 @@ import useActionCards from "~/renderer/hooks/useActionCards";
 import ActionCard from "~/renderer/components/ContentCards/ActionCard";
 import LogContentCardWrapper from "LLD/features/DynamicContent/components/LogContentCardWrapper";
 
+// Classic variants (carousel with background)
 const ActionVariantA = styled(Card)`
   background-color: ${p => p.theme.colors.opacityPurple.c10};
 `;
@@ -57,10 +58,14 @@ const ActionContentCards = ({ variant }: { variant: ABTestingVariants }) => {
             label: slide.mainCta,
             action: () => onClick(slide.id, slide.link, index),
           },
-          dismiss: {
-            label: slide.secondaryCta,
-            action: () => onDismiss(slide.id, index),
-          },
+          ...(slide.secondaryCta
+            ? {
+                dismiss: {
+                  label: slide.secondaryCta,
+                  action: () => onDismiss(slide.id, index),
+                },
+              }
+            : {}),
         }}
       />
     </LogContentCardWrapper>

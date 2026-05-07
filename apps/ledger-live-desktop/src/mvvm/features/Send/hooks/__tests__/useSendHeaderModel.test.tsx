@@ -9,9 +9,14 @@ jest.mock("../../context/SendFlowContext", () => ({
   useSendFlowData: jest.fn(),
   useSendFlowActions: jest.fn(),
 }));
+jest.mock("~/renderer/reducers/wallet", () => ({
+  ...jest.requireActual("~/renderer/reducers/wallet"),
+  useMaybeAccountName: jest.fn(),
+}));
 
 import { useFlowWizard } from "../../../FlowWizard/FlowWizardContext";
 import { useSendFlowData, useSendFlowActions } from "../../context/SendFlowContext";
+import { useMaybeAccountName } from "~/renderer/reducers/wallet";
 
 type VM = ReturnType<typeof useSendHeaderModel>;
 let container: HTMLElement;
@@ -93,10 +98,11 @@ beforeEach(() => {
   root = createRoot(container);
   latestVM = null;
   mockData({
-    account: { currency: { ticker: "ETH" } },
+    account: { currency: { ticker: "ETH" }, account: {} },
     recipient: null,
     transaction: { status: {} },
   });
+  (useMaybeAccountName as jest.Mock).mockReturnValue("Base 1");
 });
 
 afterEach(() => {
@@ -107,32 +113,65 @@ afterEach(() => {
 });
 
 describe("useSendHeaderModel", () => {
-  describe("handleBack — backTarget (floating steps)", () => {
-    it("calls goToStep(backTarget) when current step has backTarget and does not call goToPreviousStep or close", () => {
+  describe("recipient header summary", () => {
+    it("shows the default send title and account summary on recipient step", () => {
+      mockNavigation();
+      mockActions();
+      (useFlowWizard as jest.Mock).mockReturnValue({
+        currentStep: SEND_FLOW_STEP.RECIPIENT,
+        currentStepConfig: { addressInput: true, showTitle: true },
+        navigation: { goToStep: jest.fn(), goToPreviousStep: jest.fn(), canGoBack: () => true },
+      });
+
+      renderHook("$5,969.83");
+
+      expect(latestVM?.title).toBe("Send ETH");
+      expect(latestVM?.descriptionText).toBe("Base 1 · $5,969.83");
+    });
+
+    it("falls back to the balance only in description when account name is unavailable", () => {
+      mockNavigation();
+      mockActions();
+      (useFlowWizard as jest.Mock).mockReturnValue({
+        currentStep: SEND_FLOW_STEP.RECIPIENT,
+        currentStepConfig: { addressInput: true, showTitle: true },
+        navigation: { goToStep: jest.fn(), goToPreviousStep: jest.fn(), canGoBack: () => true },
+      });
+      (useMaybeAccountName as jest.Mock).mockReturnValue(undefined);
+
+      renderHook("$5,969.83");
+
+      expect(latestVM?.title).toBe("Send ETH");
+      expect(latestVM?.descriptionText).toBe("$5,969.83");
+    });
+  });
+
+  describe("handleBack — floating steps (history-based)", () => {
+    it("calls goToPreviousStep when on CUSTOM_FEES step and canGoBack()", () => {
       const { goToStep, goToPreviousStep } = mockNavigation();
       const { close } = mockActions();
       const resetViewState = jest.fn();
       (useFlowWizard as jest.Mock).mockReturnValue({
         currentStep: SEND_FLOW_STEP.CUSTOM_FEES,
-        currentStepConfig: { backTarget: SEND_FLOW_STEP.AMOUNT },
+        currentStepConfig: {},
         navigation: { goToStep, goToPreviousStep, canGoBack: () => true },
       });
 
       renderHook("", resetViewState);
       latestVM?.handleBack();
 
-      expect(goToStep).toHaveBeenCalledWith(SEND_FLOW_STEP.AMOUNT);
-      expect(goToPreviousStep).not.toHaveBeenCalled();
+      expect(goToPreviousStep).toHaveBeenCalled();
+      expect(goToStep).not.toHaveBeenCalled();
       expect(close).not.toHaveBeenCalled();
     });
 
-    it("runs COIN_CONTROL cleanup then navigates via backTarget when on COIN_CONTROL step", () => {
-      const { goToStep } = mockNavigation();
+    it("runs COIN_CONTROL cleanup then calls goToPreviousStep on COIN_CONTROL step", () => {
+      const { goToPreviousStep } = mockNavigation();
       const { updateTransaction } = mockActions();
       (useFlowWizard as jest.Mock).mockReturnValue({
         currentStep: SEND_FLOW_STEP.COIN_CONTROL,
-        currentStepConfig: { backTarget: SEND_FLOW_STEP.AMOUNT },
-        navigation: { goToStep, goToPreviousStep: jest.fn(), canGoBack: () => true },
+        currentStepConfig: {},
+        navigation: { goToStep: jest.fn(), goToPreviousStep, canGoBack: () => true },
       });
 
       renderHook();
@@ -148,7 +187,7 @@ describe("useSendHeaderModel", () => {
         ...txWithUtxo,
         utxoStrategy: { strategy: 0, excludeUTXOs: [] },
       });
-      expect(goToStep).toHaveBeenCalledWith(SEND_FLOW_STEP.AMOUNT);
+      expect(goToPreviousStep).toHaveBeenCalled();
     });
   });
 
@@ -186,6 +225,67 @@ describe("useSendHeaderModel", () => {
     });
   });
 
+  describe("descriptionText — account summary", () => {
+    it("shows the account summary on non-recipient steps too", () => {
+      mockNavigation();
+      mockActions();
+      (useFlowWizard as jest.Mock).mockReturnValue({
+        currentStep: SEND_FLOW_STEP.AMOUNT,
+        currentStepConfig: { showTitle: true },
+        navigation: { goToStep: jest.fn(), goToPreviousStep: jest.fn(), canGoBack: () => true },
+      });
+
+      renderHook("1 ETH");
+
+      expect(latestVM?.title).toBe("Send ETH");
+      expect(latestVM?.descriptionText).toBe("Base 1 · 1 ETH");
+    });
+
+    it("hides the account summary when showAvailable is false", () => {
+      mockNavigation();
+      mockActions();
+      (useFlowWizard as jest.Mock).mockReturnValue({
+        currentStep: SEND_FLOW_STEP.AMOUNT,
+        currentStepConfig: { showTitle: true, showAvailable: false },
+        navigation: { goToStep: jest.fn(), goToPreviousStep: jest.fn(), canGoBack: () => true },
+      });
+
+      renderHook("1 ETH");
+
+      expect(latestVM?.title).toBe("Send ETH");
+      expect(latestVM?.descriptionText).toBe("");
+    });
+
+    it("uses the per-step titleKey override when defined", () => {
+      mockNavigation();
+      mockActions();
+      (useFlowWizard as jest.Mock).mockReturnValue({
+        currentStep: SEND_FLOW_STEP.CUSTOM_FEES,
+        currentStepConfig: { showTitle: true, titleKey: "newSendFlow.customFees.title" },
+        navigation: { goToStep: jest.fn(), goToPreviousStep: jest.fn(), canGoBack: () => true },
+      });
+
+      renderHook("1 ETH");
+
+      expect(latestVM?.title).toBe("Custom fees");
+    });
+
+    it("hides the summary when the step title is hidden", () => {
+      mockNavigation();
+      mockActions();
+      (useFlowWizard as jest.Mock).mockReturnValue({
+        currentStep: SEND_FLOW_STEP.SIGNATURE,
+        currentStepConfig: { showTitle: false },
+        navigation: { goToStep: jest.fn(), goToPreviousStep: jest.fn(), canGoBack: () => true },
+      });
+
+      renderHook("1 ETH");
+
+      expect(latestVM?.title).toBe("");
+      expect(latestVM?.descriptionText).toBe("");
+    });
+  });
+
   describe("handleBack — state cleanup", () => {
     it("resets amount-related fields and calls resetViewState when on AMOUNT step then navigates", () => {
       const { goToPreviousStep } = mockNavigation();
@@ -212,12 +312,12 @@ describe("useSendHeaderModel", () => {
     });
 
     it("leaves transaction unchanged when COIN_CONTROL step but tx has no utxoStrategy", () => {
-      const { goToStep } = mockNavigation();
+      const { goToPreviousStep } = mockNavigation();
       const { updateTransaction } = mockActions();
       (useFlowWizard as jest.Mock).mockReturnValue({
         currentStep: SEND_FLOW_STEP.COIN_CONTROL,
-        currentStepConfig: { backTarget: SEND_FLOW_STEP.AMOUNT },
-        navigation: { goToStep, goToPreviousStep: jest.fn(), canGoBack: () => true },
+        currentStepConfig: {},
+        navigation: { goToStep: jest.fn(), goToPreviousStep, canGoBack: () => true },
       });
 
       renderHook();

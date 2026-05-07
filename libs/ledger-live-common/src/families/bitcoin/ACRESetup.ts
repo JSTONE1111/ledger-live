@@ -13,9 +13,9 @@ import { signMessage } from "@ledgerhq/coin-bitcoin/hw-signMessage";
 import { BitcoinAccount, Transaction, TransactionStatus } from "@ledgerhq/coin-bitcoin/types";
 import { GetAddressOptions, Resolver } from "../../hw/getAddress/types";
 import { withDevice } from "../../hw/deviceAccess";
-import { GetAddressFn } from "@ledgerhq/coin-framework/bridge/getAddressWrapper";
+import { GetAddressFn } from "@ledgerhq/ledger-wallet-framework/bridge/getAddressWrapper";
 import { getCurrencyConfiguration } from "../../config";
-import { BitcoinConfigInfo } from "@ledgerhq/coin-bitcoin/lib/config";
+import { BitcoinConfigInfo } from "@ledgerhq/coin-bitcoin/config";
 import { SignMessage } from "../../hw/signMessage/types";
 import { AcreMessageSignIn, AcreMessageWithdraw } from "@ledgerhq/wallet-api-acre-module";
 
@@ -23,7 +23,7 @@ const createSigner = (transport: Transport, currency: CryptoCurrency) => {
   return new Acre({ transport, currency: currency.id });
 };
 
-const signerContext: SignerContext = <T>(
+const signerContext: SignerContext = <T,>(
   deviceId: string,
   crypto: CryptoCurrency,
   fn: (signer: Acre) => Promise<T>,
@@ -32,8 +32,8 @@ const signerContext: SignerContext = <T>(
     withDevice(deviceId)((transport: Transport) => from(fn(createSigner(transport, crypto)))),
   );
 
-const getCurrencyConfig = (currency: CryptoCurrency) => {
-  return { info: getCurrencyConfiguration<BitcoinConfigInfo>(currency) };
+const getCurrencyConfig = (currencyId: string) => {
+  return { info: getCurrencyConfiguration<BitcoinConfigInfo>(currencyId) };
 };
 
 const bridge: Bridge<Transaction, BitcoinAccount, TransactionStatus> = createBridges(

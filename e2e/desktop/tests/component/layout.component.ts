@@ -16,6 +16,9 @@ export class Layout extends Component {
   readonly drawerEarnButton = this.page.getByTestId("drawer-earn-button");
   readonly drawerBuycryptoButton = this.page.getByTestId("drawer-exchange-button");
   readonly drawerSwapButton = this.page.getByTestId("drawer-swap-button");
+  readonly drawerDiscoverButton = this.page.getByTestId("drawer-catalog-button");
+  readonly drawerReferButton = this.page.getByTestId("drawer-refer-button");
+  readonly drawerCardButton = this.page.getByTestId("drawer-card-button");
 
   // topbar
   readonly topbarSynchronizeButton = this.topbarActionButton("synchronize").or(
@@ -26,9 +29,6 @@ export class Layout extends Component {
   );
   readonly topbarSettingsButton = this.topbarActionButton("settings").or(
     this.page.getByTestId("topbar-settings-button"),
-  );
-  readonly topbarDiscreetButton = this.topbarActionButton("discreet").or(
-    this.page.getByTestId("topbar-discreet-button"),
   );
   readonly topbarMyLedgerButton = this.topbarActionButton("my-ledger");
 
@@ -42,29 +42,14 @@ export class Layout extends Component {
     await this.drawerMarketButton.click();
   }
 
-  @step("Open Accounts")
-  async goToAccounts() {
-    await this.drawerAccountsButton.click();
-  }
-
   @step("Open send modal")
   async openSendModalFromSideBar() {
     await this.drawerSendButton.click();
   }
 
-  @step("Go to earn")
-  async goToEarn() {
-    await this.drawerEarnButton.click();
-  }
-
   @step("Go to buy crypto")
   async goToBuySellCrypto() {
     await this.drawerBuycryptoButton.click();
-  }
-
-  @step("Go to swap")
-  async goToSwap() {
-    await this.drawerSwapButton.click();
   }
 
   @step("Go to Settings")
@@ -77,14 +62,14 @@ export class Layout extends Component {
     await this.topbarSynchronizeButton.click();
   }
 
-  @step("toggle discreet mode")
-  async toggleDiscreetMode() {
-    await this.topbarDiscreetButton.click();
-  }
-
   @step("Wait for accounts sync to be finished")
   async waitForAccountsSyncToBeDone() {
     await expect(this.topbarSynchronizeButton).not.toHaveText("Synchronizing");
+  }
+
+  @step("Wait for accounts sync to be finished")
+  async waitForSyncButtonToBeEnabled() {
+    await expect(this.topbarSynchronizeButton).not.toHaveAttribute("disabled");
   }
 
   @step("Expect buy/sell sidebar to be selected")

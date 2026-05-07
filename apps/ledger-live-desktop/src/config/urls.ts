@@ -45,8 +45,10 @@ export const urls = {
     "https://shop.ledger.com/pages/ledger-live-terms-of-use?utm_source=ledger_live_desktop&utm_medium=self_referral&utm_content=terms",
   buyNew:
     "https://shop.ledger.com/pages/hardware-wallets-comparison?utm_source=ledger_live_desktop&utm_medium=self_referral&utm_content=onboarding",
+  exploreLedgerDevices:
+    "https://shop.ledger.com/pages/hardware-wallets-comparison?utm_source=ledger_wallet_desktop&utm_medium=page_my_wallet&utm_content=explore_ledger_devices",
   reborn:
-    "https://shop.ledger.com/pages/unlock-ledger-wallet-desktop?utm_source=ledger_wallet_destkop&utm_medium=self_referral&utm_content=onboarding-2",
+    "https://shop.ledger.com/pages/unlock-ledger-wallet-desktop?utm_source=ledger_wallet_desktop&utm_medium=self_referral&utm_content=onboarding-2",
   noDevice: {
     learnMore:
       "https://www.ledger.com?utm_source=ledger_live_desktop&utm_medium=self_referral&utm_content=onboarding",
@@ -63,7 +65,7 @@ export const urls = {
   recipientAddressInfo: "https://support.ledger.com/article/4404389453841-zd",
   managerAppLearnMore: "https://support.ledger.com/",
   privacyPolicy:
-    "https://www.ledger.com/privacy-policy?utm_source=ledger_live_desktop&utm_medium=self_referral&utm_content=privacy",
+    "https://shop.ledger.com/pages/privacy-policy?utm_source=ledger_live_desktop&utm_medium=self_referral&utm_content=privacy",
   trackingPolicy:
     "https://shop.ledger.com/pages/ledger-live-tracking-policy?utm_source=ledger_live_desktop&utm_medium=self_referral&utm_content=privacy",
   troubleshootingUSB: "https://support.ledger.com/article/115005165269-zd",
@@ -182,6 +184,10 @@ export const urls = {
   editEvmTx: {
     learnMore: "https://support.ledger.com/article/9756122596765-zd",
   },
+  editBitcoinTx: {
+    learnMore:
+      "https://support.ledger.com/article/how-to-speed-up-or-cancel-pending-bitcoin-transactions",
+  },
   ledgerAcademy: {
     whatIsEthereumRestaking: "https://www.ledger.com/academy/what-is-ethereum-restaking",
     ethereumStakingHowToStakeEth:
@@ -200,6 +206,8 @@ export const urls = {
     "https://shop.ledger.com?utm_source=live&utm_medium=draw&utm_campaign=ledger_sync_lns_uncompatible&utm_content=to_shop",
   learnMoreLedgerSync:
     "https://www.ledger.com/blog-ledger-sync-synchronize-your-crypto-accounts-effortless-private-and-secure",
+  buyDevice:
+    "https://shop.ledger.com/pages/unlock-ledger-wallet-desktop?utm_source=ledger_wallet_desktop&utm_medium=self_referral&utm_content=onboarding-2",
   charonLearnMore: "https://shop.ledger.com/products/ledger-recovery-key",
 
   // Node errors
@@ -221,12 +229,16 @@ export const urls = {
     learnMore: "https://support.ledger.com/article/Canton-Network",
   },
   aleo: {
-    viewKeyLearnMore: "", // TODO: waiting for https://ledgerhq.atlassian.net/browse/LIVE-26269
+    learnMore: "https://support.ledger.com/article/Aleo-ALEO",
   },
   concordium: {
     learnMore: "https://support.ledger.com/article/Concordium-CCD",
     appStore: "https://apps.apple.com/app/concordium-id/id6746754485",
     playStore: "https://play.google.com/store/apps/details?id=com.idwallet.app",
+  },
+  deviceDeprecation: {
+    shop: "https://shop.ledger.com/pages/ledger-nano-s-upgrade-program",
+    learnMore: "https://support.ledger.com/article/Ledger-Nano-S-Limitations",
   },
 };
 

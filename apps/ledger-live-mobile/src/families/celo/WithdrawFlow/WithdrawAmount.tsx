@@ -6,11 +6,11 @@ import { Trans } from "~/context/Locale";
 import invariant from "invariant";
 import { useTheme } from "@react-navigation/native";
 import { getMainAccount } from "@ledgerhq/live-common/account/helpers";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
 import { formatCurrencyUnit } from "@ledgerhq/live-common/currencies/index";
 import { useDebounce } from "@ledgerhq/live-common/hooks/useDebounce";
 import { rgba, Text, Icons } from "@ledgerhq/native-ui";
-import { CeloAccount } from "@ledgerhq/live-common/families/celo/types";
+import { CeloAccount, Transaction as CeloTransaction } from "@ledgerhq/live-common/families/celo/types";
 import { ScreenName } from "~/const";
 import { TrackScreen } from "~/analytics";
 import Button from "~/components/Button";
@@ -26,7 +26,7 @@ import ErrorAndWarning from "../components/ErrorAndWarning";
 import type { BaseComposite, StackNavigatorProps } from "~/components/RootNavigator/types/helpers";
 import type { CeloWithdrawFlowParamList } from "./types";
 import { useMaybeAccountUnit } from "LLM/hooks/useAccountUnit";
-import { AddressesSanctionedError } from "@ledgerhq/coin-framework/sanction/errors";
+import { AddressesSanctionedError } from "@ledgerhq/ledger-wallet-framework/sanction/errors";
 import SupportLinkError from "~/components/SupportLinkError";
 import { useAccountScreen } from "LLM/hooks/useAccountScreen";
 
@@ -42,7 +42,7 @@ export default function WithdrawAmount({ navigation, route }: Props) {
   const { account, parentAccount } = useAccountScreen(route);
   invariant(account, "account is required");
 
-  const bridge = getAccountBridge(account, parentAccount);
+  const bridge = useAccountBridge<CeloTransaction>(account, parentAccount);
   const mainAccount = getMainAccount(account, parentAccount);
 
   const { transaction, setTransaction, status, bridgeError, bridgePending } = useBridgeTransaction(

@@ -4,11 +4,19 @@ import { useBridgeSync } from "@ledgerhq/live-common/bridge/react/index";
 import { useCountervaluesPolling } from "@ledgerhq/live-countervalues-react";
 import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 import { useIsFocused, useRoute, useTheme } from "@react-navigation/native";
+import { useNetInfo } from "@react-native-community/netinfo";
 import { SYNC_DELAY } from "~/utils/constants";
 import { track } from "~/analytics";
 import { useWalletSyncUserState } from "LLM/features/WalletSync/components/WalletSyncContext";
-import { useDispatch } from "~/context/hooks";
-import { setRefreshStarted, setRefreshCompleted } from "~/reducers/portfolioRefresh";
+import { useDispatch, useSelector, useStore } from "~/context/hooks";
+import { hasNoAccountsSelector } from "~/reducers/accounts";
+import {
+  setRefreshStarted,
+  setRefreshCompleted,
+  setLastUserSyncClickTimestamp,
+  setOfflineRefreshAttempt,
+  selectLastSyncTimestamp,
+} from "~/reducers/portfolioRefresh";
 
 type Props = {
   isError?: boolean;
@@ -33,8 +41,11 @@ function globalSyncRefreshControl<P>(
     const { poll } = useCountervaluesPolling();
     const isFocused = useIsFocused();
     const dispatch = useDispatch();
+    const store = useStore();
     const { shouldDisplayBalanceRefreshRework } = useWalletFeaturesConfig("mobile");
+    const hasNoAccounts = useSelector(hasNoAccountsSelector);
     const route = useRoute();
+    const { isConnected, isInternetReachable } = useNetInfo();
     const refreshingRef = useRef(refreshing);
     refreshingRef.current = refreshing;
 
@@ -46,17 +57,28 @@ function globalSyncRefreshControl<P>(
         reason: "user-pull-to-refresh",
       });
       setRefreshing(true);
-      dispatch(setRefreshStarted());
+      dispatch(setRefreshStarted(selectLastSyncTimestamp(store.getState())));
+      if (shouldDisplayBalanceRefreshRework) {
+        dispatch(setLastUserSyncClickTimestamp(Date.now()));
+      }
       track("button_clicked", {
         button: "pull to refresh",
         page: route.name,
-        triggered_after_sync_error: isError ?? false,
+        triggeredAfterSyncError: isError ?? false,
       });
       onUserRefresh();
     }
 
     function handleRefresh() {
       if (refreshingRef.current) return;
+      if (shouldDisplayBalanceRefreshRework && hasNoAccounts) return;
+      if (
+        shouldDisplayBalanceRefreshRework &&
+        (isConnected === false || isInternetReachable === false)
+      ) {
+        dispatch(setOfflineRefreshAttempt(Date.now()));
+        return;
+      }
       onRefresh();
     }
 

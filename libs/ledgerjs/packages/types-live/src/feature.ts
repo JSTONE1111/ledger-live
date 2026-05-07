@@ -88,6 +88,8 @@ export type CurrencyFeatures = {
   currencyEnergyWeb: DefaultFeature;
   currencyAstar: DefaultFeature;
   currencyMetis: DefaultFeature;
+  currencyMantle: DefaultFeature;
+  currencyMantleSepolia: DefaultFeature;
   currencyBoba: DefaultFeature;
   currencyMoonriver: DefaultFeature;
   currencyVelasEvm: DefaultFeature;
@@ -106,6 +108,7 @@ export type CurrencyFeatures = {
   currencyInjective: DefaultFeature;
   currencyTelosEvm: DefaultFeature;
   currencyCoreum: DefaultFeature;
+  currencyPolygonAmoy: DefaultFeature;
   currencyPolygonZkEvm: DefaultFeature;
   currencyPolygonZkEvmTestnet: DefaultFeature;
   currencyBase: DefaultFeature;
@@ -136,6 +139,7 @@ export type CurrencyFeatures = {
   currencySonic: DefaultFeature;
   currencySonicBlaze: DefaultFeature;
   currencySui: DefaultFeature;
+  currencySuiTestnet: DefaultFeature;
   currencyMina: DefaultFeature;
   currencyBabylon: DefaultFeature;
   currencySeiNetworkEvm: DefaultFeature;
@@ -172,7 +176,6 @@ export type CurrencyFeatures = {
 export type Features = CurrencyFeatures & {
   nanoOnboardingFundWallet: DefaultFeature;
   mixpanelAnalytics: DefaultFeature;
-  welcomeScreenVideoCarousel: DefaultFeature;
   brazePushNotifications: Feature_BrazePushNotifications;
   ratingsPrompt: Feature_RatingsPrompt;
   npsRatingsPrompt: Feature_NpsRatingsPrompt;
@@ -191,7 +194,6 @@ export type Features = CurrencyFeatures & {
   ethStakingModalWithFilters: DefaultFeature;
   ethStakingProviders: Feature_EthStakingProviders;
   storyly: Feature_Storyly;
-  postOnboardingAssetsTransfer: Feature_PostOnboardingAssetsTransfer;
   firebaseEnvironmentReadOnly: Feature_FirebaseEnvironmentReadOnly;
   protectServicesMobile: Feature_ProtectServicesMobile;
   protectServicesDesktop: Feature_ProtectServicesDesktop;
@@ -202,6 +204,8 @@ export type Features = CurrencyFeatures & {
   stakePrograms: Feature_StakePrograms;
   portfolioExchangeBanner: Feature_PortfolioExchangeBanner;
   editEvmTx: Feature_EditEvmTx;
+  evmNativeStaking: Feature_EvmNativeStaking;
+  editBitcoinTx: Feature_EditBitcoinTx;
   stakeAccountBanner: Feature_StakeAccountBanner;
   newsfeedPage: Feature_NewsfeedPage;
   domainInputResolution: Feature_DomainInputResolution;
@@ -216,12 +220,14 @@ export type Features = CurrencyFeatures & {
   ptxPerpsLiveAppMobile: Feature_PtxPerpsLiveApp;
   ptxSwapLiveAppOnPortfolio: DefaultFeature;
   ptxSwapDetailedView: Feature_PtxSwapDetailedView;
+  ptxBorrowLiveApp: Feature_PtxBorrowLiveApp;
   ptxEarnLiveApp: Feature_PtxEarnLiveApp;
   ptxEarnDrawerConfiguration: Feature_PtxEarnDrawerConfiguration;
   ptxEarnUi: Feature_PtxEarnUi;
   ptxSwapReceiveTRC20WithoutTrx: Feature_PtxSwapReceiveTRC20WithoutTrx;
   flexibleContentCards: Feature_FlexibleContentCards;
   llmAnalyticsOptInPrompt: Feature_LlmAnalyticsOptInPrompt;
+  analyticsOptIn: DefaultFeature;
   ptxSwapMoonpayProvider: Feature_PtxSwapMoonpayProvider;
   ptxSwapExodusProvider: Feature_PtxSwapExodusProvider;
   lldAnalyticsOptInPrompt: Feature_LldAnalyticsOptInPrompt;
@@ -245,6 +251,7 @@ export type Features = CurrencyFeatures & {
   lldLedgerSyncEntryPoints: Feature_LldLedgerSyncEntryPoints;
   lwmLedgerSyncOptimisation: DefaultFeature;
   lwdLedgerSyncOptimisation: DefaultFeature;
+  lwdProductTour: DefaultFeature;
   lwmNewWordingOptInNotificationsDrawer: Feature_LwmNewWordingOptInNotificationsDrawer;
   lldNanoSUpsellBanners: Feature_LldNanoSUpsellBanners;
   llmNanoSUpsellBanners: Feature_LlmNanoSUpsellBanners;
@@ -252,9 +259,12 @@ export type Features = CurrencyFeatures & {
   lldThai: DefaultFeature;
   llmMmkvMigration: Feature_LlmMmkvMigration;
   lldModularDrawer: Feature_ModularDrawer;
+  lldWebviewManifestDomainCheck: DefaultFeature;
+  llmWebviewManifestDomainCheck: DefaultFeature;
   llmModularDrawer: Feature_ModularDrawer;
   llNftEntryPoint: Feature_LlNftEntryPoint;
   ldmkSolanaSigner: DefaultFeature;
+  ldmkCosmosSigner: DefaultFeature;
   ldmkConnectApp: DefaultFeature;
   lldNetworkBasedAddAccount: DefaultFeature;
   llmDatadog: {
@@ -281,13 +291,24 @@ export type Features = CurrencyFeatures & {
       vitalsUpdateFrequency: "AVERAGE" | "FREQUENT" | "RARE" | "NEVER";
     }>;
   };
+  lldDatadog: {
+    enabled: boolean;
+    params: Partial<{
+      sessionSamplingRate: number;
+      sessionReplaySampleRate: number;
+      defaultPrivacyLevel: string;
+      traceSampleRate: number;
+      allowedTracingUrls: string[];
+      profilingSampleRate: number;
+    }>;
+  };
+  llmNanoSDeprecation: DefaultFeature;
   llmSentry: DefaultFeature;
   onboardingIgnoredOsUpdates: Feature_OnboardingIgnoredOSUpdates;
   llmHomescreen: DefaultFeature;
   supportDeviceApex: DefaultFeature;
   llmSyncOnboardingIncr1: DefaultFeature;
   lldSyncOnboardingIncr1: DefaultFeature;
-  cantonSkipPreapprovalStep: DefaultFeature;
   noah: Feature_Noah;
   newSendFlow: Feature_NewSendFlow;
   zcashShielded: DefaultFeature;
@@ -295,12 +316,19 @@ export type Features = CurrencyFeatures & {
   lldRebornABtest: DefaultFeature;
   llmRebornABtest: DefaultFeature;
   lifiSolana: DefaultFeature;
-  llmAnimatedSplashScreen: Feature_LlmAnimatedSplashScreen;
   llmOnboardingEnableSync: Feature_OnboardingEnableSync;
   lldOnboardingEnableSync: Feature_OnboardingEnableSync;
+  lwdGenericAwarenessModal: DefaultFeature;
+  lwmGenericAwarenessModal: DefaultFeature;
+  lwmProductTour: DefaultFeature;
   lwmWallet40: Feature_LwmWallet40;
   lwdWallet40: Feature_LwdWallet40;
   addressPoisoningOperationsFilter: Feature_AddressPoisoningOperationsFilter;
+  concordiumVerifyAddress: DefaultFeature;
+  lldHideSmallValueTokenOperations: Feature_LldHideSmallValueTokenOperations;
+  llmTransferButtonCopyVariant: Feature_LlmTransferButtonCopyVariant;
+  lldTezosStaking: DefaultFeature;
+  llmTezosStaking: DefaultFeature;
 };
 
 /**
@@ -551,6 +579,14 @@ export type Feature_EditEvmTx = Feature<{
   supportedCurrencyIds: string[];
 }>;
 
+export type Feature_EvmNativeStaking = Feature<{
+  supportedCurrencyIds: string[];
+}>;
+
+export type Feature_EditBitcoinTx = Feature<{
+  supportedCurrencyIds: string[];
+}>;
+
 export type Feature_FirebaseEnvironmentReadOnly = Feature<{
   comment: string;
   project: string;
@@ -621,6 +657,10 @@ export type Feature_PtxSwapLiveApp = Feature<{
 }>;
 
 export type Feature_PtxPerpsLiveApp = Feature<{
+  manifest_id: string;
+}>;
+
+export type Feature_PtxBorrowLiveApp = Feature<{
   manifest_id: string;
 }>;
 
@@ -721,10 +761,16 @@ export type Feature_Noah = Feature<{
 
 export type Feature_NewSendFlow = Feature<{
   families?: string[];
+  excludedCurrencyIds?: string[];
 }>;
 
 export type Feature_AddressPoisoningOperationsFilter = Feature<{
   families: string[];
+}>;
+
+export type Feature_LldHideSmallValueTokenOperations = Feature<{
+  /** USD threshold below which incoming token operations are hidden. Defaults to $0.5. */
+  thresholdUsd: number;
 }>;
 
 export type Feature_CounterValue = DefaultFeature;
@@ -732,7 +778,6 @@ export type Feature_MockFeature = DefaultFeature;
 export type Feature_DisableNftSend = DefaultFeature;
 export type Feature_DisableNftLedgerMarket = DefaultFeature;
 export type Feature_DisableNftRaribleOpensea = DefaultFeature;
-export type Feature_PostOnboardingAssetsTransfer = DefaultFeature;
 export type Feature_PtxServiceCtaExchangeDrawer = DefaultFeature;
 export type Feature_PtxServiceCtaScreens = DefaultFeature;
 export type Feature_PortfolioExchangeBanner = DefaultFeature;
@@ -779,10 +824,18 @@ export type Feature_LlmNanoSUpsellBanners = Feature<{
   opted_out: LlmNanoSUpsellBannersConfig;
 }>;
 
+export type Feature_LlmTransferButtonCopyVariant = Feature<{
+  variantId: string;
+  buttonLabel?: string;
+  modalTitle?: string;
+  rowReceiveTitle?: string;
+  rowSendTitle?: string;
+  rowCashToStableTitle?: string;
+  rowCashToStableDescription?: string;
+}>;
+
 export type Feature_LlmHomescreen = DefaultFeature;
 export type Feature_SupportDeviceApex = DefaultFeature;
-
-export type Feature_LlmAnimatedSplashScreen = Feature<Record<string, boolean>>;
 
 export type Feature_OnboardingEnableSync = Feature<{
   nanos: boolean;
@@ -806,21 +859,26 @@ type Feature_Wallet40_Params = {
   marketBanner: boolean;
   graphRework: boolean;
   quickActionCtas: boolean;
+  quickActionsCtasVariant: boolean;
   mainNavigation: boolean;
   tour: boolean;
   lazyOnboarding: boolean;
   balanceRefreshRework: boolean;
   assetSection: boolean;
-
+  operationsList: boolean;
+  aggregatedAssets: boolean;
+  myWallet: boolean;
   // Specifics
+  brazePlacement?: boolean;
   newReceiveDialog?: boolean;
-  background?: boolean;
+  finishOnboardingWidget?: boolean;
 };
 
-export type Feature_LwmWallet40 = Feature<Feature_Wallet40_Params>;
+export type Feature_LwmWallet40 = Feature<Feature_Wallet40_Params & { onboardingWidget: boolean }>;
 export type Feature_LwdWallet40 = Feature<
   {
     newReceiveDialog: boolean;
+    finishOnboardingWidget?: boolean;
   } & Feature_Wallet40_Params
 >;
 export type Feature_LwmNewWordingOptInNotificationsDrawer = Feature<{

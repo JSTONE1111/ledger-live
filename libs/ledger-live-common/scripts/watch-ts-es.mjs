@@ -10,9 +10,7 @@ if (os.platform() === "win32") {
 try {
   cd(path.join(__dirname, ".."));
 
-  await $`zx ./scripts/sync-families-dispatch.mjs`;
-
-  await $`pnpm tsc --project src/tsconfig.json -m esnext --moduleResolution bundler --outDir lib-es --watch`;
+  await $`pnpm tsc --project src/tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es --watch`;
 } catch (error) {
   console.log(chalk.red(error));
   process.exit(1);

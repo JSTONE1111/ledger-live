@@ -1,12 +1,14 @@
 import * as braze from "@braze/web-sdk";
 import { ClassicCard } from "@braze/web-sdk";
 import { generateAnonymousId } from "@ledgerhq/live-common/braze/anonymousUsers";
+import { parseOrder, sanitizeExtras } from "@ledgerhq/live-common/braze/contentCardExtras";
+import { appendDeeplinkLocationIfDefined } from "@ledgerhq/live-common/deeplinks/index";
 import { getEnv } from "@ledgerhq/live-env";
 import { useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "LLD/hooks/redux";
 
+import { userIdSelector } from "@ledgerhq/client-ids/store";
 import { getBrazeConfig } from "~/braze-setup";
-import getUser from "~/helpers/user";
 import {
   ActionContentCard,
   ContentCard as LedgerContentCard,
@@ -20,6 +22,7 @@ import {
   setDesktopCards,
   setNotificationsCards,
   setPortfolioCards,
+  setBottomPortfolioCards,
 } from "../actions/dynamicContent";
 import {
   clearDismissedContentCards,
@@ -52,32 +55,48 @@ export const compareCards = (a: LedgerContentCard, b: LedgerContentCard) => {
   return (a.order || 0) - (b.order || 0);
 };
 
+export { parseOrder, sanitizeExtras };
+
 export const mapAsActionContentCard = (card: ClassicCard): ActionContentCard => ({
   created: card.updated ?? null,
   description: card.extras?.description,
   id: String(card.id),
   image: card.extras?.image,
-  link: card.extras?.link,
+  image_background: card.extras?.image_background,
+  icon: card.extras?.icon,
+  link: appendDeeplinkLocationIfDefined(card.extras?.link, LocationContentCard.Action),
   location: LocationContentCard.Action,
   mainCta: card.extras?.mainCta,
-  order: parseInt(card.extras?.order) ? parseInt(card.extras?.order) : undefined,
+  order: parseOrder(card.extras?.order),
   secondaryCta: card.extras?.secondaryCta,
   title: card.extras?.title,
 });
 
-export const mapAsPortfolioContentCard = (card: ClassicCard): PortfolioContentCard => ({
+const mapBrazeCardToPortfolioContentCard = (
+  card: ClassicCard,
+  location: LocationContentCard.Portfolio | LocationContentCard.BottomPortfolio,
+): PortfolioContentCard => ({
   created: card.updated ?? null,
   cta: card.extras?.cta,
   description: card.extras?.description,
   id: String(card.id),
   image: card.extras?.image,
-  location: LocationContentCard.Portfolio,
-  order: parseInt(card.extras?.order) ? parseInt(card.extras?.order) : undefined,
+  image_background: card.extras?.image_background,
+  icon: card.extras?.icon,
+  location,
+  order: parseOrder(card.extras?.order),
   path: card.extras?.path,
   tag: card.extras?.tag,
+  picto: card.extras?.picto,
   title: card.extras?.title,
-  url: card.extras?.url,
+  url: appendDeeplinkLocationIfDefined(card.extras?.url || card.extras?.link, location),
 });
+
+export const mapAsPortfolioContentCard = (card: ClassicCard): PortfolioContentCard =>
+  mapBrazeCardToPortfolioContentCard(card, LocationContentCard.Portfolio);
+
+export const mapAsBottomPortfolioContentCard = (card: ClassicCard): PortfolioContentCard =>
+  mapBrazeCardToPortfolioContentCard(card, LocationContentCard.BottomPortfolio);
 
 export const mapAsNotificationContentCard = (card: ClassicCard): NotificationContentCard => ({
   created: card.updated ?? null,
@@ -85,25 +104,25 @@ export const mapAsNotificationContentCard = (card: ClassicCard): NotificationCon
   description: card.extras?.description,
   id: String(card.id),
   location: LocationContentCard.NotificationCenter,
-  order: parseInt(card.extras?.order) ? parseInt(card.extras?.order) : undefined,
+  order: parseOrder(card.extras?.order),
   path: card.extras?.path,
   title: card.extras?.title,
-  url: card.extras?.url,
+  url: appendDeeplinkLocationIfDefined(card.extras?.url, LocationContentCard.NotificationCenter),
   viewed: card.viewed,
 });
 
 /**
  * TODO put this effectful logic into a provider instead
  */
-export async function useBraze() {
+export function useBraze() {
   const dispatch = useDispatch();
   const devMode = useSelector(developerModeSelector);
   const contentCardsDissmissed = useSelector(dismissedContentCardsSelector);
   const isTrackedUser = useSelector(trackingEnabledSelector);
   const anonymousBrazeId = useRef(useSelector(anonymousBrazeIdSelector));
+  const userId = useSelector(userIdSelector);
 
   const initBraze = useCallback(async () => {
-    const user = await getUser();
     const brazeConfig = getBrazeConfig();
     const isPlaywright = !!getEnv("PLAYWRIGHT_RUN");
 
@@ -130,7 +149,7 @@ export async function useBraze() {
       return;
     }
 
-    if (user) braze.changeUser(isTrackedUser ? user.id : anonymousBrazeId.current);
+    braze.changeUser(isTrackedUser ? userId.exportUserIdForBraze() : anonymousBrazeId.current);
 
     braze.requestContentCardsRefresh();
 
@@ -151,6 +170,14 @@ export async function useBraze() {
         .map(card => mapAsActionContentCard(card as ClassicCard))
         .sort(compareCards);
 
+      const bottomPortfolioCards = filterByPage(
+        filteredDesktopCards,
+        LocationContentCard.BottomPortfolio,
+      )
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        .map(card => mapAsBottomPortfolioContentCard(card as ClassicCard))
+        .sort(compareCards);
+
       const notificationsCards = filterByPage(
         filteredDesktopCards,
         LocationContentCard.NotificationCenter,
@@ -161,13 +188,14 @@ export async function useBraze() {
 
       dispatch(setDesktopCards(filteredDesktopCards));
       dispatch(setPortfolioCards(portfolioCards));
+      dispatch(setBottomPortfolioCards(bottomPortfolioCards));
       dispatch(setActionCards(actionCards));
       dispatch(setNotificationsCards(notificationsCards));
     });
 
     braze.automaticallyShowInAppMessages();
     braze.openSession();
-  }, [dispatch, devMode, isTrackedUser, contentCardsDissmissed, anonymousBrazeId]);
+  }, [dispatch, devMode, isTrackedUser, contentCardsDissmissed, anonymousBrazeId, userId]);
 
   useEffect(() => {
     initBraze();

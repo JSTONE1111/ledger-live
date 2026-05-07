@@ -1,9 +1,14 @@
 import React from "react";
-import { render, renderWithReactQuery, screen } from "@tests/test-renderer";
+import { render, renderWithReactQuery, screen, withFlagOverrides } from "@tests/test-renderer";
 import { PortfolioEmptySection } from "../index";
 import { State } from "~/reducers/types";
-import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets";
 import { genAccount } from "@ledgerhq/live-common/mock/account";
+import {
+  btcCurrency,
+  ethCurrency,
+  overrideInitialStateWithAssetSection,
+  overrideInitialStateWithOnboardingWidgetVisible,
+} from "../../../__integrations__/shared";
 import { QUICK_ACTIONS_TEST_IDS } from "LLM/features/QuickActions/testIds";
 
 const mockNavigate = jest.fn();
@@ -18,21 +23,21 @@ jest.mock("@react-navigation/native", () => ({
   }),
 }));
 
-const btcCurrency = getCryptoCurrencyById("bitcoin");
-const ethCurrency = getCryptoCurrencyById("ethereum");
+const createAccountState = withFlagOverrides(
+  { lwmWallet40: { enabled: true, params: { assetSection: true } } },
+  state => {
+    const btcAccount = genAccount("btc-1", { currency: btcCurrency });
+    const ethAccount = genAccount("eth-1", { currency: ethCurrency });
 
-const createAccountState = (state: State): State => {
-  const btcAccount = genAccount("btc-1", { currency: btcCurrency, operationsSize: 0 });
-  const ethAccount = genAccount("eth-1", { currency: ethCurrency, operationsSize: 0 });
-
-  return {
-    ...state,
-    accounts: {
-      ...state.accounts,
-      active: [btcAccount, ethAccount],
-    },
-  };
-};
+    return {
+      ...state,
+      accounts: {
+        ...state.accounts,
+        active: [btcAccount, ethAccount],
+      },
+    };
+  },
+);
 
 const emptyAccountState = (state: State): State => ({
   ...state,
@@ -88,7 +93,7 @@ describe("PortfolioEmptySection", () => {
 
     it("should render portfolio banners section", () => {
       renderWithReactQuery(<PortfolioEmptySection isLNSUpsellBannerShown={false} />, {
-        overrideInitialState: emptyAccountState,
+        overrideInitialState: overrideInitialStateWithOnboardingWidgetVisible,
       });
 
       expect(screen.getAllByTestId("portfolio-banners-section").length).toBeGreaterThan(0);
@@ -97,11 +102,19 @@ describe("PortfolioEmptySection", () => {
 
   describe("when user has accounts (NoSignerContent)", () => {
     it("should render the cryptos section with assets", async () => {
-      render(<PortfolioEmptySection isLNSUpsellBannerShown={false} />, {
+      renderWithReactQuery(<PortfolioEmptySection isLNSUpsellBannerShown={false} />, {
         overrideInitialState: createAccountState,
       });
 
-      expect(await screen.findByText(/see all assets/i)).toBeVisible();
+      expect(await screen.findByTestId("PortfolioCryptosList")).toBeVisible();
+    });
+
+    it("should render the read-only coins fallback when assetSection flag is off", async () => {
+      renderWithReactQuery(<PortfolioEmptySection isLNSUpsellBannerShown={false} />, {
+        overrideInitialState: overrideInitialStateWithAssetSection(false),
+      });
+
+      expect(await screen.findByTestId("PortfolioCryptosList")).toBeVisible();
     });
 
     it("should render quick actions CTAs", () => {
@@ -122,7 +135,8 @@ describe("PortfolioEmptySection", () => {
 
     it("should display the portfolio banners section", () => {
       render(<PortfolioEmptySection isLNSUpsellBannerShown={false} />, {
-        overrideInitialState: createAccountState,
+        overrideInitialState: state =>
+          overrideInitialStateWithOnboardingWidgetVisible(createAccountState(state)),
       });
 
       expect(screen.getAllByTestId("portfolio-banners-section").length).toBeGreaterThan(0);

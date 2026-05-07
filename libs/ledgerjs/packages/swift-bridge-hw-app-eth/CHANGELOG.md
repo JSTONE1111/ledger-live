@@ -1,5 +1,151 @@
 # @ledgerhq/swift-bridge-hw-app-eth
 
+## 1.6.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.8.1
+
+## 1.6.2-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.8.1-next.0
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [[`946be6e`](https://github.com/LedgerHQ/ledger-live/commit/946be6e0111c79e77eb486619b4ad645523b1966)]:
+  - @ledgerhq/hw-app-eth@7.8.0
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.6.1
+
+## 1.6.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`946be6e`](https://github.com/LedgerHQ/ledger-live/commit/946be6e0111c79e77eb486619b4ad645523b1966)]:
+  - @ledgerhq/hw-app-eth@7.8.0-next.0
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.6.1-next.0
+
+## 1.6.0
+
+### Minor Changes
+
+- [#15796](https://github.com/LedgerHQ/ledger-live/pull/15796) [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - Replace ESLint/Prettier with oxlint and document oxfmt for LedgerJS packages under libs/ledgerjs/packages.
+
+### Patch Changes
+
+- Updated dependencies [[`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8)]:
+  - @ledgerhq/hw-app-eth@7.7.0
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.6.0
+
+## 1.6.0-next.0
+
+### Minor Changes
+
+- [#15796](https://github.com/LedgerHQ/ledger-live/pull/15796) [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - Replace ESLint/Prettier with oxlint and document oxfmt for LedgerJS packages under libs/ledgerjs/packages.
+
+### Patch Changes
+
+- Updated dependencies [[`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8)]:
+  - @ledgerhq/hw-app-eth@7.7.0-next.0
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.6.0-next.0
+
+## 1.5.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.6.2
+
+## 1.5.2-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.6.2-next.0
+
+## 1.5.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.6.1
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.5.1
+
+## 1.5.1-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.6.1-next.0
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.5.1-next.0
+
+## 1.5.0
+
+### Minor Changes
+
+- [#15304](https://github.com/LedgerHQ/ledger-live/pull/15304) [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Bump Node.js runtime to 24. Proto/toolchain and pnpm catalog use Node 24 and @types/node 24; engines and .nvmrc updated. TSConfig lib set to ES2022 where needed; Jest configs updated for ESM (imports, \_\_dirname, createRequire). CI: Linux build deps in setup-caches/setup-build-desktop; optional native deps (cpu-features, node-hid, usb, unrs-resolver) removed from onlyBuiltDependencies so install succeeds.
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025)]:
+  - @ledgerhq/hw-app-eth@7.6.0
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.5.0
+
+## 1.5.0-next.0
+
+### Minor Changes
+
+- [#15304](https://github.com/LedgerHQ/ledger-live/pull/15304) [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Bump Node.js runtime to 24. Proto/toolchain and pnpm catalog use Node 24 and @types/node 24; engines and .nvmrc updated. TSConfig lib set to ES2022 where needed; Jest configs updated for ESM (imports, \_\_dirname, createRequire). CI: Linux build deps in setup-caches/setup-build-desktop; optional native deps (cpu-features, node-hid, usb, unrs-resolver) removed from onlyBuiltDependencies so install succeeds.
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025)]:
+  - @ledgerhq/hw-app-eth@7.6.0-next.0
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.5.0-next.0
+
+## 1.4.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.4.0
+  - @ledgerhq/hw-app-eth@7.5.0
+
+## 1.4.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/swift-bridge-hw-transport-ble@1.4.0-next.0
+  - @ledgerhq/hw-app-eth@7.5.0-next.0
+
+## 1.3.6
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.4.2
+
+## 1.3.6-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/hw-app-eth@7.4.2-next.0
+
 ## 1.3.5
 
 ### Patch Changes

@@ -1,17 +1,19 @@
-import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
-import { Account, Operation, OperationType } from "@ledgerhq/types-live";
+import { encodeOperationId } from "@ledgerhq/ledger-wallet-framework/operation";
+import type { Account, Operation, OperationType } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
-import { fromBigNumberToBigInt } from "@ledgerhq/coin-framework/utils";
-import {
+import { fromBigNumberToBigInt } from "@ledgerhq/coin-module-framework/utils";
+import type {
   AssetInfo,
   Balance,
   Operation as CoreOperation,
   MapMemo,
+  StakingOperation,
   TransactionIntent,
-} from "@ledgerhq/coin-framework/api/types";
+  TxData,
+} from "@ledgerhq/coin-module-framework/api/types";
 import { findCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
-import { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
-import {
+import type { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
+import type {
   FeeData,
   FeeDataRaw,
   GasOptions,
@@ -20,7 +22,8 @@ import {
   GenericTransactionRaw,
   OperationCommon,
 } from "./types";
-import { StellarMemo } from "@ledgerhq/coin-stellar/types/bridge";
+import type { StellarMemo } from "@ledgerhq/coin-stellar/types/model";
+import { craftTransactionData as defaultCraftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
 
 type BigNumberToBigIntDeep<T> = T extends BigNumber
   ? bigint
@@ -67,9 +70,11 @@ export function extractBalances(
 ): Balance[] {
   const balances: Balance[] = [
     {
+      // `value` is the total balance, `locked` is the non-spendable part of it.
+      // Consumers must compute available funds as `value - locked`.
       value: BigInt(account.balance.toFixed()),
       asset: { type: "native" },
-      locked: BigInt(account.balance.minus(account.spendableBalance).toFixed()),
+      locked: BigInt(BigNumber.max(account.balance.minus(account.spendableBalance), 0).toFixed()),
     },
   ];
 
@@ -82,7 +87,9 @@ export function extractBalances(
     balances.push({
       value: BigInt(subAccount.balance.toFixed()),
       asset,
-      locked: BigInt(subAccount.balance.minus(subAccount.spendableBalance).toFixed()),
+      locked: BigInt(
+        BigNumber.max(subAccount.balance.minus(subAccount.spendableBalance), 0).toFixed(),
+      ),
     });
   }
 
@@ -91,6 +98,34 @@ export function extractBalances(
 
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every(item => typeof item === "string");
+}
+
+function isDelegationMode(mode: GenericTransaction["mode"]): mode is StakingOperation {
+  return mode === "delegate" || mode === "undelegate" || mode === "redelegate";
+}
+
+type GenericAlpacaMemo = { type: string; value?: string };
+type GenericAlpacaTxData = { type: string; value?: unknown };
+type GenericAlpacaTransactionIntent = TransactionIntent & {
+  memo?: GenericAlpacaMemo;
+  data?: GenericAlpacaTxData;
+  mode?: StakingOperation;
+  valAddress?: string;
+  dstValAddress?: string;
+};
+
+function getDelegationIntentFields(
+  delegationMode: StakingOperation | undefined,
+  transaction: GenericTransaction,
+): Partial<Pick<GenericAlpacaTransactionIntent, "mode" | "valAddress" | "dstValAddress">> {
+  return {
+    ...(delegationMode !== undefined && transaction.valAddress
+      ? { mode: delegationMode, valAddress: transaction.valAddress }
+      : {}),
+    ...(delegationMode !== undefined && transaction.dstValAddress
+      ? { dstValAddress: transaction.dstValAddress }
+      : {}),
+  };
 }
 
 export function cleanedOperation(operation: OperationCommon): OperationCommon {
@@ -127,6 +162,8 @@ export function adaptCoreOperationToLiveOperation(accountId: string, op: CoreOpe
     ledgerOpType?: string | undefined;
     memo?: string | undefined;
     internal?: boolean;
+    feePayer?: string;
+    stake?: { address: string; amount: BigNumber };
   } = {};
 
   if (op.details?.ledgerOpType !== undefined) {
@@ -164,6 +201,18 @@ export function adaptCoreOperationToLiveOperation(accountId: string, op: CoreOpe
 
   if (op.details?.internal === true) {
     extra.internal = op.details?.internal;
+  }
+
+  if (typeof op.tx.feesPayer === "string") {
+    extra.feePayer = op.tx.feesPayer;
+  }
+
+  if (op.details?.stake && typeof op.details.stake === "object") {
+    const s = op.details.stake as { address?: string; amount?: bigint };
+    extra.stake = {
+      address: s.address ?? "",
+      amount: new BigNumber(s.amount !== undefined ? String(s.amount) : "0"),
+    };
   }
 
   const bnFees = new BigNumber(op.tx.fees.toString());
@@ -249,17 +298,16 @@ export function transactionToIntent(
   account: Account,
   transaction: GenericTransaction,
   computeIntentType?: (transaction: GenericTransaction) => string,
-): TransactionIntent & { memo?: { type: string; value?: string } } & {
-  data?: { type: string; value?: unknown };
-} {
+  craftTransactionData?: (intent: TransactionIntent) => TxData,
+): GenericAlpacaTransactionIntent {
   const intentType = (computeIntentType ?? defaultComputeIntentType)(transaction);
   const isStaking = ["stake", "unstake"].includes(intentType);
+  const delegationMode = isDelegationMode(transaction.mode) ? transaction.mode : undefined;
+  const isDelegation = delegationMode !== undefined;
   const amount = isStaking ? 0n : fromBigNumberToBigInt(transaction.amount, 0n);
   const useAllAmount = isStaking || !!transaction.useAllAmount;
-  const res: TransactionIntent & { memo?: { type: string; value?: string } } & {
-    data?: { type: string; value?: unknown };
-  } = {
-    intentType: isStaking ? "staking" : "transaction",
+  const res: GenericAlpacaTransactionIntent = {
+    intentType: isStaking || isDelegation ? "staking" : "transaction",
     type: intentType,
     sender: account.freshAddress,
     recipient: transaction.recipient,
@@ -267,14 +315,12 @@ export function transactionToIntent(
     asset: { type: "native", name: account.currency.name, unit: account.currency.units[0] },
     useAllAmount,
     feesStrategy: transaction.feesStrategy ?? undefined,
-    data: Buffer.isBuffer(transaction.data)
-      ? { type: "buffer", value: transaction.data }
-      : { type: "none" },
     sequence:
       transaction.nonce !== null && transaction.nonce !== undefined
         ? BigInt(transaction.nonce.toString())
         : undefined,
     sponsored: transaction.sponsored,
+    ...getDelegationIntentFields(delegationMode, transaction),
   };
   if (transaction.assetReference && transaction.assetOwner) {
     const { subAccountId } = transaction;
@@ -290,6 +336,7 @@ export function transactionToIntent(
       assetOwner: transaction.assetOwner,
     };
   }
+
   if (transaction.memoType && transaction.memoValue) {
     res.memo = {
       type: transaction.memoType,
@@ -297,6 +344,14 @@ export function transactionToIntent(
     };
   } else {
     res.memo = { type: "NO_MEMO" };
+  }
+
+  if (!transaction.data || transaction.data.length === 0) {
+    const resolvedCraftTransactionData = craftTransactionData ?? defaultCraftTransactionData;
+    res.data = resolvedCraftTransactionData(res);
+  } else {
+    // We assume that if the transaction data is a buffer, the intent expect a buffer too
+    res.data = { type: "buffer", value: transaction.data };
   }
 
   return res;
@@ -385,10 +440,6 @@ function toGenericTransactionRaw(transaction: GenericTransaction): GenericTransa
     raw.mode = transaction.mode;
   }
 
-  if ("feeCustomUnit" in transaction) {
-    raw.feeCustomUnit = transaction.feeCustomUnit;
-  }
-
   if ("data" in transaction) {
     raw.data = transaction.data?.toString("hex");
   }
@@ -407,6 +458,13 @@ function toGenericTransactionRaw(transaction: GenericTransaction): GenericTransa
     raw.recipientDomain = transaction.recipientDomain;
   }
 
+  if (transaction.valAddress) {
+    raw.valAddress = transaction.valAddress;
+  }
+  if (transaction.dstValAddress) {
+    raw.dstValAddress = transaction.dstValAddress;
+  }
+
   return raw;
 }
 
@@ -421,6 +479,7 @@ export const buildOptimisticOperation = (
       type = "OPT_IN";
       break;
     case "delegate":
+    case "redelegate":
     case "stake":
       type = "DELEGATE";
       break;
@@ -437,6 +496,8 @@ export const buildOptimisticOperation = (
   const { subAccounts } = account;
   const parentType = subAccountId ? "FEES" : type;
   const tokenAccount = subAccountId ? subAccounts?.find(ta => ta.id === subAccountId) : null;
+  const normalizedSequenceNumber = String(sequenceNumber ?? 0);
+  const nonce = sequenceNumber === undefined ? undefined : new BigNumber(normalizedSequenceNumber);
 
   const operation: Operation = {
     id: encodeOperationId(account.id, "", parentType),
@@ -448,12 +509,12 @@ export const buildOptimisticOperation = (
     blockHeight: null,
     senders: [account.freshAddress.toString()],
     recipients: [transaction.recipient],
-    transactionSequenceNumber: new BigNumber(sequenceNumber?.toString() ?? 0),
+    transactionSequenceNumber: new BigNumber(normalizedSequenceNumber),
     accountId: account.id,
     date: new Date(),
     transactionRaw: toGenericTransactionRaw({
       ...transaction,
-      nonce: sequenceNumber !== undefined ? new BigNumber(sequenceNumber.toString()) : undefined,
+      nonce,
       ...(tokenAccount
         ? { recipient: tokenAccount.token.contractAddress, amount: new BigNumber(0) }
         : {}),
@@ -477,13 +538,12 @@ export const buildOptimisticOperation = (
         blockHeight: null,
         senders: [account.freshAddress],
         recipients: [transaction.recipient],
-        transactionSequenceNumber: new BigNumber(sequenceNumber?.toString() ?? 0),
+        transactionSequenceNumber: new BigNumber(normalizedSequenceNumber),
         accountId: subAccountId,
         date: new Date(),
         transactionRaw: toGenericTransactionRaw({
           ...transaction,
-          nonce:
-            sequenceNumber !== undefined ? new BigNumber(sequenceNumber.toString()) : undefined,
+          nonce,
         }),
         extra: {
           ledgerOpType: type,

@@ -11,18 +11,53 @@ jest.mock("@ledgerhq/lumen-ui-rnative/symbols", () => {
     Bell: makeIcon("icon-bell"),
     BellNotification: makeIcon("icon-bell-notification"),
     Settings: makeIcon("icon-settings"),
+    Warning: makeIcon("icon-warning"),
+    Clock: makeIcon("icon-clock"),
     Nano: makeIcon("device-icon-nano"),
     Flex: makeIcon("device-icon-flex"),
     Apex: makeIcon("device-icon-apex"),
     Stax: makeIcon("device-icon-stax"),
+    User: makeIcon("my-wallet-avatar"),
   };
 });
 
+jest.mock("../components/SyncErrorBottomSheet", () => ({
+  SyncErrorBottomSheet: () => null,
+}));
+
 describe("TopBarView", () => {
   const onMyLedgerPress = jest.fn();
+  const onMyWalletPress = jest.fn();
   const onDiscoverPress = jest.fn();
   const onNotificationsPress = jest.fn();
   const onSettingsPress = jest.fn();
+  const onTransactionHistoryPress = jest.fn();
+
+  const openSyncDrawer = jest.fn();
+  const closeSyncDrawer = jest.fn();
+  const onTryRefresh = jest.fn();
+
+  const defaultProps = {
+    onMyLedgerPress,
+    onMyWalletPress,
+    shouldDisplayMyWallet: false,
+    shouldDisplayOperationsList: false,
+    onDiscoverPress,
+    onNotificationsPress,
+    onSettingsPress,
+    onTransactionHistoryPress,
+    hasUnreadNotifications: false,
+    hasUnreadOperations: false,
+    hasAccounts: false,
+    isSyncError: false,
+    isSyncPending: false,
+    listOfErrorAccountNames: "",
+    syncAccessibilityLabel: "Synchronize",
+    isSyncDrawerOpen: false,
+    openSyncDrawer,
+    closeSyncDrawer,
+    onTryRefresh,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -30,53 +65,92 @@ describe("TopBarView", () => {
 
   it("should call expected callbacks when top bar buttons are pressed", async () => {
     const { user, getByTestId } = renderWithReactQuery(
-      <TopBarView
-        onMyLedgerPress={onMyLedgerPress}
-        onDiscoverPress={onDiscoverPress}
-        onNotificationsPress={onNotificationsPress}
-        onSettingsPress={onSettingsPress}
-        hasUnreadNotifications={false}
-      />,
+      <TopBarView {...defaultProps} shouldDisplayOperationsList />,
     );
 
     await user.press(getByTestId("topbar-myledger"));
     await user.press(getByTestId("topbar-discover"));
     await user.press(getByTestId("topbar-notifications"));
     await user.press(getByTestId("topbar-settings"));
+    await user.press(getByTestId("topbar-transaction-history"));
 
     expect(onMyLedgerPress).toHaveBeenCalledTimes(1);
     expect(onDiscoverPress).toHaveBeenCalledTimes(1);
     expect(onNotificationsPress).toHaveBeenCalledTimes(1);
     expect(onSettingsPress).toHaveBeenCalledTimes(1);
+    expect(onTransactionHistoryPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("should not render transaction history icon when operations list is disabled", () => {
+    const { queryByTestId, getByTestId } = renderWithReactQuery(
+      <TopBarView {...defaultProps} shouldDisplayOperationsList={false} />,
+    );
+    expect(queryByTestId("topbar-transaction-history")).toBeNull();
+    expect(getByTestId("topbar-myledger")).toBeVisible();
+    expect(getByTestId("topbar-discover")).toBeVisible();
+    expect(getByTestId("topbar-notifications")).toBeVisible();
+    expect(getByTestId("topbar-settings")).toBeVisible();
+  });
+
+  it("when My Wallet is enabled with operations list, trailing shows only transaction history", () => {
+    const { queryByTestId, getByTestId } = renderWithReactQuery(
+      <TopBarView {...defaultProps} shouldDisplayMyWallet shouldDisplayOperationsList />,
+    );
+    expect(getByTestId("topbar-mywallet")).toBeVisible();
+    expect(getByTestId("topbar-discover")).toBeVisible();
+    expect(getByTestId("topbar-transaction-history")).toBeVisible();
+    expect(queryByTestId("topbar-notifications")).toBeNull();
+    expect(queryByTestId("topbar-settings")).toBeNull();
+  });
+
+  it("when My Wallet is enabled without operations list, trailing shows only discover", () => {
+    const { queryByTestId, getByTestId } = renderWithReactQuery(
+      <TopBarView {...defaultProps} shouldDisplayMyWallet shouldDisplayOperationsList={false} />,
+    );
+    expect(getByTestId("topbar-mywallet")).toBeVisible();
+    expect(getByTestId("topbar-discover")).toBeVisible();
+    expect(queryByTestId("topbar-transaction-history")).toBeNull();
+    expect(queryByTestId("topbar-notifications")).toBeNull();
+    expect(queryByTestId("topbar-settings")).toBeNull();
   });
 
   it("should render bell icon when there are no unread notifications", () => {
-    const { getByTestId, queryByTestId } = renderWithReactQuery(
-      <TopBarView
-        onMyLedgerPress={onMyLedgerPress}
-        onDiscoverPress={onDiscoverPress}
-        onNotificationsPress={onNotificationsPress}
-        onSettingsPress={onSettingsPress}
-        hasUnreadNotifications={false}
-      />,
-    );
+    const { getByTestId, queryByTestId } = renderWithReactQuery(<TopBarView {...defaultProps} />);
 
-    expect(getByTestId("icon-bell")).toBeTruthy();
+    expect(getByTestId("icon-bell")).toBeVisible();
     expect(queryByTestId("icon-bell-notification")).toBeNull();
   });
 
   it("should render bell notification icon when there are unread notifications", () => {
     const { getByTestId, queryByTestId } = renderWithReactQuery(
-      <TopBarView
-        onMyLedgerPress={onMyLedgerPress}
-        onDiscoverPress={onDiscoverPress}
-        onNotificationsPress={onNotificationsPress}
-        onSettingsPress={onSettingsPress}
-        hasUnreadNotifications
-      />,
+      <TopBarView {...defaultProps} hasUnreadNotifications />,
     );
 
-    expect(getByTestId("icon-bell-notification")).toBeTruthy();
+    expect(getByTestId("icon-bell-notification")).toBeVisible();
     expect(queryByTestId("icon-bell")).toBeNull();
+  });
+
+  it("should render sync icon button when there are accounts and sync errors", () => {
+    const { getByTestId } = renderWithReactQuery(
+      <TopBarView {...defaultProps} hasAccounts isSyncError />,
+    );
+
+    expect(getByTestId("topbar-sync")).toBeVisible();
+  });
+
+  it("should not render sync icon button when there are no accounts", () => {
+    const { queryByTestId } = renderWithReactQuery(
+      <TopBarView {...defaultProps} hasAccounts={false} isSyncError />,
+    );
+
+    expect(queryByTestId("topbar-sync")).toBeNull();
+  });
+
+  it("should not render sync icon button when there are no sync errors", () => {
+    const { queryByTestId } = renderWithReactQuery(
+      <TopBarView {...defaultProps} hasAccounts isSyncError={false} />,
+    );
+
+    expect(queryByTestId("topbar-sync")).toBeNull();
   });
 });

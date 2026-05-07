@@ -209,7 +209,11 @@
       "BURN" : "เบิร์น",
       "ASSOCIATE_TOKEN" : "เชื่อมโยงโทเคน",
       "CONTRACT_CALL" : "การเรียกใช้สัญญา",
-      "UPDATE_ACCOUNT" : "บัญชีที่อัปเดต"
+      "UPDATE_ACCOUNT" : "บัญชีที่อัปเดต",
+      "SHIELDED_TX_SAPLING_IN" : "ได้รับแล้ว",
+      "SHIELDED_TX_SAPLING_OUT" : "ส่งแล้ว",
+      "SHIELDED_TX_ORCHARD_IN" : "ได้รับแล้ว",
+      "SHIELDED_TX_ORCHARD_OUT" : "ส่งแล้ว"
     },
     "edit" : {
       "title" : "Speed Up หรือ ยกเลิก",
@@ -233,7 +237,7 @@
       },
       "cancel" : {
         "title" : "ยกเลิก",
-        "description" : "กำลังส่ง 0 {{ticker}} ไปยัง Address ของคุณเอง"
+        "description" : "กำลังส่ง 0 {{ticker}} ไปยัง Address ของคุณเอง ไม่รับประกันว่าจะสามารถยกเลิกได้ หากเครือข่ายได้ทำธุรกรรมเดิมเสร็จก่อนคำขอยกเลิก เงินทุนจะยังคงถูกส่งไปถึงผู้รับอยู่"
       },
       "steps" : {
         "method" : {
@@ -268,6 +272,8 @@
     "minute" : "นาที",
     "minute_other" : "นาที",
     "minute_short" : "นาที",
+    "second" : "วินาที",
+    "second_other" : "วินาที",
     "second_short" : "วินาที",
     "hour" : "ชั่วโมง",
     "hour_other" : "ชั่วโมง",
@@ -301,7 +307,8 @@
     "earn" : "สร้างรายได้",
     "exchange" : "ซื้อ / ขาย",
     "swap" : "สวอป",
-    "perps" : "สัญญาซื้อขายล่วงหน้าคริปโตแบบไม่มีวันหมดอายุ (Perpetuals)",
+    "perps" : "Perpetuals",
+    "home" : "หน้าหลัก",
     "refer" : "แนะนำเพื่อน",
     "lend" : "ให้ยืม",
     "catalog" : "ผู้ให้บริการ",
@@ -412,7 +419,8 @@
     "webviewErrorDrawer" : {
       "title" : "ขออภัย โปรดลองอีกครั้ง",
       "description" : "เซิร์ฟเวอร์จัดการกับคำขอของคุณไม่ได้ โปรดลองอีกครั้งในภายหลังหรือติดต่อ Ledger Support",
-      "code" : "รหัส: {{errorCode}}"
+      "code" : "รหัส",
+      "correlationId" : "รหัสอ้างอิง"
     }
   },
   "swap" : {
@@ -816,10 +824,10 @@
     "title" : "บัตร",
     "imageAlt" : "ภาพบัตร",
     "spendYourCrypto" : "ใช้จ่ายคริปโตของคุณ",
-    "payDescription" : "ชำระทางออนไลน์หรือในร้านค้าด้วยบัตรคริปโต",
+    "payDescription" : "ชำระทั้งออนไลน์หรือในร้านค้าได้ด้วยบัตรคริปโต",
     "exploreCards" : "ดูบัตรต่าง ๆ",
     "iAlreadyHaveACard" : "ฉันมีบัตรอยู่แล้ว",
-    "unlockLiquidity" : "ใช้จ่ายผ่านคริปโตได้ง่ายขึ้น",
+    "unlockLiquidity" : "ใช้จ่ายคริปโตได้ในชีวิตจริง",
     "exploreCryptoCardsDescription" : "ดูบัตรคริปโตของเราแล้วเลือกใบที่เหมาะกับคุณที่สุด"
   },
   "lend" : {
@@ -1248,8 +1256,8 @@
             "description" : "คุณต้องปิดใช้งานการตั้งค่า \"ผู้ให้บริการ My Ledger ({{providerNumber}})\" ก่อน หากต้องการปิดใช้งาน ให้เปิด “การตั้งค่า” บนแอป Ledger Wallet แล้วเลือก “Experimental Features” แล้ว Toggle เพื่อปิด “ผู้ให้บริการ My Ledger”"
           },
           "deviceNotGenuineError" : {
-            "title" : "{{productName}} นี้ไม่ใช่ของแท้",
-            "description" : "{{productName}} นี้ไม่ปลอดภัยในการใช้งาน\nโปรดติดต่อ Ledger Support"
+            "title" : "{{productName}} นี้ไม่ผ่าน Genuine Check",
+            "description" : "การใช้อุปกรณ์ Ledger นี้ไม่ปลอดภัย\nโปรดติดต่อ Ledger Support"
           }
         },
         "whyPerformChecksLink" : "เรียนรู้เพิ่มเติมเกี่ยวกับ Ledger Genuine Check",
@@ -1323,6 +1331,10 @@
     }
   },
   "postOnboarding" : {
+    "widget" : {
+      "title" : "ถัดไป! ทำการติดตั้งวอลเล็ตให้เรียบร้อย",
+      "subtitle" : "เริ่มต้นด้วยการเติมเงินเข้าวอลเล็ตของคุณ"
+    },
     "postOnboardingScreen" : {
       "title" : "ขั้นตอนถัดไปคืออะไร?",
       "titleCompleted" : "เรียบร้อยแล้ว!\nดำเนินการต่อและสำรวจพอร์ตโฟลิโอของคุณ",
@@ -1491,6 +1503,25 @@
         "secondaryCta" : "อาจดำเนินการในภายหลัง"
       }
     }
+  },
+  "deviceDeprecation" : {
+    "warning" : {
+      "title" : "{{device}}™ ไม่สามารถดำเนินการ Clear Sign สำหรับธุรกรรมนี้ได้",
+      "subtitle" : "ใช้อุปกรณ์ Ledger อื่น  เพื่อตรวจสอบรายละเอียดของธุรกรรมนี้ก่อนเซ็น หากไม่มีการ Clear Signing  ทรัพย์สินทั้งหมดของคุณอาจตกอยู่ในความเสี่ยง",
+      "continue" : "ดำเนินการต่อโดยรับความเสี่ยงด้วยตนเอง"
+    },
+    "info" : {
+      "title" : "ตั้งแต่วันที่ {{date}} เป็นต้นไป การรองรับ {{coinName}} บน {{device}}™ ผ่านแอป Ledger Live™ จะสิ้นสุดลง",
+      "subtitle" : "อัปเกรดเป็นอุปกรณ์ Ledger รุ่นล่าสุดวันนี้ เพื่อให้สามารถเข้าถึงผู้ให้บริการ ทั้งหมดบนแอป Ledger Live และการสนับสนุนลูกค้าที่ดีที่สุด",
+      "reminder" : "ไม่ต้องเตือนฉันอีก"
+    },
+    "error" : {
+      "title" : "{{device}}™ ไม่รองรับฟีเจอร์นี้",
+      "subtitle" : "อัปเกรดเป็นอุปกรณ์ Ledger รุ่นล่าสุดวันนี้ เพื่อให้สามารถเข้าถึงฟีเจอร์ล่าสุดทั้งหมดของแอป Ledger Live ได้"
+    },
+    "update" : "ดูโปรแกรมการอัปเกรดของคุณ",
+    "learnMore" : "เรียนรู้เพิ่มเติม",
+    "continue" : "ดำเนินการต่อ"
   },
   "currentAddress" : {
     "title" : "Address ปัจจุบัน",
@@ -1745,7 +1776,8 @@
       "previousStakingNodeId" : "ID โหนดก่อนหน้า",
       "gasConsumed" : "ค่าแก๊สที่ใช้หมดไป",
       "gasUsed" : "ค่าแก๊สที่ใช้ไป",
-      "gasLimit" : "ค่าแก๊สสูงสุดที่ยอมจ่าย"
+      "gasLimit" : "ค่าแก๊สสูงสุดที่ยอมจ่าย",
+      "functionId" : "รหัสฟังก์ชัน"
     }
   },
   "operationList" : {
@@ -1933,6 +1965,13 @@
       "updateBtn" : "อัปเดตระบบปฏิบัติการ",
       "installUpdate" : "ติดตั้งการอัปเดต",
       "banner" : {
+        "wallet40" : {
+          "warning" : {
+            "default" : "มีการอัปเดตระบบปฏิบัติการที่พร้อมใช้งาน",
+            "manager" : "มีการอัปเดต Ledger OS ที่พร้อมใช้งาน"
+          },
+          "cta" : "อัปเดต"
+        },
         "warning" : "มีการอัปเดต OS ที่พร้อมใช้งาน",
         "version" : "เวอร์ชัน {{latestFirmware}}",
         "cta" : "ไปที่ My Ledger",
@@ -2139,6 +2178,24 @@
       }
     }
   },
+  "buyDeviceModal" : {
+    "title" : "เชื่อมต่อกับอุปกรณ์ Ledger",
+    "subtitle" : "เชื่อมต่อกับอุปกรณ์ Ledger ของคุณ เพื่อใช้งานแอป Ledger Wallet ได้อย่างเต็มประสิทธิภาพ",
+    "0" : {
+      "title" : "การเป็นเจ้าของแบบเต็มรูปแบบ",
+      "desc" : "โดยคุณสามารถควบคุม Private Key ของคุณเองได้"
+    },
+    "1" : {
+      "title" : "เทรดอย่างปลอดภัย",
+      "desc" : "ตรวจสอบธุรกรรมบนหน้าจอที่ปลอดภัย"
+    },
+    "2" : {
+      "title" : "เข้าถึงวอลเล็ตที่ปลอดภัยที่สุด",
+      "desc" : "จัดการสินทรัพย์นับพันได้ในที่เดียว"
+    },
+    "connectCTA" : "เชื่อมต่อ",
+    "buyCTA" : "ซื้ออุปกรณ์ Ledger"
+  },
   "fund" : {
     "title" : "เงินทุน",
     "titleCrypto" : "จำนวน {{currency}}",
@@ -2221,11 +2278,11 @@
     "steps" : {
       "options" : {
         "fromBank" : {
-          "title" : "การโอนเงินผ่านธนาคาร",
-          "description" : "รับสเตเบิลคอยน์ด้วยการส่งเงินสด"
+          "title" : "โดยการโอนเงินจากบัญชีธนาคาร",
+          "description" : "รับสเตเบิลคอยน์ได้ง่าย ๆ เพียงแค่ส่งเงินสด"
         },
         "fromCrypto" : {
-          "title" : "รับคริปโต"
+          "title" : "โดยการโอนเงินจาก Address ของคริปโต"
         }
       }
     }
@@ -2260,7 +2317,8 @@
         "banner" : "จำนวนที่ใช้ได้สูงสุดคือ",
         "fees" : "ดูข้อมูลเพิ่มเติมเกี่ยวกับค่าธรรมเนียม",
         "standard" : "มาตรฐาน",
-        "advanced" : "ขั้นสูง"
+        "advanced" : "ขั้นสูง",
+        "feeCurrency" : "สกุลเงินสำหรับค่าธรรมเนียม"
       },
       "summary" : {
         "title" : "สรุป"
@@ -2356,6 +2414,24 @@
     "addressNotFound" : "ไม่พบที่อยู่",
     "alreadyUsed" : "{{date}} ถูกใช้งานแล้ว",
     "recentSendWillAppear" : "การส่งล่าสุดของคุณจะแสดงที่นี่",
+    "securityInfo" : {
+      "title" : "ส่งสินทรัพย์อย่างไรให้ปลอดภัย?",
+      "items" : {
+        "compatibility" : "ตรวจสอบให้แน่ใจว่า ที่อยู่ของผู้รับสามารถใช้งานได้กับเครือข่ายที่เลือก",
+        "review" : "ตรวจสอบรายละเอียดของธุรกรรมบนหน้าจอความปลอดภัยของอุปกรณ์ Ledger ของคุณ",
+        "smallAmount" : "หากไม่แน่ใจ ให้ลองส่งจำนวนเล็กน้อยก่อน"
+      }
+    },
+    "recentHistory" : {
+      "banner" : {
+        "description" : "ที่อยู่นี้ไม่อยู่ในประวัติล่าสุดของคุณ หากไม่แน่ใจ ให้ส่งจำนวนเล็กน้อยก่อน"
+      },
+      "dialog" : {
+        "title" : "ประวัติการส่งล่าสุด",
+        "description" : "คุณสามารถดูจากประวัติธุรกรรมได้ว่าว่ามีการส่งไปยังที่อยู่นั้นแล้วหรือยัง งช่วยป้องกันความผิดพลาดจากการคัดลอก/วางและการแฮ็ก ประวัติธุรกรรมของคุณประกอบด้วยที่อยู่ 12 อันล่าสุดที่คุณส่งคริปโตไปโดยใช้แอป Ledger Wallet",
+        "cta" : "เข้าใจแล้ว"
+      }
+    },
     "relativeDate" : {
       "justNow" : "เมื่อสักครู่",
       "minutesAgo_one" : "1 นาทีที่แล้ว",
@@ -2419,11 +2495,39 @@
     "gasOptionsSync" : {
       "warningTitle" : "ไม่สามารถรีเฟรชค่าธรรมเนียมเครือข่าย",
       "warningDescription" : "การตั้งค่าค่าธรรมเนียมล่วงหน้าอาจตกรุ่น"
+    },
+    "customFees" : {
+      "title" : "ค่าธรรมเนียมที่กำหนดเอง",
+      "confirm" : "ยืนยัน",
+      "maxFee" : "ค่าธรรมเนียมสูงสุด ({{unit}})",
+      "maxPriorityFee" : "Priority Fee สูงสุด ({{unit}})",
+      "feePerByte" : "ยอดค่าธรรมเนียม {{unit}}",
+      "suggested" : "แนะนำ",
+      "nextBlock" : "บล็อกถัดไป",
+      "networkFeesInFiat" : "ค่าธรรมเนียมเครือข่ายในรูปแบบ {{currency}}",
+      "invalidValue" : "ป้อนตัวเลขที่ถูกต้อง",
+      "belowMinimum" : "ขั้นต่ำคือ {{min}}",
+      "maxFeeBelowPriorityFee" : "Max Fee ต้องมากกว่าหรือเท่ากับ Max Priority Fee",
+      "feeAsset" : "คริปโตที่จะใช้จ่ายค่าธรรมเนียม",
+      "feesAmount" : "ยอดค่าธรรมเนียม {{unit}}",
+      "payFeesIn" : "ชำระค่าธรรมเนียมด้วย"
+    },
+    "coinControl" : {
+      "title" : "Coin Control",
+      "strategy" : "กลยุทธ์",
+      "learnMore" : "เรียนรู้เพิ่มเติม",
+      "coinToSend" : "เหรียญที่จะส่ง",
+      "changeToReturn" : "เปลี่ยนเพื่อกลับไป",
+      "enterAmount" : "ป้อนจำนวน",
+      "selectSufficientCoins" : "โปรดเลือกเหรียญให้เพียงพอต่อการใช้งาน",
+      "amountToSendInCurrency" : "จำนวนที่ต้องการส่งในรูปแบบ {{ticker}}",
+      "amountInputLabel" : "จำนวนที่จะส่ง"
     }
   },
   "releaseNotes" : {
-    "title" : "Release Notes",
-    "version" : "แอป Ledger Wallet {{versionNb}}"
+    "title" : "Release Note",
+    "version" : "แอป Ledger Wallet {{versionNb}}",
+    "gotIt" : "เข้าใจแล้ว"
   },
   "troubleshootNetwork" : {
     "title" : "การแก้ไขปัญหาด้านเครือข่าย",
@@ -2863,7 +2967,8 @@
     "pickingStrategyLabels" : {
       "DEEP_OUTPUTS_FIRST" : "Oldest coins first (FIFO)",
       "OPTIMIZE_SIZE" : "ค่าธรรมเนียมต่ำสุด (ปรับขนาดให้เหมาะสม)",
-      "MERGE_OUTPUTS" : "ค่าธรรมเนียมในอนาคตต่ำสุด (Merge เหรียญ)"
+      "MERGE_OUTPUTS" : "ค่าธรรมเนียมในอนาคตต่ำสุด (Merge เหรียญ)",
+      "CUSTOM" : "การเลือกเหรียญเฉพาะที่กำหนดเอง"
     }
   },
   "celo" : {
@@ -4087,6 +4192,64 @@
         "eigenlayer_points" : "Eigenlayer Points",
         "validator" : "Reward ของผู้ตรวจสอบ"
       }
+    },
+    "evmStaking" : {
+      "delegation" : {
+        "emptyState" : {
+          "description" : "คุณสามารถรับ Reward {{currencyTicker}} ได้ด้วยการ Delegate สินทรัพย์ของคุณ",
+          "delegation" : "รับ Reward"
+        },
+        "claimRewards" : "เคลม Reward",
+        "header" : "การ Delegate",
+        "noRewards" : "ไม่มี Reward",
+        "delegate" : "เพิ่ม",
+        "undelegate" : "Undelegate",
+        "redelegate" : "Redelegate",
+        "redelegateDisabledTooltip" : "คุณสามารถมอบหมายใหม่ได้ในอีก <0>{{days}}</0> วัน",
+        "redelegateMaxDisabledTooltip" : "คุณไม่สามารถ Redelegate ได้มากกว่า <0>7</0> ผู้ตรวจสอบต่อครั้ง",
+        "undelegateDisabledTooltip" : "คุณไม่สามารถ Redelegate ได้มากกว่า <0>7</0> ผู้ตรวจสอบต่อครั้ง",
+        "reward" : "เคลม Reward",
+        "activeTooltip" : "จำนวนที่ Delegate จะส่งผลต่อจำนวน Reward ที่ได้",
+        "inactiveTooltip" : "จำนวนที่ Undelegate จะไม่สร้าง Reward",
+        "minSafeWarning" : "เงินทุนไม่เพียงพอ",
+        "flow" : {
+          "title" : "Delegate",
+          "steps" : {
+            "starter" : {
+              "description" : "คุณสามารถรับ Reward ได้ด้วยการ Delegate สินทรัพย์ {{currencyTicker}} ของคุณให้กับผู้ตรวจสอบ",
+              "bullet" : ["คุณยังคงเป็นเจ้าของสินทรัพย์ที่ทำการ Delegate", "ทำการ Delegate ได้โดยใช้อุปกรณ์ Ledger ของคุณ", "สินทรัพย์จะพร้อมใช้งานหลังจากยกเลิกการมอบหมาย"],
+              "warning" : {
+                "description" : "เลือกผู้ตรวจสอบของคุณอย่างรอบคอบ: สินทรัพย์ที่คุณ Delegate บางส่วนอาจสูญหายไปอย่างถาวรหากผู้ตรวจสอบทำงานอย่างไม่เหมาะสม"
+              }
+            },
+            "amount" : {
+              "title" : "จำนวน"
+            },
+            "validator" : {
+              "title" : "ผู้ตรวจสอบ"
+            },
+            "connectDevice" : {
+              "title" : "อุปกรณ์"
+            },
+            "confirmation" : {
+              "title" : "การยืนยัน",
+              "success" : {
+                "title" : "คุณได้ Delegate สินทรัพย์ของคุณเรียบร้อยแล้ว",
+                "text" : "ยอดคงเหลือในบัญชีในบัญชีของคุณจะได้รับการอัปเดตเมื่อบล็อกเชนได้ยืนยันธุรกรรมของคุณแล้ว",
+                "cta" : "ดูรายละเอียด"
+              },
+              "broadcastError" : "ธุรกรรมของคุณอาจล้มเหลว โปรดรอสักครู่ แล้วตรวจสอบประวัติธุรกรรมก่อนลองใหม่อีกครั้ง"
+            }
+          }
+        }
+      },
+      "redelegation" : {
+        "header" : "การ Redelegate"
+      },
+      "undelegation" : {
+        "header" : "การ Undelegate",
+        "inactiveTooltip" : "จำนวนที่ Undelegate ซึ่งไม่สร้าง Reward"
+      }
     }
   },
   "graph" : {
@@ -4341,6 +4504,8 @@
     "delegated" : "Delegate เรียบร้อยแล้ว",
     "completionDate" : "วันที่เสร็จสมบูรณ์",
     "rewards" : "Reward",
+    "sourceValidator" : "ผู้ตรวจสอบต้นทาง",
+    "destinationValidator" : "ผู้ตรวจสอบความถูกต้องปลายทาง",
     "duration" : "ระยะเวลา",
     "durationJustStarted" : "เพิ่งเริ่มต้น",
     "durationDays" : "{{count}} วัน",
@@ -4506,6 +4671,10 @@
         "title" : "ปุ่มสลับธีม",
         "desc" : "แสดงโอเวอร์เลย์แบบลอยตัวเพื่อเปลี่ยนธีมได้อย่างรวดเร็ว"
       },
+      "analyticsConsentOptInQa" : {
+        "rowTitle" : "ความยินยอมในการเลือกใช้ (QA) สำหรับการวิเคราะห์ข้อมูล",
+        "rowDesc" : "ตรวจสอบเวอร์ชันการยินยอมและวันที่ให้ความยินยอม จำลองสถานะที่ล้าสมัยสำหรับหน้าต่างการยินยอมในการวิเคราะห์พอร์ตโฟลิโอ"
+      },
       "brazeTools" : {
         "title" : "เครื่องมือ Braze",
         "description" : "สร้าง Local Braze Card",
@@ -4517,7 +4686,8 @@
           "fields" : {
             "notification" : "การ์ดเนื้อหาสำหรับการแจ้งเตือน",
             "action" : "Action Content Card",
-            "portfolio" : "การ์ดเนื้อหาสำหรับพอร์ตโฟลิโอ",
+            "portfolio" : "พอร์ตโฟลิโอ",
+            "bottomPortfolio" : "พอร์ตโฟลิโอด้านล่าง",
             "title" : "ชื่อเรื่อง",
             "description" : "คำอธิบาย",
             "order" : "คำสั่ง",
@@ -4527,10 +4697,31 @@
             "secondaryCta" : "CTA รอง",
             "cta" : "CTA",
             "tag" : "แท็ก",
+            "picto" : "Picto (Ledger ID)",
             "url" : "URL",
             "path" : "เส้นทาง"
           }
         }
+      },
+      "appJsonImporter" : {
+        "title" : "โหลด app.json",
+        "desc" : "ลากและวางไฟล์ app.json เพื่อนำเข้าข้อมูลบัญชีและการตั้งค่า",
+        "dropOrBrowse" : "ลากไฟล์ app.json มาวางที่นี่หรือคลิกเพื่อเรียกดูไฟล์",
+        "importing" : "กำลังนำเข้า...",
+        "success" : "นำเข้าบัญชี {{count}} บัญชีเรียบร้อยแล้ว",
+        "success_other" : "นำเข้าบัญชี {{count}} บัญชีเรียบร้อยแล้ว",
+        "lastDeviceSeen" : "อุปกรณ์ที่ใช้งานล่าสุด: {{device}}",
+        "invalidFileType" : "ประเภทไฟล์ไม่ถูกต้อง คาดว่าจะเป็นไฟล์ .json",
+        "missingDataField" : "app.json ไม่ถูกต้อง: ไม่พบฟิลด์ข้อมูลหลัก",
+        "encryptedAccounts" : "ตรวจพบบัญชีที่ถูกเข้ารหัส ถอดรหัสไฟล์ก่อน",
+        "successLabel" : "สำเร็จ",
+        "appJsonFile" : "ไฟล์ App.json",
+        "accountsImported" : "นำเข้าบัญชีแล้ว",
+        "accountsFailed" : "นำเข้าบัญชีล้มเหลว",
+        "importFailed" : "การนำเข้าล้มเหลว: {{message}}",
+        "unknownError" : "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุระหว่างการนำเข้า",
+        "failedCount" : "ไม่สามารถโหลดบัญชี {{count}} ได้",
+        "failedCount_other" : "ไม่สามารถโหลดบัญชี {{count}} ได้"
       },
       "mockAccounts" : {
         "title" : "สร้างบัญชีจำลอง",
@@ -4546,6 +4737,10 @@
         "emptyGenerate" : {
           "title" : "การสร้างบัญชีทดสอบ",
           "desc" : "สร้างบัญชีทดสอบ"
+        },
+        "stablecoinGenerate" : {
+          "title" : "ตั้งค่าสเตเบิลคอยน์ล่วงหน้า",
+          "desc" : "สร้างบัญชี Ethereum, Arbitrum, Optimism, Base, Solana, Tron และ Algorand ด้วยสเตเบิลคอยน์ยอดนิยม (สูงสุด 5 บัญชีต่อเครือข่าย)"
         },
         "currencySelector" : {
           "placeholder" : "เลือกสกุลเงิน...",
@@ -4563,7 +4758,9 @@
           "generateAccounts" : "สร้าง {{count}} บัญชี",
           "generateAccounts_other" : "สร้าง {{count}} บัญชี",
           "generateAccountsQuick" : "สร้าง {{count}} บัญชี",
-          "generateEmptyAccount" : "สร้างบัญชีทดสอบ"
+          "generateEmptyAccount" : "สร้างบัญชีทดสอบ",
+          "generateStablecoinAccounts" : "สร้าง {{count}} บัญชีสเตเบิลคอยน์",
+          "generateStablecoinAccounts_other" : "สร้าง {{count}} บัญชีสเตเบิลคอยน์"
         },
         "alerts" : {
           "selectCurrency" : "โปรดเลือกอย่างน้อยหนึ่งสกุลเงิน",
@@ -4992,7 +5189,7 @@
     }
   },
   "theme" : {
-    "system" : "เลือกธีมระบบ",
+    "system" : "ระบบ",
     "light" : "โหมดกลางวัน",
     "dusk" : "Dusk",
     "dark" : "โหมดกลางคืน"
@@ -5764,6 +5961,10 @@
     },
     "recipientWording" : {
       "send" : "ผู้รับ",
+      "transfer_public" : "ผู้รับที่เป็นสาธารณะ",
+      "transfer_private" : "ผู้รับแบบส่วนตัว",
+      "convert_public_to_private" : "ผู้รับแบบส่วนตัว",
+      "convert_private_to_public" : "ผู้รับที่เป็นสาธารณะ",
       "delegate" : "ผู้ตรวจสอบ",
       "redelegate" : "ผู้ตรวจสอบ",
       "undelegate" : "ผู้ตรวจสอบ",
@@ -5948,6 +6149,68 @@
             }
           }
         }
+      }
+    },
+    "concordium" : {
+      "addAccount" : {
+        "title" : "เพิ่มบัญชี Concordium",
+        "acknowledge" : {
+          "title" : "การรับทราบ",
+          "description" : "Concordium ต้องมีการยืนยันตัวตนจากภายนอก โปรดอ่านคำเตือนด้านความปลอดภัยที่สำคัญ:",
+          "list" : {
+            "1" : "<0>ไม่มีการตรวจสอบที่อยู่</0> Ledger ของคุณไม่สามารถตรวจสอบที่อยู่ที่ใช้รับ Concordium ได้ ตรวจสอบที่อยู่ด้วยตนเองก่อนยืนยัน",
+            "2" : "<0>แอป Concordium ID ใช้วลีกู้คืนแยกต่างหาก</0> คุณจะต้องสร้างวลีกู้คืน 24 คำในแอป Concordium ห้ามใช้วลีกู้คืนสำหรับ Ledger ของคุณ",
+            "3" : "<0>คุณจะถูกนำออกจากแอป Ledger Wallet</0> การตรวจสอบตัวตนจะเกิดขึ้นในแอป Concordium Wallet ที่อยู่ภายนอก ซึ่งเป็นข้อกำหนดของโพรโตคอลบล็อกเชนของ Concordium",
+            "4" : "<0>การลงนามธุรกรรมจะยังคงปลอดภัย</0> โดยมีเพียงอุปกรณ์ Ledger ของคุณเท่านั้นที่จะสามารถลงนามในธุรกรรมและสร้างบัญชีได้"
+          },
+          "allow" : "ตกลง"
+        },
+        "identity" : {
+          "title" : "เชื่อมต่อ",
+          "account" : "บัญชี",
+          "newAccount" : "บัญชีใหม่",
+          "init" : "การกดปุ่ม 'อนุญาต' หมายความว่าคุณพร้อมที่จะดำเนินการต่อในขั้นตอนการตรวจสอบในระบบ KYC ที่จำเป็นในการยืนยันบัญชีของคุณ",
+          "scanQRCode" : "สแกน QR Code ด้วยอุปกรณ์มือถือเพื่อเชื่อมต่อแอป Concordium ID ของคุณ <0>เรียนรู้เพิ่มเติม</0>",
+          "ledgerSeedWarning" : "<0>ห้าม</0>ใช้วลีกู้คืน Ledger ของคุณกับแอป Concordium ID เด็ดขาด",
+          "downloadApp" : "ดาวน์โหลดแอป Concordium ID",
+          "connecting" : "กำลังเชื่อมต่อกับแอป Concordium ID...",
+          "onboarded" : "บัญชีที่ออนบอร์ดแล้ว",
+          "success" : "เชื่อมต่อกับแอป Concordium ID สำเร็จแล้ว",
+          "error" : "ไม่สามารถออนบอร์ดบัญชีใหม่ได้ โปรดลองอีกครั้ง",
+          "status" : {
+            "prepare" : "กำลังเตรียมออนบอร์ดบัญชี...",
+            "submit" : "กำลังออนบอร์ดบัญชี...",
+            "default" : "กำลังดำเนินการ..."
+          }
+        },
+        "create" : {
+          "title" : "สร้างบัญชี",
+          "init" : {
+            "title" : "เชื่อมต่อกับแอป Concordium ID สำเร็จแล้ว"
+          },
+          "prepare" : {
+            "title" : "ในการสร้างบัญชี ให้จับคู่กับรหัสด้านล่างในแอป Concordium ID",
+            "resendButton" : "ส่งการยืนยันใหม่",
+            "resendDescription" : "สามารถส่งการยืนยันใหม่ในอีก <0>{{count}}</0> {{unit}}"
+          },
+          "success" : "ทำการสร้างบัญชี Concordium ของคุณเรียบร้อยแล้ว",
+          "error" : "ไม่สามารถสร้างบัญชีได้ โปรดลองอีกครั้ง",
+          "error429" : "มีคำขอเข้ามามากเกินไป โปรดรอสักครู่และลองอีกครั้งในภายหลัง",
+          "button" : "สร้าง",
+          "processing" : "กำลังดำเนินการ...",
+          "status" : {
+            "prepare" : "กำลังเตรียมสร้างบัญชี...",
+            "submit" : "กำลังสร้างบัญชี...",
+            "default" : "กำลังดำเนินการ..."
+          }
+        },
+        "finish" : {
+          "title" : "การยืนยัน"
+        }
+      },
+      "receive" : {
+        "messageIfSkipped" : "ไม่สามารถยืนยันที่อยู่ Concordium ของคุณได้ในขณะนี้ โปรดตรวจสอบซ้ำอีกครั้งด้วยการวางที่อยู่ของคุณใน Concordium Explorer",
+        "verifyLink" : "ตรวจสอบ"
       }
     },
     "stellar" : {
@@ -6143,6 +6406,11 @@
     "DeviceSocketFail" : {
       "title" : "โปรดรีสตาร์ทอุปกรณ์ Ledger แล้วลองอีกครั้ง",
       "description" : "เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดลองอีกครั้ง ({{message}})"
+    },
+    "CounterfeitDevice" : {
+      "title" : "{{productName}} นี้ไม่ผ่าน Genuine Check",
+      "description" : "การใช้อุปกรณ์ Ledger นี้ไม่ปลอดภัย โปรดติดต่อ Ledger Support",
+      "contactSupportCTA" : "ติดต่อ Ledger Support"
     },
     "DeviceSocketNoBulkStatus" : {
       "title" : "การเชื่อมต่อล้มเหลว",
@@ -6535,6 +6803,10 @@
       "title" : "เร่งความเร็วหรือยกเลิกไม่ได้",
       "description" : "ธุรกรรมนี้ได้รับการตรวจสอบแล้ว"
     },
+    "InvalidTransactionError" : {
+      "title" : "ธุรกรรมไม่ถูกต้อง",
+      "description" : "ธุรกรรมไม่สอดคล้องกับสถานะล่าสุดของบล็อกเชนแล้ว โปรดเริ่มกระบวนการใหม่อีกครั้ง"
+    },
     "SequenceNumberError" : {
       "title" : "ข้อผิดพลาดของหมายเลขลำดับ",
       "description" : "โปรดปิดหน้าต่างแล้วลองอีกครั้งในภายหลัง"
@@ -6776,6 +7048,9 @@
     "SolanaAccountNotFunded" : {
       "title" : "ยังไม่มีเงินทุนเข้าบัญชี"
     },
+    "SolanaRecipientAccountNotFunded" : {
+      "title" : "จำนวนน้อยเกินไป โปรดส่งขั้นต่ำ {{minimumAmount}}"
+    },
     "SolanaTokenAccountHoldsAnotherToken" : {
       "title" : "บัญชีโทเคนที่เกี่ยวข้องนี้มีโทเคนอื่น"
     },
@@ -6846,6 +7121,21 @@
     "CardanoMemoExceededSizeError" : {
       "title" : "ขนาด Memo ไม่ถูกต้อง ขนาดสูงสุดที่อนุญาตคือ 64 ตัวอักษร",
       "description" : "ข้อความ Memo ใน Cardano มีข้อจำกัดของขนาดสูงสุด โปรดลดขนาดของ Memo"
+    },
+    "ConcordiumMemoTooLong" : {
+      "title" : "Memo มีความยาวเกินขีดจำกัด",
+      "description" : "Memo มีขนาด {{memoLength}} ไบต์ แต่ขนาดสูงสุดที่อนุญาตคือ {{maxLength}} ไบต์ โปรดลดขนาด Memo"
+    },
+    "ConcordiumInsufficientFunds" : {
+      "title" : "ขออภัย เงินทุนไม่พอ"
+    },
+    "ConcordiumPairingExpiredError" : {
+      "title" : "การจับคู่หมดอายุ",
+      "description" : "การเชื่อมต่อกับแอป Concordium ID หมดเวลาแล้ว โปรดลองอีกครั้ง"
+    },
+    "ConcordiumSessionExpiredError" : {
+      "title" : "เซสชันหมดอายุ",
+      "description" : "เซสชันแอป Concordium ID หมดอายุการใช้งานแล้ว กรุณาจับคู่อีกครั้ง"
     },
     "StacksMemoTooLong" : {
       "title" : "Memo ยาวมากเกินไป"
@@ -7032,6 +7322,22 @@
     "TonMinimumRequired" : {
       "title" : "เงินทุนไม่เพียงพอ ยอดคงเหลือขั้นต่ำที่ต้องมีคือ 0.02 TON"
     },
+    "AleoAmountRecordRequired" : {
+      "title" : "เลือกบันทึกส่วนตัวที่ถูกต้องและเหมาะสมสำหรับจำนวน",
+      "description" : "เลือกบันทึกส่วนตัวของคุณ เพื่อใช้ชำระค่าธุรกรรมการโอน"
+    },
+    "AleoFeeRecordRequired" : {
+      "title" : "จำเป็นต้องมีรายการส่วนตัวอีกหนึ่งรายการเพื่อครอบคลุมค่าธรรมเนียมเครือข่าย",
+      "description" : "เติมเงินในบัญชีของคุณหากจำเป็น ต้องใช้รายการส่วนตัวหนึ่งรายการสำหรับยอดโอน และต้องมีรายการอีกหนึ่งรายการที่สามารถครอบคลุมค่าธรรมเนียมเครือข่ายได้"
+    },
+    "AleoTwoRecordsRequired" : {
+      "title" : "การส่งแบบส่วนตัว (Private send) ต้องมีอย่างน้อยสองรายการ",
+      "description" : "คุณต้องใช้หนึ่งรายการสำหรับยอดโอน และอีกหนึ่งรายการสำหรับค่าธรรมเนียมเครือข่าย"
+    },
+    "AleoFeeRecordInsufficientBalance" : {
+      "title" : "ไม่มีรายการส่วนตัวใดที่สามารถครอบคลุมค่าธรรมเนียมเครือข่ายได้",
+      "description" : "เลือกรายการอื่นสำหรับจำนวนเงินที่ต้องการโอน หรือเติมยอดคงเหลือในบัญชีของคุณเพิ่มเติม"
+    },
     "BackupAppDataError" : {
       "title" : "เกิดข้อผิดพลาดระหว่างการสำรองข้อมูลแอป"
     },
@@ -7195,8 +7501,8 @@
       "description" : "มีข้อผิดพลาดในการส่งข้อมูลไปยังอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
     },
     "AlreadySendingApduError" : {
-      "title" : "เกิดข้อผิดพลาดในการสื่อสาร",
-      "description" : "มีข้อผิดพลาดในการส่งข้อมูลไปยังอุปกรณ์ของคุณ โปรดลองอีกครั้ง หรือติดต่อ Ledger Support หากยังคงพบปัญหาอยู่"
+      "title" : "ต้องดำเนินการบนอุปกรณ์ Ledger ของคุณ",
+      "description" : "ดำเนินการให้เสร็จสิ้นบนอุปกรณ์ของคุณ จากนั้นเลือก \"ลองใหม่\" ด้านล่าง"
     },
     "UnknownDeviceExchangeError" : {
       "title" : "เกิดข้อผิดพลาดในการสื่อสาร",
@@ -7435,7 +7741,8 @@
     },
     "selectAccount" : {
       "title" : "เลือกบัญชี",
-      "addAccount" : "เพิ่มบัญชีใหม่หรือใช้บัญชีที่มีอยู่"
+      "addAccount" : "เพิ่มบัญชีใหม่หรือใช้บัญชีที่มีอยู่",
+      "perpetualsBanner" : "ปัจจุบันรองรับเฉพาะ USDC บนเครือข่าย Arbitrum เท่านั้น"
     }
   },
   "customImage" : {
@@ -7490,7 +7797,7 @@
       "skipCTA" : "ฉันจะจัดการทีหลัง"
     },
     "default" : {
-      "title" : "{{ productName }} มีแอปของตัวเอง คุณต้องการใช้แอปเหล่านั้นเพื่อทำธุรกรรม",
+      "title" : "{{ productName }} มีแอปของตัวเอง คุณต้องใช้แอปเหล่านั้นเพื่อทำธุรกรรม",
       "subtitle" : "เช่น แอป Bitcoin สำหรับ {{productName}} จำเป็นต้องลงนามในธุรกรรม Bitcoin\n\nติดตั้งแอปเริ่มต้นเพื่อเตรียมความพร้อมสำหรับการทำธุรกรรมให้กับ {{productName}} ของคุณ",
       "installCTA" : "ติดตั้งตอนนี้",
       "skipCTA" : "ฉันจะจัดการทีหลัง"
@@ -7530,11 +7837,48 @@
     },
     "noAccounts" : {
       "title" : "คุณต้องมีบัญชีเพื่อเข้าถึงแอปนี้",
-      "add" : "เพิ่มบัญชี"
+      "select" : "เลือกบัญชี"
     }
   },
   "recoverRestore" : {
     "title" : "เชื่อมต่อและปลดล็อก Ledger ของคุณ"
+  },
+  "analyticsConsentModal" : {
+    "fresh" : {
+      "title" : "ช่วยเราปรับปรุง Ledger",
+      "description" : "ด้วยความยินยอมของคุณ เราจะรวบรวมข้อมูลการใช้งานเพื่อพัฒนาฟีเจอร์และปรับแต่งประสบการณ์ของคุณ",
+      "ctaAcceptAll" : "ยอมรับทั้งหมด",
+      "ctaRefuseAll" : "ปฏิเสธทั้งหมด"
+    },
+    "reconfirm" : {
+      "title" : "ต้องการช่วยพัฒนาแอป Ledger Wallet ต่อไปหรือไม่?",
+      "description" : "คุณต้องการแชร์ข้อมูลการใช้งานต่อไปเพื่อช่วยเราปรับปรุง Ledger หรือไม่? ข้อมูลนี้จะถูกใช้เพื่อปรับปรุงฟีเจอร์และปรับแต่งประสบการณ์ของคุณ",
+      "ctaContinue" : "ใช่ ต้องการแชร์ข้อมูลต่อ",
+      "ctaStop" : "ไม่ หยุดการแชร์ข้อมูล"
+    },
+    "privacy" : {
+      "title" : "เรากำลังอัปเดตนโยบายความเป็นส่วนตัว",
+      "descriptionLead" : "โปรดตรวจสอบ ",
+      "descriptionLinkLabel" : "นโยบายความเป็นส่วนตัว",
+      "descriptionTrail" : " เพื่อดูว่ามีอะไรเปลี่ยนแปลงบ้าง คุณสามารถอัปเดตการตั้งค่าของคุณได้ทุกเมื่อที่ 'การตั้งค่า'",
+      "ctaGotIt" : "เข้าใจแล้ว"
+    },
+    "setPreferences" : "ตั้งค่าความชอบส่วนตัว",
+    "preferences" : {
+      "appPerformance" : {
+        "title" : "ประสิทธิภาพของแอป",
+        "description" : "เปิดให้แอป Ledger Wallet เก็บข้อมูลการใช้งานแอปเพื่อพัฒนาประสบการณ์การใช้งานให้ดียิ่งขึ้น"
+      },
+      "personalizedExperience" : {
+        "title" : "ประสบการณ์ที่เป็นส่วนตัว",
+        "description" : "อนุญาตให้ Ledger เก็บข้อมูลการใช้งานแอปเพื่อนำเสนอเนื้อหาที่ตรงกับความต้องการของคุณ"
+      },
+      "ctaConfirm" : "ยืนยัน"
+    },
+    "footer" : {
+      "lead" : "คุณสามารถเพิกถอนการยินยอมของคุณได้ทุกเมื่อในการตั้งค่า",
+      "privacyLink" : "นโยบายความเป็นส่วนตัว"
+    }
   },
   "analyticsOptInPrompt" : {
     "variantA" : {
@@ -7590,13 +7934,22 @@
     },
     "profileSettings" : {
       "personalizedExp" : "ประสบการณ์ที่เป็นส่วนตัว",
-      "analytics" : "การวิเคราะห์",
-      "personalizedExpDesc" : "เปิดให้ Ledger รวบรวมข้อมูลการใช้งานแอปเพื่อให้คำแนะนำและเนื้อหาที่ตรงกับความสนใจของคุณ และช่วยวัดประสิทธิภาพของแคมเปญการตลาดของเรา",
-      "analyticsDesc" : "เปิดให้ Ledger รวบรวมข้อมูลการใช้งานแอปเพื่อวัดประสิทธิภาพของแอป Ledger Wallet และปรับปรุงการใช้งานแอปและประสบการณ์ของคุณ"
+      "analytics" : "ประสิทธิภาพของแอป",
+      "personalizedExpDesc" : "เปิดให้แอป Ledger Wallet เก็บข้อมูลการใช้งานเพื่อนำเสนอเนื้อหาที่เหมาะสมกับคุณ",
+      "analyticsDesc" : "เปิดให้แอป Ledger Wallet เก็บข้อมูลการใช้งานแอปเพื่อพัฒนาประสบการณ์การใช้งานให้ดียิ่งขึ้น"
     }
   },
   "analytics" : {
-    "title" : "การวิเคราะห์"
+    "title" : "การวิเคราะห์",
+    "allocation" : {
+      "title" : "การจัดสรรสินทรัพย์",
+      "columns" : {
+        "name" : "ชื่อ",
+        "balance" : "ยอดคงเหลือในบัญชี",
+        "value" : "มูลค่า",
+        "allocation" : "สัดส่วน"
+      }
+    }
   },
   "walletSync" : {
     "title" : "Ledger Sync",
@@ -7789,6 +8142,16 @@
       "cta" : "เรียนรู้เพิ่มเติม"
     }
   },
+  "lnsUpsellMediaBanner" : {
+    "opted_in" : {
+      "title" : "อัปเกรด Ledger Nano S™ ของคุณ",
+      "description" : "รับส่วนลด 20% สำหรับอุปกรณ์ลงนาม Ledger รุ่นใหม่ล่าสุด"
+    },
+    "opted_out" : {
+      "title" : "อัปเกรด Ledger Nano S™ ของคุณ",
+      "description" : "หน่วยความจำที่จำกัดของ Ledger Nano S ของคุณจะยับยั้งการเข้าถึงฟีเจอร์ล่าสุด การเปลี่ยนแปลงบล็อกเชน และการเพิ่มความปลอดภัยให้กับคุณ"
+    }
+  },
   "modularAssetDrawer" : {
     "addAccounts" : {
       "title" : "เลือกบัญชีที่คุณต้องการเพิ่ม",
@@ -7885,34 +8248,39 @@
   "portfolio" : {
     "title" : "หน้าหลัก",
     "today" : "วันนี้",
+    "carousel" : {
+      "title" : "สำหรับคุณ"
+    },
     "addAccountCta" : "เพิ่มบัญชีคริปโต",
-    "noBalanceTitle" : "ปกป้องคริปโตของคุณ",
+    "noBalanceTitle" : "เริ่มต้นด้วยการเติมเงินเข้าวอลเล็ตของคุณ",
     "perpsEntry" : {
-      "title" : "สัญญาซื้อขายล่วงหน้าคริปโตแบบไม่มีวันหมดอายุ (Perpetuals)",
+      "title" : "Perpetuals",
       "description" : "เทรดแบบมีเลเวอเรจ",
       "cta" : "ผู้ให้บริการ"
     },
-    "noDeviceTitle" : "วอลเล็ตที่ปลอดภัยที่สุด"
+    "noDeviceTitle" : "คริปโตวอลเล็ตที่ปลอดภัยของคุณ"
   },
   "marketBanner" : {
     "title" : "สำรวจตลาด",
     "genericError" : "การเชื่อมต่อล้มเหลว",
     "cta" : "ดูทั้งหมด",
+    "scrollLeft" : "เลื่อนไปทางซ้าย",
+    "scrollRight" : "เลื่อนไปทางขวา",
     "fearAndGreed" : {
       "title" : "อารมณ์"
     }
   },
   "fearAndGreed" : {
     "levels" : {
-      "extremeFear" : "กลัวขั้นสุด",
       "fear" : "กลัว",
+      "cautious" : "ระวัง",
       "neutral" : "ปกติ",
-      "greed" : "โลภ",
-      "extremeGreed" : "โลภขั้นสุด"
+      "optimistic" : "มีความหวัง",
+      "greedy" : "โลภ"
     },
     "dialog" : {
       "title" : "ดัชนีวัดอารมณ์",
-      "content" : "ดัชนีวัดอารมณ์บ่งชี้ถึงสภาวะทางอารมณ์ของตลาด โดยมีช่วงตั้งแต่ 0 ถึง 100 โดยมูลค่าที่ต่ำกว่าแสดงถึงความกลัวขั้นสุด และมูลค่าที่สูงกว่าแสดงถึงความโลภขั้นสุด",
+      "content" : "แสดงความเชื่อมั่นโดยรวมของตลาดตั้งแต่ 0 ถึง 100 โดยอิงตามแนวโน้มและกิจกรรม ใช้เพื่อทำความเข้าใจพฤติกรรมของตลาด: ค่าที่ต่ำหมายถึงความกลัว และค่าที่สูงหมายถึงความโลภ",
       "cta" : "เข้าใจแล้ว"
     }
   },
@@ -7924,6 +8292,56 @@
     "connect" : "เชื่อมต่อ",
     "buyALedger" : "ซื้อ Ledger"
   },
+  "assets" : {
+    "cryptos" : "คริปโต",
+    "stablecoins" : "สเตเบิลคอยน์",
+    "cryptoAccounts" : "บัญชีคริปโต",
+    "accountsCount_one" : "{{count}} บัญชี",
+    "accountsCount_other" : "{{count}} บัญชี",
+    "noCryptoAccounts" : "ยังไม่มีบัญชีในตอนนี้",
+    "add" : "เพิ่ม",
+    "columns" : {
+      "name" : "ชื่อ",
+      "price" : "ราคา",
+      "balance" : "ยอดคงเหลือในบัญชี",
+      "value" : "มูลค่า",
+      "trend" : "แนวโน้ม 1 วัน",
+      "trendTooltip" : "การเปลี่ยนแปลงยอดคงเหลือในบัญชีของคุณในช่วง 24 ชั่วโมงที่ผ่านมา"
+    }
+  },
+  "cryptoAddresses" : {
+    "title" : "บัญชี",
+    "tableActions" : {
+      "searchAddress" : "ค้นหาด้วยชื่อหรือที่อยู่",
+      "addAddress" : "เพิ่มที่อยู่"
+    },
+    "table" : {
+      "columns" : {
+        "name" : "ชื่อ",
+        "address" : "Address",
+        "value" : "มูลค่า"
+      },
+      "editName" : "แก้ไขชื่อ",
+      "emptyState" : "ตอนนี้ยังไม่มีที่อยู่คริปโต",
+      "emptySearchState" : "ไม่มีบัญชีที่ตรงกับการค้นหาของคุณ",
+      "assetCount_zero" : "{{count}} สินทรัพย์",
+      "assetCount_one" : "{{count}} สินทรัพย์",
+      "assetCount_other" : "{{count}} สินทรัพย์"
+    },
+    "editName" : {
+      "title" : "แก้ไขชื่อที่อยู่",
+      "input" : "ชื่อที่อยู่",
+      "suggestions" : {
+        "trading" : "{{asset}} สำหรับซื้อขาย",
+        "savings" : "{{asset}} สำหรับสะสม"
+      },
+      "cta" : "ยืนยัน",
+      "syncingTooltip" : "กำลังซิงค์ โปรดรอสักครู่"
+    }
+  },
+  "cryptoAssets" : {
+    "title" : "สินทรัพย์คริปโต"
+  },
   "nftEntryPoint" : {
     "title" : "NFT (โทเคนที่ไม่สามารถแลกเปลี่ยนหรือแทนที่กันได้)",
     "entry" : {
@@ -7932,16 +8350,16 @@
     }
   },
   "topBar" : {
+    "history" : {
+      "cta" : "ประวัติ",
+      "tooltip" : "ประวัติ"
+    },
     "activityIndicator" : {
-      "errorToolTip" : "เกิดปัญหาเครือข่ายชั่วคราว สินทรัพย์ของคุณยังปลอดภัย บัญชีที่ได้รับผลกระทบ: {{accounts}} แตะเพื่อลองใหม่",
-      "emptyErrorToolTip" : "เกิดปัญหาเครือข่ายชั่วคราว สินทรัพย์ของคุณยังปลอดภัย แตะเพื่อลองใหม่",
-      "upToDate" : "เป็นปัจจุบันแล้ว",
-      "minutesAgo_one" : "ซิงค์ล่าสุด: {{count}} นาทีที่แล้ว แตะเพื่อรีเฟรช",
-      "minutesAgo_other" : "ซิงค์ล่าสุด: {{count}} นาทีที่แล้ว แตะเพื่อรีเฟรช",
-      "hoursAgo_one" : "ซิงค์ล่าสุด: {{count}} ชั่วโมงที่แล้ว แตะเพื่อรีเฟรช",
-      "hoursAgo_other" : "ซิงค์ล่าสุด: {{count}} ชั่วโมงที่แล้ว แตะเพื่อรีเฟรช",
-      "daysAgo_one" : "ซิงค์ล่าสุด: {{count}} วันที่แล้ว แตะเพื่อรีเฟรช",
-      "daysAgo_other" : "ซิงค์ล่าสุด: {{count}} วันที่แล้ว แตะเพื่อรีเฟรช"
+      "errorToolTip" : "สินทรัพย์ของคุณยังปลอดภัย นี่เป็นปัญหาการซิงค์ชั่วคราว\n บัญชีที่ได้รับผลกระทบ: {{accounts}} แตะเพื่อลองใหม่",
+      "emptyErrorToolTip" : "สินทรัพย์ของคุณยังปลอดภัย นี่เป็นปัญหาการซิงค์ชั่วคราว\n แตะเพื่อลองใหม่",
+      "upToDate" : "พอร์ตโฟลิโอเป็นปัจจุบันแล้ว",
+      "lastSync" : "ซิงค์ล่าสุด: {{timeAgo}} แตะเพื่อรีเฟรช",
+      "refreshing" : "กำลังรีเฟรช..."
     },
     "notificationIndicator" : {
       "tooltip" : "การแจ้งเตือน"
@@ -7976,8 +8394,15 @@
     "shielded" : {
       "state" : {
         "showBalance" : "แสดงยอดคงเหลือในบัญชี",
-        "pausedAt" : "หยุดชั่วคราวเมื่อ ",
-        "lastSync" : "ซิงค์ล่าสุด: {{date}}"
+        "startSync" : "เริ่มซิงค์",
+        "stopSync" : "หยุดการซิงค์",
+        "upToDate" : "เป็นปัจจุบัน",
+        "lastSync" : "ซิงค์ล่าสุด: {{date}}",
+        "estimatedTimeRemaining" : "เวลาที่เหลือโดยประมาณ: {{hours}}:{{minutes}}"
+      },
+      "datepicker" : {
+        "label" : "ระดับบล็อก (Birthday Height)",
+        "tooltip" : "ระดับบล็อกคือจุดบนบล็อกเชนที่วอลเล็ตเริ่มสแกนเพื่อค้นหาเงินทุนของคุณ"
       },
       "flows" : {
         "export" : {
@@ -8016,12 +8441,13 @@
             }
           }
         }
-      },
-      "startSync" : "เริ่มซิงค์",
-      "datepicker" : {
-        "label" : "ระดับบล็อก (Birthday Height)",
-        "tooltip" : "ระดับบล็อกคือจุดบนบล็อกเชนที่วอลเล็ตเริ่มสแกนเพื่อค้นหาเงินทุนของคุณ"
       }
+    },
+    "operationDetails" : {
+      "txType" : "ประเภทธุรกรรม",
+      "transparentTx" : "แบบ Transparent",
+      "shieldedSaplingTx" : "🛡 แบบส่วนตัว (พูล Sapling)",
+      "shieldedOrchardTx" : "🛡 แบบส่วนตัว (พูล Orchard)"
     }
   },
   "aleo" : {
@@ -8054,13 +8480,140 @@
         }
       }
     },
+    "selfTransfer" : {
+      "headerAction" : "โอนด้วยตัวเอง",
+      "headerActionTooltip" : "คุณไม่มีเงินเพียงพอที่จะทำการโอนด้วยตนเอง",
+      "modal" : {
+        "title" : "โอนด้วยตัวเอง",
+        "stepRecipient" : {
+          "selectLabel" : "โอนจาก"
+        }
+      }
+    },
+    "shared" : {
+      "sponsoredByProvable" : "สนับสนุนโดย Provable",
+      "balanceSelector" : {
+        "private" : "Private Balance",
+        "public" : "ยอดคงเหลือสาธารณะ",
+        "lastUpdate" : "อัปเดตล่าสุด: {{label}}",
+        "recently" : "ล่าสุด",
+        "switchBalance" : "สลับที่มาของยอดบัญชี"
+      },
+      "recordPicker" : {
+        "label" : "ข้อมูลที่มี",
+        "noRecords" : "ไม่มีข้อมูล",
+        "noRecordsAlert" : "คุณไม่มีข้อมูลที่ใช้ได้ โอนเงินเข้าบัญชีตัวเอง หรือรับโอนสินทรัพย์แบบส่วนตัวเพื่อเริ่มต้น",
+        "alert" : "จำนวนเงินสูงสุดที่คุณสามารถใช้จ่ายได้ขึ้นอยู่กับมูลค่าสูงสุดของรายการที่คุณเลือก ผู้ใช้ Ledger นั้นจะได้รับการสนับสนุนค่าธรรมเนียมจาก Provable",
+        "recordsLimit" : "กำลังแสดงสูงสุด {{max}} ธุรกรรม"
+      }
+    },
     "account" : {
       "availableBalance" : "ยอดคงเหลือในบัญชีที่ใช้ได้",
       "availableBalanceTooltip" : "ยอดคงเหลือในบัญชีที่สามารถโอนได้",
       "transparentBalance" : "Transparent Balance",
       "transparentBalanceTooltip" : "ยอดคงเหลือในบัญชีที่เปิดเผยต่อสาธารณะ",
       "privateBalance" : "Private Balance",
-      "privateBalanceTooltip" : "ยอดคงเหลือในบัญชีที่ไม่เปิดเผยต่อสาธารณะ"
+      "privateBalanceTooltip" : "ยอดคงเหลือในบัญชีที่ไม่เปิดเผยต่อสาธารณะ",
+      "syncButton" : {
+        "startSync" : "เริ่มซิงค์",
+        "stopSync" : "หยุดการซิงค์",
+        "syncAgain" : "ซิงค์อีกครั้ง",
+        "lastSync" : "ซิงค์ล่าสุด: {{date}}"
+      }
+    },
+    "operations" : {
+      "type" : {
+        "public" : "สาธารณะ",
+        "private" : "ส่วนตัว"
+      }
+    },
+    "send" : {
+      "stepRecipient" : {
+        "selectLabel" : "ส่งจาก"
+      },
+      "summary" : {
+        "proofGenerationWarning" : "ธุรกรรม Aleo จำเป็นต้องมีการสร้างหลักฐาน ซึ่งอาจใช้เวลาสักครู่"
+      },
+      "mandatoryPrivateSync" : {
+        "title" : "กำลังซิงค์ยอดคงเหลือในบัญชีของคุณ ({{percentage}}%)",
+        "desc" : "โปรดรอสักครู่",
+        "error" : "การซิงค์ข้อมูลแบบส่วนตัวล้มเหลว โปรดลองอีกครั้งในภายหลัง"
+      }
     }
+  },
+  "updater" : {
+    "newUpdateAvailable" : "มีการอัปเดตใหม่ที่พร้อมใช้งาน",
+    "downloadProgress" : "{{progress}}%",
+    "errorTryAgain" : "เกิดข้อผิดพลาดระหว่างการอัปเดต ลองอีกครั้ง",
+    "installAndRelaunch" : "มีอัปเดตใหม่ ติดตั้งและเปิดอีกครั้ง"
+  },
+  "walletV4Tour" : {
+    "slides" : {
+      "portfolio" : {
+        "title" : "เห็นภาพพอร์ตการลงทุนชัดเจนขึ้น",
+        "description" : "ดูมูลค่าสินทรัพย์ทั้งหมดได้ทันที และแตะ “วันนี้” เพื่อดูรายละเอียดเพิ่มเติม"
+      },
+      "navigation" : {
+        "title" : "ใช้งานฟังก์ชันหลักได้ง่ายขึ้น",
+        "description" : "ซื้อ, ขาย, รับ และส่งได้ทันที"
+      },
+      "actions" : {
+        "title" : "วิเคราะห์แนวโน้มตลาดแบบเรียลไทม์",
+        "description" : "ตรวจสอบสินทรัพย์ที่กำลังเป็นกระแสได้อย่างรวดเร็ว และนำข้อมูลเชิงลึกไปสู่การลงทุน"
+      }
+    },
+    "cta" : {
+      "continue" : "ดำเนินการต่อ",
+      "explore" : "สำรวจพอร์ตการลงทุนใหม่ของฉัน"
+    }
+  },
+  "history" : {
+    "title" : "ธุรกรรม",
+    "pending" : "ธุรกรรมที่ค้างอยู่",
+    "pending_other" : "ธุรกรรมที่ค้างอยู่",
+    "columns" : {
+      "type" : "ประเภท",
+      "address" : "Address",
+      "amount" : "จำนวน",
+      "value" : "มูลค่า"
+    },
+    "address" : {
+      "from" : "จาก",
+      "to" : "ไปยัง"
+    },
+    "emptyState" : {
+      "title" : "ยังไม่มีธุรกรรม",
+      "description" : "โปรดกลับมาดูธุรกรรมของคุณในภายหลัง"
+    },
+    "actionsBar" : {
+      "csv" : "CSV"
+    },
+    "exportDialog" : {
+      "title" : "ประวัติธุรกรรม",
+      "description" : "เลือกบัญชีที่จะรวมไว้ในการส่งออก",
+      "disclaimer" : "มูลค่าโดยประมาณเท่านั้น มูลค่าเทียบเท่าจัดทำโดย Kaiko เพื่อวัตถุประสงค์ในการให้ข้อมูล อย่าใช้ข้อมูลนี้เพื่อวัตถุประสงค์ทางภาษี กฎหมาย หรือบัญชี",
+      "accountsToInclude" : "บัญชีที่จะรวม",
+      "selectAll" : "เลือกทั้งหมด ({{count}})",
+      "deselectAll" : "ยกเลิกการเลือกทั้งหมด ({{count}})",
+      "export" : "ประวัติการส่งออก",
+      "successTitle" : "มีการบันทึกประวัติธุรกรรมเรียบร้อยแล้ว",
+      "successDescription" : "มีการบันทึกไฟล์ CSV ของประวัติการดำเนินงานของคุณในโฟลเดอร์ที่เลือกเรียบร้อยแล้ว",
+      "done" : "เสร็จสิ้น",
+      "errorTitle" : "มีบางอย่างผิดปกติ",
+      "errorDescription" : "เกิดข้อผิดพลาดขณะส่งออกประวัติการทำธุรกรรมของคุณ โปรดลองอีกครั้ง",
+      "tryAgain" : "ลองอีกครั้ง"
+    }
+  },
+  "myWallet" : {
+    "actionsList" : {
+      "help" : "ช่วยเหลือ",
+      "recover" : "[L] Recover",
+      "refer" : "แนะนำเพื่อน"
+    },
+    "myLedger" : {
+      "title" : "Ledger ของฉัน",
+      "description" : "จัดการอุปกรณ์ Ledger ของคุณ"
+    },
+    "explore" : "ดูอุปกรณ์ Ledger ทั้งหมด"
   }
 }

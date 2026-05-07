@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import type { TFunction } from "i18next";
 import { Image, Linking, ScrollView } from "react-native";
-import Config from "react-native-config";
 import { useSelector } from "~/context/hooks";
 import styled, { useTheme } from "styled-components/native";
 import { useTranslation } from "~/context/Locale";
@@ -19,6 +18,7 @@ import {
   UnsupportedFeatureError,
   NanoSNotSupported,
 } from "@ledgerhq/errors";
+import { isCounterfeitError } from "@ledgerhq/live-common/hw/isCounterfeitError";
 import { isSyncOnboardingSupported } from "@ledgerhq/live-common/device/use-cases/screenSpecs";
 import { ExchangeRate, ExchangeSwap } from "@ledgerhq/live-common/exchange/swap/types";
 import { Transaction } from "@ledgerhq/live-common/generated/types";
@@ -27,17 +27,8 @@ import { Device } from "@ledgerhq/live-common/hw/actions/types";
 import firmwareUpdateRepair from "@ledgerhq/live-common/hw/firmwareUpdate-repair";
 import { isInvalidGetFirmwareMetadataResponseError } from "@ledgerhq/live-dmk-mobile";
 import { WalletState } from "@ledgerhq/live-wallet/store";
-import {
-  BoxedIcon,
-  Flex,
-  Icons,
-  IconsLegacy,
-  InfiniteLoader,
-  Link,
-  Log,
-  Tag,
-  Text,
-} from "@ledgerhq/native-ui";
+import { BoxedIcon, Flex, Icons, IconsLegacy, Link, Log, Tag, Text } from "@ledgerhq/native-ui";
+import InfiniteLoader from "~/components/InfiniteLoader";
 import { DownloadMedium } from "@ledgerhq/native-ui/assets/icons";
 import { TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { DeviceModelId } from "@ledgerhq/types-devices";
@@ -47,6 +38,7 @@ import { TrackScreen, track, useTrack } from "~/analytics";
 import { NavigatorName, ScreenName } from "~/const";
 import { MANAGER_TABS } from "~/const/manager";
 import { getDeviceAnimation, getDeviceAnimationStyles } from "~/helpers/getDeviceAnimation";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 import { lastSeenDeviceSelector } from "~/reducers/settings";
 import { SettingsState } from "~/reducers/types";
 import { urls } from "~/utils/urls";
@@ -58,11 +50,16 @@ import Circle from "../Circle";
 import DeviceActionProgress from "../DeviceActionProgress";
 import ExternalLink from "../ExternalLink";
 import GenericErrorView from "../GenericErrorView";
+import { GenericInformationBody } from "../GenericInformationBody";
 import ModalLock from "../ModalLock";
 import { RootStackParamList } from "../RootNavigator/types/RootNavigator";
 import TermsFooter, { TermsProviders } from "../TermsFooter";
 import { BleForgetDeviceIllustration } from "../BleDevicePairingFlow/BleDevicePairingContent/BleForgetDeviceIllustration";
 import { useLocalizedUrl } from "LLM/hooks/useLocalizedUrls";
+import {
+  DeviceDeprecationScreen,
+  DeviceDeprecationScreens,
+} from "./Screen/DeviceDeprecationScreen";
 
 export const Wrapper = styled(Flex).attrs({
   flex: 1,
@@ -521,6 +518,43 @@ export function renderLockedDeviceError({
   );
 }
 
+export function CounterfeitDeviceError({ device }: { device?: Device }) {
+  const { t } = useTranslation();
+  const contactSupportUrl = useLocalizedUrl(urls.contact);
+
+  const onContactSupport = useCallback(() => {
+    track("button_clicked", {
+      button: "Contacting support about non genuine device",
+    });
+
+    Linking.openURL(contactSupportUrl);
+  }, [contactSupportUrl]);
+
+  const productName = device ? getDeviceModel(device.modelId)?.productName : "Ledger device";
+
+  return (
+    <Wrapper>
+      <GenericInformationBody
+        Icon={Icons.WarningFill}
+        iconColor="warning.c70"
+        title={t("errors.CounterfeitDevice.title", { productName })}
+        description={t("errors.CounterfeitDevice.description")}
+      />
+      <Flex alignSelf="stretch" mt={6}>
+        <StyledButton
+          event="CounterfeitDeviceContactSupport"
+          type="main"
+          size="large"
+          outline={false}
+          title={t("errors.CounterfeitDevice.contactSupportCTA")}
+          IconRight={Icons.ExternalLink}
+          onPress={onContactSupport}
+        />
+      </Flex>
+    </Wrapper>
+  );
+}
+
 export function renderError({
   t,
   error,
@@ -530,6 +564,7 @@ export function renderError({
   Icon,
   iconColor,
   device,
+  currencyName = "",
   hasExportLogButton,
 }: RawProps & {
   navigation?: NativeStackNavigationProp<RootStackParamList>;
@@ -539,6 +574,7 @@ export function renderError({
   Icon?: React.ComponentProps<typeof GenericErrorView>["Icon"];
   iconColor?: string;
   device?: Device;
+  currencyName?: string;
   hasExportLogButton?: boolean;
 }) {
   if (error instanceof LockedDeviceError) {
@@ -550,6 +586,16 @@ export function renderError({
       <Flex flex={1}>
         <BleForgetDeviceIllustration productName={productName} onRetry={() => onRetry?.()} />
       </Flex>
+    );
+  } else if (isCounterfeitError(error)) {
+    return <CounterfeitDeviceError device={device} />;
+  } else if (error.message === "device-deprecation") {
+    return (
+      <DeviceDeprecationScreen
+        coinName={currencyName}
+        productName={getDeviceModel(device!.modelId)?.productName}
+        screenName={DeviceDeprecationScreens.errorScreen}
+      />
     );
   } else {
     const renderErrorButtons = (error: Error, managerAppName?: string) => {
@@ -727,6 +773,7 @@ export function RequiredFirmwareUpdate({
   const { t } = useTranslation();
   const track = useTrack();
   const lastSeenDevice: DeviceModelInfo | null | undefined = useSelector(lastSeenDeviceSelector);
+  const { shouldDisplayWallet40MainNav, shouldDisplayMyWallet } = useWalletFeaturesConfig("mobile");
 
   const usbFwUpdateActivated = !!lastSeenDevice;
   const deviceName = getDeviceModel(device.modelId).productName;
@@ -739,36 +786,62 @@ export function RequiredFirmwareUpdate({
       button: "OpenMyLedger",
       page: "Update_OS_To_Continue",
     });
-    navigation.reset({
-      index: 0,
-      routes: [
-        {
-          name: NavigatorName.Base,
-          state: {
-            routes: [
-              {
-                name: NavigatorName.Main,
-                state: {
-                  routes: [
-                    {
-                      name: NavigatorName.MyLedger,
-                      state: {
-                        routes: [
-                          {
-                            name: ScreenName.MyLedgerChooseDevice,
-                            params: { device, firmwareUpdate: isDeviceConnectedViaUSB },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
+
+    if (shouldDisplayMyWallet) {
+      const myWalletState = {
+        routes: [
+          {
+            name: ScreenName.MyWallet,
+            params: { device, firmwareUpdate: isDeviceConnectedViaUSB },
           },
-        },
-      ],
-    });
+        ],
+      };
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: NavigatorName.Base,
+            state: {
+              index: 1,
+              routes: [
+                { name: NavigatorName.Main },
+                { name: NavigatorName.MyWallet, state: myWalletState },
+              ],
+            },
+          },
+        ],
+      });
+    } else {
+      const myLedgerState = {
+        routes: [
+          {
+            name: ScreenName.MyLedgerChooseDevice,
+            params: { device, firmwareUpdate: isDeviceConnectedViaUSB },
+          },
+        ],
+      };
+      if (shouldDisplayWallet40MainNav) {
+        navigation.reset({
+          index: 1,
+          routes: [
+            { name: NavigatorName.Main },
+            { name: NavigatorName.MyLedger, state: myLedgerState },
+          ],
+        });
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: NavigatorName.Main,
+              state: {
+                routes: [{ name: NavigatorName.MyLedger, state: myLedgerState }],
+              },
+            },
+          ],
+        });
+      }
+    }
   };
 
   return (
@@ -943,7 +1016,7 @@ export function renderLoading({
   return (
     <Wrapper>
       <SpinnerContainer>
-        <InfiniteLoader mock={!!Config.DETOX} testID="device-action-loading" />
+        <InfiniteLoader testID="device-action-loading" />
       </SpinnerContainer>
       <CenteredText>{description ?? t("DeviceAction.loading")}</CenteredText>
       {lockModal ? <ModalLock /> : null}

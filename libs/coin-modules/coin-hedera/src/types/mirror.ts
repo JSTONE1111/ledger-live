@@ -1,5 +1,5 @@
-import BigNumber from "bignumber.js";
 import type { TokenCurrency } from "@ledgerhq/types-cryptoassets";
+import BigNumber from "bignumber.js";
 
 type FreezeStatus = "NOT_APPLICABLE" | "FROZEN" | "UNFROZEN";
 
@@ -24,9 +24,12 @@ export interface HederaMirrorTransaction {
   charged_tx_fee: number;
   transaction_hash: string;
   transaction_id: string;
+  nonce: number;
   consensus_timestamp: string;
+  parent_consensus_timestamp: string | null;
   entity_id: string | null;
   result: string;
+  node: string | null;
   name: string;
   memo_base64?: string;
 }
@@ -78,6 +81,20 @@ export interface HederaMirrorTransactionsResponse {
   };
 }
 
+export interface HederaMirrorBlock {
+  timestamp: {
+    from: string;
+    to: string | null;
+  };
+}
+
+export interface HederaMirrorBlocksResponse {
+  blocks: HederaMirrorBlock[];
+  links: {
+    next: string | null;
+  };
+}
+
 export interface HederaMirrorNetworkFees {
   fees: {
     gas: number;
@@ -88,6 +105,7 @@ export interface HederaMirrorNetworkFees {
 
 export interface HederaMirrorContractCallResult {
   contract_id: string;
+  block_hash: string;
   block_gas_used: number;
   gas_consumed: number;
   gas_limit: number;

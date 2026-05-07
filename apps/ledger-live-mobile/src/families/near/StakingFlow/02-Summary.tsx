@@ -1,9 +1,9 @@
 import { getAccountCurrency, getMainAccount } from "@ledgerhq/live-common/account/index";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
 import { formatCurrencyUnit, getCurrencyColor } from "@ledgerhq/live-common/currencies/index";
 import { useLedgerFirstShuffledValidatorsNear } from "@ledgerhq/live-common/families/near/react";
-import { NearValidatorItem, NearAccount } from "@ledgerhq/live-common/families/near/types";
+import { NearValidatorItem, NearAccount, Transaction as NearTransaction } from "@ledgerhq/live-common/families/near/types";
 import { FIGMENT_NEAR_VALIDATOR_ADDRESS } from "@ledgerhq/live-common/families/near/constants";
 import { getMaxAmount } from "@ledgerhq/live-common/families/near/logic";
 import { AccountLike } from "@ledgerhq/types-live";
@@ -46,7 +46,7 @@ export default function StakingSummary({ navigation, route }: Props) {
 
   const validators = useLedgerFirstShuffledValidatorsNear("");
   const mainAccount = getMainAccount(account, parentAccount);
-  const bridge = getAccountBridge(account, undefined);
+  const bridge = useAccountBridge<NearTransaction>(account, undefined);
 
   const chosenValidator = useMemo(() => {
     if (validator !== undefined) {
@@ -56,8 +56,8 @@ export default function StakingSummary({ navigation, route }: Props) {
     return validators[0];
   }, [validators, validator]);
 
-  const { transaction, updateTransaction, setTransaction, status, bridgePending, bridgeError } =
-    useBridgeTransaction(() => {
+  const { transaction, setTransaction, status, bridgePending, bridgeError } = useBridgeTransaction(
+    () => {
       const tx = route.params.transaction;
 
       if (!tx) {
@@ -73,17 +73,13 @@ export default function StakingSummary({ navigation, route }: Props) {
       }
 
       return { account, transaction: tx };
-    });
+    },
+  );
 
   invariant(transaction, "transaction must be defined");
   invariant(transaction.family === "near", "transaction near");
 
   useEffect(() => {
-    const tmpTransaction = route.params.transaction;
-    if (tmpTransaction) {
-      updateTransaction(_ => tmpTransaction);
-    }
-
     if (chosenValidator.validatorAddress !== transaction.recipient) {
       setTransaction(
         bridge.updateTransaction(transaction, {
@@ -91,15 +87,7 @@ export default function StakingSummary({ navigation, route }: Props) {
         }),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    route.params,
-    bridge,
-    setTransaction,
-    chosenValidator,
-    updateTransaction,
-    route.params.transaction,
-  ]);
+  }, [bridge, setTransaction, chosenValidator, transaction]);
 
   const [rotateAnim] = useState(() => new Animated.Value(0));
   useEffect(() => {

@@ -1,11 +1,11 @@
+import { Buffer as OriginalBuffer } from "buffer";
+import type { DatasetTest } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
 import { cardanoRawAccount1 } from "../datasets/rawAccount.1";
 import { cardanoScanAccounts } from "../datasets/scanAccounts";
 import { CardanoInvalidPoolId, CardanoMinAmountError } from "../errors";
 import { fromTransactionRaw } from "../transaction";
 import type { Transaction } from "../types";
-import type { DatasetTest } from "@ledgerhq/types-live";
-import { Buffer as OriginalBuffer } from "buffer";
 
 // NOTE: overrides polyfill set here libs/ledger-live-common/jest.polyfills.js
 Object.defineProperty(globalThis, "Buffer", {
@@ -18,10 +18,17 @@ export const dataset: DatasetTest<Transaction> = {
   implementations: ["js"],
   currencies: {
     cardano_testnet: {
-      FIXME_ignoreAccountFields: ["syncHash"],
+      FIXME_ignoreAccountFields: [
+        "syncHash",
+        "cardanoResources.protocolParams", // protocol params can change anytime
+        "cardanoResources.delegation.rewards", // rewards will always be increasing
+        "balance", // Rewards are included in balance, so this will too keep changing
+        "spendableBalance", // rewards are included here too, same as above
+      ],
       scanAccounts: cardanoScanAccounts,
       accounts: [
         {
+          FIXME_tests: ["balance is sum of ops"],
           raw: cardanoRawAccount1,
           transactions: [
             {

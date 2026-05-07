@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/live-signer-evm",
-  "version": "0.13.2",
+  "version": "0.17.0",
   "private": true,
   "description": "Ledger Hardware Wallet Ethereum Application API",
   "keywords": [
@@ -33,15 +33,16 @@
     "@ledgerhq/device-management-kit": "catalog:",
     "@ledgerhq/errors": "workspace:^",
     "@ledgerhq/hw-app-eth": "workspace:^",
+    "@ledgerhq/live-dmk-shared": "workspace:^",
     "rxjs": "catalog:"
   },
   "scripts": {
     "clean": "rimraf lib lib-es",
-    "build": "tsc && tsc -m esnext --moduleResolution bundler --outDir lib-es",
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es",
     "prewatch": "pnpm build",
-    "watch": "tsc --watch",
-    "watch:es": "tsc --watch -m esnext --moduleResolution bundler --outDir lib-es",
-    "lint": "eslint ./src --no-error-on-unmatched-pattern --ext .ts,.tsx --cache",
+    "watch": "tsc --watch --project tsconfig.build.json",
+    "watch:es": "tsc --watch --project tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es",
+    "lint": "oxlint -c ../oxc-live-libs/.oxlintrc.json ./src",
     "lint:fix": "pnpm lint --fix",
     "test": "jest",
     "coverage": "jest --coverage"
@@ -49,12 +50,29 @@
   "devDependencies": {
     "@ledgerhq/types-live": "workspace:^",
     "@types/jest": "catalog:",
-    "@types/node": "22.10.1",
+    "@types/node": "catalog:",
     "jest": "catalog:",
     "rimraf": "^4.4.1",
     "@swc/jest": "catalog:",
     "@swc/core": "catalog:",
     "ts-node": "^10.4.0",
     "ws": "catalog:"
+  },
+  "exports": {
+    ".": {
+      "@ledgerhq/source": "./src/index.ts",
+      "import": "./lib-es/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./lib-es/*": "./lib-es/*.js",
+    "./lib/*": "./lib/*.js",
+    "./*": {
+      "@ledgerhq/source": "./src/*.ts",
+      "import": "./lib-es/*.js",
+      "require": "./lib/*.js",
+      "default": "./lib/*.js"
+    },
+    "./package.json": "./package.json"
   }
 }

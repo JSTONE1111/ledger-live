@@ -4,7 +4,10 @@ import { mockConfig } from "../test/config";
 import { craftTransaction } from ".";
 
 /**
- * https://teztnets.com/ghostnet-about
+ * Runs against Tezos mainnet via Ledger's vault explorer (see `mockConfig`).
+ * Despite the directory's other integ tests using Shadownet, this file does
+ * not query a testnet — Taquito reaches the mainnet RPC for counter / reveal
+ * estimation while ops themselves are forged locally and never broadcast.
  * https://api.tzkt.io/#section/Get-Started/Free-TzKT-API
  */
 describe("Tezos Api", () => {
@@ -98,6 +101,110 @@ describe("Tezos Api", () => {
         }),
       ]),
     );
+  });
+
+  it("should craft a stake transaction", async () => {
+    // When
+    const result = await craftTransaction(
+      { address },
+      {
+        type: "stake",
+        recipient: "",
+        amount: BigInt(1000),
+        fee: { fees: BigInt(1).toString(), gasLimit: "200", storageLimit: "0" },
+      },
+    );
+
+    // Then
+    expect(result.type).toBe("STAKE");
+    expect(result.contents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: OpKind.TRANSACTION,
+          amount: "1000",
+          destination: address,
+          source: address,
+          counter: expect.any(String),
+          fee: "1",
+          gas_limit: "200",
+          storage_limit: "0",
+          parameters: { entrypoint: "stake", value: { prim: "Unit" } },
+        }),
+      ]),
+    );
+  });
+
+  it("should craft a send_token (FA2) transaction", async () => {
+    const contractAddress = "KT1XnTn74bUtxHfDtBmm2bGZAQfhPbvKWR8o";
+
+    const result = await craftTransaction(
+      { address },
+      {
+        type: "send_token",
+        recipient: "tz1aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9", // spell-checker: disable-line
+        amount: BigInt(1),
+        fee: { fees: BigInt(1).toString() },
+        contractAddress,
+        tokenId: 0,
+      },
+    );
+
+    expect(result.type).toBe("OUT");
+    expect(result.contents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: OpKind.TRANSACTION,
+          source: address,
+          destination: contractAddress,
+          amount: "0",
+          counter: expect.any(String),
+          fee: "1",
+          gas_limit: "0",
+          storage_limit: "0",
+          parameters: expect.objectContaining({ entrypoint: "transfer" }),
+        }),
+      ]),
+    );
+  });
+
+  it("should craft a send_token (FA2) transaction with reveal for unrevealed tz2 address", async () => {
+    const tz2Address = "tz2F4XnSd1wjwWsthemvZQjoPER7NVSt35k3";
+    const expectedPublicKey = "sppk7but7h93Ws1XhAPvdBcttVmoBDGHxdpaU8dPy5549f3eLJFAjag";
+    const contractAddress = "KT1XnTn74bUtxHfDtBmm2bGZAQfhPbvKWR8o";
+
+    const result = await craftTransaction(
+      { address: tz2Address },
+      {
+        type: "send_token",
+        recipient: "tz1aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9", // spell-checker: disable-line
+        amount: BigInt(1),
+        fee: { fees: "500", gasLimit: "10000", storageLimit: "0" },
+        contractAddress,
+        tokenId: 0,
+      },
+      {
+        publicKey: expectedPublicKey,
+        publicKeyHash: tz2Address,
+      },
+    );
+
+    expect(result).toEqual({
+      type: "OUT",
+      contents: [
+        expect.objectContaining({
+          kind: OpKind.REVEAL,
+          public_key: expectedPublicKey,
+          source: tz2Address,
+        }),
+        expect.objectContaining({
+          kind: OpKind.TRANSACTION,
+          source: tz2Address,
+          destination: contractAddress,
+          amount: "0",
+          parameters: expect.objectContaining({ entrypoint: "transfer" }),
+        }),
+      ],
+    });
   });
 
   it("should craft a send transaction from tz2 address with correct compressedreveal public key", async () => {

@@ -1,23 +1,26 @@
 import {
   AlpacaApi,
+  Balance,
   Block,
   BlockInfo,
+  CraftedTransaction,
   Cursor,
   FeeEstimation,
+  ListOperationsOptions,
+  Operation,
   Page,
-  Validator,
   Reward,
   Stake,
   TransactionIntent,
-  Operation,
-  Balance,
-  ListOperationsOptions,
-  CraftedTransaction,
-} from "@ledgerhq/coin-framework/api/index";
-import coinConfig, { type CantonConfig } from "../config";
+  TransactionValidation,
+  Validator,
+} from "@ledgerhq/coin-module-framework/api/index";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
+import { validateAddress } from "../bridge/validateAddress";
 import { combine } from "../common-logic/transaction/combine";
+import coinConfig, { type CantonCoinConfig } from "../config";
 
-export function createApi(config: CantonConfig): AlpacaApi {
+export function createApi(config: CantonCoinConfig): AlpacaApi {
   coinConfig.setCoinConfig(() => ({ ...config, status: { type: "active" } }));
 
   return {
@@ -63,5 +66,17 @@ export function createApi(config: CantonConfig): AlpacaApi {
     getValidators(_cursor?: Cursor): Promise<Page<Validator>> {
       throw new Error("getValidators is not supported");
     },
+    validateIntent: async (
+      _transactionIntent: TransactionIntent,
+      _balances: Balance[],
+      _customFees?: FeeEstimation,
+    ): Promise<TransactionValidation> => {
+      throw new Error("validateIntent is not supported");
+    },
+    getNextSequence: async (_address: string) => {
+      throw new Error("getNextSequence is not supported");
+    },
+    validateAddress,
+    craftTransactionData,
   };
 }

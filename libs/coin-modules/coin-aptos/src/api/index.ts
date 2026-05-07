@@ -1,20 +1,29 @@
+import { rejectBalanceOptions } from "@ledgerhq/coin-module-framework/api/getBalance/rejectBalanceOptions";
 import {
   AlpacaApi,
   Block,
   BlockInfo,
-  Cursor,
-  Stake,
-  Reward,
-  Page,
-  Validator,
   CraftedTransaction,
-} from "@ledgerhq/coin-framework/api/index";
-import type { Balance, TransactionIntent } from "@ledgerhq/coin-framework/api/types";
+  Cursor,
+  Page,
+  Reward,
+  Stake,
+  Validator,
+} from "@ledgerhq/coin-module-framework/api/index";
+import type {
+  Balance,
+  BalanceOptions,
+  FeeEstimation,
+  TransactionIntent,
+  TransactionValidation,
+} from "@ledgerhq/coin-module-framework/api/types";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
 import type { AptosConfig as AptosConfigApi } from "../config";
 import coinConfig from "../config";
 import { combine } from "../logic/combine";
 import { craftTransaction } from "../logic/craftTransaction";
 import { getBalances } from "../logic/getBalances";
+import { validateAddress } from "../logic/validateAddress";
 import { AptosAPI } from "../network";
 
 export function createApi(config: AptosConfigApi): AlpacaApi {
@@ -36,7 +45,8 @@ export function createApi(config: AptosConfigApi): AlpacaApi {
       throw new Error("craftRawTransaction is not supported");
     },
     estimateFees: (transactionIntent: TransactionIntent) => client.estimateFees(transactionIntent),
-    getBalance: (address): Promise<Balance[]> => getBalances(client, address),
+    getBalance: (address: string, options?: BalanceOptions) =>
+      rejectBalanceOptions(() => getBalances(client, address), options),
     lastBlock: () => client.getLastBlock(),
     listOperations: (address: string, { minHeight }) => client.listOperations(address, minHeight),
     getBlock(_height): Promise<Block> {
@@ -54,5 +64,17 @@ export function createApi(config: AptosConfigApi): AlpacaApi {
     getValidators(_cursor?: Cursor): Promise<Page<Validator>> {
       throw new Error("getValidators is not supported");
     },
+    validateIntent: async (
+      _transactionIntent: TransactionIntent,
+      _balances: Balance[],
+      _customFees?: FeeEstimation,
+    ): Promise<TransactionValidation> => {
+      throw new Error("validateIntent is not supported");
+    },
+    getNextSequence: async (_address: string) => {
+      throw new Error("getNextSequence is not supported");
+    },
+    validateAddress,
+    craftTransactionData,
   };
 }

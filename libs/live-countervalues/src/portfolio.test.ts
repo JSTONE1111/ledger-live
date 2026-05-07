@@ -1,4 +1,4 @@
-import "@ledgerhq/coin-framework/test-helpers/staticTime";
+import "@ledgerhq/ledger-wallet-framework/test-helpers/staticTime";
 
 import { getFiatCurrencyByTicker, getCryptoCurrencyById } from "@ledgerhq/cryptoassets";
 import { initialState, loadCountervalues, inferTrackingPairForAccounts } from "./logic";
@@ -9,6 +9,7 @@ import {
   getPortfolio,
   getCurrencyPortfolio,
   getAssetsDistribution,
+  defaultAssetsDistribution,
   getPortfolioRangeConfig,
   getDates,
   getRanges,
@@ -18,10 +19,10 @@ import {
   orderAccountsByFiatValue,
 } from "./portfolio";
 import { setEnv } from "@ledgerhq/live-env";
-import { genAccount } from "@ledgerhq/coin-framework/mocks/account";
-import { getAccountCurrency } from "@ledgerhq/coin-framework/account/index";
+import { genAccount } from "@ledgerhq/ledger-wallet-framework/mocks/account";
+import { getAccountCurrency } from "@ledgerhq/ledger-wallet-framework/account/index";
 import type { Account, AccountLike, PortfolioRange } from "@ledgerhq/types-live";
-import { setSupportedCurrencies } from "@ledgerhq/coin-framework/currencies/support";
+import { setSupportedCurrencies } from "@ledgerhq/ledger-wallet-framework/currencies/support";
 
 setSupportedCurrencies(["ethereum", "ethereum_classic", "ripple"]);
 
@@ -136,7 +137,7 @@ describe("Portfolio", () => {
       const account2 = genAccountBitcoin("bitcoin_2");
       const { state, to } = await loadCV(account);
       const portfolio = getPortfolio([account, account2], range, state, to);
-      const { history: history } = getBalanceHistoryWithCountervalue(
+      const { history } = getBalanceHistoryWithCountervalue(
         account,
         range,
         count,
@@ -155,7 +156,7 @@ describe("Portfolio", () => {
     it("should recompose partial cache", async () => {
       const account = genAccountBitcoin("bitcoin_whatever");
       const { state, to } = await loadCV(account);
-      const { history: history } = getBalanceHistoryWithCountervalue(
+      const { history } = getBalanceHistoryWithCountervalue(
         account,
         "month",
         100,
@@ -209,7 +210,7 @@ describe("Portfolio", () => {
       const account2 = genAccountBitcoin("bitcoin_2");
       const { state, to } = await loadCV(account);
       const portfolio = getCurrencyPortfolio([account, account2], range, state, to);
-      const { history: history } = getBalanceHistoryWithCountervalue(
+      const { history } = getBalanceHistoryWithCountervalue(
         account,
         range,
         count,
@@ -246,7 +247,33 @@ describe("Portfolio", () => {
       const assets = getAssetsDistribution([account], state, to);
       expect(assets).toMatchSnapshot();
     });
+
+    it("should include an asset with a countervalue of 0 in the distribution", async () => {
+      const account = genAccountBitcoin();
+      const { state, to } = await loadCV(account);
+
+      const zeroBalance = account.balance.minus(account.balance);
+      const zeroBalanceAccount: Account = {
+        ...account,
+        balance: zeroBalance,
+        spendableBalance: zeroBalance,
+      };
+
+      const assets = getAssetsDistribution([zeroBalanceAccount], state, to, {
+        ...defaultAssetsDistribution,
+        showEmptyAccounts: true,
+      });
+
+      expect(assets.isAvailable).toBe(true);
+      expect(assets.list.length).toBeGreaterThan(0);
+
+      const btcEntry = assets.list.find(a => a.currency.id === "bitcoin");
+      expect(btcEntry).toBeDefined();
+      expect(btcEntry!.countervalue).toBe(0);
+      expect(assets.sum).toBe(0);
+    });
   });
+
   describe("range module", () => {
     test("getRanges", () => {
       const ranges = ["all", "year", "month", "week", "day"];

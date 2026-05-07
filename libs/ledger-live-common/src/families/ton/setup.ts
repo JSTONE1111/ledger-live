@@ -4,10 +4,9 @@ import { createBridges } from "@ledgerhq/coin-ton/bridge/js";
 import makeCliTools from "@ledgerhq/coin-ton/cli-transaction";
 import tonResolver from "@ledgerhq/coin-ton/hw-getAddress";
 import { signMessage } from "@ledgerhq/coin-ton/hw-signMessage";
-import { TonCoinConfig } from "@ledgerhq/coin-ton/lib/config";
-import { TonSigner } from "@ledgerhq/coin-ton/lib/signer";
+import { TonCoinConfig } from "@ledgerhq/coin-ton/config";
+import { TonSigner } from "@ledgerhq/coin-ton/signer";
 import { TonAccount, Transaction } from "@ledgerhq/coin-ton/types";
-import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
 import Transport from "@ledgerhq/hw-transport";
 import type { Bridge } from "@ledgerhq/types-live";
 import { TonTransport as Ton } from "@ton-community/ton-ledger";
@@ -18,7 +17,7 @@ import type { Resolver } from "../../hw/getAddress/types";
 const createSigner: CreateSigner<TonSigner> = (transport: Transport) => new Ton(transport);
 
 const getCoinConfig: TonCoinConfig = () =>
-  getCurrencyConfiguration<ReturnType<TonCoinConfig>>(getCryptoCurrencyById("ton"));
+  getCurrencyConfiguration<ReturnType<TonCoinConfig>>("ton");
 
 const bridge: Bridge<Transaction, TonAccount> = createBridges(
   executeWithSigner(createSigner),

@@ -24,6 +24,7 @@ import useMarketListViewModel from "./useMarketListViewModel";
 import { LIMIT } from "~/reducers/market";
 import { DdRum } from "@datadog/mobile-react-native";
 import { ScreenName } from "~/const";
+import { ddAddViewLoadingTime } from "LLM/utils/ddAddViewLoadingTime";
 import { MARKET_LIST_VIEW_ID } from "~/utils/constants";
 import { buildFeatureFlagTags } from "~/utils/datadogUtils";
 
@@ -115,14 +116,14 @@ function View({
    * */
   useEffect(() => {
     resetMarketPageToInital(marketParams.page ?? 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     DdRum.startView(MARKET_LIST_VIEW_ID, ScreenName.MarketList, {
       featureFlags: buildFeatureFlagTags(),
     });
-    DdRum.addViewLoadingTime(true);
+    ddAddViewLoadingTime();
   }, []);
   /**
    * Try to Refetch data every REFRESH_RATE time

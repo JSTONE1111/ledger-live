@@ -7,7 +7,7 @@ import {
 import { useRampCatalog } from "@ledgerhq/live-common/platform/providers/RampCatalogProvider/useRampCatalog";
 
 import { Account, AccountLike } from "@ledgerhq/types-live";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { TFunction } from "i18next";
 import { withTranslation } from "react-i18next";
 import { connect } from "react-redux";
@@ -45,6 +45,8 @@ import { WC_ID } from "@ledgerhq/live-common/wallet-api/constants";
 import { walletSelector } from "~/renderer/reducers/wallet";
 import { useStake } from "LLD/hooks/useStake";
 import { useOpenSendFlow } from "LLD/features/Send/hooks/useOpenSendFlow";
+import { useNewSendFlowFeature } from "LLD/features/Send/hooks/useNewSendFlowFeature";
+import { getSendFlowTrackingProperties } from "LLD/features/Send/utils/tracking";
 
 type RenderActionParams = {
   label: React.ReactNode;
@@ -195,6 +197,8 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
   const location = useLocation();
   const specific = getLLDCoinFamily(mainAccount.currency.family);
   const openSendFlow = useOpenSendFlow();
+  const { isEnabledForFamily, getFamilyFromAccount, getCurrencyIdFromAccount } =
+    useNewSendFlowFeature();
 
   const manage = specific?.accountHeaderManageActions;
   let manageList: ManageAction[] = [];
@@ -220,6 +224,21 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
   const canOnlyStakeUsingLedgerLive = canStakeUsingLedgerLive && !canStakeUsingPlatformApp;
   const walletState = useSelector(walletSelector);
   const routeToStakePlatformApp = getRouteToPlatformApp(account, walletState, parentAccount);
+
+  const [canSendResult, setCanSendResult] = useState(false);
+  useEffect(() => {
+    let active = true;
+    canSend(account, parentAccount)
+      .then(result => {
+        if (active) setCanSendResult(result);
+      })
+      .catch(() => {
+        if (active) setCanSendResult(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [account, parentAccount]);
 
   // don't show buttons until we know whether or not we can show swap button, otherwise possible click jacking
   const showButtons = !!getAvailableProviders();
@@ -263,11 +282,12 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
         state: {
           currency: currency?.id,
           account: mainAccount?.id,
-          mode, // buy or sell
+          mode,
+          returnTo: location.pathname,
         },
       });
     },
-    [currency, navigate, mainAccount.id, buttonSharedTrackingFields],
+    [currency, navigate, mainAccount.id, buttonSharedTrackingFields, location.pathname],
   );
 
   const onSwap = useCallback(() => {
@@ -297,15 +317,36 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
   ]);
 
   const onSend = useCallback(() => {
+    const family = getFamilyFromAccount(account, parentAccount);
+    const currencyId = getCurrencyIdFromAccount(account, parentAccount);
+    const isNewSendFlow = isEnabledForFamily(family, currencyId);
+    const sendFlowTrackingProperties = isNewSendFlow
+      ? getSendFlowTrackingProperties(account, parentAccount)
+      : { flow: "send" };
     track("button_clicked2", {
       button: "send",
       ...buttonSharedTrackingFields,
+    });
+    track("button_clicked", {
+      button: "send",
+      page: "Account",
+      currency: currency.ticker,
+      ...sendFlowTrackingProperties,
     });
     openSendFlow({
       parentAccount,
       account,
     });
-  }, [openSendFlow, parentAccount, account, buttonSharedTrackingFields]);
+  }, [
+    openSendFlow,
+    parentAccount,
+    account,
+    buttonSharedTrackingFields,
+    isEnabledForFamily,
+    getFamilyFromAccount,
+    getCurrencyIdFromAccount,
+    currency.ticker,
+  ]);
 
   const onReceive = useCallback(() => {
     track("button_clicked2", {
@@ -351,7 +392,7 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
       {availableOnSwap ? swapHeader : null}
       {availableOnBuy ? buyHeader : null}
       {availableOnSell && sellHeader}
-      {canSend(account, parentAccount) ? (
+      {canSendResult ? (
         <SendAction account={account} parentAccount={parentAccount} onClick={onSend} />
       ) : null}
       <ReceiveAction account={account} parentAccount={parentAccount} onClick={onReceive} />

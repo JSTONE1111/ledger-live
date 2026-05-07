@@ -1,12 +1,15 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent } from "@ledgerhq/lumen-ui-react";
+import { cn } from "LLD/utils/cn";
 import { useFlowWizard } from "../../FlowWizard/FlowWizardContext";
 import { useSendFlowData } from "../context/SendFlowContext";
 import { FLOW_STATUS } from "@ledgerhq/live-common/flows/wizard/types";
 import type { SendFlowStep, SendFlowBusinessContext } from "@ledgerhq/live-common/flows/send/types";
 import type { SendStepConfig } from "../types";
 import { SendHeader } from "./SendHeader";
-import { cn } from "LLD/utils/cn";
+import { AnimatedHeight } from "./AnimatedHeight";
+import { track } from "~/renderer/analytics/segment";
+import { getSendFlowTrackingProperties } from "../utils/tracking";
 
 type SendFlowLayoutProps = Readonly<{
   isOpen: boolean;
@@ -19,20 +22,30 @@ export function SendFlowLayout({ isOpen, onClose }: SendFlowLayoutProps) {
 
   const currentStepConfig = wizard.currentStepConfig;
   const StepComponent = wizard.currentStepRenderer;
+  const sendFlowTrackingProperties = useMemo(
+    () => getSendFlowTrackingProperties(state.account.account, state.account.parentAccount),
+    [state.account.account, state.account.parentAccount],
+  );
 
   const handleDialogOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
+        track("button_clicked", {
+          button: "close",
+          page: `step ${wizard.currentStep}`,
+          ...sendFlowTrackingProperties,
+        });
         onClose();
       }
     },
-    [onClose],
+    [onClose, wizard.currentStep, sendFlowTrackingProperties],
   );
 
   const dialogHeight = currentStepConfig?.height ?? "fixed";
 
   const shouldShowStatusGradient =
     state.flowStatus === FLOW_STATUS.ERROR || state.flowStatus === FLOW_STATUS.SUCCESS;
+  const shouldAnimateHeight = dialogHeight === "fit";
 
   return (
     <Dialog height={dialogHeight} open={isOpen} onOpenChange={handleDialogOpenChange}>
@@ -45,11 +58,29 @@ export function SendFlowLayout({ isOpen, onClose }: SendFlowLayoutProps) {
             })}
           />
         )}
-        <SendHeader />
-        {StepComponent && (
-          <div key={wizard.currentStep} className="animate-fade-in flex min-h-0 flex-1 flex-col">
-            <StepComponent />
-          </div>
+        {shouldAnimateHeight ? (
+          <AnimatedHeight>
+            <div className="flex flex-col">
+              <SendHeader />
+              {StepComponent && (
+                <div key={wizard.currentStep} className="flex animate-fade-in flex-col">
+                  <StepComponent />
+                </div>
+              )}
+            </div>
+          </AnimatedHeight>
+        ) : (
+          <>
+            <SendHeader />
+            {StepComponent && (
+              <div
+                key={wizard.currentStep}
+                className="flex min-h-0 flex-1 animate-fade-in flex-col"
+              >
+                <StepComponent />
+              </div>
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>

@@ -97,9 +97,11 @@ type CategoryContentCard = ContentCardCommonProperties & {
 
 type WalletContentCard = ContentCardCommonProperties & {
   tag?: string;
+  picto?: string;
   title?: string;
   link?: string;
   image?: string;
+  image_background?: string;
   background?: Background;
 };
 
@@ -123,7 +125,7 @@ type NotificationContentCard = ContentCardCommonProperties & {
 
 type LandingPageStickyCtaContentCard = ContentCardCommonProperties & {
   cta: string;
-  link: string;
+  link?: string;
   landingPage: LandingPageUseCase;
 };
 
@@ -133,6 +135,8 @@ type HorizontalContentCard = ContentCardCommonProperties & {
   link?: string;
   description?: string;
   image?: string;
+  image_background?: string;
+  icon?: string;
   gridWidthFactor?: WidthFactor;
 };
 

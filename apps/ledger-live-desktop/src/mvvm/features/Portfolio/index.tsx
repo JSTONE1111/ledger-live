@@ -1,4 +1,5 @@
 import React from "react";
+import { AnalyticsConsentDialog } from "LLD/features/AnalyticsConsentDialog";
 import {
   useWalletV4TourDrawerViewModel,
   WalletV4TourDialog,
@@ -8,13 +9,23 @@ import { PortfolioView } from "./PortfolioView";
 
 const Portfolio = () => {
   const viewModel = usePortfolioViewModel();
-  const { isDialogOpen: isWalletV4TourOpen, handleCloseDialog: handleCloseWalletV4Tour } =
-    useWalletV4TourDrawerViewModel({ isOnPortfolioPage: true });
+  const {
+    isDialogOpen: isWalletV4TourOpen,
+    closeDrawer: handleCloseWalletV4Tour,
+    completeDrawer: handleCompleteWalletV4Tour,
+    onSlideChange: onWalletV4TourSlideChange,
+  } = useWalletV4TourDrawerViewModel({ isOnPortfolioPage: true });
 
   return (
     <>
       <PortfolioView {...viewModel} />
-      <WalletV4TourDialog isOpen={isWalletV4TourOpen} onClose={handleCloseWalletV4Tour} />
+      <AnalyticsConsentDialog />
+      <WalletV4TourDialog
+        isOpen={isWalletV4TourOpen}
+        onClose={handleCloseWalletV4Tour}
+        onComplete={handleCompleteWalletV4Tour}
+        onSlideChange={onWalletV4TourSlideChange}
+      />
     </>
   );
 };

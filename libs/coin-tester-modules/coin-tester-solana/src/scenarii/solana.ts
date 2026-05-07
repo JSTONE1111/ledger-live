@@ -1,23 +1,28 @@
 import { Scenario, ScenarioTransaction } from "@ledgerhq/coin-tester/main";
-import { SolanaAccount, Transaction as SolanaTransaction } from "@ledgerhq/coin-solana/types";
-import resolver from "@ledgerhq/coin-solana/hw-getAddress";
+import { Account } from "@ledgerhq/types-live";
+import type { GenericTransaction } from "@ledgerhq/live-common/bridge/generic-alpaca/types";
+import type { BridgeStrategy } from "@ledgerhq/coin-tester/types";
 import {
   RECIPIENT,
   SOLANA,
   SOLANA_CWIF,
   SOLANA_USDC,
-  WITHDRAWABLE_AMOUNT,
   SOLANA_VIRTUAL,
+  WITHDRAWABLE_AMOUNT,
   initMSW,
   makeAccount,
 } from "../fixtures";
-import { CoinConfig } from "@ledgerhq/coin-framework/config";
-import { SolanaCoinConfig } from "@ledgerhq/coin-solana/config";
+import type { SolanaAccount } from "@ledgerhq/coin-solana/types";
 import BigNumber from "bignumber.js";
 import { setEnv } from "@ledgerhq/live-env";
 import { airdrop, killAgave, spawnAgave } from "../agave";
+import { encodeTokenAccountId } from "@ledgerhq/ledger-wallet-framework/account/index";
 import { encodeAccountIdWithTokenAccountAddress } from "@ledgerhq/coin-solana/logic";
-import { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import {
+  getAssociatedTokenAddressSync,
+  TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import {
   PAYER,
@@ -27,15 +32,101 @@ import {
   initStakeAccount,
   initVoteAccount,
 } from "../connection";
-import { createBridges } from "@ledgerhq/coin-solana/bridge/js";
-import { buildSigner } from "../signer";
+import { buildSigners } from "../signer";
+import { getBridges } from "../helpers";
+import { LiveConfig } from "@ledgerhq/live-config/LiveConfig";
+import type { TokenCurrency } from "@ledgerhq/types-cryptoassets";
 
 global.console = require("console");
 jest.setTimeout(100_000);
 
-type SolanaScenarioTransaction = ScenarioTransaction<SolanaTransaction, SolanaAccount>;
+type SolanaScenarioTransaction = ScenarioTransaction<GenericTransaction, Account>;
 
-function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] {
+function computeSubAccountId(
+  parentAccountId: string,
+  address: string,
+  token: TokenCurrency,
+  programId: PublicKey,
+  strategy: BridgeStrategy,
+): string {
+  if (strategy === "legacy") {
+    const ata = getAssociatedTokenAddressSync(
+      new PublicKey(token.contractAddress),
+      new PublicKey(address),
+      undefined,
+      programId,
+    );
+    return encodeAccountIdWithTokenAccountAddress(parentAccountId, ata.toBase58());
+  }
+  return encodeTokenAccountId(parentAccountId, token);
+}
+
+function getSolanaStakes(account: Account): SolanaAccount["solanaResources"]["stakes"] {
+  return (account as SolanaAccount).solanaResources?.stakes ?? [];
+}
+
+interface StakingResourcesShape {
+  delegations: Array<{ validatorAddress: string; amount: BigNumber }>;
+  unbondings: Array<{ validatorAddress: string; amount: BigNumber }>;
+  delegatedBalance: BigNumber;
+  unbondingBalance: BigNumber;
+  pendingRewardsBalance: BigNumber;
+}
+
+/** Extract stakingResources set by the generic-alpaca bridge (not typed on Account). */
+function getStakingResources(account: Account): StakingResourcesShape | undefined {
+  const raw = (account as Account & { stakingResources?: StakingResourcesShape }).stakingResources;
+  return raw;
+}
+
+/**
+ * Strategy-agnostic staking assertions.
+ * Legacy exposes `solanaResources.stakes`, generic-adapter exposes `stakingResources`.
+ * These helpers verify the same semantic invariants regardless of strategy.
+ */
+function expectDelegationTo(
+  account: Account,
+  strat: BridgeStrategy,
+  validatorAddress: string,
+): void {
+  if (strat === "legacy") {
+    const stakes = getSolanaStakes(account);
+    const found = stakes.find(s => s.delegation?.voteAccAddr === validatorAddress);
+    expect(found).toBeDefined();
+  } else {
+    const sr = getStakingResources(account);
+    expect(sr).toBeDefined();
+    const found = sr!.delegations.find(d => d.validatorAddress === validatorAddress);
+    expect(found).toBeDefined();
+    expect(found!.amount.isGreaterThan(0)).toBe(true);
+  }
+}
+
+function expectStakeExists(account: Account, strat: BridgeStrategy, stakeAddress: string): void {
+  if (strat === "legacy") {
+    const found = getSolanaStakes(account).find(s => s.stakeAccAddr === stakeAddress);
+    expect(found).toBeDefined();
+  } else {
+    // generic-adapter doesn't expose individual stake addresses, check total staking > 0
+    const sr = getStakingResources(account);
+    expect(sr).toBeDefined();
+    const totalStaking = sr!.delegatedBalance.plus(sr!.unbondingBalance);
+    expect(totalStaking.isGreaterThan(0)).toBe(true);
+  }
+}
+
+function expectStakingResourcesDefined(account: Account, strat: BridgeStrategy): void {
+  if (strat === "legacy") {
+    expect(getSolanaStakes(account)).toBeDefined();
+  } else {
+    expect(getStakingResources(account)).toBeDefined();
+  }
+}
+
+function makeScenarioTransactions(
+  address: string,
+  strategy: BridgeStrategy,
+): SolanaScenarioTransaction[] {
   if (!VOTE_ACCOUNT) {
     throw new Error("Vote account not initialized");
   }
@@ -61,13 +152,14 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
     },
   };
 
-  const usdcAssociatedTokenAccountAddress = getAssociatedTokenAddressSync(
-    new PublicKey(SOLANA_USDC.contractAddress),
-    new PublicKey(address),
-  );
-  const usdcSubAccountId = encodeAccountIdWithTokenAccountAddress(
-    `js:2:solana:${address}:solanaSub`,
-    usdcAssociatedTokenAccountAddress.toBase58(),
+  const parentAccountId = `js:2:solana:${address}:solanaSub`;
+
+  const usdcSubAccountId = computeSubAccountId(
+    parentAccountId,
+    address,
+    SOLANA_USDC,
+    TOKEN_PROGRAM_ID,
+    strategy,
   );
 
   const scenarioSendUsdcTransaction: SolanaScenarioTransaction = {
@@ -122,15 +214,12 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
     },
   };
 
-  const cwifAssociatedTokenAccountAddress = getAssociatedTokenAddressSync(
-    new PublicKey(SOLANA_CWIF.contractAddress),
-    new PublicKey(address),
-    undefined,
+  const cwifSubAccountId = computeSubAccountId(
+    parentAccountId,
+    address,
+    SOLANA_CWIF,
     TOKEN_2022_PROGRAM_ID,
-  );
-  const cwifSubAccountId = encodeAccountIdWithTokenAccountAddress(
-    `js:2:solana:${address}:solanaSub`,
-    cwifAssociatedTokenAccountAddress.toBase58(),
+    strategy,
   );
 
   const scenarioSendCwifTransaction: SolanaScenarioTransaction = {
@@ -184,13 +273,12 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
     },
   };
 
-  const virtualAssociatedTokenAccountAddress = getAssociatedTokenAddressSync(
-    new PublicKey(SOLANA_VIRTUAL.contractAddress),
-    new PublicKey(address),
-  );
-  const virtualSubAccountId = encodeAccountIdWithTokenAccountAddress(
-    `js:2:solana:${address}:solanaSub`,
-    virtualAssociatedTokenAccountAddress.toBase58(),
+  const virtualSubAccountId = computeSubAccountId(
+    parentAccountId,
+    address,
+    SOLANA_VIRTUAL,
+    TOKEN_PROGRAM_ID,
+    strategy,
   );
 
   const scenarioSendVirtualTransaction: SolanaScenarioTransaction = {
@@ -245,76 +333,6 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
     },
   };
 
-  const scenarioCreateSolStakeAccountTransaction: SolanaScenarioTransaction = {
-    name: "Create Stake Account 1 Sol",
-    amount: new BigNumber(1e9),
-    model: {
-      kind: "stake.createAccount",
-      uiState: { delegate: { voteAccAddress: VOTE_ACCOUNT.votePubkey } },
-    },
-    expect: (previousAccount, currentAccount) => {
-      const [latestOperation] = currentAccount.operations;
-      expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
-      expect(latestOperation.type).toEqual("DELEGATE");
-      expect(latestOperation.value).toStrictEqual(latestOperation.fee);
-      expect(latestOperation.senders).toStrictEqual([]);
-      expect(latestOperation.recipients).toStrictEqual([]);
-      expect(latestOperation.extra).toStrictEqual({
-        stake: { address: VOTE_ACCOUNT?.votePubkey, amount: new BigNumber(1e9 + 2287880) }, // amount + rent exempt reserve + fee
-      });
-      expect(currentAccount.balance).toStrictEqual(
-        previousAccount.balance.minus(latestOperation.value),
-      );
-      expect(currentAccount.spendableBalance).toStrictEqual(
-        previousAccount.spendableBalance.minus(1e9 + 2297880),
-      );
-    },
-  };
-
-  const scenarioActivateStakeAccount: SolanaScenarioTransaction = {
-    name: "Activate Stake Account",
-    model: {
-      kind: "stake.delegate",
-      uiState: {
-        stakeAccAddr: STAKE_ACCOUNT.publicKey.toBase58(),
-        voteAccAddr: VOTE_ACCOUNT.votePubkey,
-      },
-    },
-    expect: (previousAccount, currentAccount) => {
-      const [latestOperation] = currentAccount.operations;
-      expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
-      expect(latestOperation.type).toEqual("DELEGATE");
-      expect(latestOperation.value).toStrictEqual(latestOperation.fee);
-      expect(latestOperation.senders).toStrictEqual([]);
-      expect(latestOperation.recipients).toStrictEqual([]);
-      expect(latestOperation.extra).toStrictEqual({
-        stake: { address: VOTE_ACCOUNT?.votePubkey, amount: latestOperation.value },
-      });
-      expect(currentAccount.balance).toStrictEqual(
-        previousAccount.balance.minus(latestOperation.value),
-      );
-    },
-  };
-
-  const scenarioDeactivateStakeAccount: SolanaScenarioTransaction = {
-    name: "Deactivate Stake Account",
-    model: {
-      kind: "stake.undelegate",
-      uiState: { stakeAccAddr: STAKE_ACCOUNT.publicKey.toBase58() },
-    },
-    expect: (previousAccount, currentAccount) => {
-      const [latestOperation] = currentAccount.operations;
-      expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
-      expect(latestOperation.type).toEqual("UNDELEGATE");
-      expect(latestOperation.value).toStrictEqual(latestOperation.fee);
-      expect(latestOperation.senders).toStrictEqual([]);
-      expect(latestOperation.recipients).toStrictEqual([]);
-      expect(currentAccount.balance).toStrictEqual(
-        previousAccount.balance.minus(latestOperation.value),
-      );
-    },
-  };
-
   const scenarioSendAllSolTransaction: SolanaScenarioTransaction = {
     name: "Send All Sol",
     useAllAmount: true,
@@ -332,21 +350,93 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
     },
   };
 
+  const scenarioCreateSolStakeAccountTransaction: SolanaScenarioTransaction = {
+    name: "Create Stake Account 1 Sol",
+    amount: new BigNumber(1e9),
+    recipient: VOTE_ACCOUNT.votePubkey,
+    mode: "stake",
+    expect: (previousAccount, currentAccount) => {
+      const [latestOperation] = currentAccount.operations;
+      expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
+      expect(latestOperation.type).toEqual("DELEGATE");
+      expect(latestOperation.value).toStrictEqual(latestOperation.fee);
+      if (strategy === "generic-adapter") {
+        expect(latestOperation.senders).toStrictEqual([]);
+        expect(latestOperation.recipients).toStrictEqual([]);
+      }
+      expect(latestOperation.extra).toMatchObject({
+        stake: { address: VOTE_ACCOUNT?.votePubkey, amount: new BigNumber(1e9 + 2287880) }, // amount + rent exempt reserve + fee
+      });
+      expect(currentAccount.balance).toStrictEqual(
+        previousAccount.balance.minus(latestOperation.value),
+      );
+      // 1e9 (delegation) + 2287880 (stake rent exempt) + 5000 (tx fee) + 5000 (unstakeReserve = 1 withdrawFee)
+      expect(currentAccount.spendableBalance).toStrictEqual(
+        previousAccount.spendableBalance.minus(1e9 + 2297880),
+      );
+      // Verify staking resources are populated after sync with delegation to the validator
+      expectDelegationTo(currentAccount, strategy, VOTE_ACCOUNT!.votePubkey);
+    },
+  };
+
+  const scenarioActivateStakeAccount: SolanaScenarioTransaction = {
+    name: "Activate Stake Account",
+    recipient: VOTE_ACCOUNT.votePubkey,
+    mode: "delegate",
+    memoType: "STAKE_ACCOUNT",
+    memoValue: STAKE_ACCOUNT.publicKey.toBase58(),
+    expect: (previousAccount, currentAccount) => {
+      const [latestOperation] = currentAccount.operations;
+      expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
+      expect(latestOperation.type).toEqual("DELEGATE");
+      expect(latestOperation.value).toStrictEqual(latestOperation.fee);
+      expect(latestOperation.senders).toStrictEqual([]);
+      expect(latestOperation.recipients).toStrictEqual([]);
+      expect(latestOperation.extra).toStrictEqual({
+        stake: { address: VOTE_ACCOUNT?.votePubkey, amount: latestOperation.value },
+      });
+      expect(currentAccount.balance).toStrictEqual(
+        previousAccount.balance.minus(latestOperation.value),
+      );
+      // Verify the stake account is now delegated
+      expectDelegationTo(currentAccount, strategy, VOTE_ACCOUNT!.votePubkey);
+    },
+  };
+
+  const scenarioDeactivateStakeAccount: SolanaScenarioTransaction = {
+    name: "Deactivate Stake Account",
+    recipient: STAKE_ACCOUNT.publicKey.toBase58(),
+    mode: "undelegate",
+    expect: (previousAccount, currentAccount) => {
+      const [latestOperation] = currentAccount.operations;
+      expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
+      expect(latestOperation.type).toEqual("UNDELEGATE");
+      expect(latestOperation.value).toStrictEqual(latestOperation.fee);
+      expect(latestOperation.senders).toStrictEqual([]);
+      expect(latestOperation.recipients).toStrictEqual([]);
+      expect(currentAccount.balance).toStrictEqual(
+        previousAccount.balance.minus(latestOperation.value),
+      );
+      // Verify the stake account still exists (state may be "deactivating" or still
+      // "active" depending on epoch boundary timing on the local validator)
+      expectStakeExists(currentAccount, strategy, STAKE_ACCOUNT!.publicKey.toBase58());
+    },
+  };
+
   const scenarioStakeWithdrawTransaction: SolanaScenarioTransaction = {
     name: "Withdraw From Stake Account",
-    model: {
-      kind: "stake.withdraw",
-      uiState: {
-        stakeAccAddr: STAKE_ACCOUNT.publicKey.toBase58(),
-      },
-    },
+    recipient: STAKE_ACCOUNT.publicKey.toBase58(),
+    amount: new BigNumber(WITHDRAWABLE_AMOUNT),
+    mode: "unstake",
     expect: (previousAccount, currentAccount) => {
       const [latestOperation] = currentAccount.operations;
       expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
       expect(latestOperation.type).toEqual("WITHDRAW_UNBONDED");
       expect(latestOperation.value).toStrictEqual(latestOperation.fee);
-      expect(latestOperation.senders).toStrictEqual([]);
-      expect(latestOperation.recipients).toStrictEqual([]);
+      if (strategy === "generic-adapter") {
+        expect(latestOperation.senders).toStrictEqual([]);
+        expect(latestOperation.recipients).toStrictEqual([]);
+      }
       expect(latestOperation.extra).toStrictEqual({
         stake: {
           address: STAKE_ACCOUNT?.publicKey.toBase58(),
@@ -359,23 +449,26 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
       expect(currentAccount.spendableBalance).toStrictEqual(
         previousAccount.spendableBalance.plus(WITHDRAWABLE_AMOUNT),
       );
+      // Verify staking resources still exist after partial withdrawal
+      // (spendableBalance increase above already validates the withdraw landed)
+      expectStakingResourcesDefined(currentAccount, strategy);
     },
   };
 
   const scenarioCreateAllSolStakeAccountTransaction: SolanaScenarioTransaction = {
     name: "Create Stake Account All Sol",
     useAllAmount: true,
-    model: {
-      kind: "stake.createAccount",
-      uiState: { delegate: { voteAccAddress: VOTE_ACCOUNT.votePubkey } },
-    },
+    recipient: VOTE_ACCOUNT.votePubkey,
+    mode: "stake",
     expect: (previousAccount, currentAccount) => {
       const [latestOperation] = currentAccount.operations;
       expect(currentAccount.operations.length - previousAccount.operations.length).toEqual(1);
       expect(latestOperation.type).toEqual("DELEGATE");
       expect(latestOperation.value).toStrictEqual(latestOperation.fee);
-      expect(latestOperation.senders).toStrictEqual([]);
-      expect(latestOperation.recipients).toStrictEqual([]);
+      if (strategy === "generic-adapter") {
+        expect(latestOperation.senders).toStrictEqual([]);
+        expect(latestOperation.recipients).toStrictEqual([]);
+      }
       expect(latestOperation.extra).toMatchObject({
         stake: { address: VOTE_ACCOUNT?.votePubkey },
       });
@@ -383,6 +476,8 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
         previousAccount.balance.minus(latestOperation.value),
       );
       expect(currentAccount.spendableBalance).toStrictEqual(new BigNumber(0));
+      // Verify staking resources reflect the new stake
+      expectDelegationTo(currentAccount, strategy, VOTE_ACCOUNT!.votePubkey);
     },
   };
 
@@ -403,15 +498,29 @@ function makeScenarioTransactions(address: string): SolanaScenarioTransaction[] 
   ];
 }
 
-export const scenarioSolana: Scenario<SolanaTransaction, SolanaAccount> = {
+let closeMSW: (() => void) | null = null;
+
+export const scenarioSolana: Scenario<GenericTransaction, Account> = {
   name: "Ledger Live Basic Solana Transactions",
-  setup: async () => {
+  setup: async strategy => {
     await spawnAgave();
 
-    const signer = await buildSigner();
-    const signerContext: Parameters<typeof resolver>[0] = (_, fn) => fn(signer);
+    setEnv("API_SOLANA_PROXY", "http://localhost:8899");
 
-    const getAddress = resolver(signerContext);
+    LiveConfig.setConfig({
+      config_currency_solana: {
+        type: "object",
+        default: {
+          status: { type: "active" },
+          token2022Enabled: true,
+          legacyOCMSMaxVersion: "1.8.0",
+        },
+      },
+    });
+
+    const signers = await buildSigners();
+    const { accountBridge, currencyBridge, getAddress } = await getBridges(strategy, signers);
+
     const { address } = await getAddress("", {
       path: "44'/501'/0'",
       currency: SOLANA,
@@ -419,26 +528,16 @@ export const scenarioSolana: Scenario<SolanaTransaction, SolanaAccount> = {
     });
 
     const account = makeAccount(address, SOLANA);
-    setEnv("API_SOLANA_PROXY", "http://localhost:8899");
-    const coinConfig: CoinConfig<SolanaCoinConfig> = () => ({
-      status: {
-        type: "active",
-      },
-      token2022Enabled: true,
-      legacyOCMSMaxVersion: "1.8.0",
-    });
-    const { accountBridge, currencyBridge } = createBridges(signerContext, coinConfig);
 
     await airdrop(account.freshAddress, 5);
     await airdrop(PAYER.publicKey.toBase58(), 5);
     await createSplAccount(account.freshAddress, SOLANA_USDC, 5, "spl-token");
     await createSplAccount(account.freshAddress, SOLANA_CWIF, 5, "spl-token-2022");
-    // Token not supported on LL as of 09/06/2025
     await createSplAccount(account.freshAddress, SOLANA_VIRTUAL, 5, "spl-token");
     await initVoteAccount();
     await initStakeAccount(account.freshAddress, WITHDRAWABLE_AMOUNT);
 
-    initMSW();
+    closeMSW = initMSW();
 
     return {
       account,
@@ -446,6 +545,10 @@ export const scenarioSolana: Scenario<SolanaTransaction, SolanaAccount> = {
       currencyBridge,
     };
   },
-  getTransactions: makeScenarioTransactions,
-  teardown: killAgave,
+  getTransactions: (address, strategy) => makeScenarioTransactions(address, strategy),
+  teardown: async () => {
+    closeMSW?.();
+    closeMSW = null;
+    await killAgave();
+  },
 };

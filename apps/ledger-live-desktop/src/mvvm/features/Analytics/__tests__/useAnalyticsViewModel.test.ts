@@ -1,4 +1,4 @@
-import { act, renderHook } from "tests/testSetup";
+import { act, renderHook, withFlagOverrides } from "tests/testSetup";
 import { useNavigate } from "react-router";
 import { getFiatCurrencyByTicker } from "@ledgerhq/live-common/currencies/index";
 import { INITIAL_STATE } from "~/renderer/reducers/settings";
@@ -10,28 +10,23 @@ jest.mock("react-router", () => ({
 }));
 
 const mockedUseNavigate = jest.mocked(useNavigate);
+
 describe("useAnalyticsViewModel", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("returns expected values and navigates back to dashboard", () => {
+  it("should return expected values and navigate back to dashboard", () => {
     const navigate = jest.fn();
     mockedUseNavigate.mockReturnValue(navigate);
 
     const { result } = renderHook(() => useAnalyticsViewModel(), {
       initialState: {
+        ...withFlagOverrides({ lwdWallet40: { enabled: true, params: { graphRework: true } } }),
         settings: {
           ...INITIAL_STATE,
           counterValue: "USD",
           selectedTimeRange: "day",
-          overriddenFeatureFlags: {
-            ...INITIAL_STATE.overriddenFeatureFlags,
-            lwdWallet40: {
-              enabled: true,
-              params: { graphRework: true },
-            },
-          },
         },
       },
     });

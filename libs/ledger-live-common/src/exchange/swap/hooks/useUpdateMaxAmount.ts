@@ -67,7 +67,7 @@ export const useUpdateMaxAmount = ({
     () => {
       const updateAmountUsingMax = async () => {
         if (!account) return;
-        const bridge = getAccountBridge(account, parentAccount);
+        const bridge = await getAccountBridge(account, parentAccount);
         setIsMaxLoading(true);
         const amount = await bridge.estimateMaxSpendable({
           account,
@@ -89,7 +89,7 @@ export const useUpdateMaxAmount = ({
         updateAmountUsingMax();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [setFromAmount, isMaxEnabled, account, parentAccount, feesStrategy],
   );
 

@@ -3,8 +3,12 @@ import { View } from "react-native";
 import { Trans } from "~/context/Locale";
 import { useTheme } from "@react-navigation/native";
 import { handleTransactionStatus } from "@ledgerhq/live-common/families/multiversx/helpers";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
-import { getMainAccount, getAccountCurrency } from "@ledgerhq/coin-framework/account/helpers";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
+import type { Transaction as MultiversXTransaction } from "@ledgerhq/live-common/families/multiversx/types";
+import {
+  getMainAccount,
+  getAccountCurrency,
+} from "@ledgerhq/ledger-wallet-framework/account/helpers";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
 
 import Button from "~/components/Button";
@@ -31,7 +35,7 @@ const WithdrawFunds = (props: WithdrawFundsPropsType) => {
 
   const mainAccount = getMainAccount(account, undefined);
   const currency = getAccountCurrency(mainAccount);
-  const bridge = getAccountBridge(account);
+  const bridge = useAccountBridge<MultiversXTransaction>(account);
   const unit = useAccountUnit(mainAccount);
   const name = validator.identity.name || validator.contract;
 

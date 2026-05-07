@@ -11,14 +11,11 @@ import { createMessageSigner, createResolver, executeWithSigner } from "../../br
 import type { Resolver } from "../../hw/getAddress/types";
 import { getCurrencyConfiguration } from "../../config";
 import { SolanaCoinConfig } from "@ledgerhq/coin-solana/config";
-import { getCryptoCurrencyById } from "../../currencies";
 import { signMessage } from "@ledgerhq/coin-solana/hw-signMessage";
 import { LegacySignerSolana, DmkSignerSol } from "@ledgerhq/live-signer-solana";
 import { DeviceManagementKit } from "@ledgerhq/device-management-kit";
 
 let _solanaLdmkFFEnabled: boolean = false;
-
-let _dmkSignerInstance: DmkSignerSol | null = null;
 
 // temporary solution to dynamically enable/disable the Solana DMK signer,
 // waiting for LIVE-20250 to be implemented
@@ -34,22 +31,16 @@ const canDMKSignerBeUsed = (
   transport.dmk instanceof DeviceManagementKit &&
   typeof transport.sessionId === "string";
 
-// get the same instance if FF gets flipped
 export function getSolanaSignerInstance(
   transport: Transport & Partial<{ dmk: DeviceManagementKit; sessionId: string }>,
 ): SolanaSigner {
   if (canDMKSignerBeUsed(transport)) {
-    if (!_dmkSignerInstance) {
-      _dmkSignerInstance = new DmkSignerSol(transport.dmk, transport.sessionId);
-    }
-    return _dmkSignerInstance;
-  } else {
-    return new LegacySignerSolana(transport);
+    return new DmkSignerSol(transport.dmk, transport.sessionId);
   }
+  return new LegacySignerSolana(transport);
 }
 
-const getCurrencyConfig = () =>
-  getCurrencyConfiguration<SolanaCoinConfig>(getCryptoCurrencyById("solana"));
+const getCurrencyConfig = () => getCurrencyConfiguration<SolanaCoinConfig>("solana");
 
 const bridge: Bridge<Transaction, SolanaAccount, TransactionStatus> = createBridges(
   executeWithSigner(getSolanaSignerInstance),

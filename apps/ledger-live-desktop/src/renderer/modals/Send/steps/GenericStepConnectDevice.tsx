@@ -13,6 +13,8 @@ import { closeModal } from "~/renderer/actions/modals";
 import { mevProtectionSelector } from "~/renderer/reducers/settings";
 import { HOOKS_TRACKING_LOCATIONS } from "~/renderer/analytics/hooks/variables";
 import { useTransactionAction } from "~/renderer/hooks/useConnectAppAction";
+import type { ModalData } from "~/renderer/modals/types";
+import { useNewSendFlowFeature } from "LLD/features/Send/hooks/useNewSendFlowFeature";
 
 const Result = (
   props:
@@ -37,6 +39,7 @@ export default function StepConnectDevice({
   parentAccount,
   transaction,
   status,
+  modalName = "MODAL_SEND",
   transitionTo,
   onOperationBroadcasted,
   onTransactionError,
@@ -49,6 +52,7 @@ export default function StepConnectDevice({
   parentAccount?: Account | undefined | null;
   transaction?: Transaction | undefined | null;
   status: TransactionStatus;
+  modalName?: keyof ModalData;
   onTransactionError: (a: Error) => void;
   onOperationBroadcasted: (a: Operation) => void;
   setSigned: (a: boolean) => void;
@@ -57,12 +61,25 @@ export default function StepConnectDevice({
 }) {
   const mevProtected = useSelector(mevProtectionSelector);
   const dispatch = useDispatch();
+  const newSendFlowFeature = useNewSendFlowFeature();
+  const newSendFlowFamily = newSendFlowFeature.getFamilyFromAccount(
+    account ?? undefined,
+    parentAccount ?? null,
+  );
+  const newSendFlowCurrencyId = newSendFlowFeature.getCurrencyIdFromAccount(
+    account ?? undefined,
+    parentAccount ?? null,
+  );
+  const newSendFlow = newSendFlowFeature.isEnabledForFamily(
+    newSendFlowFamily,
+    newSendFlowCurrencyId,
+  );
   const broadcastConfig = useMemo(
     () => ({
       mevProtected,
-      source: { type: "coin-module" as const, name: "ledger-live-desktop" },
+      source: { type: "coin-module" as const, name: "ledger-live-desktop", flags: { newSendFlow } },
     }),
-    [mevProtected],
+    [mevProtected, newSendFlow],
   );
   const broadcast = useBroadcast({
     account,
@@ -99,7 +116,7 @@ export default function StepConnectDevice({
                 onOperationBroadcasted(operation);
                 transitionTo("confirmation");
               } else {
-                dispatch(closeModal("MODAL_SEND"));
+                dispatch(closeModal(modalName));
                 onConfirmationHandler(operation);
               }
             },
@@ -108,7 +125,7 @@ export default function StepConnectDevice({
                 onTransactionError(error);
                 transitionTo("confirmation");
               } else {
-                dispatch(closeModal("MODAL_SEND"));
+                dispatch(closeModal(modalName));
                 onFailHandler(error);
               }
             },
@@ -119,7 +136,7 @@ export default function StepConnectDevice({
             onTransactionError(transactionSignError);
             transitionTo("confirmation");
           } else {
-            dispatch(closeModal("MODAL_SEND"));
+            dispatch(closeModal(modalName));
             onFailHandler(transactionSignError);
           }
         }

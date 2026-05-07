@@ -1,14 +1,14 @@
 import React, { useEffect, lazy, Suspense } from "react";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { ipcRenderer } from "electron";
-import { Navigate, Route, Routes, useNavigate, useLocation } from "react-router";
+import { Navigate, Route, Routes, useNavigate, useLocation, useParams } from "react-router";
 import { useDispatch, useSelector } from "LLD/hooks/redux";
 import TrackAppStart from "~/renderer/components/TrackAppStart";
 import { LiveApp } from "~/renderer/screens/platform";
 import { BridgeSyncProvider } from "~/renderer/bridge/BridgeSyncContext";
 import { WalletSyncProvider } from "LLD/features/WalletSync/components/WalletSyncContext";
 import { SyncNewAccounts } from "~/renderer/bridge/SyncNewAccounts";
-import Box from "~/renderer/components/Box/Box";
+import { cn } from "LLD/utils/cn";
 import { useListenToHidDevices } from "./hooks/useListenToHidDevices";
 import ExportLogsButton from "~/renderer/components/ExportLogsButton";
 import Idler from "~/renderer/components/Idler";
@@ -38,7 +38,6 @@ import ModalsLayer from "./ModalsLayer";
 import { ToastOverlay } from "~/renderer/components/ToastOverlay";
 import Drawer from "~/renderer/drawers/Drawer";
 import UpdateBanner from "~/renderer/components/Updater/Banner";
-import FirmwareUpdateBanner from "~/renderer/components/FirmwareUpdateBanner";
 import VaultSignerBanner from "~/renderer/components/VaultSignerBanner";
 import { updateIdentify } from "./analytics/segment";
 import { useFeature, FeatureToggle } from "@ledgerhq/live-common/featureFlags/index";
@@ -64,12 +63,19 @@ import { useDeviceManagementKit } from "@ledgerhq/live-dmk-desktop";
 import { AppGeoBlocker } from "LLD/features/AppBlockers/components/AppGeoBlocker";
 import { AppVersionBlocker } from "LLD/features/AppBlockers/components/AppVersionBlocker";
 import { setSolanaLdmkEnabled } from "@ledgerhq/live-common/families/solana/setup";
+import { setCosmosLdmkEnabled } from "@ledgerhq/live-common/families/cosmos/setup";
 import { themeSelector } from "./actions/general";
 import useCheckAccountWithFunds from "./components/PostOnboardingHub/logic/useCheckAccountWithFunds";
 import GlobalDialogs from "LLD/features/GlobalDialogs";
+import GlobalDrawers from "LLD/features/GlobalDrawers";
 import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/walletFeaturesConfig/useWalletFeaturesConfig";
 import { useShouldShowDeferredModals } from "~/renderer/hooks/useShouldShowDeferredModals";
-import backgroundImg from "~/renderer/images/background.png";
+import {
+  getPageBackground,
+  BACKGROUND_SIZE,
+  preloadBackgrounds,
+} from "LLD/components/Page/backgrounds";
+import FirmwareUpdateBanner from "./components/FirmwareUpdateBanner";
 const PlatformCatalog = lazy(() => import("~/renderer/screens/platform"));
 const Dashboard = lazy(() => import("~/renderer/screens/dashboard"));
 const Settings = lazy(() => import("~/renderer/screens/settings"));
@@ -82,6 +88,7 @@ const Bank = lazy(() => import("~/renderer/screens/bank"));
 const SwapWeb = lazy(() => import("~/renderer/screens/swapWeb"));
 const Swap2 = lazy(() => import("~/renderer/screens/exchange/Swap2"));
 const Perps = lazy(() => import("LLD/features/Perps"));
+const Borrow = lazy(() => import("LLD/features/Borrow"));
 const Market40 = lazy(() => import("LLD/features/Market"));
 const Market = lazy(() => import("~/renderer/screens/market"));
 
@@ -97,9 +104,13 @@ const Onboarding = lazy(() => import("~/renderer/components/Onboarding"));
 const PostOnboardingScreen = lazy(() => import("~/renderer/components/PostOnboardingScreen"));
 const USBTroubleshooting = lazy(() => import("~/renderer/screens/USBTroubleshooting"));
 const Asset = lazy(() => import("~/renderer/screens/asset"));
+const AssetDetails = lazy(() => import("LLD/features/AssetDetail"));
 const Account = lazy(() => import("~/renderer/screens/account"));
 const Analytics = lazy(() => import("LLD/features/Analytics"));
+const CryptoAddresses = lazy(() => import("LLD/features/CryptoAddresses"));
+const CryptoAssets = lazy(() => import("LLD/features/CryptoAddresses/CryptoAssets"));
 const CardW40 = lazy(() => import("LLD/features/Card"));
+const History = lazy(() => import("LLD/features/History"));
 
 const LoaderWrapper = styled.div`
   padding: 24px;
@@ -120,7 +131,6 @@ const Fallback = () => (
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line react/display-name
 const withSuspense = Component => props => (
   <Suspense fallback={<Fallback />}>
     <Component {...props} />
@@ -144,6 +154,11 @@ const LetInternalSendCrashTest = () => {
     ipcRenderer.send("internalCrashTest");
   }, []);
   return null;
+};
+
+const RedirectMarketToAsset = () => {
+  const { currencyId } = useParams<{ currencyId: string }>();
+  return <Navigate to={`/asset/${currencyId ?? ""}`} replace />;
 };
 
 export const TopBannerContainer = styled.div`
@@ -212,9 +227,13 @@ const RecoverPlayerWithFeatureToggle = () => {
 const MainAppContent = ({
   shouldDisplayMarketBanner,
   shouldDisplayWallet40MainNav,
+  shouldDisplayAssetSection,
+  shouldDisplayAggregatedAssets,
 }: {
   shouldDisplayMarketBanner: boolean;
   shouldDisplayWallet40MainNav: boolean;
+  shouldDisplayAssetSection: boolean;
+  shouldDisplayAggregatedAssets: boolean;
 }) => (
   <>
     <Routes>
@@ -225,14 +244,34 @@ const MainAppContent = ({
 
     <Page>
       <TopBannerContainer>
+        {shouldDisplayWallet40MainNav ? null : <FirmwareUpdateBanner />}
         {!shouldDisplayWallet40MainNav && <UpdateBanner />}
-        <FirmwareUpdateBanner />
         <VaultSignerBanner />
       </TopBannerContainer>
       <Routes>
         <Route path="/" element={withSuspense(Dashboard)({})} />
         <Route path="/settings/*" element={withSuspense(Settings)({})} />
         <Route path="/accounts" element={withSuspense(Accounts)({})} />
+        <Route
+          path="/cryptos"
+          element={
+            shouldDisplayAssetSection ? (
+              withSuspense(CryptoAddresses)({})
+            ) : (
+              <Navigate to="/accounts" replace />
+            )
+          }
+        />
+        <Route
+          path="/assets"
+          element={
+            shouldDisplayAssetSection ? (
+              withSuspense(CryptoAssets)({})
+            ) : (
+              <Navigate to="/accounts" replace />
+            )
+          }
+        />
         <Route path="/card-new-wallet" element={withSuspense(CardW40)({})} />
         <Route path="/card/:appId?" element={withSuspense(Card)({})} />
         <Route path="/manager/reload" element={<Navigate to="/manager" replace />} />
@@ -240,19 +279,29 @@ const MainAppContent = ({
         <Route path="/platform" element={withSuspense(PlatformCatalog)({})} />
         <Route path="/platform/:appId" element={<LiveApp />} />
         <Route path="/earn/*" element={withSuspense(Earn)({})} />
+        <Route path="/borrow/*" element={withSuspense(Borrow)({})} />
         <Route path="/exchange/:appId?" element={withSuspense(Exchange)({})} />
         <Route path="/swap-web" element={withSuspense(SwapWeb)({})} />
         <Route path="/account/:parentId/:id/*" element={withSuspense(Account)({})} />
         <Route path="/account/:id/*" element={withSuspense(Account)({})} />
-        <Route path="/asset/*" element={withSuspense(Asset)({})} />
+        <Route
+          path="/asset/*"
+          element={withSuspense(shouldDisplayAggregatedAssets ? AssetDetails : Asset)({})}
+        />
         <Route path="/swap/*" element={withSuspense(Swap2)({})} />
-        <Route path="/market/:currencyId" element={withSuspense(MarketCoin)({})} />
+        <Route
+          path="/market/:currencyId"
+          element={
+            shouldDisplayAggregatedAssets ? <RedirectMarketToAsset /> : withSuspense(MarketCoin)({})
+          }
+        />
         <Route
           path="/market"
           element={withSuspense(shouldDisplayMarketBanner ? Market40 : Market)({})}
         />
         <Route path="/bank/*" element={withSuspense(Bank)({})} />
         <Route path="/analytics" element={withSuspense(Analytics)({})} />
+        <Route path="/history" element={withSuspense(History)({})} />
       </Routes>
     </Page>
     <Drawer />
@@ -264,20 +313,26 @@ const MainAppContent = ({
 export const MainAppLayout = () => {
   const { pathname } = useLocation();
   const theme = useSelector(themeSelector);
+  const styledComponentsTheme = useTheme();
   const {
     shouldDisplayMarketBanner,
     isEnabled: isWallet40Enabled,
     shouldDisplayWallet40MainNav,
+    shouldDisplayAssetSection,
+    shouldDisplayAggregatedAssets,
   } = useWalletFeaturesConfig("desktop");
   const shouldShowDeferredModals = useShouldShowDeferredModals();
 
-  //TODO: Remove this once testing is done
-  const walletFeatureFlag = useFeature("lwdWallet40");
-  const walletParams = walletFeatureFlag?.params;
-  const shouldDisplayBackground =
-    isWallet40Enabled && theme === "dark" && Boolean(walletParams?.background);
+  const backgroundImage = shouldDisplayWallet40MainNav
+    ? getPageBackground(pathname, theme)
+    : undefined;
 
-  const useWallet40Layout = isWallet40Enabled && isWallet40Page(pathname);
+  const useWallet40Layout =
+    isWallet40Enabled && isWallet40Page(pathname, { shouldDisplayAggregatedAssets });
+
+  useEffect(() => {
+    if (shouldDisplayWallet40MainNav) preloadBackgrounds();
+  }, [shouldDisplayWallet40MainNav]);
 
   return (
     <>
@@ -290,37 +345,30 @@ export const MainAppLayout = () => {
       )}
       <SyncNewAccounts priority={2} />
 
-      {useWallet40Layout ? (
-        <div
-          className="flex size-full grow flex-row bg-canvas bg-top-left bg-no-repeat"
-          style={
-            shouldDisplayBackground
-              ? { backgroundImage: `url(${backgroundImg})`, backgroundSize: "45% 70%" }
+      <div
+        className={cn(
+          "flex size-full min-w-0 grow flex-row",
+          useWallet40Layout &&
+            "bg-canvas bg-top-left bg-no-repeat transition-[background-image] duration-200",
+        )}
+        style={
+          useWallet40Layout
+            ? backgroundImage
+              ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: BACKGROUND_SIZE }
               : undefined
-          }
-        >
-          <MainAppContent
-            shouldDisplayMarketBanner={shouldDisplayMarketBanner}
-            shouldDisplayWallet40MainNav={shouldDisplayWallet40MainNav}
-          />
-        </div>
-      ) : (
-        <Box
-          grow
-          horizontal
-          bg="background.default"
-          color="neutral.c70"
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <MainAppContent
-            shouldDisplayMarketBanner={shouldDisplayMarketBanner}
-            shouldDisplayWallet40MainNav={shouldDisplayWallet40MainNav}
-          />
-        </Box>
-      )}
+            : {
+                backgroundColor: styledComponentsTheme.colors.background.default,
+                color: styledComponentsTheme.colors.neutral.c70,
+              }
+        }
+      >
+        <MainAppContent
+          shouldDisplayMarketBanner={shouldDisplayMarketBanner}
+          shouldDisplayWallet40MainNav={shouldDisplayWallet40MainNav}
+          shouldDisplayAssetSection={shouldDisplayAssetSection}
+          shouldDisplayAggregatedAssets={shouldDisplayAggregatedAssets}
+        />
+      </div>
 
       {__PRERELEASE__ && __CHANNEL__ !== "next" && !__CHANNEL__.includes("sha") ? (
         <NightlyLayer />
@@ -350,6 +398,7 @@ export default function Default() {
   const themeConsoleActive = useEnv("DEBUG_THEME");
   const providerNumber = useEnv("FORCE_PROVIDER");
   const ldmkSolanaSignerFeatureFlag = useFeature("ldmkSolanaSigner");
+  const ldmkCosmosSignerFeatureFlag = useFeature("ldmkCosmosSigner");
 
   const dmk = useDeviceManagementKit();
   const checkAccountsWithFunds = useCheckAccountWithFunds();
@@ -376,12 +425,18 @@ export default function Default() {
   }, [ldmkSolanaSignerFeatureFlag]);
 
   useEffect(() => {
+    if (typeof ldmkCosmosSignerFeatureFlag?.enabled === "boolean") {
+      setCosmosLdmkEnabled(ldmkCosmosSignerFeatureFlag.enabled);
+    }
+  }, [ldmkCosmosSignerFeatureFlag]);
+
+  useEffect(() => {
     // WebHID is now always enabled, set provider if specified
     if (providerNumber) {
       dmk?.setProvider(providerNumber);
     }
     // setting provider only at initialisation
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [dmk]);
 
   useEffect(() => {
@@ -394,7 +449,7 @@ export default function Default() {
       dispatch(setShareAnalytics(false));
       dispatch(setSharePersonalizedRecommendations(false));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [isLocked]);
 
   useEffect(() => {
@@ -452,6 +507,7 @@ export default function Default() {
                   ) : null}
 
                   <GlobalDialogs />
+                  <GlobalDrawers />
 
                   <Routes>
                     <Route

@@ -1,5 +1,5 @@
 import { reduce, firstValueFrom } from "rxjs";
-import { Strategy } from "@ledgerhq/coin-evm/lib/types/index";
+import { Strategy } from "@ledgerhq/coin-evm/types/index";
 import { getMainAccount, getParentAccount } from "@ledgerhq/live-common/account/index";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import { getAbandonSeedAddress } from "@ledgerhq/live-common/currencies/index";
@@ -122,7 +122,7 @@ export const getFee =
     // Setup accounts and bridge
     const fromParentAccount = getParentAccount(fromAccount, accounts);
     let mainAccount = getMainAccount(fromAccount, fromParentAccount);
-    const bridge = getAccountBridge(fromAccount, fromParentAccount);
+    const bridge = await getAccountBridge(fromAccount, fromParentAccount);
 
     if (mainAccount.currency.id === "bitcoin") {
       try {

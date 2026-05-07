@@ -1,10 +1,8 @@
 import Config from "react-native-config";
+import { registerAllCoins } from "@ledgerhq/live-common/coin-modules/load-all-coins";
 import { listen } from "@ledgerhq/logs";
 import { setEnv, getEnv } from "@ledgerhq/live-env";
-import {
-  getCryptoCurrencyById,
-  setSupportedCurrencies,
-} from "@ledgerhq/live-common/currencies/index";
+import { setSupportedCurrencies } from "@ledgerhq/live-common/currencies/index";
 import { setWalletAPIVersion } from "@ledgerhq/live-common/wallet-api/version";
 import { WALLET_API_VERSION } from "@ledgerhq/live-common/wallet-api/constants";
 import { setDeviceMode } from "@ledgerhq/live-common/hw/actions/app";
@@ -12,10 +10,12 @@ import VersionNumber from "react-native-version-number";
 import { Platform } from "react-native";
 import { setSecp256k1Instance } from "@ledgerhq/live-common/families/bitcoin/logic";
 import { setGlobalOnBridgeError } from "@ledgerhq/live-common/bridge/useBridgeTransaction";
-import { prepareCurrency } from "./bridge/cache";
+import { liveBlindSigningReporter } from "@ledgerhq/live-dmk-shared";
 import "./experimental";
 import logger, { ConsoleLogger } from "./logger";
 import BigNumber from "bignumber.js";
+
+registerAllCoins();
 
 const consoleLogger = ConsoleLogger.getLogger();
 listen(log => {
@@ -25,6 +25,12 @@ listen(log => {
 setGlobalOnBridgeError(e => logger.critical(e));
 setDeviceMode("polling");
 setWalletAPIVersion(WALLET_API_VERSION);
+liveBlindSigningReporter.setContext({
+  platform: "mobile",
+  appVersion: VersionNumber.appVersion ?? undefined,
+  platformOS: Platform.OS,
+  platformVersion: String(Platform.Version),
+});
 
 setSupportedCurrencies([
   "avalanche_c_chain",
@@ -50,6 +56,7 @@ setSupportedCurrencies([
   "ripple",
   "litecoin",
   "polygon",
+  "polygon_amoy",
   "bitcoin_cash",
   "stellar",
   "dogecoin",
@@ -96,6 +103,8 @@ setSupportedCurrencies([
   "energy_web",
   "astar",
   "metis",
+  "mantle",
+  "mantle_sepolia",
   "boba",
   "moonriver",
   "velas_evm",
@@ -137,6 +146,7 @@ setSupportedCurrencies([
   "mantra",
   "xion",
   "sui",
+  "sui_testnet",
   "zenrock",
   "sonic",
   "sonic_blaze",
@@ -175,7 +185,5 @@ process.env.LEDGER_CLIENT_VERSION = ledgerClientVersion;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 setSecp256k1Instance(require("./logic/secp256k1"));
-
-prepareCurrency(getCryptoCurrencyById("ethereum"));
 
 BigNumber.set({ DECIMAL_PLACES: getEnv("BIG_NUMBER_DECIMAL_PLACES") });

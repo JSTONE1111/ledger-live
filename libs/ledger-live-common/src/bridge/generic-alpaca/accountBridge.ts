@@ -5,8 +5,8 @@ import {
   getSerializedAddressParameters,
   makeAccountBridgeReceive,
   updateTransaction,
-} from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import getAddressWrapper from "@ledgerhq/coin-framework/bridge/getAddressWrapper";
+} from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
+import getAddressWrapper from "@ledgerhq/ledger-wallet-framework/bridge/getAddressWrapper";
 import { getSigner } from "./signer";
 import { genericPrepareTransaction } from "./prepareTransaction";
 import { genericGetTransactionStatus } from "./getTransactionStatus";
@@ -15,10 +15,10 @@ import { createTransaction } from "./createTransaction";
 import { genericBroadcast } from "./broadcast";
 import { genericSignOperation } from "./signOperation";
 import { genericSignRawOperation } from "./signRawOperation";
-import type { AlpacaSigner } from "./signer/types";
 import { postSync } from "./postSync";
 import { getValidateAddress } from "./validateAddress";
-import { GenericTransaction } from "./types";
+import { getAccountRawAssignHooks } from "./accountRawAssign";
+import type { GenericTransaction, AlpacaSigner } from "./types";
 
 export function getAlpacaAccountBridge(
   network: string,
@@ -26,6 +26,7 @@ export function getAlpacaAccountBridge(
   customSigner?: AlpacaSigner,
 ): AccountBridge<GenericTransaction> {
   const signer = customSigner ?? getSigner(network);
+  const { assignFromAccountRaw, assignToAccountRaw } = getAccountRawAssignHooks(network);
   return {
     sync: makeSync({ getAccountShape: genericGetAccountShape(network, kind), postSync }),
     receive: makeAccountBridgeReceive(getAddressWrapper(signer.getAddress)),
@@ -37,7 +38,9 @@ export function getAlpacaAccountBridge(
     broadcast: genericBroadcast(network, kind),
     signOperation: genericSignOperation(network, kind)(signer.context),
     signRawOperation: genericSignRawOperation(network, kind)(signer.context),
-    getSerializedAddressParameters, // NOTE: check wether it should be exposed by coin-module's api instead?
+    assignFromAccountRaw,
+    assignToAccountRaw,
+    getSerializedAddressParameters, // NOTE: check whether it should be exposed by coin-module's api instead?
     validateAddress: getValidateAddress(network),
   } satisfies Partial<AccountBridge<GenericTransaction>>;
 }

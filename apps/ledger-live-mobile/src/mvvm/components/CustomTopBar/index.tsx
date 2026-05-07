@@ -1,72 +1,54 @@
-import React, { useCallback } from "react";
-import { Box, IconButton } from "@ledgerhq/lumen-ui-rnative";
+import React from "react";
+import { Platform } from "react-native";
+import { Box, IconButton, type IconButtonProps } from "@ledgerhq/lumen-ui-rnative";
 import { LumenViewStyle } from "@ledgerhq/lumen-ui-rnative/styles";
-import { Stax, Apex, Flex, Nano } from "@ledgerhq/lumen-ui-rnative/symbols";
-import { lastConnectedDeviceSelector } from "~/reducers/settings";
-import { useSelector } from "~/context/hooks";
-import { DeviceModelId } from "@ledgerhq/types-devices";
-import { ICON_SIZE } from "LLM/components/TopBar/const";
+import type { TopBarActionIcon } from "./useMyLedgerTopBarAction";
 
-type IconComponent = NonNullable<React.ComponentProps<typeof IconButton>["icon"]>;
+export type { TopBarActionIcon } from "./useMyLedgerTopBarAction";
+export { useMyLedgerTopBarAction } from "./useMyLedgerTopBarAction";
 
-export type TopBarActionIcon = {
-  id: string;
-  icon: IconComponent;
-  callback: () => void;
-  testID: string;
-  accessibilityLabel: string;
-};
+function renderIconButton(item: TopBarActionIcon, appearance: IconButtonProps["appearance"]) {
+  const button = (
+    <IconButton
+      key={item.id}
+      onPress={item.callback}
+      testID={item.testID}
+      accessibilityLabel={item.accessibilityLabel}
+      appearance={appearance}
+      icon={item.icon}
+      size="md"
+      loading={item.loading}
+    />
+  );
+  return item.wrapper ? (
+    <React.Fragment key={item.id}>{item.wrapper(button)}</React.Fragment>
+  ) : (
+    button
+  );
+}
 
 type CustomTopBarProps = {
-  onMyLedgerPress: () => void;
-  customIcons: readonly TopBarActionIcon[];
+  leadingElement?: React.ReactNode;
+  leadingIcons: readonly TopBarActionIcon[];
+  trailingIcons: readonly TopBarActionIcon[];
 };
 
-export function CustomTopBar({ onMyLedgerPress, customIcons }: Readonly<CustomTopBarProps>) {
-  const lastConnectedDevice = useSelector(lastConnectedDeviceSelector);
-
-  const deviceIcon: IconComponent = useCallback(
-    ({ size, style }) => {
-      switch (lastConnectedDevice?.modelId) {
-        case DeviceModelId.nanoS:
-        case DeviceModelId.nanoSP:
-        case DeviceModelId.nanoX:
-          return <Nano size={size ?? ICON_SIZE} style={style} color="base" />;
-        case DeviceModelId.europa:
-          return <Flex size={size ?? ICON_SIZE} style={style} color="base" />;
-        case DeviceModelId.apex:
-          return <Apex size={size ?? ICON_SIZE} style={style} color="base" />;
-        case DeviceModelId.stax:
-        default:
-          return <Stax size={size ?? ICON_SIZE} style={style} color="base" />;
-      }
-    },
-    [lastConnectedDevice?.modelId],
-  );
-
+export function CustomTopBar({
+  leadingElement,
+  leadingIcons,
+  trailingIcons,
+}: Readonly<CustomTopBarProps>) {
+  const isAndroid = Platform.OS === "android";
+  const appearance: IconButtonProps["appearance"] = isAndroid ? "gray" : "transparent";
   return (
     <Box lx={rowLx}>
-      <IconButton
-        onPress={onMyLedgerPress}
-        testID="topbar-myledger"
-        accessibilityLabel="My Ledger"
-        appearance="transparent"
-        icon={deviceIcon}
-        size="md"
-      />
+      <Box lx={iconsGroupLayout}>
+        {leadingElement}
+        {leadingIcons.map(item => renderIconButton(item, appearance))}
+      </Box>
 
-      <Box lx={rightGroupLx}>
-        {customIcons.map(item => (
-          <IconButton
-            key={item.id}
-            onPress={item.callback}
-            testID={item.testID}
-            accessibilityLabel={item.accessibilityLabel}
-            appearance="transparent"
-            icon={item.icon}
-            size="md"
-          />
-        ))}
+      <Box lx={iconsGroupLayout}>
+        {trailingIcons.map(item => renderIconButton(item, appearance))}
       </Box>
     </Box>
   );
@@ -79,7 +61,7 @@ const rowLx: LumenViewStyle = {
   justifyContent: "space-between",
 };
 
-const rightGroupLx: LumenViewStyle = {
+const iconsGroupLayout: LumenViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   gap: "s8",

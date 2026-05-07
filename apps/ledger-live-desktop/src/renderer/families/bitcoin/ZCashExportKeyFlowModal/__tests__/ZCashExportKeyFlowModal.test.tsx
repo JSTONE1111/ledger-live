@@ -5,6 +5,7 @@ import { Device } from "@ledgerhq/live-common/hw/actions/types";
 import { DeviceModelId } from "@ledgerhq/devices";
 import Body from "../Body";
 import { StepId } from "../types";
+import { AFTER_ONBOARDING_STATE } from "~/renderer/reducers/settings";
 
 // Mock useConnectAppAction to prevent actual device connection attempts
 jest.mock("~/renderer/hooks/useConnectAppAction", () => {
@@ -73,6 +74,7 @@ describe("ZCash Export UFVK Flow", () => {
         syncFromZero={syncFromZero}
         handleBirthdayChange={jest.fn()}
         handleSyncFromZero={jest.fn()}
+        handleEnableShieldedBalance={jest.fn()}
         params={{ account }}
       />,
     );
@@ -117,6 +119,7 @@ describe("ZCash Export UFVK Flow", () => {
         syncFromZero={syncFromZero}
         handleBirthdayChange={jest.fn()}
         handleSyncFromZero={jest.fn()}
+        handleEnableShieldedBalance={jest.fn()}
         params={{ account }}
       />,
     );
@@ -162,10 +165,12 @@ describe("ZCash Export UFVK Flow", () => {
         syncFromZero={syncFromZero}
         handleBirthdayChange={jest.fn()}
         handleSyncFromZero={jest.fn()}
+        handleEnableShieldedBalance={jest.fn()}
         params={{ account }}
       />,
       {
         initialState: {
+          settings: AFTER_ONBOARDING_STATE,
           devices: { currentDevice: mockDevice, devices: [mockDevice] },
         },
       },
@@ -202,6 +207,7 @@ describe("ZCash Export UFVK Flow", () => {
         syncFromZero={syncFromZero}
         handleBirthdayChange={jest.fn()}
         handleSyncFromZero={jest.fn()}
+        handleEnableShieldedBalance={jest.fn()}
         params={{ account }}
       />,
     );

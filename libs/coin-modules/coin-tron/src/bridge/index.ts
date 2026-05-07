@@ -1,12 +1,12 @@
-import getAddressWrapper from "@ledgerhq/coin-framework/bridge/getAddressWrapper";
+import { CoinConfig } from "@ledgerhq/coin-module-framework/config";
+import getAddressWrapper from "@ledgerhq/ledger-wallet-framework/bridge/getAddressWrapper";
 import {
   getSerializedAddressParameters,
   updateTransaction,
   makeAccountBridgeReceive,
   makeScanAccounts,
-} from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import { CoinConfig } from "@ledgerhq/coin-framework/config";
-import { SignerContext } from "@ledgerhq/coin-framework/signer";
+} from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
+import { SignerContext } from "@ledgerhq/ledger-wallet-framework/signer";
 import type { AccountBridge, CurrencyBridge } from "@ledgerhq/types-live";
 import tronCoinConfig, { type TronCoinConfig } from "../config";
 import { validateAddress } from "../logic";
@@ -16,7 +16,6 @@ import broadcast from "./broadcast";
 import createTransaction from "./createTransaction";
 import estimateMaxSpendable from "./estimateMaxSpendable";
 import getTransactionStatus from "./getTransactionStatus";
-import { hydrate, preload } from "./preload";
 import { prepareTransaction } from "./prepareTransaction";
 import {
   assignFromAccountRaw,
@@ -37,8 +36,8 @@ function buildCurrencyBridge(signerContext: SignerContext<TronSigner>): Currency
   });
 
   return {
-    preload,
-    hydrate,
+    preload: () => Promise.resolve({}),
+    hydrate: () => undefined,
     scanAccounts,
   };
 }

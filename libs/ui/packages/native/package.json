@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/native-ui",
-  "version": "0.57.0",
+  "version": "0.61.0",
   "description": "Ledger Live - Mobile UI",
   "repository": {
     "type": "git",
@@ -24,12 +24,30 @@
     }
   },
   "exports": {
-    ".": "./lib/index.js",
+    ".": {
+      "@ledgerhq/source": "./src/index.ts",
+      "default": "./lib/index.js"
+    },
     "./lib/*": "./lib/*.js",
     "./lib/*/": "./lib/*/index.js",
-    "./pre-ldls": "./lib/pre-ldls/index.js",
-    "./*": "./lib/*.js",
-    "./*/": "./lib/*/index.js",
+    "./pre-ldls": {
+      "@ledgerhq/source": "./src/pre-ldls/index.ts",
+      "default": "./lib/pre-ldls/index.js"
+    },
+    "./*": {
+      "@ledgerhq/source": [
+        "./src/*.ts",
+        "./src/*.tsx"
+      ],
+      "default": "./lib/*.js"
+    },
+    "./*/": {
+      "@ledgerhq/source": [
+        "./src/*/index.ts",
+        "./src/*/index.tsx"
+      ],
+      "default": "./lib/*/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -38,19 +56,21 @@
   "scripts": {
     "android": "expo start --android",
     "build": "tsc -p tsconfig.prod.json && node scripts/postBuild",
-    "prebuild:storybook": "pnpm -F ui-shared -F icons-ui -F crypto-icons-ui build",
-    "build:storybook": "NODE_PATH=./node_modules storybook build -c .storybook-web -o web-build",
+    "prebuild:storybook": "nx run-many -t build -p @ledgerhq/ui-shared,@ledgerhq/icons-ui,@ledgerhq/crypto-icons-ui",
+    "build:storybook": "NODE_PATH=./node_modules storybook build -c .storybook-web",
     "watch": "tsc -p tsconfig.prod.json --watch",
     "clean": "rimraf lib",
     "eject": "expo eject",
     "ios": "expo start --ios",
-    "lint": "eslint src storybook --ext .ts,.tsx,.js,.jsx --cache",
+    "lint": "oxlint -c ../../.oxlintrc.json ./src ./storybook",
     "lint:fix": "pnpm lint --fix",
     "lint:css": "stylelint './src/**/*.{js,jsx,ts,tsx}'",
+    "format": "oxfmt ./src ./storybook",
+    "format:check": "oxfmt --check ./src ./storybook",
     "release": "yarn publish ./lib --access public",
     "expo-start": "expo start",
     "storybook": "NODE_PATH=./node_modules storybook dev  -c .storybook-web -p 6006",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json  --customConditions node",
     "test": "exit 0",
     "web": "expo start --web",
     "unimported": "pnpm knip --directory ../../../.. -W libs/ui/packages/native",
@@ -61,11 +81,12 @@
     "@ledgerhq/icons-ui": "workspace:^",
     "@ledgerhq/ui-shared": "workspace:^",
     "color": "^4.0.0",
-    "rn-range-slider": "2.1.1",
     "styled-system": "catalog:",
     "stylis": "catalog:"
   },
   "peerDependencies": {
+    "@ledgerhq/lumen-design-core": ">=0.1.11",
+    "@ledgerhq/lumen-ui-rnative": ">=0.1.25",
     "react": ">=17",
     "react-native": ">=0.64.0",
     "react-native-reanimated": ">=4.1",
@@ -90,6 +111,8 @@
     "@emotion/native": "^11.0.0",
     "@expo/cli": "0.24.14",
     "@expo/metro-config": "^0.19.11",
+    "@ledgerhq/lumen-design-core": "catalog:",
+    "@ledgerhq/lumen-ui-rnative": "catalog:",
     "@rsbuild/core": "catalog:",
     "@rsbuild/plugin-react": "catalog:",
     "@react-native-async-storage/async-storage": "2.1.2",
@@ -119,7 +142,7 @@
     "@types/color": "^3.0.3",
     "@types/hoist-non-react-statics": "^3.3.1",
     "@types/lodash": "4.17.18",
-    "@types/node": "^22.10.10",
+    "@types/node": "catalog:",
     "@types/prop-types": "^15.7.5",
     "@types/react": "catalog:",
     "@types/styled-system": "^5.1.13",
@@ -132,9 +155,8 @@
     "buffer": "6.0.3",
     "camelcase": "^6.2.1",
     "csstype": "^3.0.11",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-storybook": "^0.12.0",
+    "oxlint": "catalog:",
+    "oxfmt": "catalog:",
     "expo": "catalog:",
     "expo-asset": "catalog:",
     "expo-constants": "catalog:",

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { Routes, Route } from "react-router";
-import user from "~/helpers/user";
+import { useSelector } from "LLD/hooks/redux";
+import { userIdSelector } from "@ledgerhq/client-ids/store";
 import TrackPage from "~/renderer/analytics/TrackPage";
 import { SettingsSectionBody as Body, SettingsSectionRow as Row } from "../../SettingsSection";
 import AllowExperimentalAppsToggle from "./AllowExperimentalAppsToggle";
@@ -32,18 +33,17 @@ import EnvVariableOverride from "./EnvVariableOverride";
 import ModularDrawerDevTool from "./ModularDrawer";
 import CryptoAssetsListDevTool from "./CryptoAssetsList";
 import { MockAccountGeneratorSection } from "./GenerateMockAccounts";
+import AppJsonImporter from "./AppJsonImporter";
 import CustomLockScreenTester from "./CustomLockScreenTester";
 import WalletFeaturesDevTool from "./WalletFeaturesDevTool";
+import FeaturesAndFlowsDevTool from "./FeaturesAndFlowsDevTool";
+import AnalyticsConsentOptInDevTool from "./AnalyticsConsentOptInDevTool";
+import { AnalyticsConsentOptInDevScreen } from "./AnalyticsConsentOptInDevTool/AnalyticsConsentOptInDevScreen";
 
 const Default = () => {
   const { t } = useTranslation();
-  const [segmentId, setSegmentID] = useState("loading...");
-
-  useEffect(() => {
-    user().then(u => {
-      setSegmentID(u.id);
-    });
-  }, []);
+  const userId = useSelector(userIdSelector);
+  const segmentId = userId.exportUserIdForAnalytics();
 
   return (
     <Body>
@@ -140,9 +140,12 @@ const Default = () => {
         </Row>
       )}
       <WalletFeaturesDevTool />
+      <FeaturesAndFlowsDevTool />
+      <AnalyticsConsentOptInDevTool />
       <ModularDrawerDevTool />
       <CryptoAssetsListDevTool />
       <MockAccountGeneratorSection />
+      <AppJsonImporter />
     </Body>
   );
 };
@@ -151,6 +154,7 @@ const SectionDeveloper = () => (
     <TrackPage category="Settings" name="Developer" />
     <Routes>
       <Route path="custom-locksscreen-assets" element={<CustomLockScreenAssets />} />
+      <Route path="analytics-consent-opt-in-qa" element={<AnalyticsConsentOptInDevScreen />} />
       <Route path="*" element={<Default />} />
     </Routes>
   </>

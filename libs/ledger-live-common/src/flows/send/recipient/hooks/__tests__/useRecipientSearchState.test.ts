@@ -108,6 +108,19 @@ describe("useRecipientSearchState", () => {
     expect(result.current.isSanctioned).toBe(true);
   });
 
+  it("should not set isAddressComplete while validation is loading", () => {
+    const { result } = renderHook(() =>
+      useRecipientSearchState({
+        ...defaultProps,
+        searchValue: "0xvalid",
+        result: createDefaultResult({ status: "valid" }),
+        isLoading: true,
+      }),
+    );
+
+    expect(result.current.isAddressComplete).toBe(false);
+  });
+
   it("should not set isAddressComplete for idle or invalid status", () => {
     const { result: idleResult } = renderHook(() =>
       useRecipientSearchState({
@@ -155,6 +168,21 @@ describe("useRecipientSearchState", () => {
 
     expect(result.current.showAddressValidationError).toBe(true);
     expect(result.current.addressValidationErrorType).toBe("incorrect_format");
+  });
+
+  it("should not set isAddressComplete when status is valid but bridge returns InvalidAddress", () => {
+    const { result } = renderHook(() =>
+      useRecipientSearchState({
+        ...defaultProps,
+        searchValue: "invalidaddr",
+        result: createDefaultResult({
+          status: "valid",
+          bridgeErrors: { recipient: new InvalidAddress() },
+        }),
+      }),
+    );
+
+    expect(result.current.isAddressComplete).toBe(false);
   });
 
   it("should show address validation error for bridge InvalidAddress and return incorrect_format when no dot", () => {
@@ -328,6 +356,30 @@ describe("useRecipientSearchState", () => {
       }),
     );
 
+    expect(result.current.showBridgeRecipientError).toBe(true);
+    expect(result.current.bridgeRecipientError).toBe(recipientError);
+  });
+
+  it("should show bridge recipient error even when a recent address matches", () => {
+    const recipientError = new InvalidAddressBecauseDestinationIsAlsoSource();
+    const recent = {
+      address: "tz1self",
+      currency: {} as never,
+      lastUsedAt: new Date(),
+    };
+    const { result } = renderHook(() =>
+      useRecipientSearchState({
+        ...defaultProps,
+        searchValue: "tz1self",
+        result: createDefaultResult({
+          status: "valid",
+          matchedRecentAddress: recent,
+          bridgeErrors: { recipient: recipientError },
+        }),
+      }),
+    );
+
+    expect(result.current.showMatchedAddress).toBe(true);
     expect(result.current.showBridgeRecipientError).toBe(true);
     expect(result.current.bridgeRecipientError).toBe(recipientError);
   });

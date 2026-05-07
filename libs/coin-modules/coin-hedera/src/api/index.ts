@@ -1,35 +1,58 @@
+import { rejectBalanceOptions } from "@ledgerhq/coin-module-framework/api/getBalance/rejectBalanceOptions";
 import type {
-  Api,
+  AlpacaApi,
+  BalanceOptions,
   CraftedTransaction,
   Operation,
   TransactionValidation,
-} from "@ledgerhq/coin-framework/api/index";
+} from "@ledgerhq/coin-module-framework/api/index";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
-import coinConfig from "../config";
-import { HARDCODED_BLOCK_HEIGHT, HEDERA_OPERATION_TYPES } from "../constants";
+import { BridgeApi } from "@ledgerhq/ledger-wallet-framework/api/types";
+import type { Operation as LiveOperation } from "@ledgerhq/types-live";
+import BigNumber from "bignumber.js";
+import invariant from "invariant";
+import { validateAddress } from "../bridge/validateAddress";
+import coinConfig, { type HederaConfig } from "../config";
 import {
-  broadcast as logicBroadcast,
+  HARDCODED_BLOCK_HEIGHT,
+  HEDERA_OPERATION_TYPES,
+  STAKING_REWARD_HASH_SUFFIX,
+} from "../constants";
+import {
   combine,
   craftTransaction,
-  estimateFees as logicEstimateFees,
   getBalance,
   getBlock,
   getBlockInfo,
-  listOperations as logicListOperations,
-  getAssetFromToken,
-  getTokenFromAsset,
-  lastBlock,
-  getValidators,
-  getStakes,
+  getBlockV2,
   getRewards,
-} from "../logic/index";
-import { mapIntentToSDKOperation, getOperationValue, getBlockHash } from "../logic/utils";
+  getStakes,
+  getValidators,
+  lastBlock,
+  lastBlockV2,
+  broadcast as logicBroadcast,
+  estimateFees as logicEstimateFees,
+  listOperations as logicListOperations,
+  listOperationsV2 as logicListOperationsV2,
+} from "../logic";
+import {
+  extractInitiator,
+  getBlockHash,
+  getOperationValue,
+  mapIntentToSDKOperation,
+  toEVMAddress,
+} from "../logic/utils";
 import { apiClient } from "../network/api";
-import type { HederaMemo } from "../types";
+import { getERC20BalancesForAccountV2 } from "../network/utils";
+import type { EstimateFeesParams, HederaMemo, HederaOperationExtra } from "../types";
 
-export function createApi(config: Record<string, never>): Api<HederaMemo> {
+export function createApi(
+  config: HederaConfig,
+  currencyId: string,
+): AlpacaApi<HederaMemo> & BridgeApi {
   coinConfig.setCoinConfig(() => ({ ...config, status: { type: "active" } }));
-  const currency = getCryptoCurrencyById("hedera");
+  const currency = getCryptoCurrencyById(currencyId);
 
   return {
     broadcast: async tx => {
@@ -39,7 +62,12 @@ export function createApi(config: Record<string, never>): Api<HederaMemo> {
     },
     combine,
     craftTransaction: async (txIntent, customFees) => {
-      const { serializedTx } = await craftTransaction(txIntent, customFees);
+      invariant(!txIntent.useAllAmount, "useAllAmount is not supported");
+      const { serializedTx } = await craftTransaction({
+        txIntent,
+        ...(customFees && { customFees }),
+        config,
+      });
 
       return {
         transaction: serializedTx,
@@ -53,40 +81,86 @@ export function createApi(config: Record<string, never>): Api<HederaMemo> {
     ): Promise<CraftedTransaction> => {
       throw new Error("craftRawTransaction is not supported");
     },
-    estimateFees: async transactionIntent => {
-      const operationType = mapIntentToSDKOperation(transactionIntent);
+    estimateFees: async txIntent => {
+      let estimateFeesParams: EstimateFeesParams;
+      const operationType = mapIntentToSDKOperation(txIntent);
 
       if (operationType === HEDERA_OPERATION_TYPES.ContractCall) {
-        throw new Error("hedera: estimateFees for ContractCall is not supported yet");
+        estimateFeesParams = { operationType, txIntent };
+      } else {
+        estimateFeesParams = { currency, operationType };
       }
 
-      const estimatedFee = await logicEstimateFees({ currency, operationType });
+      const estimatedFee = await logicEstimateFees(estimateFeesParams);
 
       return {
         value: BigInt(estimatedFee.tinybars.toString()),
       };
     },
-    getBalance: address => getBalance(currency, address),
-    getBlock: height => getBlock(height),
+    getBalance: (address: string, options?: BalanceOptions) =>
+      rejectBalanceOptions(() => getBalance(currency, address), options),
+    getBlock: height => {
+      if (config.useHgraphForErc20) {
+        return getBlockV2(height);
+      }
+
+      return getBlock(height);
+    },
     getBlockInfo: height => getBlockInfo(height),
-    lastBlock,
-    listOperations: async (address, { cursor, limit, order }) => {
-      // FIXME This listOperations implementation ignores the required minHeight option entirely.
-      //  Implementations must error when minHeight != 0 is not supported, this should either filter
-      //  by minHeight or explicitly throw a "not supported" error when minHeight is non-zero.
-      const mirrorTokens = await apiClient.getAccountTokens(address);
-      const latestAccountOperations = await logicListOperations({
-        currency,
-        address,
-        cursor,
-        limit,
-        order,
-        mirrorTokens,
-        fetchAllPages: false,
-        skipFeesForTokenOperations: true,
-        useEncodedHash: false,
-        useSyntheticBlocks: true,
-      });
+    lastBlock: () => {
+      if (config.useHgraphForErc20) {
+        return lastBlockV2();
+      }
+
+      return lastBlock();
+    },
+    listOperations: async (address, { cursor, limit, order, minHeight }) => {
+      invariant(minHeight === 0, "minHeight is not supported");
+
+      let latestAccountOperations: {
+        coinOperations: LiveOperation<HederaOperationExtra>[];
+        tokenOperations: LiveOperation<HederaOperationExtra>[];
+        nextCursor: string | null;
+      };
+
+      if (config.useHgraphForErc20) {
+        const evmAddress = await toEVMAddress(address);
+        invariant(evmAddress, `hedera: evm address is missing for ${address}`);
+        const [mirrorTokens, erc20TokenBalances] = await Promise.all([
+          apiClient.getAccountTokens(address),
+          getERC20BalancesForAccountV2(address),
+        ]);
+
+        latestAccountOperations = await logicListOperationsV2({
+          currency,
+          address,
+          evmAddress,
+          mirrorTokens,
+          ...(typeof cursor === "string" && { cursor }),
+          ...(typeof limit === "number" && { limit }),
+          ...(typeof order === "string" && { order }),
+          erc20Tokens: erc20TokenBalances,
+          fetchAllPages: false,
+          skipFeesForTokenOperations: true,
+          useEncodedHash: false,
+          useSyntheticBlocks: true,
+        });
+      } else {
+        const mirrorTokens = await apiClient.getAccountTokens(address);
+
+        latestAccountOperations = await logicListOperations({
+          currency,
+          address,
+          cursor,
+          limit,
+          order,
+          mirrorTokens,
+          fetchAllPages: false,
+          skipFeesForTokenOperations: true,
+          useEncodedHash: false,
+          useSyntheticBlocks: true,
+        });
+      }
 
       const liveOperations = [
         ...latestAccountOperations.coinOperations,
@@ -94,9 +168,22 @@ export function createApi(config: Record<string, never>): Api<HederaMemo> {
       ];
 
       const sortedLiveOperations = [...liveOperations].sort((a, b) => {
+        const aConsensusTime = a.extra.consensusTimestamp;
+        const bConsensusTime = b.extra.consensusTimestamp;
         const aTime = a.date.getTime();
         const bTime = b.date.getTime();
-        return order === "desc" ? bTime - aTime : aTime - bTime;
+        const dateDiff = order === "desc" ? bTime - aTime : aTime - bTime;
+
+        if (aConsensusTime && bConsensusTime) {
+          const aTime = new BigNumber(aConsensusTime);
+          const bTime = new BigNumber(bConsensusTime);
+          const timeDiff = order === "desc" ? bTime.minus(aTime) : aTime.minus(bTime);
+
+          // REWARD operations have the same consensus time as operation that triggered them
+          return timeDiff.isZero() ? dateDiff : timeDiff.toNumber();
+        }
+
+        return dateDiff;
       });
 
       const alpacaOperations = sortedLiveOperations.map(liveOp => {
@@ -107,6 +194,17 @@ export function createApi(config: Record<string, never>): Api<HederaMemo> {
               assetOwner: address,
             }
           : { type: "native" };
+
+        // Prefer inferred payer from operation extra, fallback to transaction_id parsing for legacy ops.
+        let feesPayer = liveOp.extra?.feesPayer;
+        if (!feesPayer && liveOp.extra?.transactionId)
+          feesPayer = extractInitiator(liveOp.extra.transactionId);
+
+        // REWARD operations append a suffix to the tx.hash to ensure uniqueness
+        const hash =
+          liveOp.type === "REWARD"
+            ? liveOp.hash.replace(STAKING_REWARD_HASH_SUFFIX, "")
+            : liveOp.hash;
 
         return {
           id: liveOp.id,
@@ -124,8 +222,9 @@ export function createApi(config: Record<string, never>): Api<HederaMemo> {
             }),
           },
           tx: {
-            hash: liveOp.hash,
+            hash,
             fees: BigInt(liveOp.fee.toFixed(0)),
+            ...(feesPayer && { feesPayer }),
             date: liveOp.date,
             block: {
               height: liveOp.blockHeight ?? HARDCODED_BLOCK_HEIGHT,
@@ -139,8 +238,6 @@ export function createApi(config: Record<string, never>): Api<HederaMemo> {
 
       return { items: alpacaOperations, next: latestAccountOperations.nextCursor || undefined };
     },
-    getTokenFromAsset: asset => getTokenFromAsset(currency, asset),
-    getAssetFromToken,
     getValidators: cursor => getValidators(cursor),
     getStakes: async address => getStakes(address),
     getRewards: async (address, cursor) => getRewards(address, cursor),
@@ -151,8 +248,10 @@ export function createApi(config: Record<string, never>): Api<HederaMemo> {
     ): Promise<TransactionValidation> => {
       throw new Error("validateIntent is not supported");
     },
-    getSequence: async (_address): Promise<bigint> => {
-      throw new Error("getSequence is not supported");
+    getNextSequence: async (_address): Promise<bigint> => {
+      throw new Error("getNextSequence is not supported");
     },
+    validateAddress,
+    craftTransactionData,
   };
 }

@@ -11,9 +11,9 @@ import {
 } from "react-native";
 import { Trans } from "~/context/Locale";
 import { BigNumber } from "bignumber.js";
-import type { CosmosAccount } from "@ledgerhq/live-common/families/cosmos/types";
+import type { CosmosAccount, Transaction as CosmosTransaction } from "@ledgerhq/live-common/families/cosmos/types";
 import { getMaxEstimatedBalance } from "@ledgerhq/live-common/families/cosmos/logic";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
 import { formatCurrencyUnit } from "@ledgerhq/live-common/currencies/index";
 import { useTheme } from "styled-components/native";
 import Button from "~/components/Button";
@@ -54,7 +54,7 @@ function DelegationAmount({ navigation, route }: Props) {
     "unsupported cosmos transaction mode",
   );
 
-  const bridge = getAccountBridge(account, undefined);
+  const bridge = useAccountBridge<CosmosTransaction>(account, undefined);
   const unit = useAccountUnit(account);
   const initialValue = useMemo(() => route?.params?.value ?? BigNumber(0), [route]);
   const redelegatedBalance = route?.params?.redelegatedBalance ?? BigNumber(0);
@@ -66,8 +66,8 @@ function DelegationAmount({ navigation, route }: Props) {
     [initialValue, initialMax, value],
   );
   const min = useMemo(() => route?.params?.min ?? BigNumber(0), [route]);
-  const onNext = useCallback(() => {
-    const validators = tx.validators;
+  const onNext = useCallback(async () => {
+    const validators = [...tx.validators];
     const validatorAddress = route.params.validator ? route.params.validator.validatorAddress : "";
     const i = validators.findIndex(({ address }) => address === validatorAddress);
 
@@ -93,14 +93,17 @@ function DelegationAmount({ navigation, route }: Props) {
             validators: filteredValidators,
           },
     );
+    const preparedTransaction = await bridge
+      .prepareTransaction(account as CosmosAccount, transaction)
+      .catch(() => transaction);
     // @ts-expect-error navigate cannot infer the correct navigator + route
     navigation.navigate(route.params.nextScreen, {
       ...route.params,
       validatorName: route.params.validator ? route.params.validator.name : "",
-      transaction,
+      transaction: preparedTransaction,
       fromSelectAmount: true,
     });
-  }, [navigation, route.params, bridge, tx, value]);
+  }, [navigation, route.params, bridge, account, tx, value]);
   const [ratioButtons] = useState(
     [0.25, 0.5, 0.75, 1].map(ratio => ({
       label: `${ratio * 100}%`,

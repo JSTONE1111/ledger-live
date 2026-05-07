@@ -1,5 +1,5 @@
-import { AssetInfo, Operation } from "@ledgerhq/coin-framework/api/types";
-import { fromBigNumberToBigInt } from "@ledgerhq/coin-framework/utils";
+import { AssetInfo, Operation } from "@ledgerhq/coin-module-framework/api/types";
+import { fromBigNumberToBigInt } from "@ledgerhq/coin-module-framework/utils";
 import type { TrongridTxInfo } from "../../types";
 import { Block } from "../types";
 
@@ -18,6 +18,7 @@ export function fromTrongridTxInfoToOperation(
         time: block.time || new Date(0),
       },
       fees: fromBigNumberToBigInt<bigint>(trongridTxInfo.fee, BigInt(0)),
+      feesPayer: trongridTxInfo.feesPayer ?? trongridTxInfo.from,
       date: trongridTxInfo.date,
       failed: trongridTxInfo.hasFailed,
     },
@@ -42,7 +43,7 @@ function inferOperationType(trongridTxInfo: TrongridTxInfo, userAddress: string)
   }
 }
 
-function inferAssetInfo(trongridTxInfo: TrongridTxInfo): AssetInfo {
+export function inferAssetInfo(trongridTxInfo: TrongridTxInfo): AssetInfo {
   switch (true) {
     case trongridTxInfo.tokenType === "trc10":
       return {

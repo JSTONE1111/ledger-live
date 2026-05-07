@@ -4,12 +4,13 @@ import { useSelector } from "LLD/hooks/redux";
 import { accountsSelector } from "~/renderer/reducers/accounts";
 import uniq from "lodash/uniq";
 import { useTranslation } from "react-i18next";
-import { isAddressPoisoningOperation } from "@ledgerhq/coin-framework/operation";
+import { isAddressPoisoningOperation } from "@ledgerhq/ledger-wallet-framework/operation";
 import { Operation, AccountLike } from "@ledgerhq/types-live";
 import { TFunction } from "i18next";
 import { useFilterTokenOperationsZeroAmount } from "~/renderer/actions/settings";
 import { showClearCacheBannerSelector } from "~/renderer/reducers/settings";
 import { useAddressPoisoningOperationsFamilies } from "@ledgerhq/live-common/hooks/useAddressPoisoningOperationsFamilies";
+import { useBorrowLiveConfig } from "LLD/features/Borrow/hooks/useBorrowLiveConfig";
 
 export interface PortfolioViewModelResult {
   readonly totalAccounts: number;
@@ -20,6 +21,9 @@ export interface PortfolioViewModelResult {
   readonly shouldDisplayGraphRework: boolean;
   readonly shouldDisplayQuickActionCtas: boolean;
   readonly shouldDisplayAssetSection: boolean;
+  readonly shouldDisplayBorrowSection: boolean;
+  readonly shouldDisplayOperationsList: boolean;
+  readonly shouldDisplayBrazePlacement: boolean;
   readonly isWallet40Enabled: boolean;
   readonly filterOperations: (operation: Operation, account: AccountLike) => boolean;
   readonly accounts: AccountLike[];
@@ -35,8 +39,12 @@ export const usePortfolioViewModel = (): PortfolioViewModelResult => {
     shouldDisplayGraphRework,
     shouldDisplayQuickActionCtas,
     shouldDisplayAssetSection,
+    shouldDisplayOperationsList,
+    shouldDisplayBrazePlacement,
     isEnabled: isWallet40Enabled,
   } = useWalletFeaturesConfig("desktop");
+  const borrowConfig = useBorrowLiveConfig();
+  const shouldDisplayBorrowSection = borrowConfig?.enabled ?? false;
   const { t } = useTranslation();
   const [shouldFilterTokenOpsZeroAmount] = useFilterTokenOperationsZeroAmount();
   const addressPoisoningFamilies = useAddressPoisoningOperationsFamilies({
@@ -79,6 +87,9 @@ export const usePortfolioViewModel = (): PortfolioViewModelResult => {
     shouldDisplayGraphRework,
     shouldDisplayQuickActionCtas,
     shouldDisplayAssetSection,
+    shouldDisplayBorrowSection,
+    shouldDisplayOperationsList,
+    shouldDisplayBrazePlacement,
     isWallet40Enabled,
     filterOperations,
     accounts,

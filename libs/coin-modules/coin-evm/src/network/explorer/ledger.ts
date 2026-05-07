@@ -1,4 +1,4 @@
-import { isNFTActive } from "@ledgerhq/coin-framework/nft/support";
+import { isNFTActive } from "@ledgerhq/ledger-wallet-framework/nft/support";
 import { getEnv } from "@ledgerhq/live-env";
 import { delay } from "@ledgerhq/live-promise";
 import { Operation } from "@ledgerhq/types-live";
@@ -87,7 +87,7 @@ export const getOperations: ExplorerApi["getOperations"] = async (
   accountId,
   fromBlock,
 ) => {
-  const config = getCoinConfig(currency).info;
+  const config = getCoinConfig(currency.id).info;
   const { explorer } = config || /* istanbul ignore next */ {};
   if (!isLedgerExplorerConfig(explorer)) {
     throw new LedgerExplorerUsedIncorrectly(

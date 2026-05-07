@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Trans } from "react-i18next";
 import styled from "styled-components";
 import {
@@ -6,6 +6,7 @@ import {
   getFeesCurrency,
   getFeesUnit,
   getMainAccount,
+  findSubAccountById,
 } from "@ledgerhq/live-common/account/index";
 import TrackPage from "~/renderer/analytics/TrackPage";
 import Box from "~/renderer/components/Box";
@@ -64,6 +65,10 @@ const StepSummary = (props: StepProps) => {
   const unit = useMaybeAccountUnit(account);
   const accountName = useMaybeAccountName(account);
   const lldMemoTag = useFeature("lldMemoTag");
+  const feeCurrencyAccount = useMemo(() => {
+    if (!mainAccount || !status.feeCurrencyAccountId) return null;
+    return findSubAccountById(mainAccount, status.feeCurrencyAccountId) ?? null;
+  }, [mainAccount, status.feeCurrencyAccountId]);
 
   if (!account || !mainAccount || !transaction) {
     return null;
@@ -73,7 +78,8 @@ const StepSummary = (props: StepProps) => {
   const txInputs = "txInputs" in status ? status.txInputs : undefined;
   const { feeTooHigh, tooManyUtxos } = warnings;
   const currency = getAccountCurrency(account);
-  const feesCurrency = getFeesCurrency(mainAccount);
+
+  const feesCurrency = getFeesCurrency(feeCurrencyAccount ?? mainAccount);
   const feesUnit = getFeesUnit(feesCurrency);
   const utxoLag = txInputs ? txInputs.length >= WARN_FROM_UTXO_COUNT : null;
   const hasNonEmptySubAccounts =
@@ -82,7 +88,10 @@ const StepSummary = (props: StepProps) => {
 
   const specific = currency ? getLLDCoinFamily(mainAccount.currency.family) : null;
   const SpecificSummaryNetworkFeesRow = specific?.StepSummaryNetworkFeesRow;
+  const SpecificSummaryFromAddress = specific?.StepSummaryFromAddress;
+  const SpecificSummaryRecipientValue = specific?.StepSummaryRecipientValue;
   const SpecificSummaryAdditionalRows = specific?.StepSummaryAdditionalRows;
+  const SpecificSummaryPostAlert = specific?.StepSummaryPostAlert;
 
   const memo = lldMemoTag?.enabled
     ? getMemoTagValueByTransactionFamily(transaction)
@@ -136,16 +145,24 @@ const StepSummary = (props: StepProps) => {
                 >
                   <CryptoCurrencyIcon size={22} currency={currency} />
                 </div>
-                <Text
-                  ff="Inter"
-                  color="neutral.c100"
-                  fontSize={4}
-                  style={{
-                    flex: 1,
-                  }}
-                >
-                  {accountName}
-                </Text>
+                {SpecificSummaryFromAddress ? (
+                  <SpecificSummaryFromAddress
+                    account={account}
+                    parentAccount={parentAccount}
+                    transaction={transaction}
+                  />
+                ) : (
+                  <Text
+                    ff="Inter"
+                    color="neutral.c100"
+                    fontSize={4}
+                    style={{
+                      flex: 1,
+                    }}
+                  >
+                    {accountName}
+                  </Text>
+                )}
                 <AccountTagDerivationMode account={account} />
               </Box>
             </Box>
@@ -169,16 +186,24 @@ const StepSummary = (props: StepProps) => {
                   {transaction.recipientDomain.domain}
                 </Text>
               )}
-              <Ellipsis>
-                <Text
-                  ff="Inter"
-                  color={transaction.recipientDomain ? "neutral.c80" : "neutral.c100"}
-                  fontSize={4}
-                  data-testid="recipient-address"
-                >
-                  {transaction.recipient}
-                </Text>
-              </Ellipsis>
+              {SpecificSummaryRecipientValue ? (
+                <SpecificSummaryRecipientValue
+                  account={account}
+                  parentAccount={parentAccount}
+                  transaction={transaction}
+                />
+              ) : (
+                <Ellipsis>
+                  <Text
+                    ff="Inter"
+                    color={transaction.recipientDomain ? "neutral.c80" : "neutral.c100"}
+                    fontSize={4}
+                    data-testid="recipient-address"
+                  >
+                    {transaction.recipient}
+                  </Text>
+                </Ellipsis>
+              )}
             </Box>
           </Box>
           {lldMemoTag?.enabled
@@ -267,6 +292,7 @@ const StepSummary = (props: StepProps) => {
             feesUnit={feesUnit}
             estimatedFees={estimatedFees}
             feesCurrency={feesCurrency}
+            transaction={transaction}
           />
         ) : (
           <>
@@ -356,6 +382,8 @@ const StepSummary = (props: StepProps) => {
             </Box>
           </>
         ) : null}
+
+        {SpecificSummaryPostAlert && <SpecificSummaryPostAlert />}
       </FromToWrapper>
     </Box>
   );

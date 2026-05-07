@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/coin-internet_computer",
-  "version": "1.16.1",
+  "version": "1.21.1",
   "description": "Ledger Internet Computer integration",
   "keywords": [
     "Ledger",
@@ -45,34 +45,42 @@
     "./lib/*": "./lib/*.js",
     "./lib-es/*": "./lib-es/*.js",
     "./api": {
+      "@ledgerhq/source": "./src/api/index.ts",
       "require": "./lib/api/index.js",
       "default": "./lib-es/api/index.js"
     },
     "./deviceTransactionConfig": {
+      "@ledgerhq/source": "./src/bridge/deviceTransactionConfig.ts",
       "require": "./lib/bridge/deviceTransactionConfig.js",
       "default": "./lib-es/bridge/deviceTransactionConfig.js"
     },
     "./logic": {
+      "@ledgerhq/source": "./src/common-logic/index.ts",
       "require": "./lib/common-logic/index.js",
       "default": "./lib-es/common-logic/index.js"
     },
     "./signer": {
+      "@ledgerhq/source": "./src/signer/index.ts",
       "require": "./lib/signer/index.js",
       "default": "./lib-es/signer/index.js"
     },
     "./specs": {
+      "@ledgerhq/source": "./src/test/bot-specs.ts",
       "require": "./lib/test/bot-specs.js",
       "default": "./lib-es/test/bot-specs.js"
     },
     "./transaction": {
+      "@ledgerhq/source": "./src/bridge/transaction.ts",
       "require": "./lib/bridge/transaction.js",
       "default": "./lib-es/bridge/transaction.js"
     },
     "./types": {
+      "@ledgerhq/source": "./src/types/index.ts",
       "require": "./lib/types/index.js",
       "default": "./lib-es/types/index.js"
     },
     "./*": {
+      "@ledgerhq/source": "./src/*.ts",
       "require": "./lib/*.js",
       "default": "./lib-es/*.js"
     },
@@ -84,13 +92,14 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@ledgerhq/coin-framework": "workspace:^",
+    "@ledgerhq/coin-module-framework": "catalog:",
     "@ledgerhq/cryptoassets": "workspace:^",
     "@ledgerhq/devices": "workspace:*",
     "@ledgerhq/errors": "workspace:^",
+    "@ledgerhq/ledger-wallet-framework": "workspace:^",
     "@ledgerhq/logs": "workspace:^",
     "@ledgerhq/types-live": "workspace:^",
-    "@zondax/ledger-live-icp": "1.4.1",
+    "@zondax/ledger-live-icp": "1.4.2",
     "bignumber.js": "^9.1.2",
     "expect": "catalog:",
     "invariant": "^2.2.2",
@@ -98,26 +107,36 @@
     "rxjs": "catalog:"
   },
   "devDependencies": {
+    "@dfinity/agent": "2.4.1",
+    "@dfinity/candid": "2.4.1",
+    "@dfinity/identity-secp256k1": "2.4.1",
+    "@dfinity/principal": "2.4.1",
+    "@swc/core": "catalog:",
+    "@swc/jest": "catalog:",
     "@types/invariant": "^2.2.2",
     "@types/jest": "catalog:",
     "@types/lodash": "^4.14.191",
+    "@types/node": "catalog:",
     "@types/semver": "catalog:",
     "axios": "catalog:",
     "jest": "catalog:",
-    "@swc/jest": "catalog:",
-    "@swc/core": "catalog:"
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:"
   },
   "scripts": {
     "clean": "rimraf lib lib-es",
-    "build": "tsc && tsc -m esnext --moduleResolution bundler --outDir lib-es",
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.json -m esnext --moduleResolution bundler --outDir lib-es",
     "coverage": "jest --coverage",
     "prewatch": "pnpm build",
-    "watch": "tsc --watch",
-    "watch:es": "tsc --watch -m ES6 --outDir lib-es",
+    "watch": "tsc --watch --project tsconfig.build.json",
+    "watch:es": "tsc --watch --project tsconfig.build.json -m ES6 --outDir lib-es",
     "doc": "documentation readme src/** --section=API --pe ts --re ts --re d.ts",
-    "lint": "eslint ./src --no-error-on-unmatched-pattern --ext .ts,.tsx --cache",
-    "lint:fix": "pnpm lint --fix",
+    "lint": "oxlint src",
+    "lint:fix": "oxfmt src && oxlint src --fix --quiet",
     "test": "jest",
-    "unimported": "unimported"
+    "test-integ": "jest --config=jest.integ.config.js",
+    "unimported": "unimported",
+    "format": "oxfmt src",
+    "format:check": "oxfmt src --check"
   }
 }

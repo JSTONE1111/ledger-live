@@ -1,5 +1,133 @@
 # @ledgerhq/device-react
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.10.1
+
+## 0.6.1-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.10.1-next.0
+
+## 0.6.0
+
+### Minor Changes
+
+- [#16023](https://github.com/LedgerHQ/ledger-live/pull/16023) [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: remove eslint and prettier, replace with with oxlint and oxfmt
+
+### Patch Changes
+
+- Updated dependencies [[`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9)]:
+  - @ledgerhq/device-core@0.10.0
+
+## 0.6.0-next.0
+
+### Minor Changes
+
+- [#16023](https://github.com/LedgerHQ/ledger-live/pull/16023) [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: remove eslint and prettier, replace with with oxlint and oxfmt
+
+### Patch Changes
+
+- Updated dependencies [[`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9)]:
+  - @ledgerhq/device-core@0.10.0-next.0
+
+## 0.5.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.4
+
+## 0.5.4-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.4-next.0
+
+## 0.5.3
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.3
+
+## 0.5.3-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.3-next.0
+
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.2
+
+## 0.5.2-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.2-next.0
+
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.1
+
+## 0.5.1-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.9.1-next.0
+
+## 0.5.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/device-core@0.9.0
+
+## 0.5.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/device-core@0.9.0-next.0
+
+## 0.4.6
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.8.6
+
+## 0.4.6-next.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @ledgerhq/device-core@0.8.6-next.0
+
 ## 0.4.5
 
 ### Patch Changes

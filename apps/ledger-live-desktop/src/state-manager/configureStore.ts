@@ -5,8 +5,7 @@ import reducers, { State } from "~/renderer/reducers";
 import { applyLldRTKApiMiddlewares } from "~/renderer/reducers/rtkQueryApi";
 import { createIdentitiesSyncMiddleware } from "@ledgerhq/client-ids/store";
 import { trackingEnabledSelector } from "~/renderer/reducers/settings";
-import { getUserId } from "~/helpers/user";
-
+import { createFeatureFlagsMiddleware } from "@shared/feature-flags";
 type Props = {
   state?: State;
   dbMiddleware?: Middleware;
@@ -27,19 +26,10 @@ const customCreateStore = ({ state, dbMiddleware, analyticsMiddleware }: Props) 
         .concat(
           createIdentitiesSyncMiddleware({
             getIdentitiesState: (state: State) => state.identities,
-            getUserId: async (_state: State) => {
-              // TEMPORARY: Using getUserId() from helpers until full migration to identities system
-              // FIXME LIVE-23880: Migrate to use userId from identities store or app-level user management
-              try {
-                const userId = getUserId();
-                return Promise.resolve(userId || "");
-              } catch {
-                return Promise.resolve("");
-              }
-            },
             getAnalyticsConsent: (state: State) => trackingEnabledSelector(state),
           }),
-        ),
+        )
+        .concat(createFeatureFlagsMiddleware({ platform: "desktop", appVersion: __APP_VERSION__ })),
     devTools: __DEV__,
   });
   return store;

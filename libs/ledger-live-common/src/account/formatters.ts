@@ -1,9 +1,9 @@
-import { getAccountCurrency } from "@ledgerhq/coin-framework/account/index";
-import { getTagDerivationMode } from "@ledgerhq/coin-framework/derivation";
+import { getAccountCurrency } from "@ledgerhq/ledger-wallet-framework/account/index";
+import { getTagDerivationMode } from "@ledgerhq/ledger-wallet-framework/derivation";
 import {
   getOperationAmountNumber,
   getOperationAmountNumberWithInternals,
-} from "@ledgerhq/coin-framework/operation";
+} from "@ledgerhq/ledger-wallet-framework/operation";
 import { getDefaultAccountName } from "@ledgerhq/live-wallet/accountName";
 import type { Unit } from "@ledgerhq/types-cryptoassets";
 import type { Account, Operation } from "@ledgerhq/types-live";
@@ -186,7 +186,7 @@ const operationBalanceHistory = account => {
 export const accountFormatters: { [_: string]: (Account) => any } = {
   operationBalanceHistoryBackwards,
   operationBalanceHistory,
-  json: account => JSON.stringify(toAccountRaw(account)),
+  json: async account => JSON.stringify(await toAccountRaw(account)),
   head: account => cliFormat(account, "head"),
   default: account => cliFormat(account),
   basic: account => cliFormat(account, "basic"),

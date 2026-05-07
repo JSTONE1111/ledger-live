@@ -1,3 +1,4 @@
+import { isValidAddress } from "@celo/utils/lib/address";
 import {
   AmountRequired,
   FeeNotLoaded,
@@ -6,14 +7,15 @@ import {
   NotEnoughBalance,
   RecipientRequired,
 } from "@ledgerhq/errors";
-import { BigNumber } from "bignumber.js";
+import { findSubAccountById } from "@ledgerhq/ledger-wallet-framework/account/index";
 import { AccountBridge } from "@ledgerhq/types-live";
-import { isValidAddress } from "@celo/utils/lib/address";
+import { BigNumber } from "bignumber.js";
+import { CeloAllFundsWarning, CeloGroupNotVotable } from "../errors";
 import { getPendingStakingOperationAmounts, getVote } from "../logic";
-import { CeloAccount, Transaction, TransactionStatus } from "../types";
-import { CeloAllFundsWarning } from "../errors";
 import { celoKit } from "../network/sdk";
-import { findSubAccountById } from "@ledgerhq/coin-framework/account/index";
+import { getCurrentCeloPreloadData } from "./preload";
+import { CeloAccount, Transaction, TransactionStatus } from "../types";
+import { isSameTokenAsFee, convertNumberDecimals, normalizeAndSubtract } from "./utils";
 
 const kit = celoKit();
 
@@ -54,6 +56,13 @@ export const getTransactionStatus: AccountBridge<
   const tokenAccount = findSubAccountById(account, transaction.subAccountId || "");
   const isTokenTransaction = tokenAccount?.type === "TokenAccount";
 
+  // Determine if we're paying fees in the same currency we're sending
+  const sameTokenAsFee = isSameTokenAsFee(
+    isTokenTransaction,
+    tokenAccount?.token?.contractAddress,
+    transaction.feeCurrencyUnwrapped,
+  );
+
   let amount: BigNumber = new BigNumber(0);
   if (useAllAmount && (transaction.mode === "unlock" || transaction.mode === "vote")) {
     amount = totalNonVotingLockedBalance ?? new BigNumber(0);
@@ -61,9 +70,20 @@ export const getTransactionStatus: AccountBridge<
     const revoke = getVote(account, transaction.recipient, transaction.index);
     if (revoke?.amount) amount = revoke.amount;
   } else if (useAllAmount) {
-    amount = isTokenTransaction
-      ? tokenAccount.spendableBalance
-      : totalSpendableBalance.minus(estimatedFees);
+    if (isTokenTransaction) {
+      amount = sameTokenAsFee
+        ? convertNumberDecimals(
+            normalizeAndSubtract(
+              tokenAccount.spendableBalance,
+              estimatedFees,
+              tokenAccount?.token.units[0].magnitude,
+            ),
+            tokenAccount?.token.units[0].magnitude,
+          )
+        : tokenAccount.spendableBalance;
+    } else {
+      amount = sameTokenAsFee ? totalSpendableBalance.minus(estimatedFees) : totalSpendableBalance;
+    }
   } else {
     amount = new BigNumber(transaction.amount);
   }
@@ -85,7 +105,13 @@ export const getTransactionStatus: AccountBridge<
     }
   }
 
-  const totalSpent = amount.plus(estimatedFees);
+  const feeTokenAccount = findSubAccountById(account, transaction.feeCurrencyAccountId ?? "");
+  const feesForTotalSpent = feeTokenAccount
+    ? convertNumberDecimals(estimatedFees, feeTokenAccount.token.units[0].magnitude)
+    : estimatedFees;
+
+  // Calculate totalSpent - only add fees if paying in the same currency
+  const totalSpent = sameTokenAsFee ? amount.plus(feesForTotalSpent) : amount;
 
   if (transaction.mode === "unlock" || transaction.mode === "vote") {
     if (!errors.amount && totalNonVotingLockedBalance && amount.gt(totalNonVotingLockedBalance)) {
@@ -96,13 +122,43 @@ export const getTransactionStatus: AccountBridge<
     if (!errors.amount && revoke?.amount && amount.gt(revoke.amount))
       errors.amount = new NotEnoughBalance();
   } else {
-    if (!errors.amount && totalSpent.gt(totalSpendableBalance)) {
+    const balanceToCheck =
+      isTokenTransaction && tokenAccount ? tokenAccount.spendableBalance : totalSpendableBalance;
+
+    const amountToCheck = sameTokenAsFee ? totalSpent : amount;
+    if (!errors.amount && amountToCheck.gt(balanceToCheck)) {
       errors.amount = new NotEnoughBalance();
+    }
+
+    // When fees are paid in a different currency, verify fee token balance is sufficient
+    if (!errors.fees && !sameTokenAsFee) {
+      if (feeTokenAccount) {
+        const feeTokenBalance = feeTokenAccount.spendableBalance;
+        if (feesForTotalSpent.gt(feeTokenBalance)) {
+          errors.fees = new NotEnoughBalance();
+        }
+      } else if (isTokenTransaction) {
+        // Fees paid in native CELO — check main account spendable balance
+        if (estimatedFees.gt(totalSpendableBalance)) {
+          errors.fees = new NotEnoughBalance();
+        }
+      }
     }
   }
 
-  if (!errors.amount && totalSpendableBalance.lt(estimatedFees)) {
-    errors.amount = new NotEnoughBalance();
+  if (transaction.mode === "vote" && transaction.recipient && !errors.recipient) {
+    const { validatorGroups } = getCurrentCeloPreloadData();
+    // Groups with capacity ≤ 0 are filtered out during preload by getValidatorGroups().
+    // If the selected recipient is absent from the preload list, it cannot receive votes.
+    // Empty list means the preload hasn't run yet — skip the check to avoid false positives.
+    if (
+      validatorGroups.length > 0 &&
+      !validatorGroups.some(
+        vg => vg.address.toLowerCase() === (transaction.recipient as string).toLowerCase(),
+      )
+    ) {
+      errors.recipient = new CeloGroupNotVotable();
+    }
   }
 
   if (transaction.mode === "send") {
@@ -114,19 +170,17 @@ export const getTransactionStatus: AccountBridge<
       });
     }
 
-    const insufficientBalance =
-      totalSpent.gt(totalSpendableBalance) || totalSpendableBalance.lt(estimatedFees);
-    if (!errors.amount && insufficientBalance) {
-      errors.amount = new NotEnoughBalance();
-    }
-
     if (isTokenTransaction) {
+      // For token transactions, totalSpent depends on whether fees are in the same token
+      // If fees are in a different token, we can only show the amount (can't add different currencies)
+      // If fees are in the same token, show amount + fees (both already in token's decimals)
       return {
         errors,
         warnings,
-        estimatedFees,
+        estimatedFees: feesForTotalSpent,
         amount,
-        totalSpent: amount,
+        totalSpent,
+        feeCurrencyAccountId: transaction.feeCurrencyAccountId,
       };
     }
   }
@@ -134,9 +188,10 @@ export const getTransactionStatus: AccountBridge<
   return {
     errors,
     warnings,
-    estimatedFees,
+    estimatedFees: feesForTotalSpent,
     amount,
     totalSpent,
+    feeCurrencyAccountId: transaction.feeCurrencyAccountId,
   };
 };
 

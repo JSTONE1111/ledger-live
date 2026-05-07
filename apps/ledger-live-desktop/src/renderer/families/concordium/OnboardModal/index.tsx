@@ -5,7 +5,7 @@ import {
   ConcordiumWalletConnect,
   clearWalletConnect,
 } from "@ledgerhq/coin-concordium/network/walletConnect";
-import { getCurrencyBridge } from "@ledgerhq/live-common/bridge/index";
+import { getConcordiumBridge } from "@ledgerhq/live-common/families/concordium/bridgeHelper";
 import { Device } from "@ledgerhq/live-common/hw/actions/types";
 import { addAccountsAction } from "@ledgerhq/live-wallet/addAccounts";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
@@ -90,6 +90,7 @@ class OnboardModal extends PureComponent<Props, State> {
 
   concordiumWalletConnect: ConcordiumWalletConnect | null = null;
   concordiumBridge: ConcordiumCurrencyBridge | null = null;
+  private concordiumBridgePromise: Promise<ConcordiumCurrencyBridge> | null = null;
   pairingSubscription: Subscription | null = null;
   onboardingSubscription: Subscription | null = null;
   stepTransitionTimeout: NodeJS.Timeout | null = null;
@@ -133,16 +134,36 @@ class OnboardModal extends PureComponent<Props, State> {
       walletConnectUri: null,
     };
 
-    if (props.currency) {
-      // getCurrencyBridge returns the generic CurrencyBridge type; we know this is Concordium
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      this.concordiumBridge = getCurrencyBridge(props.currency) as ConcordiumCurrencyBridge;
+  }
+
+  async componentDidMount() {
+    this.mounted = true;
+    this.concordiumWalletConnect = setWalletConnect();
+    if (this.props.currency) {
+      this.concordiumBridgePromise = getConcordiumBridge(this.props.currency);
+      try {
+        this.concordiumBridge = await this.concordiumBridgePromise;
+      } catch (error) {
+        this.concordiumBridgePromise = null;
+        if (!this.mounted) return;
+        this.setState({ error: toError(error) });
+        return;
+      }
+      if (!this.mounted) return;
     }
   }
 
-  componentDidMount() {
-    this.mounted = true;
-    this.concordiumWalletConnect = setWalletConnect();
+  private async ensureBridgeReady(): Promise<boolean> {
+    if (this.concordiumBridge) return true;
+    if (!this.concordiumBridgePromise) return true;
+    try {
+      this.concordiumBridge = await this.concordiumBridgePromise;
+      return true;
+    } catch (error) {
+      this.concordiumBridgePromise = null;
+      this.setState({ error: toError(error) });
+      return false;
+    }
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -219,11 +240,12 @@ class OnboardModal extends PureComponent<Props, State> {
     this.pairingSubscription = null;
   };
 
-  handlePair = (isRetry = false) => {
+  handlePair = async (isRetry = false) => {
     this.clearPairingSubscription();
 
     const { currency, device } = this.props;
 
+    if (!(await this.ensureBridgeReady())) return;
     invariant(this.concordiumBridge, "concordiumBridge is required");
     invariant(device, "device is required");
     invariant(currency, "currency is required");
@@ -242,7 +264,7 @@ class OnboardModal extends PureComponent<Props, State> {
     });
 
     this.pairingSubscription = this.concordiumBridge
-      .pairWalletConnect(currency, device.deviceId)
+      .pairWalletConnect(currency.id, device.deviceId)
       .subscribe({
         next: (data: ConcordiumPairingProgress) => {
           const stateUpdate = handlePairingProgress(data);
@@ -310,12 +332,13 @@ class OnboardModal extends PureComponent<Props, State> {
     this.onboardingSubscription = null;
   };
 
-  handleCreateAccount = () => {
+  handleCreateAccount = async () => {
     this.clearOnboardingSubscription();
 
     const { currency, device, selectedAccounts } = this.props;
     const creatableAccount = getCreatableAccount(selectedAccounts);
 
+    if (!(await this.ensureBridgeReady())) return;
     invariant(this.concordiumBridge, "concordiumBridge is required");
     invariant(creatableAccount, "creatableAccount is required");
     invariant(device, "device is required");
@@ -350,7 +373,7 @@ class OnboardModal extends PureComponent<Props, State> {
     });
 
     this.onboardingSubscription = this.concordiumBridge
-      .onboardAccount(currency, device.deviceId, creatableAccount)
+      .onboardAccount(currency.id, device.deviceId, creatableAccount)
       .subscribe({
         next: data => {
           const stateUpdate = handleOnboardingProgress(data);

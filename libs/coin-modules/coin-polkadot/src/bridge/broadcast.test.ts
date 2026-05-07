@@ -19,7 +19,7 @@ jest.mock("../logic", () => {
 });
 
 const patchOperationWithHashMock = jest.fn();
-jest.mock("@ledgerhq/coin-framework/operation", () => {
+jest.mock("@ledgerhq/ledger-wallet-framework/operation", () => {
   return {
     patchOperationWithHash: (operation: Operation, hash: string) =>
       patchOperationWithHashMock(operation, hash),
@@ -29,7 +29,7 @@ jest.mock("@ledgerhq/coin-framework/operation", () => {
 const account = createFixtureAccount();
 
 describe("broadcast", () => {
-  it("it should broadcast the signed operation and return an operation with the hash", async () => {
+  it("should broadcast the signed operation and return an operation with the hash", async () => {
     const hash = "some random hash";
     logicBroadcastMock.mockReturnValueOnce(hash);
 

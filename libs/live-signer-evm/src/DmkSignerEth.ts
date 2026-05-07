@@ -16,6 +16,7 @@ import {
   DeviceManagementKit,
   hexaStringToBuffer,
 } from "@ledgerhq/device-management-kit";
+import { ContextModuleBuilder } from "@ledgerhq/context-module";
 import { EIP712Message } from "@ledgerhq/types-live";
 import {
   EthAppPleaseEnableContractData,
@@ -23,7 +24,11 @@ import {
   UserRefusedOnDevice,
 } from "@ledgerhq/errors";
 import { EvmAddress, EvmSigner, EvmSignerEvent } from "@ledgerhq/coin-evm/types/signer";
-import type { LoadConfig, ResolutionConfig } from "@ledgerhq/hw-app-eth/lib/services/types";
+import type { LoadConfig, ResolutionConfig } from "@ledgerhq/hw-app-eth/services/types";
+import {
+  buildDefaultHttpBlindSigningReporter,
+  liveBlindSigningReporter,
+} from "@ledgerhq/live-dmk-shared";
 
 export type DAError =
   | GetAddressDAError
@@ -37,11 +42,22 @@ export class DmkSignerEth implements EvmSigner {
     readonly dmk: DeviceManagementKit,
     readonly sessionId: string,
   ) {
+    const originToken = "1e55ba3959f4543af24809d9066a2120bd2ac9246e626e26a1ff77eb109ca0e5"; // gitleaks:allow
+    liveBlindSigningReporter.setInner(
+      buildDefaultHttpBlindSigningReporter(originToken, "ledger-wallet"),
+    );
+    liveBlindSigningReporter.setContext({ sessionId });
+    const contextModule = new ContextModuleBuilder({ originToken })
+      .setAppSource("ledger-wallet")
+      .setBlindSigningReporter(liveBlindSigningReporter)
+      .build();
     this.signer = new SignerEthBuilder({
       dmk,
       sessionId,
-      originToken: "1e55ba3959f4543af24809d9066a2120bd2ac9246e626e26a1ff77eb109ca0e5",
-    }).build();
+      originToken,
+    })
+      .withContextModule(contextModule)
+      .build();
   }
 
   private _mapError<E extends DAError>(error: E): Error {
@@ -118,14 +134,24 @@ export class DmkSignerEth implements EvmSigner {
     path: string,
     boolDisplay?: boolean,
     boolChaincode?: boolean,
-    _chainId?: string,
+    chainId?: string,
   ): Promise<EvmAddress> {
+    let parsedChainId: number | undefined;
+    if (chainId !== undefined) {
+      const numericChainId = Number(chainId);
+      parsedChainId =
+        !Number.isFinite(numericChainId) || !Number.isInteger(numericChainId) || numericChainId <= 0
+          ? undefined
+          : numericChainId;
+    }
+
     const result = this._mapResult(
       await lastValueFrom(
         this.signer.getAddress(path, {
           checkOnDevice: boolDisplay,
           returnChainCode: boolChaincode,
           skipOpenApp: true,
+          chainId: parsedChainId,
         }).observable,
       ),
     );

@@ -4,7 +4,7 @@ import { INITIAL_STATE as TRUSTCHAIN_INITIAL_STATE } from "@ledgerhq/ledger-key-
 import { initialState as POST_ONBOARDING_INITIAL_STATE } from "@ledgerhq/live-common/postOnboarding/reducer";
 import { CountervaluesBridge, CountervaluesProvider } from "@ledgerhq/live-countervalues-react";
 import { initialState as WALLET_INITIAL_STATE } from "@ledgerhq/live-wallet/store";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, type InitialState } from "@react-navigation/native";
 import { configureStore } from "@reduxjs/toolkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -18,7 +18,6 @@ import React, { useMemo } from "react";
 import { I18nextProvider } from "react-i18next";
 import { Provider } from "react-redux";
 import { AnalyticsContextProvider } from "~/analytics/AnalyticsContext";
-import { CountervaluesMarketcapBridgedProvider } from "~/components/CountervaluesMarketcapProvider";
 import { FirebaseFeatureFlagsProvider } from "~/components/FirebaseFeatureFlags";
 import { i18n } from "~/context/Locale";
 import reducers from "~/reducers";
@@ -33,6 +32,7 @@ import { LARGE_MOVER_INITIAL_STATE } from "~/reducers/largeMover";
 import { INITIAL_STATE as MARKET_INITIAL_STATE } from "~/reducers/market";
 import { INITIAL_STATE as MODULAR_DRAWER_INITIAL_STATE } from "~/reducers/modularDrawer";
 import { INITIAL_STATE as NOTIFICATIONS_INITIAL_STATE } from "~/reducers/notifications";
+import { INITIAL_STATE as POST_ONBOARDING_HUB_DRAWER_INITIAL_STATE } from "~/reducers/postOnboardingHubDrawer";
 import { INITIAL_STATE as PROTECT_INITIAL_STATE } from "~/reducers/protect";
 import { INITIAL_STATE as RATINGS_INITIAL_STATE } from "~/reducers/ratings";
 import { INITIAL_STATE as RECEIVE_OPTIONS_DRAWER_INITIAL_STATE } from "~/reducers/receiveOptionsDrawer";
@@ -45,7 +45,12 @@ import { INITIAL_STATE as WALLET_CONNECT_INITIAL_STATE } from "~/reducers/wallet
 import { INITIAL_STATE as WALLETSYNC_INITIAL_STATE } from "~/reducers/walletSync";
 import { INITIAL_STATE as AUTH_INITIAL_STATE } from "~/reducers/auth";
 import { INITIAL_STATE as SEND_FLOW_INITIAL_STATE } from "~/reducers/sendFlow";
+import { INITIAL_STATE as HISTORY_INITIAL_STATE } from "~/reducers/history";
 import { INITIAL_STATE as PORTFOLIO_REFRESH_INITIAL_STATE } from "~/reducers/portfolioRefresh";
+import { INITIAL_STATE as DEEPLINK_INSTALL_APP_INITIAL_STATE } from "~/reducers/deeplinkInstallApp";
+import { INITIAL_STATE as RECOVER_STATE_INITIAL_STATE } from "~/reducers/recoverState";
+import { FEATURE_FLAGS_INITIAL_STATE, FEATURE_FLAGS_DEFAULTS } from "@shared/feature-flags";
+import type { FeatureId, Features, PartialFeatures, Feature } from "@shared/feature-flags";
 import StyleProvider from "~/StyleProvider";
 import CustomLiveAppProvider from "./CustomLiveAppProvider";
 import { getFeature } from "./featureFlags";
@@ -58,6 +63,8 @@ const INITIAL_STATE: State = {
   countervalues: COUNTERVALUES_INITIAL_STATE,
   dynamicContent: DYNAMIC_CONTENT_INITIAL_STATE,
   earn: EARN_INITIAL_STATE,
+  featureFlags: FEATURE_FLAGS_INITIAL_STATE,
+  history: HISTORY_INITIAL_STATE,
   identities: initialIdentitiesState,
   inView: IN_VIEW_INITIAL_STATE,
   largeMover: LARGE_MOVER_INITIAL_STATE,
@@ -68,6 +75,7 @@ const INITIAL_STATE: State = {
   transferDrawer: TRANSFER_DRAWER_INITIAL_STATE,
   notifications: NOTIFICATIONS_INITIAL_STATE,
   postOnboarding: POST_ONBOARDING_INITIAL_STATE,
+  postOnboardingHubDrawer: POST_ONBOARDING_HUB_DRAWER_INITIAL_STATE,
   protect: PROTECT_INITIAL_STATE,
   ratings: RATINGS_INITIAL_STATE,
   settings: SETTINGS_INITIAL_STATE,
@@ -79,12 +87,15 @@ const INITIAL_STATE: State = {
   auth: AUTH_INITIAL_STATE,
   sendFlow: SEND_FLOW_INITIAL_STATE,
   portfolioRefresh: PORTFOLIO_REFRESH_INITIAL_STATE,
+  deeplinkInstallApp: DEEPLINK_INSTALL_APP_INITIAL_STATE,
+  recoverState: RECOVER_STATE_INITIAL_STATE,
   ...llmRtkApiInitialStates,
 };
 
 type ExtraOptions = RenderOptions & {
   overrideInitialState?: (state: State) => State;
   userEventOptions?: Parameters<typeof userEvent.setup>[0];
+  navigationInitialState?: InitialState;
 };
 
 enum RenderType {
@@ -97,18 +108,77 @@ type CountervaluesChildren = React.ComponentProps<typeof CountervaluesProvider>[
 type WrapperProps = { children?: NavigationChildren };
 
 function createStore({ overrideInitialState }: { overrideInitialState: (state: State) => State }) {
+  const state = overrideInitialState(INITIAL_STATE);
+
   return configureStore({
     reducer: reducers,
     middleware: getDefaultMiddleware =>
       applyLlmRTKApiMiddlewares(
         getDefaultMiddleware({ serializableCheck: false, immutableCheck: false }),
       ),
-    preloadedState: overrideInitialState(INITIAL_STATE),
+    preloadedState: state,
     devTools: false,
   });
 }
 
 export type ReduxStore = ReturnType<typeof createStore>;
+
+export { createStore };
+
+export function withReadOnlyDisabled(state: State): State {
+  return {
+    ...state,
+    settings: { ...state.settings, readOnlyModeEnabled: false },
+  };
+}
+
+type LooseFlagOverrides = {
+  [K in FeatureId]?: {
+    enabled?: boolean;
+    params?: Features[K] extends { params?: infer P } ? Partial<NonNullable<P>> : never;
+  };
+};
+
+/**
+ * Returns a state transformer that applies partial feature flag overrides,
+ * merging with FEATURE_FLAGS_DEFAULTS to satisfy the strict PartialFeatures type.
+ *
+ * @example
+ * renderHook(hook, { overrideInitialState: withFlagOverrides({ lwmWallet40: { enabled: true, params: { mainNavigation: true } } }) })
+ */
+function withFlagOverrides(
+  flags: LooseFlagOverrides,
+  baseTransform?: (state: State) => State,
+): (state: State) => State {
+  return (state: State): State => {
+    const base = baseTransform ? baseTransform(state) : state;
+    const merged: Record<string, Feature> = {};
+    for (const key of Object.keys(flags) as FeatureId[]) {
+      const override = flags[key];
+      const def = FEATURE_FLAGS_DEFAULTS[key] ?? { enabled: false };
+      merged[key] = {
+        ...def,
+        ...(override?.enabled !== undefined && { enabled: override.enabled }),
+        ...(override?.params !== undefined && {
+          params: {
+            ...((def as Record<string, unknown>)["params"] as Record<string, unknown> | undefined),
+            ...override.params,
+          },
+        }),
+      };
+    }
+    return {
+      ...base,
+      featureFlags: {
+        ...base.featureFlags,
+        overrides: {
+          ...base.featureFlags.overrides,
+          ...(merged as unknown as PartialFeatures),
+        },
+      },
+    };
+  };
+}
 
 function CountervaluesProviders({
   children,
@@ -128,6 +198,7 @@ function CountervaluesProviders({
       setState: () => {},
       setStateError: () => {},
       setStatePending: () => {},
+      useMarketcapIds: () => [],
       usePollingIsPolling: () => false,
       usePollingTriggerLoad: () => false,
       useState: () => state.countervalues.countervalues.state,
@@ -138,11 +209,7 @@ function CountervaluesProviders({
     };
   }, [store]);
 
-  return (
-    <CountervaluesMarketcapBridgedProvider>
-      <CountervaluesProvider bridge={bridge}>{children}</CountervaluesProvider>
-    </CountervaluesMarketcapBridgedProvider>
-  );
+  return <CountervaluesProvider bridge={bridge}>{children}</CountervaluesProvider>;
 }
 
 /**
@@ -163,20 +230,22 @@ function Providers({
   withReactQuery = false,
   withLiveApp = false,
   renderType = RenderType.DEFAULT,
+  navigationInitialState,
 }: {
   children: NavigationChildren;
   store: ReduxStore;
   withReactQuery?: boolean;
   withLiveApp?: boolean;
   renderType?: RenderType;
+  navigationInitialState?: InitialState;
 }): React.JSX.Element {
   // Custom live app provider
   const content = withLiveApp ? (
     <CustomLiveAppProvider>
-      <NavigationContainer>{children}</NavigationContainer>
+      <NavigationContainer initialState={navigationInitialState}>{children}</NavigationContainer>
     </CustomLiveAppProvider>
   ) : (
-    <NavigationContainer>{children}</NavigationContainer>
+    <NavigationContainer initialState={navigationInitialState}>{children}</NavigationContainer>
   );
 
   // Conditionally wraps content with additional providers unless using hook-based rendering
@@ -186,22 +255,22 @@ function Providers({
       content
     ) : (
       // For default rendering, add new providers here
-      <StyleProvider selectedPalette="dark">
-        <I18nextProvider i18n={i18n}>
-          <BottomSheetModalProvider>
-            <QueuedDrawersContextProvider>
-              <AnalyticsContextProvider>{content}</AnalyticsContextProvider>
-            </QueuedDrawersContextProvider>
-          </BottomSheetModalProvider>
-        </I18nextProvider>
-      </StyleProvider>
+      <I18nextProvider i18n={i18n}>
+        <BottomSheetModalProvider>
+          <QueuedDrawersContextProvider>
+            <AnalyticsContextProvider>{content}</AnalyticsContextProvider>
+          </QueuedDrawersContextProvider>
+        </BottomSheetModalProvider>
+      </I18nextProvider>
     );
 
   // General Providers needed for all render types
   let providers = (
     <Provider store={store}>
       <FirebaseFeatureFlagsProvider getFeature={getFeature}>
-        <CountervaluesProviders store={store}>{extraProviders}</CountervaluesProviders>
+        <CountervaluesProviders store={store}>
+          <StyleProvider selectedPalette="dark">{extraProviders}</StyleProvider>
+        </CountervaluesProviders>
       </FirebaseFeatureFlagsProvider>
     </Provider>
   );
@@ -220,6 +289,7 @@ const customRender = (
   {
     overrideInitialState: overrideInitialState = state => state,
     userEventOptions = {},
+    navigationInitialState,
     ...renderOptions
   }: ExtraOptions = {},
 ) => {
@@ -228,7 +298,11 @@ const customRender = (
   });
 
   const ProvidersWrapper = ({ children }: WrapperProps): React.JSX.Element => {
-    return <Providers store={store}>{children}</Providers>;
+    return (
+      <Providers navigationInitialState={navigationInitialState} store={store}>
+        {children}
+      </Providers>
+    );
   };
 
   return {
@@ -243,6 +317,7 @@ const renderWithReactQuery = (
   {
     overrideInitialState: overrideInitialState = state => state,
     userEventOptions = {},
+    navigationInitialState,
     ...renderOptions
   }: ExtraOptions = {},
 ) => {
@@ -252,7 +327,7 @@ const renderWithReactQuery = (
 
   const ProvidersWrapper = ({ children }: WrapperProps): React.JSX.Element => {
     return (
-      <Providers store={store} withReactQuery>
+      <Providers navigationInitialState={navigationInitialState} store={store} withReactQuery>
         {children}
       </Providers>
     );
@@ -319,4 +394,5 @@ export {
   customRender as render,
   customRenderHook as renderHook,
   renderWithReactQuery,
+  withFlagOverrides,
 };

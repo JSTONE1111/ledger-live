@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { firstValueFrom, from, of, throwError } from "rxjs";
 import { catchError, filter, first, map, timeout, tap } from "rxjs/operators";
 import {
@@ -10,7 +9,7 @@ import { getEnv, setEnv } from "@ledgerhq/live-env";
 import { promiseAllBatched } from "@ledgerhq/live-common/promise";
 import { makeBridgeCacheSystem } from "@ledgerhq/live-common/bridge/cache";
 import { autoSignTransaction } from "@ledgerhq/live-common/bot/engine";
-import allSpecs from "@ledgerhq/live-common/generated/specs";
+import allSpecs from "@ledgerhq/live-common/bot/allSpecs";
 import { createImplicitSpeculos, releaseSpeculosDevice } from "@ledgerhq/live-common/load/speculos";
 import { formatOperation } from "@ledgerhq/live-common/account/index";
 import {
@@ -33,8 +32,8 @@ const ONLY_CURRENCIES = process.env.ONLY_CURRENCIES
 // TODO improve botTransfer by only using "allSpecs" and introduce a "transferMutation" in the specs for all spec to define how to transfer funds out (as well as UNDELEGATING funds)
 
 function getImplicitDeviceAction(currency: CryptoCurrency, forSubAccount: boolean) {
-  for (const k in allSpecs) {
-    const familySpec = allSpecs[k as keyof typeof allSpecs];
+  for (const family in allSpecs) {
+    const familySpec = allSpecs[family as keyof typeof allSpecs];
     for (const c in familySpec) {
       const spec: AppSpec<any> = familySpec[c as keyof typeof familySpec];
       if (spec.currency === currency) {
@@ -81,7 +80,7 @@ export default {
           device = r.device;
           await cache.prepareCurrency(currency);
           const maybeAddress = await firstValueFrom(
-            getCurrencyBridge(currency)
+            (await getCurrencyBridge(currency))
               .scanAccounts({
                 currency,
                 deviceId: device.id,
@@ -125,7 +124,7 @@ export default {
           if (!r) return;
           device = r.device;
           await firstValueFrom(
-            getCurrencyBridge(currency)
+            (await getCurrencyBridge(currency))
               .scanAccounts({
                 currency,
                 deviceId: r.device.id,
@@ -185,7 +184,7 @@ export default {
           console.log("no recipient to empty account " + account.id);
           return;
         }
-        const accountBridge = getAccountBridge(account);
+        const accountBridge = await getAccountBridge(account);
 
         // TODO in case of cosmos & other funds that can be delegated, we need to also schedule these txs first..
         const plannedTransactions: TransactionCommon[] = [];

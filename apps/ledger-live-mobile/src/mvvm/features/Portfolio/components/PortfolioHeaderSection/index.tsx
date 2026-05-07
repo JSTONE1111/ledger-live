@@ -1,7 +1,6 @@
-import React from "react";
-import { View } from "react-native";
-import { Flex } from "@ledgerhq/native-ui";
-import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import React, { useCallback } from "react";
+import { View, type LayoutChangeEvent } from "react-native";
+import { Box } from "@ledgerhq/lumen-ui-rnative";
 import FirmwareUpdateBanner from "LLM/features/FirmwareUpdate/components/UpdateBanner";
 import PortfolioGraphCard from "~/screens/Portfolio/PortfolioGraphCard";
 import { PortfolioBalanceSection } from "../PortfolioBalanceSection";
@@ -24,17 +23,24 @@ export const PortfolioHeaderSection = ({
   isReadOnlyMode = false,
   ctas,
 }: PortfolioHeaderSectionProps) => {
-  const { safeAreaTop } = usePortfolioHeaderSectionViewModel();
-  const { shouldDisplayBalanceRefreshRework } = useWalletFeaturesConfig("mobile");
+  const { safeAreaTop, shouldDisplayBalanceRefreshRework, onBannerHeightChange, minContentHeight } =
+    usePortfolioHeaderSectionViewModel();
+
+  const onBannerLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      onBannerHeightChange(e.nativeEvent.layout.height);
+    },
+    [onBannerHeightChange],
+  );
 
   if (hideGraph) {
     return (
       <View key="portfolioHeaderElements" style={{ paddingTop: safeAreaTop }}>
         {shouldDisplayBalanceRefreshRework && <PortfolioRefreshStatus />}
-        <Flex px={6} key="FirmwareUpdateBanner">
+        <Box onLayout={onBannerLayout} lx={{ paddingHorizontal: "s16" }} key="FirmwareUpdateBanner">
           <FirmwareUpdateBanner onBackFromUpdate={onBackFromUpdate} />
-        </Flex>
-        <ScreenHeroSectionView ctas={ctas}>
+        </Box>
+        <ScreenHeroSectionView ctas={ctas} minContentHeight={minContentHeight}>
           <PortfolioBalanceSection showAssets={showAssets} isReadOnlyMode={isReadOnlyMode} />
         </ScreenHeroSectionView>
       </View>
@@ -43,9 +49,9 @@ export const PortfolioHeaderSection = ({
 
   return (
     <View key="portfolioHeaderElements" style={{ paddingTop: 24 }}>
-      <Flex px={6} key="FirmwareUpdateBanner">
+      <Box lx={{ paddingHorizontal: "s16" }} key="FirmwareUpdateBanner">
         <FirmwareUpdateBanner onBackFromUpdate={onBackFromUpdate} />
-      </Flex>
+      </Box>
       <PortfolioGraphCard
         key="PortfolioGraphCard"
         showAssets={showAssets}

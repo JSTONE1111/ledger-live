@@ -1,11 +1,11 @@
+import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
 import {
   emptyHistoryCache,
   encodeAccountId,
   encodeTokenAccountId,
-} from "@ledgerhq/coin-framework/account";
-import { GetAccountShape, makeSync } from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
-import { getCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
+} from "@ledgerhq/ledger-wallet-framework/account";
+import { GetAccountShape, makeSync } from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
+import { encodeOperationId } from "@ledgerhq/ledger-wallet-framework/operation";
 import { Account, TokenAccount } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
 import compact from "lodash/compact";
@@ -96,7 +96,6 @@ export const getAccountShape: GetAccountShape<TronAccount> = async (
   }
 
   const acc = tronAcc[0];
-  const cacheTransactionInfoById = initialAccount?.tronResources?.cacheTransactionInfoById || {};
   const operationsPageSize = Math.min(
     MAX_OPERATIONS_PAGE_SIZE,
     getOperationsPageSize(initialAccount?.id, syncConfig),
@@ -106,12 +105,10 @@ export const getAccountShape: GetAccountShape<TronAccount> = async (
   const txs = await fetchTronAccountTxs(
     address,
     txs => txs.length < operationsPageSize,
-    cacheTransactionInfoById,
     defaultFetchParams,
   );
 
-  const tronResources = await getTronResources(acc, txs, cacheTransactionInfoById);
-  // const tronResources = await getTronResources(acc);
+  const tronResources = await getTronResources(acc, txs);
   const spendableBalance = acc.balance ? new BigNumber(acc.balance) : new BigNumber(0);
   const balance = computeBalanceBridge(acc);
 

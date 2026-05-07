@@ -2,13 +2,14 @@ import React, { useMemo, useEffect, useCallback } from "react";
 import { Image, View, Animated } from "react-native";
 import { useTheme } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
+import type { Transaction as MultiversXTransaction } from "@ledgerhq/live-common/families/multiversx/types";
 import {
   handleTransactionStatus,
   denominate,
 } from "@ledgerhq/live-common/families/multiversx/helpers";
 import { getCurrencyColor } from "@ledgerhq/live-common/currencies/index";
-import { getAccountCurrency, getMainAccount } from "@ledgerhq/coin-framework/account";
+import { getAccountCurrency, getMainAccount } from "@ledgerhq/ledger-wallet-framework/account";
 import { Text, Icons } from "@ledgerhq/native-ui";
 import { Trans } from "~/context/Locale";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
@@ -45,7 +46,7 @@ const SetDelegation = (props: SetDelegationPropsType) => {
 
   const currency = getAccountCurrency(account);
   const color = getCurrencyColor(currency);
-  const bridge = getAccountBridge(account);
+  const bridge = useAccountBridge<MultiversXTransaction>(account);
   const mainAccount = getMainAccount(account, undefined);
   const unit = useAccountUnit(account);
 
@@ -184,7 +185,7 @@ const SetDelegation = (props: SetDelegationPropsType) => {
     const returnedTransaction = route.params.transaction;
 
     if (returnedTransaction) {
-      updateTransaction(() => returnedTransaction);
+      updateTransaction(() => returnedTransaction as MultiversXTransaction);
     }
   }, [route.params.transaction, updateTransaction]);
 

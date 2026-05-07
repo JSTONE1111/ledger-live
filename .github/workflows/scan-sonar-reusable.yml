@@ -15,6 +15,26 @@ on:
         required: false
         default: "false"
         type: string
+      should_download_features_coverage:
+        required: false
+        default: "false"
+        type: string
+      should_download_shared_coverage:
+        required: false
+        default: "false"
+        type: string
+      should_download_domain_coverage:
+        required: false
+        default: "false"
+        type: string
+      should_download_devtools_coverage:
+        required: false
+        default: "false"
+        type: string
+      should_download_wallet_cli_coverage:
+        required: false
+        default: "false"
+        type: string
 
 permissions:
   id-token: write
@@ -23,7 +43,7 @@ permissions:
 jobs:
   scan-sonar:
     name: "Sonar Cloud"
-    runs-on: [ubuntu-22.04]
+    runs-on: [ledger-live-4xlarge]
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
@@ -39,8 +59,12 @@ jobs:
         uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
         id: setup-caches
         with:
-          install-proto: true
+          use-mise: true
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
           skip-turbo-cache: "false"
+          cache-develop-role-arn: ${{ secrets.AWS_CACHE_OIDC_ROLE_ARN_DEVELOP }}
+          cache-branch-role-arn: ${{ secrets.AWS_CACHE_OIDC_ROLE_ARN_BRANCH }}
+          nx-key: ${{ secrets.NX_KEY }}
           accountId: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
           roleName: ${{ secrets.AWS_CACHE_ROLE_NAME }}
           region: ${{ secrets.AWS_CACHE_REGION }}
@@ -67,6 +91,41 @@ jobs:
           name: coverage-libs
           path: coverage-libs
 
+      - name: Download features unit test coverage
+        if: ${{ inputs.should_download_features_coverage == 'true' }}
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: coverage-features
+          path: coverage-features
+
+      - name: Download shared unit test coverage
+        if: ${{ inputs.should_download_shared_coverage == 'true' }}
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: coverage-shared
+          path: coverage-shared
+
+      - name: Download domain unit test coverage
+        if: ${{ inputs.should_download_domain_coverage == 'true' }}
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: coverage-domain
+          path: coverage-domain
+
+      - name: Download devtools unit test coverage
+        if: ${{ inputs.should_download_devtools_coverage == 'true' }}
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: coverage-devtools
+          path: coverage-devtools
+
+      - name: Download wallet-cli unit test coverage
+        if: ${{ inputs.should_download_wallet_cli_coverage == 'true' }}
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: coverage-wallet-cli
+          path: coverage-wallet-cli
+
       - name: Merge coverage files
         run: |
           if [ -d ./coverage-desktop ]; then
@@ -83,6 +142,30 @@ jobs:
             echo "Merging libs coverage files"
             cat ./coverage-libs/lcov.info >> ./lcov.info
             cat ./coverage-libs/sonar-executionTests-report.xml >> ./sonar-executionTests-report.xml
+          fi
+          if [ -d ./coverage-features ]; then
+            echo "Merging features coverage files"
+            cat ./coverage-features/lcov.info >> ./lcov.info
+            cat ./coverage-features/sonar-executionTests-report.xml >> ./sonar-executionTests-report.xml
+          fi
+          if [ -d ./coverage-shared ]; then
+            echo "Merging shared coverage files"
+            cat ./coverage-shared/lcov.info >> ./lcov.info
+            cat ./coverage-shared/sonar-executionTests-report.xml >> ./sonar-executionTests-report.xml
+          fi
+          if [ -d ./coverage-domain ]; then
+            echo "Merging domain coverage files"
+            cat ./coverage-domain/lcov.info >> ./lcov.info
+            cat ./coverage-domain/sonar-executionTests-report.xml >> ./sonar-executionTests-report.xml
+          fi
+          if [ -d ./coverage-devtools ]; then
+            echo "Merging devtools coverage files"
+            cat ./coverage-devtools/lcov.info >> ./lcov.info
+            cat ./coverage-devtools/sonar-executionTests-report.xml >> ./sonar-executionTests-report.xml
+          fi
+          if [ -d ./coverage-wallet-cli ]; then
+            echo "Merging wallet-cli coverage files"
+            cat ./coverage-wallet-cli/lcov.info >> ./lcov.info
           fi
           if [ ! -f ./sonar-executionTests-report.xml ]; then
             echo "No report found, creating empty report to avoid sonar scan failing!"

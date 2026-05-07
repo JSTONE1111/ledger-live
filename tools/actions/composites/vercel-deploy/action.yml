@@ -1,0 +1,67 @@
+name: "Build and Deploy Web Tools"
+description: "Builds and deploys web-tools to Vercel, outputs the deployment URL"
+inputs:
+  vercel-token:
+    description: "Vercel API token"
+    required: true
+  vercel-org-id:
+    description: "Vercel organization/team ID"
+    required: true
+  vercel-project-id:
+    description: "Vercel project ID"
+    required: true
+  working-directory:
+    description: "Working directory"
+    required: true
+  production:
+    description: "When true, use production for pull/build/deploy (--environment=production, vercel build --prod, deploy --prebuilt --prod). When false, use preview throughout."
+    required: false
+    default: "false"
+
+outputs:
+  deployment-url:
+    description: "The Vercel deployment URL"
+    value: ${{ steps.deployment.outputs.deployment-url }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ "${{ inputs.production }}" = "true" ]; then
+          npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          npx vercel build --prod --token=$VERCEL_TOKEN
+        else
+          npx vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+          npx vercel build --token=$VERCEL_TOKEN
+        fi
+      env:
+        VERCEL_TOKEN: ${{ inputs.vercel-token }}
+        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
+        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id }}
+        VERCEL_TELEMETRY_DISABLED: 1
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Deploy
+      id: deployment
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ "${{ inputs.production }}" = "true" ]; then
+          DEPLOYMENT_URL=$(npx vercel deploy --prebuilt --yes --prod --token=$VERCEL_TOKEN)
+        else
+          DEPLOYMENT_URL=$(npx vercel deploy --prebuilt --yes --token=$VERCEL_TOKEN)
+        fi
+        echo "deployment-url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+        if [ -z "$DEPLOYMENT_URL" ]; then
+          echo "Error: Vercel deployment failed or returned an empty URL." >&2
+          exit 1
+        fi
+      env:
+        VERCEL_TOKEN: ${{ inputs.vercel-token }}
+        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
+        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id }}
+        VERCEL_TELEMETRY_DISABLED: 1
+      working-directory: ${{ inputs.working-directory }}

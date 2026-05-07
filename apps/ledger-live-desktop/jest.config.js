@@ -8,12 +8,14 @@ function pathsToModuleNameMapper(paths, { prefix = "<rootDir>/" } = {}) {
   if (!paths) return jestPaths;
 
   Object.keys(paths).forEach(pathKey => {
+    // tsconfig uses "*": ["./*"] instead of baseUrl; mapping (.*) -> $1 breaks every module in Jest
+    if (pathKey === "*") return;
     const pathValues = Array.isArray(paths[pathKey]) ? paths[pathKey] : [paths[pathKey]];
     pathValues.forEach(pathValue => {
       // Convert TypeScript path pattern to Jest regex pattern
       // Use /\*$/ for key (wildcard at end) but /\*/ for value (wildcard can be anywhere)
       const jestKey = pathKey.replace(/\*$/, "(.*)");
-      const jestValue = pathValue.replace(/\*/, "$1");
+      const jestValue = pathValue.replace(/\*/g, "$1");
       jestPaths[jestKey] = `${prefix}${jestValue}`;
     });
   });
@@ -52,7 +54,15 @@ const moduleNameMapper = {
   "@polkadot/x-ws": "<rootDir>/__mocks__/x-ws.js",
 };
 
-const transformIncludePatterns = ["ky", "@ledgerhq\\+lumen-ui-react"];
+const transformIncludePatterns = [
+  "ky",
+  "@ledgerhq\\+lumen-ui-react",
+  "@ledgerhq\\+lumen-design-core",
+  "@ledgerhq\\+crypto-icons",
+  "@mysten\\+",
+  "@scure\\+",
+  "@noble\\+",
+];
 
 const commonConfig = {
   testEnvironment: "jsdom",
@@ -61,6 +71,10 @@ const commonConfig = {
     __APP_VERSION__: "2.0.0",
     __GIT_REVISION__: "xxx",
     __SENTRY_URL__: null,
+    __DATADOG_APPLICATION_ID__: null,
+    __DATADOG_CLIENT_TOKEN__: null,
+    __DATADOG_SITE__: null,
+    __DATADOG_ENV__: null,
     __PRERELEASE__: "null",
     __CHANNEL__: "null",
   },
@@ -70,7 +84,7 @@ const commonConfig = {
   setupFilesAfterEnv: ["<rootDir>/tests/jestSetup.js"],
   extensionsToTreatAsEsm: [".ts", ".tsx", ".jsx"],
   transform: {
-    "^.+\\.(t|j)sx?$": [
+    "^.+\\.m?(t|j)sx?$": [
       "@swc/jest",
       {
         jsc: {
@@ -83,7 +97,7 @@ const commonConfig = {
   },
   globalSetup: "<rootDir>/tests/setup.ts",
   moduleDirectories: ["node_modules", "./tests"],
-  modulePaths: [compilerOptions.baseUrl],
+  modulePaths: [compilerOptions.baseUrl ?? "."],
   resolver: "<rootDir>/scripts/resolver.js",
   testEnvironmentOptions: {
     customExportConditions: [""],
@@ -104,6 +118,7 @@ module.exports = {
   coverageReporters: ["json", ["lcov", { projectRoot: "../" }], "json-summary"],
   reporters: [
     "default",
+    ...(process.env.CI ? ["github-actions"] : []),
     ["jest-sonar", { outputName: "sonar-executionTests-report.xml", reportedFilePath: "absolute" }],
   ],
   silent: false,

@@ -1,5 +1,53 @@
 # @ledgerhq/wallet-api-acre-module
 
+## 0.17.0
+
+### Minor Changes
+
+- [#16023](https://github.com/LedgerHQ/ledger-live/pull/16023) [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: remove eslint and prettier, replace with with oxlint and oxfmt
+
+## 0.17.0-next.0
+
+### Minor Changes
+
+- [#16023](https://github.com/LedgerHQ/ledger-live/pull/16023) [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: remove eslint and prettier, replace with with oxlint and oxfmt
+
+## 0.16.0
+
+### Minor Changes
+
+- [#15109](https://github.com/LedgerHQ/ledger-live/pull/15109) [`acd1dd2`](https://github.com/LedgerHQ/ledger-live/commit/acd1dd241dc900408fc480ef155dad3bdf56d786) Thanks [@CremaFR](https://github.com/CremaFR)! - Propagate `uiUseCase` through wallet API account request and align wallet API package dependencies.
+
+## 0.16.0-next.0
+
+### Minor Changes
+
+- [#15109](https://github.com/LedgerHQ/ledger-live/pull/15109) [`acd1dd2`](https://github.com/LedgerHQ/ledger-live/commit/acd1dd241dc900408fc480ef155dad3bdf56d786) Thanks [@CremaFR](https://github.com/CremaFR)! - Propagate `uiUseCase` through wallet API account request and align wallet API package dependencies.
+
+## 0.15.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+## 0.15.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+## 0.14.0
+
+### Minor Changes
+
+- [#14604](https://github.com/LedgerHQ/ledger-live/pull/14604) [`b16f564`](https://github.com/LedgerHQ/ledger-live/commit/b16f564dbdd61c0e85e0280ba049d737395251aa) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Bump wallet api packages
+
+## 0.14.0-next.0
+
+### Minor Changes
+
+- [#14604](https://github.com/LedgerHQ/ledger-live/pull/14604) [`b16f564`](https://github.com/LedgerHQ/ledger-live/commit/b16f564dbdd61c0e85e0280ba049d737395251aa) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Bump wallet api packages
+
 ## 0.13.0
 
 ### Minor Changes

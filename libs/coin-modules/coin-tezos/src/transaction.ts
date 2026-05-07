@@ -1,12 +1,12 @@
-import { getAccountCurrency } from "@ledgerhq/coin-framework/account/index";
-import { formatCurrencyUnit } from "@ledgerhq/coin-framework/currencies/index";
-import { formatTransactionStatus } from "@ledgerhq/coin-framework/formatters";
+import { formatCurrencyUnit } from "@ledgerhq/coin-module-framework/currencies/index";
+import { getAccountCurrency } from "@ledgerhq/ledger-wallet-framework/account/index";
+import { formatTransactionStatus } from "@ledgerhq/ledger-wallet-framework/formatters";
 import {
   fromTransactionCommonRaw,
   fromTransactionStatusRawCommon as fromTransactionStatusRaw,
   toTransactionCommonRaw,
   toTransactionStatusRawCommon as toTransactionStatusRaw,
-} from "@ledgerhq/coin-framework/serialization";
+} from "@ledgerhq/ledger-wallet-framework/serialization";
 import type { Account } from "@ledgerhq/types-live";
 import { BigNumber } from "bignumber.js";
 import type { Transaction, TransactionRaw } from "./types";
@@ -62,6 +62,8 @@ export const fromTransactionRaw = (tr: TransactionRaw): Transaction => {
     storageLimit: tr.storageLimit ? new BigNumber(tr.storageLimit) : undefined,
     estimatedFees: tr.estimatedFees ? new BigNumber(tr.estimatedFees) : undefined,
     taquitoError: tr.taquitoError,
+    contractAddress: tr.contractAddress,
+    tokenId: tr.tokenId,
   };
 };
 
@@ -81,6 +83,8 @@ export const toTransactionRaw = (t: Transaction): TransactionRaw => {
     storageLimit: t.storageLimit ? t.storageLimit.toString() : null,
     estimatedFees: t.estimatedFees ? t.estimatedFees.toString() : null,
     taquitoError: t.taquitoError,
+    contractAddress: t.contractAddress,
+    tokenId: t.tokenId,
   };
 };
 

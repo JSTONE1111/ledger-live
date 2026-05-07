@@ -1,3 +1,4 @@
+import { UserRefusedOnDevice } from "@ledgerhq/errors";
 import type Transport from "@ledgerhq/hw-transport";
 import type { Account } from "@ledgerhq/types-live";
 import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
@@ -33,7 +34,7 @@ describe("getViewKey", () => {
 
     it("retrieves view key for single account", done => {
       const viewKey = "viewkey123";
-      mockViewKeyResolver.mockResolvedValue({ viewKey });
+      mockViewKeyResolver.mockResolvedValue({ path: mockAccount1.freshAddressPath, viewKey });
 
       const request: Request = {
         currency: mockCurrency,
@@ -61,8 +62,8 @@ describe("getViewKey", () => {
 
     it("retrieves view keys for multiple accounts with progress tracking", done => {
       mockViewKeyResolver
-        .mockResolvedValueOnce({ viewKey: "key1" })
-        .mockResolvedValueOnce({ viewKey: "key2" });
+        .mockResolvedValueOnce({ path: mockAccount1.freshAddressPath, viewKey: "key1" })
+        .mockResolvedValueOnce({ path: mockAccount2.freshAddressPath, viewKey: "key2" });
 
       const request: Request = {
         currency: mockCurrency,
@@ -79,6 +80,31 @@ describe("getViewKey", () => {
             { viewKeys: { account1: "key1", account2: "key2" }, completed: 2, total: 2 },
           ]);
           expect(mockViewKeyResolver).toHaveBeenCalledTimes(2);
+          done();
+        },
+        error: done,
+      });
+    });
+
+    it("sets viewKey to null and continues processing when user refuses on device", done => {
+      mockViewKeyResolver
+        .mockRejectedValueOnce(new UserRefusedOnDevice())
+        .mockResolvedValueOnce({ path: mockAccount2.freshAddressPath, viewKey: "key2" });
+
+      const request: Request = {
+        currency: mockCurrency,
+        selectedAccounts: [mockAccount1, mockAccount2],
+      };
+
+      const progressUpdates: ViewKeyProgress[] = [];
+
+      getViewKeyExec(mockTransport, request).subscribe({
+        next: progress => progressUpdates.push(progress),
+        complete: () => {
+          expect(progressUpdates).toEqual([
+            { viewKeys: { account1: null }, completed: 1, total: 2 },
+            { viewKeys: { account1: null, account2: "key2" }, completed: 2, total: 2 },
+          ]);
           done();
         },
         error: done,
@@ -104,7 +130,7 @@ describe("getViewKey", () => {
 
     it("stops processing on first error", done => {
       mockViewKeyResolver
-        .mockResolvedValueOnce({ viewKey: "key1" })
+        .mockResolvedValueOnce({ path: mockAccount1.freshAddressPath, viewKey: "key1" })
         .mockRejectedValueOnce(new Error("Failed"));
 
       const request: Request = {

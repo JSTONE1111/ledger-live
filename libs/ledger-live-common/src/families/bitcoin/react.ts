@@ -1,11 +1,12 @@
+import type { Transaction } from "@ledgerhq/coin-bitcoin/types";
 import type { Account, FeeStrategy } from "@ledgerhq/types-live";
-import type { NetworkInfo, Transaction } from "@ledgerhq/coin-bitcoin/types";
+
 export const useFeesStrategy = (a: Account, t: Transaction): FeeStrategy[] => {
   const networkInfo = t.networkInfo;
 
   if (!networkInfo) return [];
 
-  const strategies = (networkInfo as NetworkInfo).feeItems.items
+  const strategies = networkInfo.feeItems.items
     .map(feeItem => {
       return {
         label: feeItem.speed,

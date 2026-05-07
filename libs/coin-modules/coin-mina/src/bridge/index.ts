@@ -1,25 +1,31 @@
-import getAddressWrapper from "@ledgerhq/coin-framework/bridge/getAddressWrapper";
+import getAddressWrapper from "@ledgerhq/ledger-wallet-framework/bridge/getAddressWrapper";
 import {
   makeAccountBridgeReceive,
   getSerializedAddressParameters,
   updateTransaction,
   makeScanAccounts,
-} from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import { SignerContext } from "@ledgerhq/coin-framework/signer";
+} from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
+import { SignerContext } from "@ledgerhq/ledger-wallet-framework/signer";
 import type { AccountBridge, CurrencyBridge } from "@ledgerhq/types-live";
 import { MinaCoinConfig, setCoinConfig } from "../config";
+import { validateAddress } from "../logic/validateAddress";
 import resolver from "../signer/getAddress";
-import type { Transaction } from "../types/common";
+import makeCliTools from "../test/cli";
+import type {
+  MinaAccount,
+  MinaAccountRaw,
+  MinaOperation,
+  Transaction,
+  TransactionStatus,
+} from "../types/common";
 import { MinaSigner } from "../types/signer";
 import broadcast from "./broadcast";
-import makeCliTools from "./cli-transaction";
 import { createTransaction } from "./createTransaction";
 import estimateMaxSpendable from "./estimateMaxSpendable";
 import getTransactionStatus from "./getTransactionStatus";
 import { prepareTransaction } from "./prepareTransaction";
 import buildSignOperation from "./signOperation";
-import { sync, getAccountShape } from "./synchronisation";
-import { validateAddress } from "./validateAddress";
+import { sync, getAccountShape, assignToAccountRaw, assignFromAccountRaw } from "./synchronisation";
 
 export { makeCliTools };
 
@@ -40,7 +46,7 @@ export function buildCurrencyBridge(signerContext: SignerContext<MinaSigner>): C
 
 export function buildAccountBridge(
   signerContext: SignerContext<MinaSigner>,
-): AccountBridge<Transaction> {
+): AccountBridge<Transaction, MinaAccount, TransactionStatus, MinaOperation, MinaAccountRaw> {
   const getAddress = resolver(signerContext);
 
   const receive = makeAccountBridgeReceive(getAddressWrapper(getAddress));
@@ -50,6 +56,8 @@ export function buildAccountBridge(
     estimateMaxSpendable,
     createTransaction,
     updateTransaction,
+    assignToAccountRaw,
+    assignFromAccountRaw,
     getTransactionStatus,
     prepareTransaction,
     sync,

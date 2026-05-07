@@ -13,7 +13,7 @@ import {
   asDerivationMode,
   runDerivationScheme,
   getDerivationScheme,
-} from "@ledgerhq/coin-framework/derivation";
+} from "@ledgerhq/ledger-wallet-framework/derivation";
 import { getAccountBridge, getCurrencyBridge } from "@ledgerhq/live-common/bridge/index";
 import {
   findCryptoCurrencyByKeyword,
@@ -211,6 +211,7 @@ export function scan(arg: ScanCommonOpts): Observable<Account> {
   }
 
   if (typeof appjsonFile === "string") {
+    const { currency } = arg;
     const appjsondata = appjsonFile
       ? JSON.parse(fs.readFileSync(appjsonFile, "utf-8"))
       : {
@@ -223,7 +224,20 @@ export function scan(arg: ScanCommonOpts): Observable<Account> {
       return throwError(() => new Error("encrypted ledger live data is not supported"));
     }
 
-    return from(appjsondata.data.accounts.map((a: any) => fromAccountRaw(a.data))).pipe(
+    let currencyFilter: CryptoCurrency | null | undefined;
+    if (currency) {
+      currencyFilter = findCryptoCurrencyByKeyword(currency);
+      if (!currencyFilter) {
+        throw new Error(`Unknown currency: ${currency}`);
+      }
+    }
+
+    return from(appjsondata.data.accounts).pipe(
+      mergeMap((a: any) => from(fromAccountRaw(a.data))),
+      filter((account: Account) => {
+        if (!currencyFilter) return true;
+        return account.currency.id === currencyFilter.id;
+      }),
       skip(index || 0) as any,
       take(length === undefined ? (index !== undefined ? 1 : Infinity) : length),
     );
@@ -234,9 +248,10 @@ export function scan(arg: ScanCommonOpts): Observable<Account> {
       map(fromAccountRaw),
       prepareCurrency((a: any) => a.currency),
       concatMap((account: Account) =>
-        getAccountBridge(account, null)
-          .sync(account, syncConfig)
-          .pipe(reduce((a, f: (arg: any) => any) => f(a), account)),
+        defer(() => Promise.resolve(getAccountBridge(account, null))).pipe(
+          mergeMap(bridge => bridge.sync(account, syncConfig)),
+          reduce((a, f: (arg: any) => any) => f(a), account),
+        ),
       ),
     ) as Observable<Account>;
   }
@@ -358,9 +373,10 @@ export function scan(arg: ScanCommonOpts): Observable<Account> {
         ).pipe(
           prepareCurrency((a: Account) => a.currency),
           concatMap((account: Account) =>
-            getAccountBridge(account, null)
-              .sync(account, syncConfig)
-              .pipe(reduce((a: Account, f: any) => f(a), account)),
+            defer(() => Promise.resolve(getAccountBridge(account, null))).pipe(
+              mergeMap(bridge => bridge.sync(account, syncConfig)),
+              reduce((a: Account, f: any) => f(a), account),
+            ),
           ),
         );
       }
@@ -369,12 +385,16 @@ export function scan(arg: ScanCommonOpts): Observable<Account> {
       // otherwise we just scan for accounts
       return concat(
         of(currency).pipe(prepareCurrency((a: any) => a)),
-        getCurrencyBridge(currency).scanAccounts({
-          currency,
-          deviceId: device || "",
-          scheme: scheme && asDerivationMode(scheme),
-          syncConfig,
-        }),
+        defer(() => Promise.resolve(getCurrencyBridge(currency))).pipe(
+          mergeMap(bridge =>
+            bridge.scanAccounts({
+              currency,
+              deviceId: device || "",
+              scheme: scheme && asDerivationMode(scheme),
+              syncConfig,
+            }),
+          ),
+        ),
       ).pipe(
         filter((e: any) => e.type === "discovered"),
         map(e => e.account),

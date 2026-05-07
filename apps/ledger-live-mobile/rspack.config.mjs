@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as Repack from "@callstack/repack";
+import rspack from "@rspack/core";
 import { ReanimatedPlugin } from "@callstack/repack-plugin-reanimated";
 import { ExpoModulesPlugin } from "@callstack/repack-plugin-expo-modules";
 import { createRequire } from "node:module";
@@ -76,6 +77,46 @@ const buildTsAlias = (paths = {}) =>
     {},
   );
 
+const RSDOCTOR_LINTER = {
+  level: "Warn",
+  rules: {
+    "duplicate-package": ["Warn", { checkVersion: "major", ignore: [] }],
+    "loader-performance": ["Warn", { threshold: 8000 }],
+    "ecma-version-check": ["Warn", {}],
+    "default-import-check": ["Warn", { ignore: [] }],
+    "module-mixed-chunks": ["Warn", { ignore: ["node_modules/"] }],
+  },
+};
+
+function getRsdoctorPlugin() {
+  if (!process.env.RSDOCTOR || process.env.RSDOCTOR === "0") return [];
+  const { RsdoctorRspackPlugin } = require("@rsdoctor/rspack-plugin");
+  const isCI = process.env.CI === "true" || process.env.CI === "1";
+  const reportDir = path.join(projectRootDir, "rsdoctor", "mobile");
+  const options = isCI
+    ? {
+        disableClientServer: true,
+        linter: RSDOCTOR_LINTER,
+        output: {
+          mode: "brief",
+          options: { type: ["json"] },
+          reportDir,
+        },
+      }
+    : {
+        linter: RSDOCTOR_LINTER,
+        output: {
+          mode: "brief",
+          options: {
+            type: ["html", "json"],
+            htmlOptions: { reportHtmlName: "report.html" },
+          },
+          reportDir,
+        },
+      };
+  return [new RsdoctorRspackPlugin(options)];
+}
+
 const withRozeniteUrlFix = rozeniteConfig => {
   return async env => {
     const config = await rozeniteConfig(env);
@@ -109,7 +150,18 @@ const withRozeniteUrlFix = rozeniteConfig => {
   };
 };
 
-const hermesNonCompatibleDependencies = ["@polkadot/types-codec"];
+const isDetoxBuild = process.env.DETOX === "1" || (process.env.ENVFILE || "").includes("mock");
+
+const detoxAliases = isDetoxBuild
+  ? {
+      "@sbaiahmed1/react-native-blur": path.resolve(__dirname, "e2e/mocks/react-native-blur.js"),
+    }
+  : {};
+
+const hermesNonCompatibleDependencies = [
+  "@polkadot/types-codec",
+  "@mysten/sui",
+];
 
 /**
  * Checks if the specified resource file is compatible with hermes-parser following
@@ -128,10 +180,15 @@ export default withRozeniteUrlFix(
     Repack.defineRspackConfig(env => {
       const { mode, platform } = env;
 
+      const isRsdoctor = process.env.RSDOCTOR && process.env.RSDOCTOR !== "0";
       return {
         mode,
         context: __dirname,
         entry: "./index.js",
+        // Mobile uses a single Hermes bytecode bundle — async chunks are not supported
+        // and hurt performance with Hermes. Disable async chunk creation globally.
+        // When running rsdoctor, also emit main bundle as .js so it's counted as JavaScript (not Other)
+        output: { asyncChunks: false, ...(isRsdoctor && { filename: "[name].js" }) },
         resolve: {
           ...Repack.getResolveOptions(platform, {
             enablePackageExports: true,
@@ -140,6 +197,7 @@ export default withRozeniteUrlFix(
           modules: nodeModulesPaths,
           alias: {
             ...buildTsAlias(tsconfig.compilerOptions.paths),
+            ...detoxAliases,
             // Packages with malformed exports field (missing "." subpath) - resolve to browser entry
             "@aptos-labs/aptos-client": resolvePackageFile(
               "@aptos-labs/aptos-client",
@@ -189,7 +247,12 @@ export default withRozeniteUrlFix(
               use: {
                 loader: "@callstack/repack/babel-swc-loader",
                 parallel: true,
-                options: {},
+                options: {
+                  lazyImports: true,
+                  module: {
+                    lazy: true,
+                  },
+                },
               },
               resolve: { fullySpecified: false },
             },
@@ -198,18 +261,28 @@ export default withRozeniteUrlFix(
               test: /\.lottie$/,
               use: {
                 loader: "@callstack/repack/assets-loader",
-                options: {},
+                options: {
+                  lazyImports: true,
+                },
               },
             },
           ],
         },
         plugins: [
-          new Repack.RepackPlugin(),
+          new Repack.RepackPlugin({
+            logger: false,
+          }),
           new ReanimatedPlugin({
             unstable_disableTransform: true,
           }),
           new ExpoModulesPlugin(),
+          new rspack.ProvidePlugin({
+            TextDecoder: ["text-encoding-polyfill", "TextDecoder"],
+          }),
+          ...getRsdoctorPlugin(),
         ],
+        stats: "errors-warnings",
+        infrastructureLogging: { level: "warn" },
         devServer: {
           host: "local-ip",
           hot: true,

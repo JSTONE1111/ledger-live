@@ -1,6 +1,8 @@
-import React, { RefObject, useCallback, useMemo } from "react";
-import { View } from "react-native";
-import { Flex, InfiniteLoader } from "@ledgerhq/native-ui";
+import React, { RefObject, useCallback, useMemo, useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { Flex } from "@ledgerhq/native-ui";
+import InfiniteLoader from "~/components/InfiniteLoader";
 import { useTheme as useLumenTheme } from "@ledgerhq/lumen-ui-rnative/styles";
 import GenericErrorView from "~/components/GenericErrorView";
 import { Web3AppWebview } from "~/components/Web3AppWebview";
@@ -13,6 +15,8 @@ import { useSwapLiveAppState } from "./hooks/useSwapLiveAppState";
 import { useSwapWebviewProps } from "./hooks/useSwapWebviewProps";
 import { DefaultAccountSwapParamList } from "../types";
 import { useSwapWallet40HeaderStateUpdater } from "./navigationHandlers/wallet40/useSwapWallet40HeaderState";
+import { useSwapAndroidHardwareBackPress } from "./navigationHandlers/useSwapAndroidHardwareBackPress";
+import { LiveAppBackground } from "LLM/components/LiveAppBackground";
 
 type SwapWebviewContentProps = {
   manifest: LiveAppManifest;
@@ -40,6 +44,10 @@ function SwapWebviewContent({
   );
 }
 
+const styles = StyleSheet.create({
+  contentContainer: { flex: 1, zIndex: 1 },
+});
+
 /**
  * Wallet 4.0 variant of the Swap screen.
  */
@@ -50,10 +58,36 @@ export function SwapLiveAppWallet40({
 
   const { theme: lumenTheme } = useLumenTheme();
 
-  const { manifest, error, isLoading, webviewRef, setWebviewState, defaultParams } =
+  const { manifest, error, isLoading, webviewRef, webviewState, setWebviewState, defaultParams } =
     useSwapLiveAppState(params);
 
   const updateWallet40HeaderState = useSwapWallet40HeaderStateUpdater(webviewRef);
+
+  useSwapAndroidHardwareBackPress({
+    webviewRef,
+    canGoBack: webviewState.canGoBack,
+  });
+
+  // Force a full remount of the swap webview when the screen regains focus,
+  // unless it's already on home ("/").
+  const webviewUrlRef = useRef(webviewState.url);
+  webviewUrlRef.current = webviewState.url;
+  const [webviewMountKey, setWebviewMountKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const url = webviewUrlRef.current;
+      if (!url) return;
+
+      try {
+        if (new URL(url).pathname !== "/") {
+          setWebviewMountKey(key => key + 1);
+        }
+      } catch {
+        // Ignore transient/unparseable webview URLs.
+      }
+    }, []),
+  );
 
   const handleWebviewStateChange = useCallback(
     (nextState: WebviewState) => {
@@ -78,14 +112,18 @@ export function SwapLiveAppWallet40({
 
   return (
     <View style={containerStyle}>
-      {manifest && (
-        <SwapWebviewContent
-          manifest={manifest}
-          params={defaultParams}
-          webviewRef={webviewRef}
-          setWebviewState={handleWebviewStateChange}
-        />
-      )}
+      <LiveAppBackground type="swap" />
+      <View style={styles.contentContainer} pointerEvents="box-none">
+        {manifest && (
+          <SwapWebviewContent
+            key={webviewMountKey}
+            manifest={manifest}
+            params={defaultParams}
+            webviewRef={webviewRef}
+            setWebviewState={handleWebviewStateChange}
+          />
+        )}
+      </View>
     </View>
   );
 }

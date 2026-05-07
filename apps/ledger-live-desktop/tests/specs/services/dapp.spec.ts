@@ -10,7 +10,21 @@ import { DeviceAction } from "../../models/DeviceAction";
 import dummyLiveApp from "./dapp.spec.ts-mocks/dummy-live-app";
 import dummy1inchLiveApp from "./dapp.spec.ts-mocks/1inch-live-app";
 
-test.use({ userdata: "1AccountBTC1AccountETH1AccountPOLYGON" });
+test.use({
+  userdata: "1AccountBTC1AccountETH1AccountPOLYGON",
+  featureFlags: {
+    lldModularDrawer: {
+      enabled: false,
+      params: {
+        add_account: false,
+        live_app: false,
+        receive_flow: false,
+        send_flow: false,
+        enableModularization: false,
+      },
+    },
+  },
+});
 
 test.describe("Metamask Test Dapp", () => {
   test.beforeAll(async () => {
@@ -27,9 +41,22 @@ test.describe("Metamask Test Dapp", () => {
     await layout.goToDiscover();
     await discoverPage.openTestApp();
     await drawer.continue();
+    await page.getByTestId("drawer-continue-button").waitFor({ state: "detached" });
+
+    await drawer.waitForDrawerToBeVisible();
+    await expect(drawer.selectAssetTitle).toBeVisible();
+    await drawer.selectCurrency("ethereum");
+    await expect(drawer.selectAccountTitle).toBeVisible();
+    await drawer.selectAccount("Ethereum", 0);
     await drawer.waitForDrawerToDisappear();
 
-    const [, webview] = electronApp.windows();
+    // Wait for webview window - React 19's concurrent rendering may delay its creation
+    const windows = electronApp.windows();
+    const webview =
+      windows.length > 1
+        ? windows[1]
+        : await electronApp.waitForEvent("window", { timeout: 30000 });
+    await webview.waitForLoadState("domcontentloaded", { timeout: 30000 });
 
     // Checks that we support EIP 6963
     await webview.click("#provider > button");
@@ -85,7 +112,12 @@ test.describe.skip("1inch dapp", () => {
     await drawer.continue();
     await drawer.waitForDrawerToDisappear();
 
-    const [, webview] = electronApp.windows();
+    const windows = electronApp.windows();
+    const webview =
+      windows.length > 1
+        ? windows[1]
+        : await electronApp.waitForEvent("window", { timeout: 30000 });
+    await webview.waitForLoadState("domcontentloaded", { timeout: 30000 });
     const restricted_app = await webview.getByText("Restricted").isVisible();
     test.skip(restricted_app, "1inch dapp is restricted");
 

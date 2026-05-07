@@ -2,7 +2,8 @@ import { renderHook, waitFor } from "@testing-library/react-native";
 import { useAddressValidation } from "../useAddressValidation";
 import { useSelector } from "~/context/hooks";
 import { useDomain } from "@ledgerhq/domain-service/hooks/index";
-import { isAddressSanctioned } from "@ledgerhq/coin-framework/sanction/index";
+import { isAddressSanctioned } from "@ledgerhq/ledger-wallet-framework/sanction/index";
+import { InvalidAddressBecauseDestinationIsAlsoSource } from "@ledgerhq/errors";
 import {
   getRecentAddressesStore,
   getMainAccount,
@@ -11,17 +12,17 @@ import {
 import { useBridgeRecipientValidation } from "@ledgerhq/live-common/flows/send/recipient/hooks/useBridgeRecipientValidation";
 import { useFormattedAccountBalance } from "../useFormattedAccountBalance";
 import { useMaybeAccountName, useBatchMaybeAccountName } from "~/reducers/wallet";
-import { sendFeatures } from "@ledgerhq/live-common/bridge/descriptor";
+import { sendFeatures } from "@ledgerhq/live-common/bridge/descriptor/send/features";
 import { createMockAccount, createMockCurrency } from "./accounts";
 
 jest.mock("~/context/hooks");
 jest.mock("~/reducers/wallet");
 jest.mock("@ledgerhq/domain-service/hooks/index");
-jest.mock("@ledgerhq/coin-framework/sanction/index");
+jest.mock("@ledgerhq/ledger-wallet-framework/sanction/index");
 jest.mock("@ledgerhq/live-common/account/index");
 jest.mock("@ledgerhq/live-common/flows/send/recipient/hooks/useBridgeRecipientValidation");
 jest.mock("../useFormattedAccountBalance");
-jest.mock("@ledgerhq/live-common/bridge/descriptor");
+jest.mock("@ledgerhq/live-common/bridge/descriptor/send/features");
 
 const mockedUseSelector = jest.mocked(useSelector);
 const mockedUseDomain = jest.mocked(useDomain);
@@ -126,7 +127,7 @@ describe("useAddressValidation", () => {
     });
   });
 
-  it("resolves ENS names for Ethereum", async () => {
+  it("resolves ENS names when recipientSupportsDomain is true", async () => {
     const ensResolution = {
       domain: "vitalik.eth",
       address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
@@ -145,6 +146,7 @@ describe("useAddressValidation", () => {
         searchValue: "vitalik.eth",
         currency: createMockCurrency({ id: "ethereum", name: "Ethereum", ticker: "ETH" }),
         account: mockEthereumAccount,
+        recipientSupportsDomain: true,
       }),
     );
 
@@ -167,6 +169,7 @@ describe("useAddressValidation", () => {
         searchValue: "test.eth",
         currency: createMockCurrency({ id: "ethereum", name: "Ethereum", ticker: "ETH" }),
         account: mockEthereumAccount,
+        recipientSupportsDomain: true,
       }),
     );
 
@@ -340,6 +343,30 @@ describe("useAddressValidation", () => {
     expect(result.current.result.bridgeWarnings?.recipient).toBe(recipientWarning);
   });
 
+  it("injects a self-transfer error when policy is impossible and recipient is the current account", () => {
+    mockedSendFeatures.getSelfTransferPolicy.mockReturnValue("impossible");
+    mockedUseBridgeRecipientValidation.mockReturnValue({
+      errors: {},
+      warnings: {},
+      isLoading: false,
+      status: null,
+      cleanup: jest.fn(),
+    });
+
+    const { result } = renderHook(() =>
+      useAddressValidation({
+        searchValue: mockAccount.freshAddress,
+        currency: mockAccount.currency,
+        account: mockAccount,
+        currentAccountId: mockAccount.id,
+      }),
+    );
+
+    expect(result.current.result.bridgeErrors?.recipient).toBeInstanceOf(
+      InvalidAddressBecauseDestinationIsAlsoSource,
+    );
+  });
+
   it("shows loading during bridge validation", () => {
     mockedUseBridgeRecipientValidation.mockReturnValue({
       errors: {},
@@ -450,6 +477,7 @@ describe("useAddressValidation", () => {
         searchValue: "test.eth",
         currency: createMockCurrency({ id: "ethereum", name: "Ethereum", ticker: "ETH" }),
         account: mockEthereumAccount,
+        recipientSupportsDomain: true,
       }),
     );
 

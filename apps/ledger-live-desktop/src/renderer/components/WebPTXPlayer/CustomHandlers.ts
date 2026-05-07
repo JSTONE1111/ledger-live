@@ -8,6 +8,7 @@ import {
   AccountIdFormatsResponse,
 } from "@ledgerhq/live-common/wallet-api/types";
 import { Account, AccountLike, Operation } from "@ledgerhq/types-live";
+import type { Dispatch } from "redux";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "LLD/hooks/redux";
 import { closePlatformAppDrawer, openExchangeDrawer } from "~/renderer/actions/UI";
@@ -20,14 +21,16 @@ import { getAccountIdFromWalletAccountId } from "@ledgerhq/live-common/wallet-ap
 import { openModal } from "~/renderer/actions/modals";
 import {
   getParentAccount,
+  isAccount,
   isTokenAccount,
   makeEmptyTokenAccount,
-} from "@ledgerhq/coin-framework/account/helpers";
+} from "@ledgerhq/ledger-wallet-framework/account/helpers";
 import {
   decodeTokenAccountIdSync,
   decodeTokenAccountId,
-} from "@ledgerhq/coin-framework/account/index";
+} from "@ledgerhq/ledger-wallet-framework/account/index";
 import logger from "~/renderer/logger";
+import { useSyncAccountsById } from "~/renderer/hooks/useSyncAccountsById";
 import { useStake } from "LLD/hooks/useStake";
 import { StakeFlowProps } from "~/renderer/screens/stake";
 import { useNavigate } from "react-router";
@@ -36,15 +39,22 @@ import { objectToURLSearchParams } from "@ledgerhq/live-common/wallet-api/helper
 import { useRemoteLiveAppContext } from "@ledgerhq/live-common/platform/providers/RemoteLiveAppProvider/index";
 import { useLocalLiveAppContext } from "@ledgerhq/live-common/wallet-api/LocalLiveAppProvider/index";
 import { usesEncodedAccountIdFormat } from "@ledgerhq/live-common/wallet-api/utils/deriveAccountIdForManifest";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import { validateInfoDialogParams } from "@ledgerhq/live-common/wallet-api/validation/validateInfoDialogParams";
+import type { InfoDialogParams } from "@ledgerhq/live-common/wallet-api/validation/validateInfoDialogParams";
+import { setPtxInfoDialog } from "~/renderer/reducers/ptxInfoDialog";
+import { createOpenActionDialogHandler } from "./actionDialogStore";
 
 export function usePTXCustomHandlers(manifest: WebviewProps["manifest"], accounts: AccountLike[]) {
   const dispatch = useDispatch();
   const { setDrawer } = React.useContext(context);
   const { getRouteToPlatformApp } = useStake();
   const navigate = useNavigate();
+  const { isEnabled } = useWalletFeaturesConfig("desktop");
   const walletState = useSelector(walletSelector);
   const { state: liveAppRegistryState } = useRemoteLiveAppContext();
   const { state: localLiveAppState } = useLocalLiveAppContext();
+  const syncAccountsById = useSyncAccountsById();
 
   // Helper to get manifest by ID - checks local first, then remote
   const getManifestById = useCallback(
@@ -84,6 +94,7 @@ export function usePTXCustomHandlers(manifest: WebviewProps["manifest"], account
       ),
     [],
   );
+  const flags = useMemo(() => ({ wallet40Ux: isEnabled }), [isEnabled]);
 
   const getAccount = useCallback(
     async (accountId: string): Promise<AccountLike | null> => {
@@ -97,12 +108,12 @@ export function usePTXCustomHandlers(manifest: WebviewProps["manifest"], account
         const { accountId: parentAccountId } = decodeTokenAccountIdSync(accountId);
 
         const parentAccount = accounts.find(
-          acc => acc.type === "Account" && acc.id === parentAccountId,
-        ) as Account | undefined;
+          acc => isAccount(acc) && acc.id === parentAccountId,
+        );
 
         const { token } = await decodeTokenAccountId(accountId);
 
-        if (parentAccount && token) {
+        if (parentAccount && token && isAccount(parentAccount)) {
           return makeEmptyTokenAccount(parentAccount, token);
         }
       }
@@ -159,6 +170,7 @@ export function usePTXCustomHandlers(manifest: WebviewProps["manifest"], account
         accounts,
         tracking,
         manifest,
+        flags,
         uiHooks: {
           "custom.exchange.start": ({ exchangeParams, onSuccess, onCancel }) => {
             dispatch(
@@ -214,7 +226,6 @@ export function usePTXCustomHandlers(manifest: WebviewProps["manifest"], account
                 ...exchangeParams,
                 onResult: operation => {
                   if (operation && exchangeParams.swapId) {
-                    // return success to swap live app
                     onSuccess({
                       operationHash: operation.hash,
                       swapId: exchangeParams.swapId,
@@ -354,16 +365,47 @@ export function usePTXCustomHandlers(manifest: WebviewProps["manifest"], account
           throw error;
         }
       },
+      "custom.dialog.confirmation": createOpenActionDialogHandler(dispatch),
+      "custom.syncAccount": async request => {
+        const { fromAccountId, toAccountId } = request.params || {};
+        if (!fromAccountId || !toAccountId) {
+          return Promise.reject(new Error("Missing fromAccountId or toAccountId parameter"));
+        }
+
+        const syncIds: string[] = [];
+        for (const id of [fromAccountId, toAccountId]) {
+          const realId = getAccountIdFromWalletAccountId(id) ?? id;
+          const account = accounts.find(acc => acc.id === realId);
+          if (!account) continue;
+          const syncId =
+            account.type === "TokenAccount" ? getParentAccount(account, accounts).id : realId;
+          syncIds.push(syncId);
+        }
+        syncAccountsById(syncIds);
+
+        return Promise.resolve();
+      },
+      "custom.dialog.info": createDialogInfoHandler(dispatch),
     };
   }, [
     accounts,
     tracking,
     manifest,
+    flags,
     dispatch,
     setDrawer,
     navigate,
     startStakeFlow,
     getManifestById,
     getAccount,
+    syncAccountsById,
   ]);
 }
+
+export function createDialogInfoHandler(dispatch: Dispatch) {
+  return async (request: { params?: InfoDialogParams }) => {
+    const validated = validateInfoDialogParams(request.params, "custom.dialog.info");
+    dispatch(setPtxInfoDialog(validated));
+  };
+}
+

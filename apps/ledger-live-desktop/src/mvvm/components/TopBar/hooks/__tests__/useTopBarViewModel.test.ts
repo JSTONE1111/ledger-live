@@ -1,120 +1,177 @@
-import { Eye, Refresh, Settings } from "@ledgerhq/lumen-ui-react/symbols";
-import { renderHook } from "tests/testSetup";
+import { Eye, Experiment, Refresh, Settings, Tools } from "@ledgerhq/lumen-ui-react/symbols";
+import { createElement } from "react";
+import { MemoryRouter } from "react-router";
+import { renderHook, withFlagOverrides } from "tests/testSetup";
 import useTopBarViewModel from "../useTopBarViewModel";
-import * as useActivityIndicatorModule from "../useActivityIndicator";
-import * as useDiscreetModeModule from "../useDiscreetMode";
-import * as useSettingsModule from "../useSettings";
+import { useActivityIndicator } from "../useActivityIndicator";
+import { useDiscreetMode } from "../useDiscreetMode";
+import { useExperimentalFeatures } from "../useExperimentalFeatures";
+import { useFeatureFlags } from "../useFeatureFlags";
+import { useSettings } from "../useSettings";
+import type { TopBarSlot } from "../../types";
 
 jest.mock("../useActivityIndicator");
 jest.mock("../useDiscreetMode");
+jest.mock("../useExperimentalFeatures");
+jest.mock("../useFeatureFlags");
 jest.mock("../useSettings");
 
-const mockUseActivityIndicator = jest.mocked(useActivityIndicatorModule.useActivityIndicator);
-const mockUseDiscreetMode = jest.mocked(useDiscreetModeModule.useDiscreetMode);
-const mockUseSettings = jest.mocked(useSettingsModule.useSettings);
+const defaults = {
+  discreetMode: { handleDiscreet: jest.fn(), discreetIcon: Eye, tooltip: "Discreet" },
+  activityIndicator: {
+    hasAccounts: true,
+    handleSync: jest.fn(),
+    isRotating: false,
+    isError: false,
+    tooltip: "Refresh",
+    icon: Refresh,
+    onTooltipShow: undefined,
+  },
+  settings: { handleSettings: jest.fn(), settingsIcon: Settings, tooltip: "Settings" },
+  experimental: {
+    isVisible: false,
+    handleExperimental: jest.fn(),
+    icon: Experiment,
+    tooltip: "Experimental",
+  },
+  featureFlags: {
+    isVisible: false,
+    handleFeatureFlags: jest.fn(),
+    icon: Tools,
+    tooltip: "Feature flags",
+  },
+};
+
+type SetupOptions = {
+  hasAccounts?: boolean;
+  isRotating?: boolean;
+  experimentalVisible?: boolean;
+  featureFlagsVisible?: boolean;
+  operationsList?: boolean;
+  myWallet?: boolean;
+  route?: string;
+};
+
+const setup = ({
+  hasAccounts = true,
+  isRotating = false,
+  experimentalVisible = false,
+  featureFlagsVisible = false,
+  operationsList = false,
+  myWallet = false,
+  route,
+}: SetupOptions = {}) => {
+  jest.mocked(useDiscreetMode).mockReturnValue(defaults.discreetMode);
+  jest.mocked(useActivityIndicator).mockReturnValue({
+    ...defaults.activityIndicator,
+    hasAccounts,
+    isRotating,
+  });
+  jest.mocked(useSettings).mockReturnValue(defaults.settings);
+  jest.mocked(useExperimentalFeatures).mockReturnValue({
+    ...defaults.experimental,
+    isVisible: experimentalVisible,
+  });
+  jest.mocked(useFeatureFlags).mockReturnValue({
+    ...defaults.featureFlags,
+    isVisible: featureFlagsVisible,
+  });
+
+  const needsFlags = operationsList || myWallet;
+  const initialState = needsFlags
+    ? withFlagOverrides({
+        lwdWallet40: {
+          enabled: true,
+          params: {
+            ...(operationsList && { operationsList: true }),
+            ...(myWallet && { myWallet: true }),
+          },
+        },
+      })
+    : undefined;
+
+  const routeWrapper = route
+    ? ({ children }: { children: React.ReactNode }) =>
+        createElement(MemoryRouter, { initialEntries: [route] }, children)
+    : undefined;
+
+  return renderHook(() => useTopBarViewModel(), {
+    initialState,
+    ...(routeWrapper ? { wrapper: routeWrapper, skipRouter: true } : {}),
+  });
+};
+
+const getSlotLabels = (slots: TopBarSlot[]) =>
+  slots.map(s => (s.type === "action" ? s.action.label : s.type));
+
+const findSlot = (slots: TopBarSlot[], label: string) =>
+  slots.find((s): s is Extract<TopBarSlot, { type: "action" }> => {
+    return s.type === "action" && s.action.label === label;
+  });
 
 describe("useTopBarViewModel", () => {
-  const mockHandleSync = jest.fn();
-  const mockHandleDiscreet = jest.fn();
-  const mockHandleSettings = jest.fn();
-  const mockDiscreetIcon = Eye;
+  beforeEach(() => jest.clearAllMocks());
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseDiscreetMode.mockReturnValue({
-      handleDiscreet: mockHandleDiscreet,
-      discreetIcon: mockDiscreetIcon,
-      tooltip: "Discreet tooltip",
-    });
-    mockUseActivityIndicator.mockReturnValue({
-      hasAccounts: true,
-      handleSync: mockHandleSync,
-      isRotating: false,
-      isError: false,
-      tooltip: "Refresh",
-      icon: Refresh,
-    });
-    mockUseSettings.mockReturnValue({
-      handleSettings: mockHandleSettings,
-      settingsIcon: Settings,
-      tooltip: "Settings",
+  describe("slot ordering", () => {
+    it.each<[string, SetupOptions, string[]]>([
+      [
+        "default (with accounts)",
+        {},
+        ["synchronize", "notification", "discreet", "settings", "my ledger"],
+      ],
+      [
+        "without accounts",
+        { hasAccounts: false },
+        ["notification", "discreet", "settings", "my ledger"],
+      ],
+      [
+        "all optional slots visible",
+        { experimentalVisible: true, featureFlagsVisible: true, operationsList: true },
+        ["experimental", "feature flags", "synchronize", "discreet", "history"],
+      ],
+      [
+        "myWallet enabled hides settings, my ledger, and notification",
+        { myWallet: true },
+        ["synchronize", "discreet", "history"],
+      ],
+    ])("%s", (_name, options, expectedLabels) => {
+      const { result } = setup(options);
+      expect(getSlotLabels(result.current.topBarSlots)).toEqual(expectedLabels);
     });
   });
 
-  it("returns topBarSlots in order: synchronize (when hasAccounts), notification, discreet, settings, my ledger", () => {
-    const { result } = renderHook(() => useTopBarViewModel());
+  describe("slot properties", () => {
+    it("experimental and feature flags slots have accent appearance", () => {
+      const { result } = setup({ experimentalVisible: true, featureFlagsVisible: true });
+      const slots = result.current.topBarSlots;
 
-    const slotLabels = result.current.topBarSlots.map(s =>
-      s.type === "action" ? s.action.label : "notification",
-    );
-    expect(slotLabels).toEqual([
-      "synchronize",
-      "notification",
-      "discreet",
-      "settings",
-      "my ledger",
-    ]);
-
-    const myLedgerSlot = result.current.topBarSlots.find(
-      s => s.type === "action" && s.action.label === "my ledger",
-    );
-    expect(myLedgerSlot).toBeDefined();
-
-    const syncSlot = result.current.topBarSlots.find(
-      s => s.type === "action" && s.action.label === "synchronize",
-    );
-    expect(syncSlot).toBeDefined();
-    if (syncSlot?.type === "action") expect(syncSlot.action.onClick).toBe(mockHandleSync);
-
-    const settingsSlot = result.current.topBarSlots.find(
-      s => s.type === "action" && s.action.label === "settings",
-    );
-    expect(settingsSlot).toBeDefined();
-    if (settingsSlot?.type === "action")
-      expect(settingsSlot.action.onClick).toBe(mockHandleSettings);
-  });
-
-  it("does not include synchronize slot when hasAccounts is false and notification is first", () => {
-    mockUseActivityIndicator.mockReturnValue({
-      hasAccounts: false,
-      handleSync: mockHandleSync,
-      isRotating: false,
-      isError: false,
-      tooltip: "Refresh",
-      icon: Refresh,
+      expect(findSlot(slots, "experimental")?.action.appearance).toBe("accent");
+      expect(findSlot(slots, "feature flags")?.action.appearance).toBe("accent");
     });
 
-    const { result } = renderHook(() => useTopBarViewModel());
+    it("synchronize slot is not interactive when isRotating is true", () => {
+      const { result } = setup({ isRotating: true });
 
-    const syncSlot = result.current.topBarSlots.find(
-      s => s.type === "action" && s.action.label === "synchronize",
-    );
-    expect(syncSlot).toBeUndefined();
-    const slotLabels = result.current.topBarSlots.map(s =>
-      s.type === "action" ? s.action.label : "notification",
-    );
-    expect(slotLabels).toEqual(["notification", "discreet", "settings", "my ledger"]);
-  });
-
-  it("passes isRotating from useActivityIndicator as isInteractive false on sync action", () => {
-    mockUseActivityIndicator.mockReturnValue({
-      hasAccounts: true,
-      handleSync: mockHandleSync,
-      isRotating: true,
-      isError: true,
-      tooltip: "Error",
-      icon: Refresh,
+      expect(findSlot(result.current.topBarSlots, "synchronize")?.action.isInteractive).toBe(false);
     });
 
-    const { result } = renderHook(() => useTopBarViewModel());
+    it("history slot is a dedicated slot type (not an action)", () => {
+      const { result } = setup({ operationsList: true });
+      const historySlot = result.current.topBarSlots.find(s => s.type === "history");
 
-    const syncSlot = result.current.topBarSlots.find(
-      s => s.type === "action" && s.action.label === "synchronize",
-    );
-    expect(syncSlot).toBeDefined();
-    if (syncSlot?.type === "action") {
-      expect(syncSlot.action.isInteractive).toBe(false);
-      expect(syncSlot.action.tooltip).toBe("Error");
-    }
+      expect(historySlot).toBeDefined();
+    });
+  });
+
+  describe("inManager", () => {
+    it("returns true when pathname is /manager", () => {
+      const { result } = setup({ route: "/manager" });
+      expect(result.current.inManager).toBe(true);
+    });
+
+    it("returns false for other pathnames", () => {
+      const { result } = setup();
+      expect(result.current.inManager).toBe(false);
+    });
   });
 });

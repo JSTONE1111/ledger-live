@@ -6,7 +6,7 @@ export type SendStepConfig = FlowStepConfig<SendFlowStep> &
   Readonly<{
     addressInput?: boolean;
     showTitle?: boolean;
-    height?: "fixed" | "hug";
+    height?: "fixed" | "fit";
     /**
      * A step that is not in an original order of previous <-> next paradigm
      */
@@ -15,6 +15,8 @@ export type SendStepConfig = FlowStepConfig<SendFlowStep> &
     titleKey?: string;
     /** Explicit step to navigate to when the user presses Back. */
     backTarget?: SendFlowStep;
+    /** Whether the "Available $XX" description is shown in the header. Defaults to true when showTitle is true. */
+    showAvailable?: boolean;
   }>;
 
 export type SendFlowConfig = FlowConfig<SendFlowStep, SendStepConfig>;

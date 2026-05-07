@@ -1,44 +1,47 @@
-import {
-  type Api,
+import type {
+  AlpacaApi,
   Balance,
   Block,
   BlockInfo,
+  BroadcastConfig,
+  BufferTxData,
+  CraftedTransaction,
+  Cursor,
   FeeEstimation,
   ListOperationsOptions,
   MemoNotSupported,
   Operation,
-  TransactionIntent,
-  Cursor,
   Page,
-  Validator,
-  Stake,
   Reward,
+  Stake,
+  TransactionIntent,
   TransactionValidation,
-  AssetInfo,
-  CraftedTransaction,
-  BufferTxData,
-} from "@ledgerhq/coin-framework/api/index";
+  Validator,
+  BalanceOptions,
+} from "@ledgerhq/coin-module-framework/api/index";
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
-import { TokenCurrency } from "@ledgerhq/types-cryptoassets";
-import { BroadcastConfig, Operation as LiveOperation } from "@ledgerhq/types-live";
+import { BridgeApi } from "@ledgerhq/ledger-wallet-framework/api/types";
+import { Operation as LiveOperation } from "@ledgerhq/types-live";
 import { EvmCoinConfig, setCoinConfig, type EvmConfig } from "../config";
+import { craftTransactionData } from "../logic/craftTransactionData";
 import {
   broadcast,
   combine,
   craftTransaction,
   estimateFees,
-  lastBlock,
-  listOperations,
   getBalance,
-  getSequence,
-  validateIntent,
-  getTokenFromAsset,
-  getAssetFromToken,
-  computeIntentType,
-  refreshOperations,
   getBlock,
   getBlockInfo,
+  getNextSequence,
+  lastBlock,
+  listOperations,
+  refreshOperations,
+  validateIntent,
+  validateTransaction,
 } from "../logic/index";
+import { validateAddress } from "../logic/validateAddress";
+import { STAKING_CONTRACTS } from "../staking";
+import { getValidatorsPage } from "../staking/validators";
 
 // NOTE Celo still relies on the EVM coin config and injects its own
 // while creating an unused instance of API
@@ -48,10 +51,10 @@ const configs: Record<string, EvmConfig | (() => EvmCoinConfig)> = {};
 export function createApi(
   config: EvmConfig | (() => EvmCoinConfig),
   currencyId: string,
-): Api<MemoNotSupported, BufferTxData> {
+): AlpacaApi<MemoNotSupported, BufferTxData> & BridgeApi {
   configs[currencyId] = config;
-  setCoinConfig(c => {
-    const evmConfig = configs[c.id];
+  setCoinConfig(id => {
+    const evmConfig = configs[id];
     return typeof evmConfig === "function"
       ? evmConfig()
       : { info: { ...evmConfig, status: { type: "active" } } };
@@ -78,7 +81,8 @@ export function createApi(
       transactionIntent: TransactionIntent<MemoNotSupported, BufferTxData>,
       customFeesParameters?: FeeEstimation["parameters"],
     ): Promise<FeeEstimation> => estimateFees(currency, transactionIntent, customFeesParameters),
-    getBalance: (address: string): Promise<Balance[]> => getBalance(currency, address),
+    getBalance: (address: string, options?: BalanceOptions): Promise<Balance[]> =>
+      getBalance(currency, address, options),
     lastBlock: (): Promise<BlockInfo> => lastBlock(currency),
     listOperations: (
       address: string,
@@ -92,20 +96,14 @@ export function createApi(
     getRewards(_address: string, _cursor?: Cursor): Promise<Page<Reward>> {
       throw new Error("getRewards is not supported");
     },
-    getValidators(_cursor?: Cursor): Promise<Page<Validator>> {
-      throw new Error("getValidators is not supported");
-    },
-    getSequence: (address: string): Promise<bigint> => getSequence(currency, address),
+    getValidators: (): Promise<Page<Validator>> => getValidatorsPage(currency.id),
+    getNextSequence: (address: string): Promise<bigint> => getNextSequence(currency, address),
+    validateAddress,
     validateIntent: (
       intent: TransactionIntent<MemoNotSupported, BufferTxData>,
       balances: Balance[],
       customFees?: FeeEstimation,
     ): Promise<TransactionValidation> => validateIntent(currency, intent, balances, customFees),
-    getTokenFromAsset: (asset: AssetInfo): Promise<TokenCurrency | undefined> =>
-      getTokenFromAsset(currency, asset),
-    getAssetFromToken: (token: TokenCurrency, owner: string): AssetInfo =>
-      getAssetFromToken(currency, token, owner),
-    computeIntentType,
     /**
      * Only expose this method if the chain has no explorer (the only chain that passes a function
      * is Celo that works with an explorer)
@@ -118,5 +116,9 @@ export function createApi(
             refreshOperations(currency, operations),
         }
       : {}),
+    validateTransaction: (signature: string): Promise<{ error: Error | undefined }> =>
+      validateTransaction(currency, { signature }),
+    ...(STAKING_CONTRACTS[currencyId] ? { stakingSupported: true } : {}),
+    craftTransactionData,
   };
 }

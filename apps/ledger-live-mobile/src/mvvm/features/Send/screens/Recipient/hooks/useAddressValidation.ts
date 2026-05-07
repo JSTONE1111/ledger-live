@@ -1,14 +1,14 @@
-import { isAddressSanctioned } from "@ledgerhq/coin-framework/sanction/index";
+import { isAddressSanctioned } from "@ledgerhq/ledger-wallet-framework/sanction/index";
 import { useDomain } from "@ledgerhq/domain-service/hooks/index";
 import { isLoaded } from "@ledgerhq/domain-service/hooks/logic";
 import type { DomainServiceStatus } from "@ledgerhq/domain-service/hooks/types";
-import { InvalidAddress } from "@ledgerhq/errors";
+import { InvalidAddress, InvalidAddressBecauseDestinationIsAlsoSource } from "@ledgerhq/errors";
 import {
   getAccountCurrency,
   getMainAccount,
   getRecentAddressesStore,
 } from "@ledgerhq/live-common/account/index";
-import { sendFeatures } from "@ledgerhq/live-common/bridge/descriptor";
+import { sendFeatures } from "@ledgerhq/live-common/bridge/descriptor/send/features";
 import type { CryptoCurrency, TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import type { Account, AccountLike } from "@ledgerhq/types-live";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -38,6 +38,7 @@ type UseAddressValidationProps = Readonly<{
   account?: AccountLike;
   parentAccount?: Account | null;
   currentAccountId?: string;
+  recipientSupportsDomain?: boolean;
 }>;
 
 type UseAddressValidationResult = {
@@ -52,6 +53,7 @@ export function useAddressValidation({
   account,
   parentAccount,
   currentAccountId,
+  recipientSupportsDomain = false,
 }: UseAddressValidationProps): UseAddressValidationResult {
   const [validationState, setValidationState] = useState<{
     status: AddressValidationStatus;
@@ -68,22 +70,26 @@ export function useAddressValidation({
 
   const allAccounts = useSelector(accountsSelector);
 
-  const isEthereum = currency.id === "ethereum";
-  const domainServiceResponse = useDomain(isEthereum ? searchValue : "", "ens");
-  const domainIsLoading = isEthereum && isDomainLoading(domainServiceResponse);
+  const domainServiceResponse = useDomain(recipientSupportsDomain ? searchValue : "", "ens");
+  const domainIsLoading = recipientSupportsDomain && isDomainLoading(domainServiceResponse);
 
   const ensResolution = useMemo(() => {
-    if (!isEthereum) return null;
+    if (!recipientSupportsDomain) return null;
     if (isLoaded(domainServiceResponse) && domainServiceResponse.resolutions.length > 0) {
       return domainServiceResponse.resolutions[0];
     }
     return null;
-  }, [domainServiceResponse, isEthereum]);
+  }, [domainServiceResponse, recipientSupportsDomain]);
 
   // Use resolved address for bridge validation (ENS resolved address or original searchValue)
   const addressForBridgeValidation = useMemo(() => {
     return ensResolution?.address ?? searchValue;
   }, [ensResolution?.address, searchValue]);
+
+  const mainAccount = useMemo(
+    () => (account ? getMainAccount(account, parentAccount) : null),
+    [account, parentAccount],
+  );
 
   // Bridge validation for recipient/sender errors and warnings
   const bridgeValidation = useBridgeRecipientValidation({
@@ -91,7 +97,9 @@ export function useAddressValidation({
     account: account ?? null,
     parentAccount: parentAccount ?? null,
     enabled: Boolean(
-      addressForBridgeValidation && account && (!isEthereum || ensResolution || !domainIsLoading),
+      addressForBridgeValidation &&
+        account &&
+        (!recipientSupportsDomain || ensResolution || !domainIsLoading),
     ),
   });
 
@@ -155,14 +163,13 @@ export function useAddressValidation({
     });
   }, [searchValue, userAccountsForCurrency, accountNames]);
 
-  const currentAccountName = useMaybeAccountName(
-    account ? getMainAccount(account, parentAccount) : null,
-  );
+  const currentAccountName = useMaybeAccountName(mainAccount);
 
   const currentAccountMatch = useMemo(() => {
     if (!searchValue || !account) return null;
 
-    const mainAccount = getMainAccount(account, parentAccount);
+    if (!mainAccount) return null;
+
     const addressToCheck = ensResolution?.address ?? searchValue;
     const selfTransferPolicy = sendFeatures.getSelfTransferPolicy(currency);
 
@@ -178,7 +185,7 @@ export function useAddressValidation({
     }
 
     return null;
-  }, [searchValue, account, parentAccount, currency, ensResolution?.address, currentAccountName]);
+  }, [searchValue, account, mainAccount, currency, ensResolution?.address, currentAccountName]);
 
   const matchedLedgerAccount = currentAccountMatch ?? matchedLedgerAccounts[0];
 
@@ -274,6 +281,15 @@ export function useAddressValidation({
       delete filteredBridgeErrors.recipient;
     }
 
+    const isImpossibleSelfTransferAttempt =
+      mainAccount &&
+      sendFeatures.getSelfTransferPolicy(currency) === "impossible" &&
+      addressForBridgeValidation.toLowerCase() === mainAccount.freshAddress.toLowerCase();
+
+    if (isImpossibleSelfTransferAttempt && !filteredBridgeErrors.recipient) {
+      filteredBridgeErrors.recipient = new InvalidAddressBecauseDestinationIsAlsoSource();
+    }
+
     return {
       status: validationState.status,
       error: validationState.error,
@@ -299,6 +315,9 @@ export function useAddressValidation({
     formattedBalance,
     formattedCounterValue,
     accountName,
+    mainAccount,
+    currency,
+    addressForBridgeValidation,
     bridgeValidation.errors,
     bridgeValidation.warnings,
   ]);

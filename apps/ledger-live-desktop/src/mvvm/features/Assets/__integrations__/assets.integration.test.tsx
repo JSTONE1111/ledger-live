@@ -1,10 +1,10 @@
 import React from "react";
-import { render, screen, waitFor } from "tests/testSetup";
-import { getCryptoCurrencyById } from "@ledgerhq/live-common/currencies/index";
-import { DeviceModelId } from "@ledgerhq/devices";
+import { renderWithMockedCounterValuesProvider, screen, waitFor } from "tests/testSetup";
 import { useNavigate } from "react-router";
 import { server } from "tests/server";
+import { AFTER_ONBOARDING_STATE } from "~/renderer/reducers/settings";
 import Assets from "../index";
+import { MAX_ITEM_DISPLAYED } from "../constants";
 import {
   BTC_ACCOUNT,
   ETH_ACCOUNT,
@@ -21,23 +21,10 @@ const mockNavigate = jest.fn();
 jest.mock("react-router", () => ({
   ...jest.requireActual("react-router"),
   useNavigate: jest.fn(() => mockNavigate),
+  useSearchParams: jest.fn(() => [new URLSearchParams(), jest.fn()]),
 }));
 
 const mockedUseNavigate = jest.mocked(useNavigate);
-
-jest.mock("~/renderer/hooks/usePrice", () => ({
-  usePrice: () => ({
-    counterValue: null,
-    counterValueCurrency: getCryptoCurrencyById("bitcoin"),
-    effectiveUnit: getCryptoCurrencyById("bitcoin").units[0],
-    valueNum: 100000000,
-  }),
-}));
-
-jest.mock("@ledgerhq/live-countervalues-react", () => ({
-  ...jest.requireActual("@ledgerhq/live-countervalues-react"),
-  useCalculate: () => undefined,
-}));
 
 const MANY_CRYPTO_ACCOUNTS = [
   BTC_ACCOUNT,
@@ -49,23 +36,18 @@ const MANY_CRYPTO_ACCOUNTS = [
   SOL_ACCOUNT,
 ];
 
-const MOCK_LAST_SEEN_DEVICE = {
-  modelId: DeviceModelId.nanoX,
-  deviceInfo: {},
-  apps: [],
-};
-
 const initialState = {
   settings: { counterValue: "USD" },
 };
 
 const onboardedState = {
-  settings: { counterValue: "USD", lastSeenDevice: MOCK_LAST_SEEN_DEVICE },
+  settings: { ...AFTER_ONBOARDING_STATE, counterValue: "USD" },
 };
 
 describe("Assets", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedUseNavigate.mockReset();
     mockedUseNavigate.mockReturnValue(mockNavigate);
   });
 
@@ -74,14 +56,14 @@ describe("Assets", () => {
   });
 
   it("should render skeleton while loading, then display sections with asset details", async () => {
-    render(<Assets />, {
+    renderWithMockedCounterValuesProvider(<Assets />, {
       initialState: { ...initialState, accounts: [BTC_ACCOUNT, ETH_ACCOUNT_WITH_USDC] },
     });
 
-    expect(screen.queryByText("Cryptos")).not.toBeInTheDocument();
+    expect(screen.queryByText("Crypto")).not.toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText("Cryptos")).toBeVisible();
+      expect(screen.getByText("Crypto")).toBeVisible();
     });
     expect(screen.getByText("Stablecoins")).toBeVisible();
 
@@ -92,19 +74,19 @@ describe("Assets", () => {
   });
 
   it("should always render both sections even when no stablecoin accounts exist", async () => {
-    render(<Assets />, {
+    renderWithMockedCounterValuesProvider(<Assets />, {
       initialState: { ...initialState, accounts: [BTC_ACCOUNT] },
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Cryptos")).toBeVisible();
+      expect(screen.getByText("Crypto")).toBeVisible();
     });
     expect(screen.getByText("Stablecoins")).toBeVisible();
   });
 
-  it("should not navigate when section header is clicked with few items", async () => {
-    const { user } = render(<Assets />, {
-      initialState: { ...initialState, accounts: [BTC_ACCOUNT, ETH_ACCOUNT_WITH_USDC] },
+  it("should not navigate cryptos section header when section has at most MAX_ITEM_DISPLAYED items", async () => {
+    const { user } = renderWithMockedCounterValuesProvider(<Assets />, {
+      initialState: { ...onboardedState, accounts: [BTC_ACCOUNT, ETH_ACCOUNT_WITH_USDC] },
     });
 
     await waitFor(() => {
@@ -112,11 +94,11 @@ describe("Assets", () => {
     });
 
     await user.click(screen.getByTestId("cryptos-section-header-button"));
-    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalledWith("/assets?category=cryptos");
   });
 
-  it("should navigate to /assets when section header is clicked with many items", async () => {
-    const { user } = render(<Assets />, {
+  it(`should navigate to /assets with cryptos category when cryptos section has more than ${MAX_ITEM_DISPLAYED} items`, async () => {
+    const { user } = renderWithMockedCounterValuesProvider(<Assets />, {
       initialState: { ...onboardedState, accounts: MANY_CRYPTO_ACCOUNTS },
     });
 
@@ -125,6 +107,45 @@ describe("Assets", () => {
     });
 
     await user.click(screen.getByTestId("cryptos-section-header-button"));
-    expect(mockNavigate).toHaveBeenCalledWith("/assets");
+    expect(mockNavigate).toHaveBeenCalledWith("/assets?category=cryptos");
+  });
+
+  it("should not navigate stablecoins section header when section has at most MAX_ITEM_DISPLAYED items", async () => {
+    const { user } = renderWithMockedCounterValuesProvider(<Assets />, {
+      initialState: { ...onboardedState, accounts: [BTC_ACCOUNT, ETH_ACCOUNT_WITH_USDC] },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Stablecoins")).toBeVisible();
+    });
+
+    await user.click(screen.getByTestId("stablecoins-section-header-button"));
+    expect(mockNavigate).not.toHaveBeenCalledWith("/assets?category=stablecoins");
+  });
+
+  it("should show placeholder assets when user has no accounts", async () => {
+    renderWithMockedCounterValuesProvider(<Assets />, {
+      initialState: initialState,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Crypto")).toBeVisible();
+    });
+    expect(screen.getByText("Stablecoins")).toBeVisible();
+
+    expect(screen.getByText("Bitcoin")).toBeVisible();
+  });
+
+  it("should navigate to /market when clicking a placeholder asset row", async () => {
+    const { user } = renderWithMockedCounterValuesProvider(<Assets />, {
+      initialState: initialState,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Bitcoin")).toBeVisible();
+    });
+
+    await user.click(screen.getByText("Bitcoin"));
+    expect(mockNavigate).toHaveBeenCalledWith("/market/bitcoin");
   });
 });

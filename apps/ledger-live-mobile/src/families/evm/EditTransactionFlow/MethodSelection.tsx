@@ -6,45 +6,25 @@ import {
 } from "@ledgerhq/coin-evm/editTransaction/index";
 import { EditType } from "@ledgerhq/coin-evm/types/editTransaction";
 import { Transaction as EvmTransaction, TransactionRaw } from "@ledgerhq/coin-evm/types/index";
-import { isOldestPendingOperation } from "@ledgerhq/coin-framework/operation";
+import { isOldestPendingOperation } from "@ledgerhq/ledger-wallet-framework/operation";
 import { TransactionHasBeenValidatedError } from "@ledgerhq/errors";
 import { getMainAccount } from "@ledgerhq/live-common/account/index";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
-import { fromTransactionRaw } from "@ledgerhq/live-common/transaction/index";
 import { getEnv } from "@ledgerhq/live-env";
 import { log } from "@ledgerhq/logs";
-import { Box, Flex, SelectableList } from "@ledgerhq/native-ui";
+import { Flex } from "@ledgerhq/native-ui";
 import { Account, AccountBridge } from "@ledgerhq/types-live";
 import { urls } from "~/utils/urls";
 import invariant from "invariant";
-import React, { memo, useCallback, useEffect, useState } from "react";
-import { Trans, useTranslation } from "~/context/Locale";
-import { Dimensions, Linking } from "react-native";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { TrackScreen } from "~/analytics";
-import LText from "~/components/LText";
+import MethodSelectionList from "~/components/EditTransaction/MethodSelectionList";
 import { StackNavigatorProps } from "~/components/RootNavigator/types/helpers";
 import { ScreenName } from "~/const";
 import { EditTransactionParamList } from "./EditTransactionParamList";
+import { useFromTransactionRaw } from "~/hooks/useFromTransactionRaw";
 import BigNumber from "bignumber.js";
-
-const getSpeedUpDescriptionKey = (
-  haveFundToSpeedup: boolean,
-  isOldestEditableOperation: boolean,
-):
-  | "editTransaction.speedUp.description"
-  | "editTransaction.error.notEnoughFundsToSpeedup"
-  | "editTransaction.error.notlowestNonceToSpeedup" => {
-  if (!haveFundToSpeedup) {
-    return "editTransaction.error.notEnoughFundsToSpeedup";
-  }
-
-  if (!isOldestEditableOperation) {
-    return "editTransaction.error.notlowestNonceToSpeedup";
-  }
-
-  return "editTransaction.speedUp.description";
-};
 
 type Props = StackNavigatorProps<
   EditTransactionParamList,
@@ -52,7 +32,6 @@ type Props = StackNavigatorProps<
 >;
 
 function MethodSelectionComponent({ navigation, route }: Props) {
-  const { t } = useTranslation();
   const { operation, account, parentAccount } = route.params;
 
   invariant(
@@ -64,9 +43,9 @@ function MethodSelectionComponent({ navigation, route }: Props) {
 
   const mainAccount = getMainAccount(account, parentAccount);
 
-  const transactionToEdit = fromTransactionRaw(
+  const transactionToEdit = useFromTransactionRaw<EvmTransaction>(
     operation.transactionRaw as TransactionRaw,
-  ) as EvmTransaction;
+  );
 
   const { transaction, setTransaction } = useBridgeTransaction<EvmTransaction>(() => ({
     account,
@@ -74,33 +53,42 @@ function MethodSelectionComponent({ navigation, route }: Props) {
     transaction: transactionToEdit,
   }));
 
-  invariant(
-    transaction,
-    "[useBridgeTransaction - MethodSelection] could not found transaction from bridge.",
+  // Sync bridge transaction once transactionToEdit resolves from the async fromTransactionRaw call
+  useEffect(() => {
+    if (transactionToEdit) setTransaction(transactionToEdit);
+  }, [transactionToEdit, setTransaction]);
+
+  const haveFundToCancel = useMemo(
+    () =>
+      transactionToEdit
+        ? hasMinimumFundsToCancel({ mainAccount, transactionToUpdate: transactionToEdit })
+        : false,
+    [mainAccount, transactionToEdit],
   );
 
-  const haveFundToCancel = hasMinimumFundsToCancel({
-    mainAccount,
-    transactionToUpdate: transactionToEdit,
-  });
-
-  const haveFundToSpeedup = hasMinimumFundsToSpeedUp({
-    account,
-    mainAccount,
-    transactionToUpdate: transactionToEdit,
-  });
+  const haveFundToSpeedup = useMemo(
+    () =>
+      transactionToEdit
+        ? hasMinimumFundsToSpeedUp({ account, mainAccount, transactionToUpdate: transactionToEdit })
+        : false,
+    [account, mainAccount, transactionToEdit],
+  );
 
   const [selectedMethod, setSelectedMethod] = useState<EditType | null>();
 
   // if we are at this step (i.e: in this screen) it means the transaction is editable
-  const isOldestEditableOperation = isOldestPendingOperation(
-    mainAccount,
-    new BigNumber(transactionToEdit.nonce),
+  const isOldestEditableOperation = useMemo(
+    () =>
+      transactionToEdit
+        ? isOldestPendingOperation(mainAccount, new BigNumber(transactionToEdit.nonce))
+        : false,
+    [mainAccount, transactionToEdit],
   );
-  const bridge: AccountBridge<EvmTransaction> = getAccountBridge(account, parentAccount as Account);
+  const bridge: AccountBridge<EvmTransaction> = useAccountBridge<EvmTransaction>(account, parentAccount as Account);
 
   const onSelect = useCallback(
     async (option: EditType) => {
+      if (!transactionToEdit || !transaction) return;
       log("Edit Transaction - Method Selection", "onSelect Cancel/Speed up", option);
 
       const patch = await getEditTransactionPatch({
@@ -161,7 +149,7 @@ function MethodSelectionComponent({ navigation, route }: Props) {
     log("[edit transaction]", "Transaction to edit", transaction);
     log("[edit transaction]", "User balance", mainAccount.balance.toNumber());
 
-    if (!selectedMethod) {
+    if (!selectedMethod || !transaction) {
       return;
     }
 
@@ -184,7 +172,7 @@ function MethodSelectionComponent({ navigation, route }: Props) {
     navigation,
   ]);
 
-  if (!transaction) {
+  if (!transaction || !transactionToEdit) {
     return null;
   }
 
@@ -192,53 +180,14 @@ function MethodSelectionComponent({ navigation, route }: Props) {
     <Flex flex={1} color="background.main">
       <TrackScreen category="EditTransaction" name="EditTransaction" />
       <Flex p={6}>
-        <SelectableList onChange={onSelect}>
-          <SelectableList.Element
-            disabled={!haveFundToSpeedup || !isOldestEditableOperation}
-            value={"speedup"}
-          >
-            <Box style={{ width: Dimensions.get("window").width * 0.8 }}>
-              <LText bold>
-                <Trans i18nKey={"editTransaction.speedUp.title"} />
-              </LText>
-              <Flex>
-                <LText style={{ marginTop: 15, marginBottom: 0 }}>
-                  <Trans
-                    i18nKey={getSpeedUpDescriptionKey(haveFundToSpeedup, isOldestEditableOperation)}
-                  />
-                </LText>
-              </Flex>
-            </Box>
-          </SelectableList.Element>
-
-          <SelectableList.Element disabled={!haveFundToCancel} value={"cancel"}>
-            <Box style={{ width: Dimensions.get("window").width * 0.8 }}>
-              <LText bold>
-                <Trans i18nKey={"editTransaction.cancel.title"} />
-              </LText>
-              <LText
-                style={{
-                  marginTop: 15,
-                  marginBottom: 0,
-                  overflow: "hidden",
-                }}
-              >
-                {haveFundToCancel
-                  ? t("editTransaction.cancel.description", {
-                      // note: ticker is always the main currency ticker
-                      ticker: mainAccount.currency.ticker,
-                    })
-                  : t("editTransaction.error.notEnoughFundsToCancel")}
-              </LText>
-            </Box>
-          </SelectableList.Element>
-        </SelectableList>
-        <LText
-          style={{ marginTop: 8, textDecorationLine: "underline" }}
-          onPress={() => Linking.openURL(urls.editEvmTx.learnMore)}
-        >
-          {t("editTransaction.learnMore")}
-        </LText>
+        <MethodSelectionList<EditType>
+          haveFundToCancel={haveFundToCancel}
+          haveFundToSpeedup={haveFundToSpeedup}
+          isOldestEditableOperation={isOldestEditableOperation}
+          ticker={mainAccount.currency.ticker}
+          learnMoreUrl={urls.editEvmTx.learnMore}
+          onSelect={onSelect}
+        />
       </Flex>
     </Flex>
   );

@@ -5,7 +5,7 @@ import { Flex, Text } from "@ledgerhq/native-ui";
 import type { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { getEnv } from "@ledgerhq/live-env";
 import { useTokensData } from "@ledgerhq/cryptoassets/cal-client/hooks/useTokensData";
-import { getMainAccount } from "@ledgerhq/coin-framework/account/helpers";
+import { getMainAccount } from "@ledgerhq/ledger-wallet-framework/account/helpers";
 import invariant from "invariant";
 
 import { TrackScreen, track } from "~/analytics";
@@ -17,7 +17,7 @@ import { NavigatorName, ScreenName } from "~/const";
 import type { HederaAssociateTokenFlowParamList } from "~/families/hedera/AssociateTokenFlow/types";
 import { useAccountScreen } from "LLM/hooks/useAccountScreen";
 
-type Props = BaseComposite<
+export type Props = BaseComposite<
   StackNavigatorProps<HederaAssociateTokenFlowParamList, ScreenName.HederaAssociateTokenSelectToken>
 >;
 
@@ -69,6 +69,14 @@ export default function SelectToken({ navigation, route }: Props) {
             currency,
             accountId: subAccount.id,
             parentId: subAccount.parentId,
+          },
+        });
+      } else if (currency.tokenType !== "hts") {
+        navigation.navigate(NavigatorName.ReceiveFunds, {
+          screen: ScreenName.ReceiveConfirmation,
+          params: {
+            currency,
+            accountId: mainAccount.id,
           },
         });
       } else {

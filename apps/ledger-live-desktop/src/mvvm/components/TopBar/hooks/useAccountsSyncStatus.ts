@@ -1,10 +1,10 @@
-import { useBatchAccountsSyncState } from "@ledgerhq/live-common/bridge/react/index";
-import { Account } from "@ledgerhq/types-live";
+import { useMemo } from "react";
+import {
+  useAccountsSyncStatus as useAccountsSyncStatusCommon,
+  type AccountWithUpToDateCheck,
+} from "@ledgerhq/live-common/bridge/react/index";
 
-export interface AccountWithUpToDateCheck {
-  account: Account;
-  isUpToDate?: boolean;
-}
+export type { AccountWithUpToDateCheck };
 
 export interface AccountsSyncStatus {
   allAccounts: AccountWithUpToDateCheck["account"][];
@@ -12,30 +12,19 @@ export interface AccountsSyncStatus {
   areAllAccountsUpToDate: boolean;
 }
 
-/**
- * Derives sync status from accounts with up-to-date check:
- * which accounts have errors and whether all are up to date.
- */
 export function useAccountsSyncStatus(
   accountsWithUpToDateCheck: AccountWithUpToDateCheck[],
 ): AccountsSyncStatus {
-  const allAccounts = accountsWithUpToDateCheck.map(item => item.account);
-  const isUpToDateByAccountId = new Map(
-    accountsWithUpToDateCheck.map(item => [item.account.id, item.isUpToDate === true]),
-  );
+  const { allAccounts, accountsWithError, areAllAccountsUpToDate } =
+    useAccountsSyncStatusCommon(accountsWithUpToDateCheck);
 
-  const batchState = useBatchAccountsSyncState({ accounts: allAccounts });
-  const errorTickersSet = new Set<string>();
-  for (const { syncState, account } of batchState) {
-    if (syncState.pending) continue;
-    const isUpToDate = isUpToDateByAccountId.get(account.id);
-    if (syncState.error || !isUpToDate) {
+  const listOfErrorAccountNames = useMemo(() => {
+    const errorTickersSet = new Set<string>();
+    for (const account of accountsWithError) {
       errorTickersSet.add(account.currency.ticker);
     }
-  }
-
-  const listOfErrorAccountNames = [...errorTickersSet].join("/");
-  const areAllAccountsUpToDate = errorTickersSet.size === 0;
+    return [...errorTickersSet].join("/");
+  }, [accountsWithError]);
 
   return {
     allAccounts,

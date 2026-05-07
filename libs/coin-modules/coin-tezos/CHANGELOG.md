@@ -1,5 +1,345 @@
 # @ledgerhq/coin-tezos
 
+## 7.0.0
+
+### Major Changes
+
+- [#16500](https://github.com/LedgerHQ/ledger-live/pull/16500) [`9b05536`](https://github.com/LedgerHQ/ledger-live/commit/9b05536cbd86ab15f4a54536bc273cfe9ea6875a) Thanks [@UmbrellaHoodies](https://github.com/UmbrellaHoodies)! - extend TzKT network types with staking account and operation fields
+
+- [#16537](https://github.com/LedgerHQ/ledger-live/pull/16537) [`53a5fb1`](https://github.com/LedgerHQ/ledger-live/commit/53a5fb111b6a6ec4b2c9faa031ff034321b1e7a7) Thanks [@UmbrellaHoodies](https://github.com/UmbrellaHoodies)! - feat(coin-tezos): add new operation modes (stake, unstake, finalize_unstake)
+
+### Patch Changes
+
+- Updated dependencies [[`fbff5f4`](https://github.com/LedgerHQ/ledger-live/commit/fbff5f407027cb2b24834fea53ef21a3ef93bf95), [`e377079`](https://github.com/LedgerHQ/ledger-live/commit/e3770793670b73d4409bd5be2081ca922e8679ac), [`45e134c`](https://github.com/LedgerHQ/ledger-live/commit/45e134c63f204444a5997109f4807447f51469ee)]:
+  - @ledgerhq/types-live@6.106.0
+  - @ledgerhq/ledger-wallet-framework@1.3.1
+  - @ledgerhq/cryptoassets@13.46.1
+
+## 7.0.0-next.0
+
+### Major Changes
+
+- [#16500](https://github.com/LedgerHQ/ledger-live/pull/16500) [`9b05536`](https://github.com/LedgerHQ/ledger-live/commit/9b05536cbd86ab15f4a54536bc273cfe9ea6875a) Thanks [@UmbrellaHoodies](https://github.com/UmbrellaHoodies)! - extend TzKT network types with staking account and operation fields
+
+- [#16537](https://github.com/LedgerHQ/ledger-live/pull/16537) [`53a5fb1`](https://github.com/LedgerHQ/ledger-live/commit/53a5fb111b6a6ec4b2c9faa031ff034321b1e7a7) Thanks [@UmbrellaHoodies](https://github.com/UmbrellaHoodies)! - feat(coin-tezos): add new operation modes (stake, unstake, finalize_unstake)
+
+### Patch Changes
+
+- Updated dependencies [[`fbff5f4`](https://github.com/LedgerHQ/ledger-live/commit/fbff5f407027cb2b24834fea53ef21a3ef93bf95), [`e377079`](https://github.com/LedgerHQ/ledger-live/commit/e3770793670b73d4409bd5be2081ca922e8679ac), [`45e134c`](https://github.com/LedgerHQ/ledger-live/commit/45e134c63f204444a5997109f4807447f51469ee)]:
+  - @ledgerhq/types-live@6.106.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.3.1-next.0
+  - @ledgerhq/cryptoassets@13.46.1-next.0
+
+## 6.22.0
+
+### Minor Changes
+
+- [#15887](https://github.com/LedgerHQ/ledger-live/pull/15887) [`5fefc2e`](https://github.com/LedgerHQ/ledger-live/commit/5fefc2e6a4c6e4fdcaae0139f2f8d6f9011b33c8) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - Remove @ledgerhq/types-cryptoassets dependency from coin-framework by replacing CryptoCurrency parameters with currencyId strings in CoinConfig and getCurrencyConfiguration
+
+- [#15974](https://github.com/LedgerHQ/ledger-live/pull/15974) [`7aa0706`](https://github.com/LedgerHQ/ledger-live/commit/7aa070618866e7a4c70876e674f07fde9630ccfb) Thanks [@qperrot](https://github.com/qperrot)! - Feat: Add support for tz2 (secp256k1) Tezos accounts in add account and signing flows, while preserving tz1 (Ed25519) as the default new account type
+
+- [#15823](https://github.com/LedgerHQ/ledger-live/pull/15823) [`24656de`](https://github.com/LedgerHQ/ledger-live/commit/24656dea461d4d99dcb5f5e2e4b4e949b0823eeb) Thanks [@Moustafa-Koterba](https://github.com/Moustafa-Koterba)! - Reduce redundant eth_call calls to node by implementing includeAssets from BalanceOptions
+
+- [#15679](https://github.com/LedgerHQ/ledger-live/pull/15679) [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore(coin-modules): add oxfmt with shared config (Prettier parity)
+
+  - Add libs/coin-modules/.oxfmtrc.json aligned with root .prettierrc and desktop/mobile oxfmt
+  - Add format, format:check, and run oxfmt before oxlint in lint:fix; add oxfmt devDependency
+  - Remove coin-ton prettier script; turbo format/format:check tasks
+  - Initial oxfmt pass on src
+
+- [#16068](https://github.com/LedgerHQ/ledger-live/pull/16068) [`8a4b151`](https://github.com/LedgerHQ/ledger-live/commit/8a4b1511dcac3bbd6066996aecd4dedbaf1f24c0) Thanks [@acewf](https://github.com/acewf)! - add craft transaction support for FA2 tokens
+
+- [#15983](https://github.com/LedgerHQ/ledger-live/pull/15983) [`cd59c95`](https://github.com/LedgerHQ/ledger-live/commit/cd59c95d04bd886114802ca887e1209d2191eaee) Thanks [@acewf](https://github.com/acewf)! - add FA2 Tokens support to list of operations
+
+- [#16057](https://github.com/LedgerHQ/ledger-live/pull/16057) [`e05af51`](https://github.com/LedgerHQ/ledger-live/commit/e05af511ba503a763acde2eb1ecc0e29b5ba3991) Thanks [@estrauser-ledger](https://github.com/estrauser-ledger)! - add fields to delegate txs in tezos getBlock
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+### Patch Changes
+
+- Updated dependencies [[`ad5a37d`](https://github.com/LedgerHQ/ledger-live/commit/ad5a37d077dced734defcd464f120825e7bbf5e9), [`2d5c7e0`](https://github.com/LedgerHQ/ledger-live/commit/2d5c7e0cc27f45babe247b39b513d4e848707b01), [`7aa0706`](https://github.com/LedgerHQ/ledger-live/commit/7aa070618866e7a4c70876e674f07fde9630ccfb), [`3b83607`](https://github.com/LedgerHQ/ledger-live/commit/3b83607a045142a8408784c92b57d8bde01445df), [`24656de`](https://github.com/LedgerHQ/ledger-live/commit/24656dea461d4d99dcb5f5e2e4b4e949b0823eeb), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`139cdbf`](https://github.com/LedgerHQ/ledger-live/commit/139cdbfd48120247ff54f5f7863ce866a6a755d0), [`4cf9b8c`](https://github.com/LedgerHQ/ledger-live/commit/4cf9b8cde388aebfe04a894e9a35584856d1713d), [`97d7278`](https://github.com/LedgerHQ/ledger-live/commit/97d727824cef6a5b5a2d034d9b029e4f977f1754), [`63b5b9a`](https://github.com/LedgerHQ/ledger-live/commit/63b5b9a3f3b88fa41f02983350cdb6e73a887839), [`46e78cf`](https://github.com/LedgerHQ/ledger-live/commit/46e78cf3a057a9de39a5abbb49fe779655db6507), [`cd59c95`](https://github.com/LedgerHQ/ledger-live/commit/cd59c95d04bd886114802ca887e1209d2191eaee), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21)]:
+  - @ledgerhq/cryptoassets@13.46.0
+  - @ledgerhq/types-live@6.105.0
+  - @ledgerhq/ledger-wallet-framework@1.3.0
+  - @ledgerhq/errors@6.34.0
+  - @ledgerhq/live-network@2.5.1
+  - @ledgerhq/devices@8.14.1
+
+## 6.22.0-next.0
+
+### Minor Changes
+
+- [#15887](https://github.com/LedgerHQ/ledger-live/pull/15887) [`5fefc2e`](https://github.com/LedgerHQ/ledger-live/commit/5fefc2e6a4c6e4fdcaae0139f2f8d6f9011b33c8) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - Remove @ledgerhq/types-cryptoassets dependency from coin-framework by replacing CryptoCurrency parameters with currencyId strings in CoinConfig and getCurrencyConfiguration
+
+- [#15974](https://github.com/LedgerHQ/ledger-live/pull/15974) [`7aa0706`](https://github.com/LedgerHQ/ledger-live/commit/7aa070618866e7a4c70876e674f07fde9630ccfb) Thanks [@qperrot](https://github.com/qperrot)! - Feat: Add support for tz2 (secp256k1) Tezos accounts in add account and signing flows, while preserving tz1 (Ed25519) as the default new account type
+
+- [#15823](https://github.com/LedgerHQ/ledger-live/pull/15823) [`24656de`](https://github.com/LedgerHQ/ledger-live/commit/24656dea461d4d99dcb5f5e2e4b4e949b0823eeb) Thanks [@Moustafa-Koterba](https://github.com/Moustafa-Koterba)! - Reduce redundant eth_call calls to node by implementing includeAssets from BalanceOptions
+
+- [#15679](https://github.com/LedgerHQ/ledger-live/pull/15679) [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore(coin-modules): add oxfmt with shared config (Prettier parity)
+
+  - Add libs/coin-modules/.oxfmtrc.json aligned with root .prettierrc and desktop/mobile oxfmt
+  - Add format, format:check, and run oxfmt before oxlint in lint:fix; add oxfmt devDependency
+  - Remove coin-ton prettier script; turbo format/format:check tasks
+  - Initial oxfmt pass on src
+
+- [#16068](https://github.com/LedgerHQ/ledger-live/pull/16068) [`8a4b151`](https://github.com/LedgerHQ/ledger-live/commit/8a4b1511dcac3bbd6066996aecd4dedbaf1f24c0) Thanks [@acewf](https://github.com/acewf)! - add craft transaction support for FA2 tokens
+
+- [#15983](https://github.com/LedgerHQ/ledger-live/pull/15983) [`cd59c95`](https://github.com/LedgerHQ/ledger-live/commit/cd59c95d04bd886114802ca887e1209d2191eaee) Thanks [@acewf](https://github.com/acewf)! - add FA2 Tokens support to list of operations
+
+- [#16057](https://github.com/LedgerHQ/ledger-live/pull/16057) [`e05af51`](https://github.com/LedgerHQ/ledger-live/commit/e05af511ba503a763acde2eb1ecc0e29b5ba3991) Thanks [@estrauser-ledger](https://github.com/estrauser-ledger)! - add fields to delegate txs in tezos getBlock
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+### Patch Changes
+
+- Updated dependencies [[`ad5a37d`](https://github.com/LedgerHQ/ledger-live/commit/ad5a37d077dced734defcd464f120825e7bbf5e9), [`2d5c7e0`](https://github.com/LedgerHQ/ledger-live/commit/2d5c7e0cc27f45babe247b39b513d4e848707b01), [`7aa0706`](https://github.com/LedgerHQ/ledger-live/commit/7aa070618866e7a4c70876e674f07fde9630ccfb), [`3b83607`](https://github.com/LedgerHQ/ledger-live/commit/3b83607a045142a8408784c92b57d8bde01445df), [`24656de`](https://github.com/LedgerHQ/ledger-live/commit/24656dea461d4d99dcb5f5e2e4b4e949b0823eeb), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`139cdbf`](https://github.com/LedgerHQ/ledger-live/commit/139cdbfd48120247ff54f5f7863ce866a6a755d0), [`4cf9b8c`](https://github.com/LedgerHQ/ledger-live/commit/4cf9b8cde388aebfe04a894e9a35584856d1713d), [`97d7278`](https://github.com/LedgerHQ/ledger-live/commit/97d727824cef6a5b5a2d034d9b029e4f977f1754), [`63b5b9a`](https://github.com/LedgerHQ/ledger-live/commit/63b5b9a3f3b88fa41f02983350cdb6e73a887839), [`46e78cf`](https://github.com/LedgerHQ/ledger-live/commit/46e78cf3a057a9de39a5abbb49fe779655db6507), [`cd59c95`](https://github.com/LedgerHQ/ledger-live/commit/cd59c95d04bd886114802ca887e1209d2191eaee), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21)]:
+  - @ledgerhq/cryptoassets@13.46.0-next.0
+  - @ledgerhq/types-live@6.105.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.3.0-next.0
+  - @ledgerhq/errors@6.34.0-next.0
+  - @ledgerhq/live-network@2.5.1-next.0
+  - @ledgerhq/devices@8.14.1-next.0
+
+## 6.21.0
+
+### Minor Changes
+
+- [#15887](https://github.com/LedgerHQ/ledger-live/pull/15887) [`5fefc2e`](https://github.com/LedgerHQ/ledger-live/commit/5fefc2e6a4c6e4fdcaae0139f2f8d6f9011b33c8) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - Remove @ledgerhq/types-cryptoassets dependency from coin-framework by replacing CryptoCurrency parameters with currencyId strings in CoinConfig and getCurrencyConfiguration
+
+- [#15850](https://github.com/LedgerHQ/ledger-live/pull/15850) [`46ea96a`](https://github.com/LedgerHQ/ledger-live/commit/46ea96aa050468d2d1b7aea8d03af47b8933e3a1) Thanks [@estrauser-ledger](https://github.com/estrauser-ledger)! - Add delegates in tezos getBlock for alpaca
+
+- [#15861](https://github.com/LedgerHQ/ledger-live/pull/15861) [`ea43cc3`](https://github.com/LedgerHQ/ledger-live/commit/ea43cc3bcd85e0592fea91a671cb396f4c784d17) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(llc): align Tezos signer in `generic-alpaca`
+
+- [#15733](https://github.com/LedgerHQ/ledger-live/pull/15733) [`aecdaf7`](https://github.com/LedgerHQ/ledger-live/commit/aecdaf7b2c659da87cfbc19efed4a6e392f9ac34) Thanks [@acewf](https://github.com/acewf)! - Update getBalance to include FA2 token balances
+
+- [#15679](https://github.com/LedgerHQ/ledger-live/pull/15679) [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore(coin-modules): add oxfmt with shared config (Prettier parity)
+
+  - Add libs/coin-modules/.oxfmtrc.json aligned with root .prettierrc and desktop/mobile oxfmt
+  - Add format, format:check, and run oxfmt before oxlint in lint:fix; add oxfmt devDependency
+  - Remove coin-ton prettier script; turbo format/format:check tasks
+  - Initial oxfmt pass on src
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+### Patch Changes
+
+- Updated dependencies [[`24e8f80`](https://github.com/LedgerHQ/ledger-live/commit/24e8f80dc314619f954e6966aff8698591d6e05e), [`ea34195`](https://github.com/LedgerHQ/ledger-live/commit/ea34195c1115aaa40c69259ee2d2ee581e0349ab), [`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71), [`53df748`](https://github.com/LedgerHQ/ledger-live/commit/53df74819753f084ed3df4a2ab9082d398b54920), [`9413def`](https://github.com/LedgerHQ/ledger-live/commit/9413def2fb1eccfc0ec8ce38bbcaf982981a0dd9), [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8), [`2ece647`](https://github.com/LedgerHQ/ledger-live/commit/2ece647f386e40f261662fc6e4e6624f302ee34f), [`55c01bc`](https://github.com/LedgerHQ/ledger-live/commit/55c01bcd8e43f9a54e93a41bb383d6d5c633b35f), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21)]:
+  - @ledgerhq/types-live@6.104.0
+  - @ledgerhq/errors@6.33.0
+  - @ledgerhq/ledger-wallet-framework@1.2.0
+  - @ledgerhq/cryptoassets@13.45.0
+  - @ledgerhq/devices@8.14.0
+  - @ledgerhq/logs@6.17.0
+  - @ledgerhq/live-network@2.5.0
+
+## 6.21.0-next.0
+
+### Minor Changes
+
+- [#15887](https://github.com/LedgerHQ/ledger-live/pull/15887) [`5fefc2e`](https://github.com/LedgerHQ/ledger-live/commit/5fefc2e6a4c6e4fdcaae0139f2f8d6f9011b33c8) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - Remove @ledgerhq/types-cryptoassets dependency from coin-framework by replacing CryptoCurrency parameters with currencyId strings in CoinConfig and getCurrencyConfiguration
+
+- [#15850](https://github.com/LedgerHQ/ledger-live/pull/15850) [`46ea96a`](https://github.com/LedgerHQ/ledger-live/commit/46ea96aa050468d2d1b7aea8d03af47b8933e3a1) Thanks [@estrauser-ledger](https://github.com/estrauser-ledger)! - Add delegates in tezos getBlock for alpaca
+
+- [#15861](https://github.com/LedgerHQ/ledger-live/pull/15861) [`ea43cc3`](https://github.com/LedgerHQ/ledger-live/commit/ea43cc3bcd85e0592fea91a671cb396f4c784d17) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(llc): align Tezos signer in `generic-alpaca`
+
+- [#15733](https://github.com/LedgerHQ/ledger-live/pull/15733) [`aecdaf7`](https://github.com/LedgerHQ/ledger-live/commit/aecdaf7b2c659da87cfbc19efed4a6e392f9ac34) Thanks [@acewf](https://github.com/acewf)! - Update getBalance to include FA2 token balances
+
+- [#15679](https://github.com/LedgerHQ/ledger-live/pull/15679) [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore(coin-modules): add oxfmt with shared config (Prettier parity)
+
+  - Add libs/coin-modules/.oxfmtrc.json aligned with root .prettierrc and desktop/mobile oxfmt
+  - Add format, format:check, and run oxfmt before oxlint in lint:fix; add oxfmt devDependency
+  - Remove coin-ton prettier script; turbo format/format:check tasks
+  - Initial oxfmt pass on src
+
+- [#15798](https://github.com/LedgerHQ/ledger-live/pull/15798) [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore: use `coin-module-framework` from npmjs and remove the now migrated `coin-framework`
+
+### Patch Changes
+
+- Updated dependencies [[`24e8f80`](https://github.com/LedgerHQ/ledger-live/commit/24e8f80dc314619f954e6966aff8698591d6e05e), [`ea34195`](https://github.com/LedgerHQ/ledger-live/commit/ea34195c1115aaa40c69259ee2d2ee581e0349ab), [`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71), [`53df748`](https://github.com/LedgerHQ/ledger-live/commit/53df74819753f084ed3df4a2ab9082d398b54920), [`9413def`](https://github.com/LedgerHQ/ledger-live/commit/9413def2fb1eccfc0ec8ce38bbcaf982981a0dd9), [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8), [`2ece647`](https://github.com/LedgerHQ/ledger-live/commit/2ece647f386e40f261662fc6e4e6624f302ee34f), [`55c01bc`](https://github.com/LedgerHQ/ledger-live/commit/55c01bcd8e43f9a54e93a41bb383d6d5c633b35f), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21)]:
+  - @ledgerhq/types-live@6.104.0-next.0
+  - @ledgerhq/errors@6.33.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.2.0-next.0
+  - @ledgerhq/cryptoassets@13.45.0-next.0
+  - @ledgerhq/devices@8.14.0-next.0
+  - @ledgerhq/logs@6.17.0-next.0
+  - @ledgerhq/live-network@2.5.0-next.0
+
+## 6.20.1
+
+### Patch Changes
+
+- Updated dependencies [[`4af828d`](https://github.com/LedgerHQ/ledger-live/commit/4af828d0790bb3568dd095f89dd9f239f7565e84), [`1bf4e7e`](https://github.com/LedgerHQ/ledger-live/commit/1bf4e7efa2fbb310f9c3db8f5d72e68294f0f3fe), [`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20), [`deec161`](https://github.com/LedgerHQ/ledger-live/commit/deec16153656d444336f067970dcda5fff016d95), [`e0de96e`](https://github.com/LedgerHQ/ledger-live/commit/e0de96e6311de7e34715784da5941e60ed5c51cc), [`41d172e`](https://github.com/LedgerHQ/ledger-live/commit/41d172e74bc074995b7290c4bb6d129276a484ff), [`c5c58e4`](https://github.com/LedgerHQ/ledger-live/commit/c5c58e4efab303a5b6bccc463f91241f4e0f72bc)]:
+  - @ledgerhq/coin-framework@7.1.0
+  - @ledgerhq/types-live@6.103.0
+  - @ledgerhq/cryptoassets@13.44.0
+  - @ledgerhq/ledger-wallet-framework@1.1.0
+  - @ledgerhq/live-network@2.4.3
+
+## 6.20.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`4af828d`](https://github.com/LedgerHQ/ledger-live/commit/4af828d0790bb3568dd095f89dd9f239f7565e84), [`1bf4e7e`](https://github.com/LedgerHQ/ledger-live/commit/1bf4e7efa2fbb310f9c3db8f5d72e68294f0f3fe), [`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20), [`deec161`](https://github.com/LedgerHQ/ledger-live/commit/deec16153656d444336f067970dcda5fff016d95), [`e0de96e`](https://github.com/LedgerHQ/ledger-live/commit/e0de96e6311de7e34715784da5941e60ed5c51cc), [`41d172e`](https://github.com/LedgerHQ/ledger-live/commit/41d172e74bc074995b7290c4bb6d129276a484ff), [`c5c58e4`](https://github.com/LedgerHQ/ledger-live/commit/c5c58e4efab303a5b6bccc463f91241f4e0f72bc)]:
+  - @ledgerhq/coin-framework@7.1.0-next.0
+  - @ledgerhq/types-live@6.103.0-next.0
+  - @ledgerhq/cryptoassets@13.44.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.1.0-next.0
+  - @ledgerhq/live-network@2.4.3-next.0
+
+## 6.20.0
+
+### Minor Changes
+
+- [#15291](https://github.com/LedgerHQ/ledger-live/pull/15291) [`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - feat: add `ledger-wallet-framework`
+
+- [#15332](https://github.com/LedgerHQ/ledger-live/pull/15332) [`99f1965`](https://github.com/LedgerHQ/ledger-live/commit/99f19651e5c3ada3c77ee84daf7ca7d26f3bb897) Thanks [@scavassa-yld](https://github.com/scavassa-yld)! - adding getblock to tezos
+
+### Patch Changes
+
+- Updated dependencies [[`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05), [`a270b43`](https://github.com/LedgerHQ/ledger-live/commit/a270b438bf8aca99b795679fecce1b55dc249c12), [`982d4af`](https://github.com/LedgerHQ/ledger-live/commit/982d4afbeb7faf3814c3e96ffb6e3e88b58dfe73), [`6dac7f9`](https://github.com/LedgerHQ/ledger-live/commit/6dac7f974c28dcae409c110a60061996490c5088), [`8ce1cb7`](https://github.com/LedgerHQ/ledger-live/commit/8ce1cb755b3e68c8688f9e828596d3c2605ef3cb), [`01c81b1`](https://github.com/LedgerHQ/ledger-live/commit/01c81b112ab326eff436f0f3279a1225c073f897), [`3ede91a`](https://github.com/LedgerHQ/ledger-live/commit/3ede91a3674a80c9309d305b871ec3b6e9849b41)]:
+  - @ledgerhq/coin-framework@7.0.0
+  - @ledgerhq/types-live@6.102.0
+  - @ledgerhq/devices@8.13.0
+  - @ledgerhq/errors@6.32.0
+  - @ledgerhq/cryptoassets@13.43.0
+  - @ledgerhq/ledger-wallet-framework@1.0.1
+  - @ledgerhq/live-network@2.4.2
+
+## 6.20.0-next.0
+
+### Minor Changes
+
+- [#15291](https://github.com/LedgerHQ/ledger-live/pull/15291) [`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - feat: add `ledger-wallet-framework`
+
+- [#15332](https://github.com/LedgerHQ/ledger-live/pull/15332) [`99f1965`](https://github.com/LedgerHQ/ledger-live/commit/99f19651e5c3ada3c77ee84daf7ca7d26f3bb897) Thanks [@scavassa-yld](https://github.com/scavassa-yld)! - adding getblock to tezos
+
+### Patch Changes
+
+- Updated dependencies [[`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05), [`a270b43`](https://github.com/LedgerHQ/ledger-live/commit/a270b438bf8aca99b795679fecce1b55dc249c12), [`982d4af`](https://github.com/LedgerHQ/ledger-live/commit/982d4afbeb7faf3814c3e96ffb6e3e88b58dfe73), [`6dac7f9`](https://github.com/LedgerHQ/ledger-live/commit/6dac7f974c28dcae409c110a60061996490c5088), [`8ce1cb7`](https://github.com/LedgerHQ/ledger-live/commit/8ce1cb755b3e68c8688f9e828596d3c2605ef3cb), [`01c81b1`](https://github.com/LedgerHQ/ledger-live/commit/01c81b112ab326eff436f0f3279a1225c073f897), [`3ede91a`](https://github.com/LedgerHQ/ledger-live/commit/3ede91a3674a80c9309d305b871ec3b6e9849b41)]:
+  - @ledgerhq/coin-framework@7.0.0-next.0
+  - @ledgerhq/types-live@6.102.0-next.0
+  - @ledgerhq/devices@8.13.0-next.0
+  - @ledgerhq/errors@6.32.0-next.0
+  - @ledgerhq/cryptoassets@13.43.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.0.1-next.0
+  - @ledgerhq/live-network@2.4.2-next.0
+
+## 6.19.0
+
+### Minor Changes
+
+- [#15304](https://github.com/LedgerHQ/ledger-live/pull/15304) [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Bump Node.js runtime to 24. Proto/toolchain and pnpm catalog use Node 24 and @types/node 24; engines and .nvmrc updated. TSConfig lib set to ES2022 where needed; Jest configs updated for ESM (imports, \_\_dirname, createRequire). CI: Linux build deps in setup-caches/setup-build-desktop; optional native deps (cpu-features, node-hid, usb, unrs-resolver) removed from onlyBuiltDependencies so install succeeds.
+
+- [#15274](https://github.com/LedgerHQ/ledger-live/pull/15274) [`cc5742f`](https://github.com/LedgerHQ/ledger-live/commit/cc5742f2da4a52b549bd127284a90d865b7565a0) Thanks [@qperrot](https://github.com/qperrot)! - Fix: remove some dead code
+
+- [#15242](https://github.com/LedgerHQ/ledger-live/pull/15242) [`7038137`](https://github.com/LedgerHQ/ledger-live/commit/703813747349288325fdc661637644d980073b9d) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - refactor(coin-framework): move functions to `AlpacaApi`
+
+- [#15237](https://github.com/LedgerHQ/ledger-live/pull/15237) [`312d92d`](https://github.com/LedgerHQ/ledger-live/commit/312d92dbd9d115a2ec6ad6628445c31d45806aea) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - refactor(coin-framework): duplicate `BroadcastConfig` inside coin framework
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025), [`ffb3c46`](https://github.com/LedgerHQ/ledger-live/commit/ffb3c46acd292b9ac0f46a2b84509d02775a5f20), [`7cbfb7d`](https://github.com/LedgerHQ/ledger-live/commit/7cbfb7dd2d52ad8380ab4d37b02f63292699cd68), [`bfa4315`](https://github.com/LedgerHQ/ledger-live/commit/bfa4315d2f3b4b95c5a742ffd6e05272662f4550), [`17e1fb3`](https://github.com/LedgerHQ/ledger-live/commit/17e1fb3fdb92d6dab9af72adcbcde62bdd772a71), [`75dfb86`](https://github.com/LedgerHQ/ledger-live/commit/75dfb86c871a026aa90136d0184637878d484484), [`7038137`](https://github.com/LedgerHQ/ledger-live/commit/703813747349288325fdc661637644d980073b9d), [`e6f26e0`](https://github.com/LedgerHQ/ledger-live/commit/e6f26e0f475763aaf3271e2d4ed6cf36fb1f5060), [`42bf9b7`](https://github.com/LedgerHQ/ledger-live/commit/42bf9b7c40c04c7d2eeffba30b778be0b123bfd0), [`164788e`](https://github.com/LedgerHQ/ledger-live/commit/164788e4a7e9c063d7769d44393708632854cb0a), [`9f559e9`](https://github.com/LedgerHQ/ledger-live/commit/9f559e98a1af37073e0e79ee5bb54b4aaecfb8c4), [`312d92d`](https://github.com/LedgerHQ/ledger-live/commit/312d92dbd9d115a2ec6ad6628445c31d45806aea), [`08ee941`](https://github.com/LedgerHQ/ledger-live/commit/08ee9414908ec1f7489493c98b9a823a20cce550), [`173946c`](https://github.com/LedgerHQ/ledger-live/commit/173946ce652ffef216f04d82b680b14f5686500e), [`70f6288`](https://github.com/LedgerHQ/ledger-live/commit/70f6288597722a1e8fd6b5884d843f27be87e9d8), [`ad66568`](https://github.com/LedgerHQ/ledger-live/commit/ad66568fd9c96cfa08d11123a711e3fa79705f65), [`79f2f0e`](https://github.com/LedgerHQ/ledger-live/commit/79f2f0e3e8b8089664d2aee7c3dd25c7685aec2c), [`4cc02f3`](https://github.com/LedgerHQ/ledger-live/commit/4cc02f3c1ba0bdb93917b5427a375ab44cd5d208), [`37bc15e`](https://github.com/LedgerHQ/ledger-live/commit/37bc15e245107ce1044f36b57d191552a77329e6)]:
+  - @ledgerhq/cryptoassets@13.42.0
+  - @ledgerhq/devices@8.12.0
+  - @ledgerhq/errors@6.31.0
+  - @ledgerhq/logs@6.16.0
+  - @ledgerhq/types-live@6.101.0
+  - @ledgerhq/coin-framework@6.20.0
+  - @ledgerhq/live-network@2.4.1
+
+## 6.19.0-next.0
+
+### Minor Changes
+
+- [#15304](https://github.com/LedgerHQ/ledger-live/pull/15304) [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Bump Node.js runtime to 24. Proto/toolchain and pnpm catalog use Node 24 and @types/node 24; engines and .nvmrc updated. TSConfig lib set to ES2022 where needed; Jest configs updated for ESM (imports, \_\_dirname, createRequire). CI: Linux build deps in setup-caches/setup-build-desktop; optional native deps (cpu-features, node-hid, usb, unrs-resolver) removed from onlyBuiltDependencies so install succeeds.
+
+- [#15274](https://github.com/LedgerHQ/ledger-live/pull/15274) [`cc5742f`](https://github.com/LedgerHQ/ledger-live/commit/cc5742f2da4a52b549bd127284a90d865b7565a0) Thanks [@qperrot](https://github.com/qperrot)! - Fix: remove some dead code
+
+- [#15242](https://github.com/LedgerHQ/ledger-live/pull/15242) [`7038137`](https://github.com/LedgerHQ/ledger-live/commit/703813747349288325fdc661637644d980073b9d) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - refactor(coin-framework): move functions to `AlpacaApi`
+
+- [#15237](https://github.com/LedgerHQ/ledger-live/pull/15237) [`312d92d`](https://github.com/LedgerHQ/ledger-live/commit/312d92dbd9d115a2ec6ad6628445c31d45806aea) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - refactor(coin-framework): duplicate `BroadcastConfig` inside coin framework
+
+### Patch Changes
+
+- Updated dependencies [[`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025), [`ffb3c46`](https://github.com/LedgerHQ/ledger-live/commit/ffb3c46acd292b9ac0f46a2b84509d02775a5f20), [`7cbfb7d`](https://github.com/LedgerHQ/ledger-live/commit/7cbfb7dd2d52ad8380ab4d37b02f63292699cd68), [`bfa4315`](https://github.com/LedgerHQ/ledger-live/commit/bfa4315d2f3b4b95c5a742ffd6e05272662f4550), [`17e1fb3`](https://github.com/LedgerHQ/ledger-live/commit/17e1fb3fdb92d6dab9af72adcbcde62bdd772a71), [`75dfb86`](https://github.com/LedgerHQ/ledger-live/commit/75dfb86c871a026aa90136d0184637878d484484), [`7038137`](https://github.com/LedgerHQ/ledger-live/commit/703813747349288325fdc661637644d980073b9d), [`e6f26e0`](https://github.com/LedgerHQ/ledger-live/commit/e6f26e0f475763aaf3271e2d4ed6cf36fb1f5060), [`42bf9b7`](https://github.com/LedgerHQ/ledger-live/commit/42bf9b7c40c04c7d2eeffba30b778be0b123bfd0), [`164788e`](https://github.com/LedgerHQ/ledger-live/commit/164788e4a7e9c063d7769d44393708632854cb0a), [`9f559e9`](https://github.com/LedgerHQ/ledger-live/commit/9f559e98a1af37073e0e79ee5bb54b4aaecfb8c4), [`312d92d`](https://github.com/LedgerHQ/ledger-live/commit/312d92dbd9d115a2ec6ad6628445c31d45806aea), [`08ee941`](https://github.com/LedgerHQ/ledger-live/commit/08ee9414908ec1f7489493c98b9a823a20cce550), [`173946c`](https://github.com/LedgerHQ/ledger-live/commit/173946ce652ffef216f04d82b680b14f5686500e), [`70f6288`](https://github.com/LedgerHQ/ledger-live/commit/70f6288597722a1e8fd6b5884d843f27be87e9d8), [`ad66568`](https://github.com/LedgerHQ/ledger-live/commit/ad66568fd9c96cfa08d11123a711e3fa79705f65), [`79f2f0e`](https://github.com/LedgerHQ/ledger-live/commit/79f2f0e3e8b8089664d2aee7c3dd25c7685aec2c), [`4cc02f3`](https://github.com/LedgerHQ/ledger-live/commit/4cc02f3c1ba0bdb93917b5427a375ab44cd5d208), [`37bc15e`](https://github.com/LedgerHQ/ledger-live/commit/37bc15e245107ce1044f36b57d191552a77329e6)]:
+  - @ledgerhq/cryptoassets@13.42.0-next.0
+  - @ledgerhq/devices@8.12.0-next.0
+  - @ledgerhq/errors@6.31.0-next.0
+  - @ledgerhq/logs@6.16.0-next.0
+  - @ledgerhq/types-live@6.101.0-next.0
+  - @ledgerhq/coin-framework@6.20.0-next.0
+  - @ledgerhq/live-network@2.4.1-next.0
+
+## 6.18.0
+
+### Minor Changes
+
+- [#14455](https://github.com/LedgerHQ/ledger-live/pull/14455) [`9f9ae16`](https://github.com/LedgerHQ/ledger-live/commit/9f9ae16843e5db339c1d40c844a66f75fff498fb) Thanks [@jprudent](https://github.com/jprudent)! - Implement feePayer on operations for sui, hedera, xrp, tezos, stellar, tron
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`748b933`](https://github.com/LedgerHQ/ledger-live/commit/748b933f3786e48ec9dd434c76263c2c9a642c99), [`0dbbca3`](https://github.com/LedgerHQ/ledger-live/commit/0dbbca3f0226347b5abc034a066fe4ad89bfe462), [`9f9ae16`](https://github.com/LedgerHQ/ledger-live/commit/9f9ae16843e5db339c1d40c844a66f75fff498fb), [`ba4d56f`](https://github.com/LedgerHQ/ledger-live/commit/ba4d56fa223b87b89d621de2d1885c5a55922ef4), [`697f2e6`](https://github.com/LedgerHQ/ledger-live/commit/697f2e6f5b24ff023a46cbbbf5c9f85bac90a4c4), [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/types-live@6.100.0
+  - @ledgerhq/errors@6.30.0
+  - @ledgerhq/coin-framework@6.19.0
+  - @ledgerhq/cryptoassets@13.41.0
+  - @ledgerhq/devices@8.11.0
+  - @ledgerhq/logs@6.15.0
+  - @ledgerhq/live-network@2.4.0
+
+## 6.18.0-next.0
+
+### Minor Changes
+
+- [#14455](https://github.com/LedgerHQ/ledger-live/pull/14455) [`9f9ae16`](https://github.com/LedgerHQ/ledger-live/commit/9f9ae16843e5db339c1d40c844a66f75fff498fb) Thanks [@jprudent](https://github.com/jprudent)! - Implement feePayer on operations for sui, hedera, xrp, tezos, stellar, tron
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`748b933`](https://github.com/LedgerHQ/ledger-live/commit/748b933f3786e48ec9dd434c76263c2c9a642c99), [`0dbbca3`](https://github.com/LedgerHQ/ledger-live/commit/0dbbca3f0226347b5abc034a066fe4ad89bfe462), [`9f9ae16`](https://github.com/LedgerHQ/ledger-live/commit/9f9ae16843e5db339c1d40c844a66f75fff498fb), [`ba4d56f`](https://github.com/LedgerHQ/ledger-live/commit/ba4d56fa223b87b89d621de2d1885c5a55922ef4), [`697f2e6`](https://github.com/LedgerHQ/ledger-live/commit/697f2e6f5b24ff023a46cbbbf5c9f85bac90a4c4), [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/types-live@6.100.0-next.0
+  - @ledgerhq/errors@6.30.0-next.0
+  - @ledgerhq/coin-framework@6.19.0-next.0
+  - @ledgerhq/cryptoassets@13.41.0-next.0
+  - @ledgerhq/devices@8.11.0-next.0
+  - @ledgerhq/logs@6.15.0-next.0
+  - @ledgerhq/live-network@2.4.0-next.0
+
+## 6.17.0
+
+### Minor Changes
+
+- [#14693](https://github.com/LedgerHQ/ledger-live/pull/14693) [`f784ce4`](https://github.com/LedgerHQ/ledger-live/commit/f784ce4728dc467be64880ae110fe26ff459dab2) Thanks [@acewf](https://github.com/acewf)! - Change limit size for tzkt api request
+
+- [#13986](https://github.com/LedgerHQ/ledger-live/pull/13986) [`07fdf5a`](https://github.com/LedgerHQ/ledger-live/commit/07fdf5a4bcd12cb0cc5100389c8e355800d3aec0) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - Alpaca API cleanup and documentation
+
+### Patch Changes
+
+- Updated dependencies [[`a96dc83`](https://github.com/LedgerHQ/ledger-live/commit/a96dc83916684e22c041904c479c615a3095303b), [`e954c1e`](https://github.com/LedgerHQ/ledger-live/commit/e954c1e0f0e45efe3b0e8c3fda9e6d5b22b5bc01), [`e292df3`](https://github.com/LedgerHQ/ledger-live/commit/e292df30514168181545d7a572f723e31df78e77), [`17149ee`](https://github.com/LedgerHQ/ledger-live/commit/17149ee26eeef8a600d650a6f4903c52320a0d8d), [`07fdf5a`](https://github.com/LedgerHQ/ledger-live/commit/07fdf5a4bcd12cb0cc5100389c8e355800d3aec0), [`b7dec5c`](https://github.com/LedgerHQ/ledger-live/commit/b7dec5c2a41520114593701c82192ff8ae8ce06f), [`f51402e`](https://github.com/LedgerHQ/ledger-live/commit/f51402ebb8a4f05a933df3c3ef499756fbde5cc8), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d), [`c7ed360`](https://github.com/LedgerHQ/ledger-live/commit/c7ed36086280d60631e235d375cc2db5f60e8aab), [`cc4c8f5`](https://github.com/LedgerHQ/ledger-live/commit/cc4c8f57e38586d77b89f32d359e65cc700912af)]:
+  - @ledgerhq/types-live@6.99.0
+  - @ledgerhq/cryptoassets@13.40.0
+  - @ledgerhq/coin-framework@6.18.0
+  - @ledgerhq/live-network@2.3.0
+
+## 6.17.0-next.0
+
+### Minor Changes
+
+- [#14693](https://github.com/LedgerHQ/ledger-live/pull/14693) [`f784ce4`](https://github.com/LedgerHQ/ledger-live/commit/f784ce4728dc467be64880ae110fe26ff459dab2) Thanks [@acewf](https://github.com/acewf)! - Change limit size for tzkt api request
+
+- [#13986](https://github.com/LedgerHQ/ledger-live/pull/13986) [`07fdf5a`](https://github.com/LedgerHQ/ledger-live/commit/07fdf5a4bcd12cb0cc5100389c8e355800d3aec0) Thanks [@jnicoulaud-ledger](https://github.com/jnicoulaud-ledger)! - Alpaca API cleanup and documentation
+
+### Patch Changes
+
+- Updated dependencies [[`a96dc83`](https://github.com/LedgerHQ/ledger-live/commit/a96dc83916684e22c041904c479c615a3095303b), [`e954c1e`](https://github.com/LedgerHQ/ledger-live/commit/e954c1e0f0e45efe3b0e8c3fda9e6d5b22b5bc01), [`e292df3`](https://github.com/LedgerHQ/ledger-live/commit/e292df30514168181545d7a572f723e31df78e77), [`17149ee`](https://github.com/LedgerHQ/ledger-live/commit/17149ee26eeef8a600d650a6f4903c52320a0d8d), [`07fdf5a`](https://github.com/LedgerHQ/ledger-live/commit/07fdf5a4bcd12cb0cc5100389c8e355800d3aec0), [`b7dec5c`](https://github.com/LedgerHQ/ledger-live/commit/b7dec5c2a41520114593701c82192ff8ae8ce06f), [`f51402e`](https://github.com/LedgerHQ/ledger-live/commit/f51402ebb8a4f05a933df3c3ef499756fbde5cc8), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d), [`c7ed360`](https://github.com/LedgerHQ/ledger-live/commit/c7ed36086280d60631e235d375cc2db5f60e8aab), [`cc4c8f5`](https://github.com/LedgerHQ/ledger-live/commit/cc4c8f57e38586d77b89f32d359e65cc700912af)]:
+  - @ledgerhq/types-live@6.99.0-next.0
+  - @ledgerhq/cryptoassets@13.40.0-next.0
+  - @ledgerhq/coin-framework@6.18.0-next.0
+  - @ledgerhq/live-network@2.3.0-next.0
+
 ## 6.16.1
 
 ### Patch Changes

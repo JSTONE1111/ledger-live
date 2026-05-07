@@ -1,7 +1,7 @@
-import type { CeloTx, RLPEncodedTx, LegacyEncodedTx } from "../types";
 import { EvmSignature, EvmAddress } from "@ledgerhq/coin-evm/types/signer";
-import { LoadConfig, ResolutionConfig } from "@ledgerhq/hw-app-eth/lib/services/types";
+import { LoadConfig, ResolutionConfig } from "@ledgerhq/hw-app-eth/services/types";
 import { EIP712Message } from "@ledgerhq/types-live";
+import type { CeloTx, RLPEncodedTx, LegacyEncodedTx } from "../types";
 
 // TODO: this should use EvmSigner
 export interface CeloSigner {
@@ -11,7 +11,7 @@ export interface CeloSigner {
     boolChaincode?: boolean,
     chainId?: string,
   ) => Promise<EvmAddress>;
-  signTransaction: (path: string, rawTxHex: string, resolution?: any) => Promise<EvmSignature>;
+  signTransaction: (path: string, rawTxHex: string) => Promise<EvmSignature>;
   signPersonalMessage: (path: string, messageHex: string) => Promise<EvmSignature>;
   signEIP712Message(
     path: string,

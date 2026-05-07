@@ -1,10 +1,19 @@
+import { useLocation } from "react-router";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/walletFeaturesConfig/useWalletFeaturesConfig";
 import { TopBarSlot } from "../types";
 import { useActivityIndicator } from "./useActivityIndicator";
 import { useDiscreetMode } from "./useDiscreetMode";
+import { useExperimentalFeatures } from "./useExperimentalFeatures";
+import { useFeatureFlags } from "./useFeatureFlags";
 import { useMyLedger } from "./useMyLedger";
 import { useSettings } from "./useSettings";
+import { useInformationCenter } from "./useInformationCenter";
 
 const useTopBarViewModel = () => {
+  const { shouldDisplayOperationsList, shouldDisplayMyWallet, shouldDisplayAggregatedAssets } =
+    useWalletFeaturesConfig("desktop");
+  const { isOpen: isInformationCenterOpen, onRequestClose: onInformationCenterClose } =
+    useInformationCenter();
   const { handleDiscreet, discreetIcon, tooltip: discreetTooltip } = useDiscreetMode();
   const {
     hasAccounts,
@@ -12,11 +21,57 @@ const useTopBarViewModel = () => {
     isRotating,
     icon: activityIndicatorIcon,
     tooltip: activityIndicatorTooltip,
+    onTooltipShow: activityIndicatorOnTooltipShow,
   } = useActivityIndicator();
   const { handleSettings, settingsIcon, tooltip: settingsTooltip } = useSettings();
   const { handleMyLedger, tooltip: myLedgerTooltip, icon: myLedgerIcon } = useMyLedger();
+  const {
+    isVisible: isExperimentalVisible,
+    handleExperimental,
+    icon: experimentalIcon,
+    tooltip: experimentalTooltip,
+  } = useExperimentalFeatures();
+  const {
+    isVisible: isFeatureFlagsVisible,
+    handleFeatureFlags,
+    icon: featureFlagsIcon,
+    tooltip: featureFlagsTooltip,
+  } = useFeatureFlags();
+
+  const location = useLocation();
+  const inManager = location.pathname === "/manager";
 
   const topBarSlots: TopBarSlot[] = [
+    ...(isExperimentalVisible
+      ? [
+          {
+            type: "action" as const,
+            action: {
+              label: "experimental",
+              tooltip: experimentalTooltip,
+              icon: experimentalIcon,
+              isInteractive: true,
+              onClick: handleExperimental,
+              appearance: "accent" as const,
+            },
+          },
+        ]
+      : []),
+    ...(isFeatureFlagsVisible
+      ? [
+          {
+            type: "action" as const,
+            action: {
+              label: "feature flags",
+              tooltip: featureFlagsTooltip,
+              icon: featureFlagsIcon,
+              isInteractive: true,
+              onClick: handleFeatureFlags,
+              appearance: "accent" as const,
+            },
+          },
+        ]
+      : []),
     ...(hasAccounts
       ? [
           {
@@ -24,14 +79,16 @@ const useTopBarViewModel = () => {
             action: {
               label: "synchronize",
               tooltip: activityIndicatorTooltip,
+              tooltipClassName: "whitespace-pre-line max-w-md text-wrap break-words",
               icon: activityIndicatorIcon,
               isInteractive: !isRotating,
               onClick: handleSync,
+              onTooltipShow: activityIndicatorOnTooltipShow,
             },
           },
         ]
       : []),
-    { type: "notification" },
+    ...(shouldDisplayMyWallet ? [] : [{ type: "notification" as const }]),
     {
       type: "action",
       action: {
@@ -42,30 +99,39 @@ const useTopBarViewModel = () => {
         onClick: handleDiscreet,
       },
     },
-    {
-      type: "action",
-      action: {
-        label: "settings",
-        tooltip: settingsTooltip,
-        icon: settingsIcon,
-        isInteractive: true,
-        onClick: handleSettings,
-      },
-    },
-    {
-      type: "action",
-      action: {
-        label: "my ledger",
-        tooltip: myLedgerTooltip,
-        icon: myLedgerIcon,
-        isInteractive: true,
-        onClick: handleMyLedger,
-      },
-    },
+    ...(shouldDisplayOperationsList ? [{ type: "history" as const }] : []),
+    ...(shouldDisplayMyWallet
+      ? []
+      : [
+          {
+            type: "action" as const,
+            action: {
+              label: "settings",
+              tooltip: settingsTooltip,
+              icon: settingsIcon,
+              isInteractive: true,
+              onClick: handleSettings,
+            },
+          },
+          {
+            type: "action" as const,
+            action: {
+              label: "my ledger",
+              tooltip: myLedgerTooltip,
+              icon: myLedgerIcon,
+              isInteractive: true,
+              onClick: handleMyLedger,
+            },
+          },
+        ]),
   ];
 
   return {
     topBarSlots,
+    inManager,
+    isInformationCenterOpen,
+    onInformationCenterClose,
+    shouldDisplayAggregatedAssets,
   };
 };
 

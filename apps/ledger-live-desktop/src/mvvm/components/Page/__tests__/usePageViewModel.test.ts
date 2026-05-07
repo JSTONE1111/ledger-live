@@ -1,6 +1,6 @@
-import { act, renderHook } from "tests/testSetup";
+import { act, renderHook, withFlagOverrides } from "tests/testSetup";
 import { useLocation } from "react-router";
-import { INITIAL_STATE } from "~/renderer/reducers/settings";
+import { SCROLL_TO_TOP_EVENT } from "../constants";
 import { usePageViewModel } from "../usePageViewModel";
 
 jest.mock("react-router", () => ({
@@ -18,7 +18,6 @@ const createLocation = (pathname: string) => ({
 });
 
 const wallet40WithRightPanelFlags = {
-  ...INITIAL_STATE.overriddenFeatureFlags,
   lwdWallet40: { enabled: true, params: { mainNavigation: true } },
   ptxSwapLiveAppOnPortfolio: { enabled: true },
 };
@@ -31,12 +30,7 @@ describe("usePageViewModel", () => {
   it("computes shouldRenderRightPanel based on current pathname and feature flags", () => {
     mockedUseLocation.mockReturnValue(createLocation("/analytics"));
     const { result, rerender } = renderHook(() => usePageViewModel(), {
-      initialState: {
-        settings: {
-          ...INITIAL_STATE,
-          overriddenFeatureFlags: wallet40WithRightPanelFlags,
-        },
-      },
+      initialState: withFlagOverrides(wallet40WithRightPanelFlags),
     });
 
     expect(result.current.shouldRenderRightPanel).toBe(true);
@@ -50,12 +44,7 @@ describe("usePageViewModel", () => {
   it("tracks scroll state and scrolls to top on user action", () => {
     mockedUseLocation.mockReturnValue(createLocation("/"));
     const { result } = renderHook(() => usePageViewModel(), {
-      initialState: {
-        settings: {
-          ...INITIAL_STATE,
-          overriddenFeatureFlags: wallet40WithRightPanelFlags,
-        },
-      },
+      initialState: withFlagOverrides(wallet40WithRightPanelFlags),
     });
 
     let listener: ((event: Event) => void) | undefined;
@@ -90,6 +79,29 @@ describe("usePageViewModel", () => {
 
     act(() => {
       result.current.onClickScrollUp();
+    });
+
+    expect(scroller.scrollTo).toHaveBeenCalledWith({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+
+  it("scrolls to top with smooth behavior when SCROLL_TO_TOP_EVENT is dispatched", () => {
+    mockedUseLocation.mockReturnValue(createLocation("/"));
+    const { result } = renderHook(() => usePageViewModel(), {
+      initialState: withFlagOverrides(wallet40WithRightPanelFlags),
+    });
+
+    const scroller = document.createElement("div");
+    scroller.scrollTo = jest.fn();
+
+    act(() => {
+      result.current.pageScrollerRef(scroller);
+    });
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(SCROLL_TO_TOP_EVENT));
     });
 
     expect(scroller.scrollTo).toHaveBeenCalledWith({

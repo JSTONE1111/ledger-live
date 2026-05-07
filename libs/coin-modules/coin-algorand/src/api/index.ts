@@ -1,14 +1,17 @@
+import { rejectBalanceOptions } from "@ledgerhq/coin-module-framework/api/getBalance/rejectBalanceOptions";
 import {
-  Api,
+  AlpacaApi,
   Block,
+  CraftedTransaction,
   Cursor,
   Page,
-  Validator,
   Reward,
   Stake,
-  CraftedTransaction,
   TransactionIntent,
-} from "@ledgerhq/coin-framework/api/index";
+  Validator,
+  BalanceOptions,
+} from "@ledgerhq/coin-module-framework/api/index";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
 import coinConfig, { type AlgorandCoinConfig } from "../config";
 import {
   broadcast,
@@ -18,12 +21,13 @@ import {
   getBalance,
   getBlockInfo,
   lastBlock,
-  validateIntent,
   listOperations,
+  validateIntent,
 } from "../logic";
 import type { AlgorandMemo } from "../types";
+import { validateAddress } from "../validateAddress";
 
-export function createApi(config: AlgorandCoinConfig): Api<AlgorandMemo> {
+export function createApi(config: AlgorandCoinConfig): AlpacaApi<AlgorandMemo> {
   coinConfig.setCoinConfig(() => ({ ...config, status: { type: "active" } }));
 
   return {
@@ -31,7 +35,8 @@ export function createApi(config: AlgorandCoinConfig): Api<AlgorandMemo> {
     combine,
     craftTransaction: craftApiTransaction,
     estimateFees: (_transactionIntent: TransactionIntent<AlgorandMemo>) => estimateFees(),
-    getBalance,
+    getBalance: (address: string, options?: BalanceOptions) =>
+      rejectBalanceOptions(() => getBalance(address), options),
     getBlockInfo,
     lastBlock,
     listOperations,
@@ -39,8 +44,8 @@ export function createApi(config: AlgorandCoinConfig): Api<AlgorandMemo> {
     getBlock(_height: number): Promise<Block> {
       throw new Error("getBlock is not supported for Algorand");
     },
-    getSequence(_address: string): Promise<bigint> {
-      throw new Error("getSequence is not applicable for Algorand");
+    getNextSequence(_address: string): Promise<bigint> {
+      throw new Error("getNextSequence is not applicable for Algorand");
     },
     getStakes(_address: string, _cursor?: Cursor): Promise<Page<Stake>> {
       throw new Error("getStakes is not supported for Algorand");
@@ -59,5 +64,7 @@ export function createApi(config: AlgorandCoinConfig): Api<AlgorandMemo> {
     ): Promise<CraftedTransaction> => {
       throw new Error("craftRawTransaction is not supported for Algorand");
     },
+    validateAddress,
+    craftTransactionData,
   };
 }

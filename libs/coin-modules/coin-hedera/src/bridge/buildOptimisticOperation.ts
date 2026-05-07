@@ -1,8 +1,8 @@
+import { findSubAccountById } from "@ledgerhq/ledger-wallet-framework/account/helpers";
+import { encodeOperationId } from "@ledgerhq/ledger-wallet-framework/operation";
+import type { Account, Operation, OperationType, TokenAccount } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
 import invariant from "invariant";
-import type { Account, Operation, OperationType, TokenAccount } from "@ledgerhq/types-live";
-import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
-import { findSubAccountById } from "@ledgerhq/coin-framework/account/helpers";
 import { HEDERA_TRANSACTION_MODES, MAP_STAKING_MODE_TO_OPERATION_TYPE } from "../constants";
 import {
   safeParseAccountId,
@@ -53,7 +53,7 @@ const buildOptimisticCoinOperation = async ({
   transactionType?: OperationType;
 }): Promise<Operation> => {
   const fee =
-    transactionType === "FEES" ? transaction.amount : transaction.maxFee ?? new BigNumber(0);
+    transactionType === "FEES" ? transaction.amount : (transaction.maxFee ?? new BigNumber(0));
   const value = transaction.amount;
   const type: OperationType = transactionType ?? "OUT";
   const [_, recipientAddress] = await safeParseAccountId(transaction.recipient);

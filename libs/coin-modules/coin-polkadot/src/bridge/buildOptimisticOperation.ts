@@ -1,4 +1,4 @@
-import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
+import { encodeOperationId } from "@ledgerhq/ledger-wallet-framework/operation";
 import { OperationType } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
 import {
@@ -27,7 +27,7 @@ const MODE_TO_TYPE: Record<PolkadotOperationMode | "default", OperationType> = {
 const MODE_TO_PALLET_METHOD: Record<PolkadotOperationMode | "bondExtra" | "sendMax", PalletMethod> =
   {
     send: "balances.transferKeepAlive",
-    sendMax: "balances.transferAllowDeath",
+    sendMax: "balances.transferAll",
     bond: "staking.bond",
     bondExtra: "staking.bondExtra",
     unbond: "staking.unbond",

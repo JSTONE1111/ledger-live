@@ -1,4 +1,4 @@
-import { BigNumber } from "bignumber.js";
+import { formatCurrencyUnit } from "@ledgerhq/coin-module-framework/currencies/index";
 import {
   NotEnoughBalance,
   RecipientRequired,
@@ -7,16 +7,16 @@ import {
   InvalidAddressBecauseDestinationIsAlsoSource,
   AmountRequired,
 } from "@ledgerhq/errors";
+import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
+import { BigNumber } from "bignumber.js";
+import { IconDoMaxSendInstead } from "../../errors";
+import { getSendTransactionStatus, getTransactionStatus } from "../../getTransactionStatus";
 import * as logic from "../../logic";
 import { IconAccount, Transaction } from "../../types";
-import { getSendTransactionStatus, getTransactionStatus } from "../../getTransactionStatus";
-import { formatCurrencyUnit } from "@ledgerhq/coin-framework/currencies/index";
-import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
-import { IconDoMaxSendInstead } from "../../errors";
 
 jest.mock("../../logic");
 jest.mock("../../api");
-jest.mock("@ledgerhq/coin-framework/currencies/index");
+jest.mock("@ledgerhq/coin-module-framework/currencies/index");
 
 const mockedLogic = jest.mocked(logic);
 const mockedFormatCurrencyUnit = jest.mocked(formatCurrencyUnit);

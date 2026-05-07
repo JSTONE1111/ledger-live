@@ -9,7 +9,7 @@ import {
   WalletAPICustomHandlers,
   AccountIdFormatsResponse,
 } from "@ledgerhq/live-common/wallet-api/types";
-import { Account, AccountLike } from "@ledgerhq/types-live";
+import { AccountLike } from "@ledgerhq/types-live";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { track } from "~/analytics";
@@ -23,13 +23,14 @@ import { sendEarnLiveAppReady } from "../../../e2e/bridge/client";
 import { useSyncAccountById } from "~/screens/Swap/LiveApp/hooks/useSyncAccountById";
 import {
   getParentAccount,
+  isAccount,
   isTokenAccount,
   makeEmptyTokenAccount,
-} from "@ledgerhq/coin-framework/account/helpers";
+} from "@ledgerhq/ledger-wallet-framework/account/helpers";
 import {
   decodeTokenAccountIdSync,
   decodeTokenAccountId,
-} from "@ledgerhq/coin-framework/account/index";
+} from "@ledgerhq/ledger-wallet-framework/account/index";
 import { getAccountIdFromWalletAccountId } from "@ledgerhq/live-common/wallet-api/converters";
 import { getUpdateAccountWithUpdaterParams } from "@ledgerhq/live-common/exchange/swap/getUpdateAccountWithUpdaterParams";
 import { createCustomErrorClass } from "@ledgerhq/errors";
@@ -39,8 +40,14 @@ import { useRemoteLiveAppContext } from "@ledgerhq/live-common/platform/provider
 import { useLocalLiveAppContext } from "@ledgerhq/live-common/wallet-api/LocalLiveAppProvider/index";
 import { usesEncodedAccountIdFormat } from "@ledgerhq/live-common/wallet-api/utils/deriveAccountIdForManifest";
 import { updateAccountWithUpdater } from "~/actions/accounts";
+import { validateInfoDialogParams } from "@ledgerhq/live-common/wallet-api/validation/validateInfoDialogParams";
+import type { InfoDialogParams } from "@ledgerhq/live-common/wallet-api/validation/validateInfoDialogParams";
+import { makeSetEarnInfoBottomSheetAction, makeSetEarnMenuBottomSheetAction } from "~/actions/earn";
+import { createOpenActionDialogHandler } from "./actionDialogStore";
+import type { Dispatch } from "redux";
 import { useDispatch } from "~/context/hooks";
 import { ExchangeSwap } from "@ledgerhq/live-common/exchange/swap/types";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
 
 const DrawerClosedError = createCustomErrorClass("DrawerClosedError");
 const drawerClosedError = new DrawerClosedError("User closed the drawer");
@@ -69,6 +76,8 @@ export function useCustomExchangeHandlers({
   const deviceRef = useRef<Device | undefined>(undefined);
   const syncAccountById = useSyncAccountById();
   const dispatch = useDispatch();
+  const { isEnabled } = useWalletFeaturesConfig("mobile");
+  const flags = useMemo(() => ({ wallet40Ux: isEnabled }), [isEnabled]);
   const { state: liveAppRegistryState } = useRemoteLiveAppContext();
   const { state: localLiveAppState } = useLocalLiveAppContext();
 
@@ -93,13 +102,11 @@ export function useCustomExchangeHandlers({
       if (accountId.includes("+")) {
         const { accountId: parentAccountId } = decodeTokenAccountIdSync(accountId);
 
-        const parentAccount = accounts.find(
-          acc => acc.type === "Account" && acc.id === parentAccountId,
-        ) as Account | undefined;
+        const parentAccount = accounts.find(acc => isAccount(acc) && acc.id === parentAccountId);
 
         const { token } = await decodeTokenAccountId(accountId);
 
-        if (parentAccount && token) {
+        if (parentAccount && token && isAccount(parentAccount)) {
           return makeEmptyTokenAccount(parentAccount, token);
         }
       }
@@ -284,6 +291,9 @@ export function useCustomExchangeHandlers({
 
         return results;
       },
+      "custom.bottomSheet.info": createOpenInfoBottomSheetHandler(dispatch),
+      "custom.bottomSheet.menu": createOpenMenuBottomSheetHandler(dispatch),
+      "custom.dialog.confirmation": createOpenActionDialogHandler(dispatch),
     };
 
     return {
@@ -291,6 +301,7 @@ export function useCustomExchangeHandlers({
         accounts,
         tracking,
         manifest,
+        flags,
         uiHooks: {
           "custom.exchange.start": ({ exchangeParams, onSuccess, onCancel }) => {
             const promiseId = `start-${Date.now()}`;
@@ -357,13 +368,16 @@ export function useCustomExchangeHandlers({
 
                   if (result.error) {
                     onCancel(result.error);
-
-                    navigation.navigate(NavigatorName.SwapSubScreens, {
-                      screen: ScreenName.SwapCustomError,
-                      params: {
-                        error: result.error,
-                      },
-                    });
+                    if (onCompleteError) {
+                      onCompleteError(result.error);
+                    } else {
+                      navigation.navigate(NavigatorName.SwapSubScreens, {
+                        screen: ScreenName.SwapCustomError,
+                        params: {
+                          error: result.error,
+                        },
+                      });
+                    }
                   }
 
                   if (result.operation) {
@@ -383,12 +397,16 @@ export function useCustomExchangeHandlers({
               navigation.pop();
             }
 
-            navigation.navigate(NavigatorName.SwapSubScreens, {
-              screen: ScreenName.SwapCustomError,
-              params: {
-                error: error ?? unknownSwapError,
-              },
-            });
+            if (onCompleteError) {
+              onCompleteError(error ?? unknownSwapError);
+            } else {
+              navigation.navigate(NavigatorName.SwapSubScreens, {
+                screen: ScreenName.SwapCustomError,
+                params: {
+                  error: error ?? unknownSwapError,
+                },
+              });
+            }
           },
           "custom.isReady": async () => {
             if (Config.DETOX) {
@@ -475,6 +493,7 @@ export function useCustomExchangeHandlers({
     onCompleteError,
     onCompleteResult,
     handleLoaderDrawer,
+    flags,
     sendAppReady,
     syncAccountById,
     tracking,
@@ -488,4 +507,29 @@ export function useCustomExchangeHandlers({
 
 export function usePTXCustomHandlers(manifest: WebviewProps["manifest"], accounts: AccountLike[]) {
   return useCustomExchangeHandlers({ manifest, accounts, sendAppReady: sendEarnLiveAppReady });
+}
+
+export function createOpenInfoBottomSheetHandler(dispatch: Dispatch) {
+  return async (request: { params?: InfoDialogParams }) => {
+    const validated = validateInfoDialogParams(request.params, "custom.bottomSheet.info");
+    dispatch(makeSetEarnInfoBottomSheetAction(validated));
+  };
+}
+
+export function createOpenMenuBottomSheetHandler(dispatch: Dispatch) {
+  return async (request: {
+    params?: {
+      icon: string;
+      label: string;
+      metadata: { button: string; live_app: string; flow: string; link?: string };
+    }[];
+  }) => {
+    const { params } = request;
+
+    if (!params) {
+      throw new Error("Missing params for custom.bottomSheet.menu");
+    }
+
+    dispatch(makeSetEarnMenuBottomSheetAction(params));
+  };
 }

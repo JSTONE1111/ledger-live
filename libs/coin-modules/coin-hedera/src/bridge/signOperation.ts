@@ -1,9 +1,9 @@
-import { Observable } from "rxjs";
+import type { AssetInfo, FeeEstimation } from "@ledgerhq/coin-module-framework/api/types";
+import { findSubAccountById } from "@ledgerhq/ledger-wallet-framework/account/helpers";
+import type { SignerContext } from "@ledgerhq/ledger-wallet-framework/signer";
 import type { AccountBridge } from "@ledgerhq/types-live";
-import type { AssetInfo, FeeEstimation } from "@ledgerhq/coin-framework/api/types";
-import type { SignerContext } from "@ledgerhq/coin-framework/signer";
-import { findSubAccountById } from "@ledgerhq/coin-framework/account/helpers";
-import { buildOptimisticOperation } from "./buildOptimisticOperation";
+import { Observable } from "rxjs";
+import hederaCoinConfig from "../config";
 import { DEFAULT_GAS_LIMIT, HEDERA_TRANSACTION_MODES } from "../constants";
 import { combine } from "../logic/combine";
 import { craftTransaction } from "../logic/craftTransaction";
@@ -15,6 +15,7 @@ import {
   isStakingTransaction,
 } from "../logic/utils";
 import type { Transaction, HederaSigner, HederaTxData, HederaAccount } from "../types";
+import { buildOptimisticOperation } from "./buildOptimisticOperation";
 
 export const buildSignOperation =
   (
@@ -33,6 +34,7 @@ export const buildSignOperation =
           let data: HederaTxData | undefined;
           const accountAddress = account.freshAddress;
           const accountPublicKey = account.seedIdentifier;
+          const coinConfig = hederaCoinConfig.getCoinConfig(account.currency.id);
           const subAccount = findSubAccountById(account, transaction.subAccountId || "");
           const isHTSTokenTransaction =
             transaction.mode === HEDERA_TRANSACTION_MODES.Send &&
@@ -86,8 +88,8 @@ export const buildSignOperation =
             : undefined;
 
           const signedTx = await signerContext(deviceId, async signer => {
-            const { tx } = await craftTransaction(
-              {
+            const { tx } = await craftTransaction({
+              txIntent: {
                 intentType: "transaction",
                 type,
                 asset,
@@ -101,8 +103,9 @@ export const buildSignOperation =
                 },
                 ...(data && { data }),
               },
-              customFees,
-            );
+              ...(customFees && { customFees }),
+              config: coinConfig,
+            });
 
             const txBodyBytes = getHederaTransactionBodyBytes(tx);
             const signatureBytes = await signer.signTransaction(txBodyBytes);

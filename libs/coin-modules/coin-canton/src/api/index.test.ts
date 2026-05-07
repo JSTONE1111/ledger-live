@@ -1,15 +1,26 @@
+import { CantonCoinConfig } from "../config";
 import { createApi } from ".";
-import { CantonConfig } from "../config";
 
 describe("createApi", () => {
   it("should return every api methods", () => {
-    const api = createApi({} as CantonConfig);
-    expect(api.broadcast).toBeDefined();
-    expect(api.combine).toBeDefined();
-    expect(api.craftTransaction).toBeDefined();
-    expect(api.estimateFees).toBeDefined();
-    expect(api.getBalance).toBeDefined();
-    expect(api.lastBlock).toBeDefined();
-    expect(api.listOperations).toBeDefined();
+    expect(createApi({} as CantonCoinConfig)).toEqual({
+      broadcast: expect.any(Function),
+      combine: expect.any(Function),
+      craftTransaction: expect.any(Function),
+      estimateFees: expect.any(Function),
+      getBalance: expect.any(Function),
+      lastBlock: expect.any(Function),
+      listOperations: expect.any(Function),
+      getBlock: expect.any(Function),
+      getBlockInfo: expect.any(Function),
+      getNextSequence: expect.any(Function),
+      getRewards: expect.any(Function),
+      getStakes: expect.any(Function),
+      getValidators: expect.any(Function),
+      craftRawTransaction: expect.any(Function),
+      validateAddress: expect.any(Function),
+      validateIntent: expect.any(Function),
+      craftTransactionData: expect.any(Function),
+    });
   });
 });

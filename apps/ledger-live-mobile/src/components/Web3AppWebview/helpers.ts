@@ -1,12 +1,13 @@
 import { AppManifest, WalletAPIServer } from "@ledgerhq/live-common/wallet-api/types";
 import { getClientHeaders, getInitialURL } from "@ledgerhq/live-common/wallet-api/helpers";
+import { isUrlAllowedByManifestDomains } from "@ledgerhq/live-common/wallet-api/manifestDomainUtils";
 import {
   safeGetRefValue,
   ExchangeType,
   UiHook,
   useConfig,
   useWalletAPIServer,
-  CurrentAccountHistDB,
+  SetCurrentAccountHistDb,
   useCacheBustedLiveApps,
   useDAppManifestCurrencyIds,
 } from "@ledgerhq/live-common/wallet-api/react";
@@ -31,12 +32,22 @@ import { BaseNavigatorStackParamList } from "../RootNavigator/types/BaseNavigato
 import { mevProtectionSelector, trackingEnabledSelector } from "../../reducers/settings";
 import storage from "LLM/storage";
 import { track } from "../../analytics";
-import getOrCreateUser from "../../user";
+import { userIdSelector } from "@ledgerhq/client-ids/store";
 import { sendWalletAPIResponse } from "../../../e2e/bridge/client";
 import Config from "react-native-config";
+import { setOriginFlow } from "~/analytics/originFlow";
+import {
+  E2E_WEBVIEW_CONSOLE_LOG_TYPE,
+  E2E_WEBVIEW_NETWORK_LOG_TYPE,
+} from "../../e2e/webviewNetworkLogCapture";
+import { webviewLogStore } from "../../e2e/webviewLogStore";
 import { currentRouteNameRef } from "../../analytics/screenRefs";
 import { walletSelector } from "~/reducers/wallet";
-import { CacheMode, WebViewOpenWindowEvent } from "react-native-webview/lib/WebViewTypes";
+import {
+  CacheMode,
+  ShouldStartLoadRequest,
+  WebViewOpenWindowEvent,
+} from "react-native-webview/lib/WebViewTypes";
 import { Linking } from "react-native";
 import { useCacheBustedLiveAppsDB } from "~/screens/Platform/v2/hooks";
 import { useModularDrawerController } from "LLM/features/ModularDrawer";
@@ -45,13 +56,24 @@ export function useWebView(
   {
     manifest,
     currentAccountHistDb,
+    setCurrentAccountHistDb,
     inputs,
     customHandlers,
-  }: Pick<WebviewProps, "manifest" | "inputs" | "customHandlers" | "currentAccountHistDb">,
+    manifestDomainCheckEnabled,
+  }: Pick<
+    WebviewProps,
+    "manifest" | "inputs" | "customHandlers" | "currentAccountHistDb" | "setCurrentAccountHistDb"
+  > & {
+    manifestDomainCheckEnabled?: boolean;
+  },
   ref: React.ForwardedRef<WebviewAPI>,
   onStateChange: WebviewProps["onStateChange"],
 ) {
   const serverRef = useRef<WalletAPIServer | undefined>(undefined);
+
+  useEffect(() => {
+    setOriginFlow(manifest.name);
+  }, [manifest.name]);
 
   const tracking = useMemo(
     () =>
@@ -67,15 +89,17 @@ export function useWebView(
     [],
   );
 
-  const { webviewProps, webviewRef } = useWebviewState(
-    {
-      manifest: manifest satisfies AppManifest,
-      inputs,
-    },
-    ref,
-    onStateChange,
-    serverRef,
-  );
+  const { webviewProps, webviewRef, onShouldStartLoadWithRequest, isBlockedByDomainCheck } =
+    useWebviewState(
+      {
+        manifest: manifest satisfies AppManifest,
+        inputs,
+        manifestDomainCheckEnabled,
+      },
+      ref,
+      onStateChange,
+      serverRef,
+    );
 
   const accounts = useSelector(flattenAccountsSelector);
   const mevProtected = useSelector(mevProtectionSelector);
@@ -132,26 +156,30 @@ export function useWebView(
     uiHook,
     customHandlers,
   });
-  const [cacheBustedLiveAppsDb, setCacheBustedLiveAppsDbState] = useCacheBustedLiveAppsDB();
+  const [cacheBustedLiveAppsDb, setCacheBustedLiveAppsDbState, cacheBustedLoaded] =
+    useCacheBustedLiveAppsDB();
   const { edit, getLatest } = useCacheBustedLiveApps([
     cacheBustedLiveAppsDb,
     setCacheBustedLiveAppsDbState,
+    cacheBustedLoaded,
   ]);
 
   useEffect(() => {
     serverRef.current = server;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [server]);
 
-  const { onDappMessage, noAccounts } = useDappLogic({
+  const { onDappMessage, noAccounts, isLoadingAccounts } = useDappLogic({
     manifest,
     currentAccountHistDb,
+    setCurrentAccountHistDb,
     accounts,
     uiHook,
     postMessage: webviewHook.postMessage,
     tracking,
     initialAccountId: inputs?.accountId?.toString(),
+    referrer: inputs?.referrer?.toString(),
     mevProtected,
   });
 
@@ -160,6 +188,15 @@ export function useWebView(
       if (e.nativeEvent?.data) {
         try {
           const msg = JSON.parse(e.nativeEvent.data);
+
+          if (Config.DETOX && msg.type === E2E_WEBVIEW_NETWORK_LOG_TYPE) {
+            webviewLogStore.addNetworkLog(msg.payload);
+            return;
+          }
+          if (Config.DETOX && msg.type === E2E_WEBVIEW_CONSOLE_LOG_TYPE) {
+            webviewLogStore.addConsoleLog(msg.payload);
+            return;
+          }
 
           if (Config.MOCK && msg.type === "e2eTest") {
             sendWalletAPIResponse(msg.payload);
@@ -220,10 +257,13 @@ export function useWebView(
     onLoadError,
     onMessage,
     onOpenWindow,
+    onShouldStartLoadWithRequest,
+    isBlockedByDomainCheck,
     webviewCacheOptions,
     webviewProps,
     webviewRef,
     noAccounts,
+    isLoadingAccounts,
   };
 }
 
@@ -233,24 +273,54 @@ export const initialWebviewState: WebviewState = {
   canGoForward: false,
   title: "",
   loading: false,
+  isAppUnavailable: false,
 };
 
 export function useWebviewState(
-  params: Pick<WebviewProps, "manifest" | "inputs">,
+  params: Pick<WebviewProps, "manifest" | "inputs"> & { manifestDomainCheckEnabled?: boolean },
   WebviewAPIRef: React.ForwardedRef<WebviewAPI>,
   onStateChange: WebviewProps["onStateChange"],
   serverRef?: React.RefObject<WalletAPIServer | undefined>,
 ) {
   const webviewRef = useRef<WebView>(null);
-  const { manifest, inputs } = params;
+  const { manifest, inputs, manifestDomainCheckEnabled } = params;
   const initialURL = useMemo(() => getInitialURL(inputs, manifest), [manifest, inputs]);
   const [state, setState] = useState<WebviewState>(initialWebviewState);
 
-  useEffect(() => {
-    setURI(initialURL);
-  }, [initialURL]);
+  // Mirror desktop's originWhitelist logic: when the flag is on, validate the initial URL
+  // against manifest.domains, falling back to manifest.url.
+  // When neither passes, webviewSrc is "" — the WebView is not navigated and we derive
+  // isBlockedByDomainCheck to push isAppUnavailable directly into state, avoiding any
+  // URL load that could crash (e.g. about:blank on iOS).
+  const webviewSrc = useMemo(() => {
+    if (!manifestDomainCheckEnabled) {
+      return initialURL;
+    }
+    const domains = manifest.domains ?? [];
+    if (isUrlAllowedByManifestDomains(initialURL, domains)) {
+      return initialURL;
+    }
+    if (isUrlAllowedByManifestDomains(manifest.url.toString(), domains)) {
+      return manifest.url.toString();
+    }
+    return "";
+  }, [initialURL, manifest.domains, manifest.url, manifestDomainCheckEnabled]);
 
-  const [currentURI, setURI] = useState(initialURL);
+  const isBlockedByDomainCheck = manifestDomainCheckEnabled && webviewSrc === "";
+
+  useEffect(() => {
+    setURI(webviewSrc);
+  }, [webviewSrc]);
+
+  const [currentURI, setURI] = useState(webviewSrc);
+
+  // When blocked, immediately surface isAppUnavailable without waiting for WebView load
+  // events (which would hang on an empty URI).
+  useEffect(() => {
+    if (isBlockedByDomainCheck) {
+      setState(s => ({ ...s, loading: false, isAppUnavailable: true }));
+    }
+  }, [isBlockedByDomainCheck]);
   const { theme } = useTheme();
 
   const source = useMemo(
@@ -269,7 +339,7 @@ export function useWebviewState(
         headers,
       };
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [currentURI, manifest.id, manifest.nocache],
   );
 
@@ -292,6 +362,12 @@ export function useWebviewState(
           webview.goForward();
         },
         loadURL: (url: string): void => {
+          if (
+            manifestDomainCheckEnabled &&
+            !isUrlAllowedByManifestDomains(url, manifest.domains ?? [])
+          ) {
+            return;
+          }
           setURI(url);
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -300,49 +376,53 @@ export function useWebviewState(
         },
       };
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [manifest.domains, manifestDomainCheckEnabled],
   );
 
   const onLoad: Required<WebViewProps>["onLoad"] = useCallback(({ nativeEvent }) => {
-    setState({
+    setState(oldState => ({
       title: nativeEvent.title,
       url: nativeEvent.url,
       canGoBack: nativeEvent.canGoBack,
       canGoForward: nativeEvent.canGoForward,
       loading: nativeEvent.loading,
-    });
+      isAppUnavailable: oldState.isAppUnavailable,
+    }));
   }, []);
 
   const onLoadStart: Required<WebViewProps>["onLoadStart"] = useCallback(({ nativeEvent }) => {
-    setState({
+    setState(oldState => ({
       title: nativeEvent.title,
       url: nativeEvent.url,
       canGoBack: nativeEvent.canGoBack,
       canGoForward: nativeEvent.canGoForward,
       loading: nativeEvent.loading,
-    });
+      isAppUnavailable: oldState.isAppUnavailable,
+    }));
   }, []);
 
   const onLoadEnd: Required<WebViewProps>["onLoadEnd"] = useCallback(({ nativeEvent }) => {
-    setState({
+    setState(oldState => ({
       title: nativeEvent.title,
       url: nativeEvent.url,
       canGoBack: nativeEvent.canGoBack,
       canGoForward: nativeEvent.canGoForward,
       loading: nativeEvent.loading,
-    });
+      isAppUnavailable: oldState.isAppUnavailable,
+    }));
   }, []);
 
   const onNavigationStateChange: Required<WebViewProps>["onNavigationStateChange"] = useCallback(
     event => {
-      setState({
+      setState(oldState => ({
         title: event.title,
         url: event.url,
         canGoBack: event.canGoBack,
         canGoForward: event.canGoForward,
         loading: event.loading,
-      });
+        isAppUnavailable: oldState.isAppUnavailable,
+      }));
     },
     [],
   );
@@ -352,6 +432,14 @@ export function useWebviewState(
       onStateChange(state);
     }
   }, [state, onStateChange]);
+
+  const onShouldStartLoadWithRequest = useCallback(
+    (request: ShouldStartLoadRequest): boolean => {
+      if (!manifestDomainCheckEnabled) return true;
+      return isUrlAllowedByManifestDomains(request.url, manifest.domains ?? []);
+    },
+    [manifestDomainCheckEnabled, manifest.domains],
+  );
 
   const props: Partial<WebViewProps> = useMemo(
     () => ({
@@ -367,6 +455,8 @@ export function useWebviewState(
   return {
     webviewProps: props,
     webviewRef,
+    onShouldStartLoadWithRequest,
+    isBlockedByDomainCheck,
   };
 }
 
@@ -394,6 +484,7 @@ function useUiHook({ manifest }: Props): UiHook {
         onSuccess,
         areCurrenciesFiltered,
         useCase,
+        uiUseCase,
         drawerConfiguration,
       }) => {
         // We agree that for useCase, we should send max 50 currencies if provided else use only useCase (e.g. buy)
@@ -402,6 +493,7 @@ function useUiHook({ manifest }: Props): UiHook {
 
         const finalDrawerConfiguration = createDrawerConfiguration(drawerConfiguration, useCase);
 
+        setOriginFlow(flow);
         openModularDrawer?.({
           source: source,
           flow: flow,
@@ -411,6 +503,7 @@ function useUiHook({ manifest }: Props): UiHook {
           currencies: areCurrenciesFiltered && shouldUseCurrencies ? currencyIds : undefined,
           areCurrenciesFiltered,
           useCase,
+          uiUseCase,
           ...(finalDrawerConfiguration.assets && {
             assetsConfiguration: finalDrawerConfiguration.assets,
           }),
@@ -588,34 +681,29 @@ const wallet = {
 };
 
 function useGetUserId() {
-  const [userId, setUserId] = useState("");
-
-  useEffect(() => {
-    let mounted = true;
-    getOrCreateUser().then(({ user }) => {
-      if (mounted) setUserId(user.id);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return userId;
+  const userId = useSelector(userIdSelector);
+  return userId.exportUserIdForWalletAPI();
 }
 
 export function useSelectAccount({
   manifest,
-  currentAccountHistDb,
+  setCurrentAccountHistDb,
 }: {
   manifest: AppManifest;
-  currentAccountHistDb?: CurrentAccountHistDB;
+  setCurrentAccountHistDb: SetCurrentAccountHistDb;
 }) {
   const currencyIds = useDAppManifestCurrencyIds(manifest);
   const { setCurrentAccountHist, setCurrentAccount, currentAccount } = useDappCurrentAccount(
     manifest.id,
-    currentAccountHistDb,
+    setCurrentAccountHistDb,
   );
   const { openDrawer } = useModularDrawerController();
+  // Using a ref because openDrawer's useCallback deps include callbackId
+  // from Redux state (which changes every time the drawer opens)
+  const openDrawerRef = useRef(openDrawer);
+  useEffect(() => {
+    openDrawerRef.current = openDrawer;
+  }, [openDrawer]);
 
   const onSelectAccountSuccess = useCallback(
     (account: AccountLike) => {
@@ -625,8 +713,8 @@ export function useSelectAccount({
     [manifest.id, setCurrentAccountHist, setCurrentAccount],
   );
 
-  const handleAddAccountPress = () => {
-    openDrawer({
+  const handleAddAccountPress = useCallback(() => {
+    openDrawerRef.current({
       currencies: currencyIds,
       areCurrenciesFiltered: true,
       enableAccountSelection: true,
@@ -637,7 +725,7 @@ export function useSelectAccount({
           ? "Discover"
           : currentRouteNameRef.current ?? "Unknown",
     });
-  };
+  }, [currencyIds, onSelectAccountSuccess, manifest.name]);
 
   return { handleAddAccountPress, currentAccount, currencyIds, onSelectAccountSuccess };
 }

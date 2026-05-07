@@ -1,0 +1,6 @@
+---
+description: Before finishing any agentic code changes, run static checks for the affected scope
+alwaysApply: true
+---
+
+See [/docs/dev/validate-before-finishing.md](/docs/dev/validate-before-finishing.md)

@@ -1,5 +1,287 @@
 # @ledgerhq/coin-tester-bitcoin
 
+## 1.10.0
+
+### Minor Changes
+
+- [#16402](https://github.com/LedgerHQ/ledger-live/pull/16402) [`b7cdf0e`](https://github.com/LedgerHQ/ledger-live/commit/b7cdf0e7c6faca170af3bfed9042165c74517ae4) Thanks [@Justkant](https://github.com/Justkant)! - chore: update bitcoinjs-lib and bip32 dependencies across multiple packages
+
+  This is helpful for the wallet-cli and bun usage to avoid some of the native bindings that would come with tiny-secp
+
+- [#16450](https://github.com/LedgerHQ/ledger-live/pull/16450) [`de3566a`](https://github.com/LedgerHQ/ledger-live/commit/de3566a676681c852a7a03b6027baffdad3c1050) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-testers): add and wait for healthchecks
+
+### Patch Changes
+
+- Updated dependencies [[`fbff5f4`](https://github.com/LedgerHQ/ledger-live/commit/fbff5f407027cb2b24834fea53ef21a3ef93bf95), [`b7cdf0e`](https://github.com/LedgerHQ/ledger-live/commit/b7cdf0e7c6faca170af3bfed9042165c74517ae4), [`e377079`](https://github.com/LedgerHQ/ledger-live/commit/e3770793670b73d4409bd5be2081ca922e8679ac), [`45e134c`](https://github.com/LedgerHQ/ledger-live/commit/45e134c63f204444a5997109f4807447f51469ee)]:
+  - @ledgerhq/types-live@6.106.0
+  - @ledgerhq/hw-app-btc@10.22.0
+  - @ledgerhq/coin-bitcoin@0.39.0
+  - @ledgerhq/psbtv2@0.5.0
+  - @ledgerhq/coin-tester@0.20.0
+  - @ledgerhq/ledger-wallet-framework@1.3.1
+  - @ledgerhq/cryptoassets@13.46.1
+
+## 1.10.0-next.0
+
+### Minor Changes
+
+- [#16402](https://github.com/LedgerHQ/ledger-live/pull/16402) [`b7cdf0e`](https://github.com/LedgerHQ/ledger-live/commit/b7cdf0e7c6faca170af3bfed9042165c74517ae4) Thanks [@Justkant](https://github.com/Justkant)! - chore: update bitcoinjs-lib and bip32 dependencies across multiple packages
+
+  This is helpful for the wallet-cli and bun usage to avoid some of the native bindings that would come with tiny-secp
+
+- [#16450](https://github.com/LedgerHQ/ledger-live/pull/16450) [`de3566a`](https://github.com/LedgerHQ/ledger-live/commit/de3566a676681c852a7a03b6027baffdad3c1050) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-testers): add and wait for healthchecks
+
+### Patch Changes
+
+- Updated dependencies [[`fbff5f4`](https://github.com/LedgerHQ/ledger-live/commit/fbff5f407027cb2b24834fea53ef21a3ef93bf95), [`b7cdf0e`](https://github.com/LedgerHQ/ledger-live/commit/b7cdf0e7c6faca170af3bfed9042165c74517ae4), [`e377079`](https://github.com/LedgerHQ/ledger-live/commit/e3770793670b73d4409bd5be2081ca922e8679ac), [`45e134c`](https://github.com/LedgerHQ/ledger-live/commit/45e134c63f204444a5997109f4807447f51469ee)]:
+  - @ledgerhq/types-live@6.106.0-next.0
+  - @ledgerhq/hw-app-btc@10.22.0-next.0
+  - @ledgerhq/coin-bitcoin@0.39.0-next.0
+  - @ledgerhq/psbtv2@0.5.0-next.0
+  - @ledgerhq/coin-tester@0.20.0
+  - @ledgerhq/ledger-wallet-framework@1.3.1-next.0
+  - @ledgerhq/cryptoassets@13.46.1-next.0
+
+## 1.9.0
+
+### Minor Changes
+
+- [#16215](https://github.com/LedgerHQ/ledger-live/pull/16215) [`253bdcf`](https://github.com/LedgerHQ/ledger-live/commit/253bdcf3cc90cfd00a6d75da773cd5e53c96def9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: migrate to oxlint/oxfmt on coin-tester modules
+
+### Patch Changes
+
+- Updated dependencies [[`648956f`](https://github.com/LedgerHQ/ledger-live/commit/648956f027b02a76a6624fe64e5b2e152c7abc04), [`ad5a37d`](https://github.com/LedgerHQ/ledger-live/commit/ad5a37d077dced734defcd464f120825e7bbf5e9), [`2d5c7e0`](https://github.com/LedgerHQ/ledger-live/commit/2d5c7e0cc27f45babe247b39b513d4e848707b01), [`7aa0706`](https://github.com/LedgerHQ/ledger-live/commit/7aa070618866e7a4c70876e674f07fde9630ccfb), [`3b83607`](https://github.com/LedgerHQ/ledger-live/commit/3b83607a045142a8408784c92b57d8bde01445df), [`24656de`](https://github.com/LedgerHQ/ledger-live/commit/24656dea461d4d99dcb5f5e2e4b4e949b0823eeb), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`139cdbf`](https://github.com/LedgerHQ/ledger-live/commit/139cdbfd48120247ff54f5f7863ce866a6a755d0), [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58), [`37fe0e0`](https://github.com/LedgerHQ/ledger-live/commit/37fe0e0011efb6b9cf4e7a9d1ddb01768aa77798), [`4cf9b8c`](https://github.com/LedgerHQ/ledger-live/commit/4cf9b8cde388aebfe04a894e9a35584856d1713d), [`253bdcf`](https://github.com/LedgerHQ/ledger-live/commit/253bdcf3cc90cfd00a6d75da773cd5e53c96def9), [`97d7278`](https://github.com/LedgerHQ/ledger-live/commit/97d727824cef6a5b5a2d034d9b029e4f977f1754), [`63b5b9a`](https://github.com/LedgerHQ/ledger-live/commit/63b5b9a3f3b88fa41f02983350cdb6e73a887839), [`46e78cf`](https://github.com/LedgerHQ/ledger-live/commit/46e78cf3a057a9de39a5abbb49fe779655db6507), [`cd59c95`](https://github.com/LedgerHQ/ledger-live/commit/cd59c95d04bd886114802ca887e1209d2191eaee), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21), [`5b0974a`](https://github.com/LedgerHQ/ledger-live/commit/5b0974a146ce57b30b48769cb512c1443aa7f97d)]:
+  - @ledgerhq/coin-bitcoin@0.38.0
+  - @ledgerhq/cryptoassets@13.46.0
+  - @ledgerhq/types-live@6.105.0
+  - @ledgerhq/ledger-wallet-framework@1.3.0
+  - @ledgerhq/psbtv2@0.4.0
+  - @ledgerhq/coin-tester@0.20.0
+  - @ledgerhq/live-network@2.5.1
+  - @ledgerhq/hw-app-btc@10.21.1
+
+## 1.9.0-next.0
+
+### Minor Changes
+
+- [#16215](https://github.com/LedgerHQ/ledger-live/pull/16215) [`253bdcf`](https://github.com/LedgerHQ/ledger-live/commit/253bdcf3cc90cfd00a6d75da773cd5e53c96def9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: migrate to oxlint/oxfmt on coin-tester modules
+
+### Patch Changes
+
+- Updated dependencies [[`648956f`](https://github.com/LedgerHQ/ledger-live/commit/648956f027b02a76a6624fe64e5b2e152c7abc04), [`ad5a37d`](https://github.com/LedgerHQ/ledger-live/commit/ad5a37d077dced734defcd464f120825e7bbf5e9), [`2d5c7e0`](https://github.com/LedgerHQ/ledger-live/commit/2d5c7e0cc27f45babe247b39b513d4e848707b01), [`7aa0706`](https://github.com/LedgerHQ/ledger-live/commit/7aa070618866e7a4c70876e674f07fde9630ccfb), [`3b83607`](https://github.com/LedgerHQ/ledger-live/commit/3b83607a045142a8408784c92b57d8bde01445df), [`24656de`](https://github.com/LedgerHQ/ledger-live/commit/24656dea461d4d99dcb5f5e2e4b4e949b0823eeb), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`139cdbf`](https://github.com/LedgerHQ/ledger-live/commit/139cdbfd48120247ff54f5f7863ce866a6a755d0), [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58), [`37fe0e0`](https://github.com/LedgerHQ/ledger-live/commit/37fe0e0011efb6b9cf4e7a9d1ddb01768aa77798), [`4cf9b8c`](https://github.com/LedgerHQ/ledger-live/commit/4cf9b8cde388aebfe04a894e9a35584856d1713d), [`253bdcf`](https://github.com/LedgerHQ/ledger-live/commit/253bdcf3cc90cfd00a6d75da773cd5e53c96def9), [`97d7278`](https://github.com/LedgerHQ/ledger-live/commit/97d727824cef6a5b5a2d034d9b029e4f977f1754), [`63b5b9a`](https://github.com/LedgerHQ/ledger-live/commit/63b5b9a3f3b88fa41f02983350cdb6e73a887839), [`46e78cf`](https://github.com/LedgerHQ/ledger-live/commit/46e78cf3a057a9de39a5abbb49fe779655db6507), [`cd59c95`](https://github.com/LedgerHQ/ledger-live/commit/cd59c95d04bd886114802ca887e1209d2191eaee), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21), [`5b0974a`](https://github.com/LedgerHQ/ledger-live/commit/5b0974a146ce57b30b48769cb512c1443aa7f97d)]:
+  - @ledgerhq/coin-bitcoin@0.38.0-next.0
+  - @ledgerhq/cryptoassets@13.46.0-next.0
+  - @ledgerhq/types-live@6.105.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.3.0-next.0
+  - @ledgerhq/psbtv2@0.4.0-next.0
+  - @ledgerhq/coin-tester@0.20.0-next.0
+  - @ledgerhq/live-network@2.5.1-next.0
+  - @ledgerhq/hw-app-btc@10.21.1-next.0
+
+## 1.8.1
+
+### Patch Changes
+
+- Updated dependencies [[`24e8f80`](https://github.com/LedgerHQ/ledger-live/commit/24e8f80dc314619f954e6966aff8698591d6e05e), [`ea34195`](https://github.com/LedgerHQ/ledger-live/commit/ea34195c1115aaa40c69259ee2d2ee581e0349ab), [`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71), [`03ef36f`](https://github.com/LedgerHQ/ledger-live/commit/03ef36fe77f9048541b46e166d8bd8674fe3d896), [`c911a5e`](https://github.com/LedgerHQ/ledger-live/commit/c911a5e7f6ae80d86998e8c74457ed0de3c2bc98), [`9413def`](https://github.com/LedgerHQ/ledger-live/commit/9413def2fb1eccfc0ec8ce38bbcaf982981a0dd9), [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8), [`2ece647`](https://github.com/LedgerHQ/ledger-live/commit/2ece647f386e40f261662fc6e4e6624f302ee34f), [`b755e91`](https://github.com/LedgerHQ/ledger-live/commit/b755e916e4c1e7ebd9043dfc959eba2c5081ec5b), [`55c01bc`](https://github.com/LedgerHQ/ledger-live/commit/55c01bcd8e43f9a54e93a41bb383d6d5c633b35f), [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58), [`fe0dedb`](https://github.com/LedgerHQ/ledger-live/commit/fe0dedb3d2f67390102b1153b6ee6cb16c22a26a), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21)]:
+  - @ledgerhq/types-live@6.104.0
+  - @ledgerhq/coin-bitcoin@0.37.0
+  - @ledgerhq/ledger-wallet-framework@1.2.0
+  - @ledgerhq/cryptoassets@13.45.0
+  - @ledgerhq/hw-app-btc@10.21.0
+  - @ledgerhq/types-cryptoassets@7.36.0
+  - @ledgerhq/live-config@3.7.0
+  - @ledgerhq/live-network@2.5.0
+  - @ledgerhq/coin-tester@0.19.0
+
+## 1.8.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`24e8f80`](https://github.com/LedgerHQ/ledger-live/commit/24e8f80dc314619f954e6966aff8698591d6e05e), [`ea34195`](https://github.com/LedgerHQ/ledger-live/commit/ea34195c1115aaa40c69259ee2d2ee581e0349ab), [`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71), [`03ef36f`](https://github.com/LedgerHQ/ledger-live/commit/03ef36fe77f9048541b46e166d8bd8674fe3d896), [`c911a5e`](https://github.com/LedgerHQ/ledger-live/commit/c911a5e7f6ae80d86998e8c74457ed0de3c2bc98), [`9413def`](https://github.com/LedgerHQ/ledger-live/commit/9413def2fb1eccfc0ec8ce38bbcaf982981a0dd9), [`008a4bd`](https://github.com/LedgerHQ/ledger-live/commit/008a4bdb87f0e65fa23de3a29818a4d02f28f4f8), [`2ece647`](https://github.com/LedgerHQ/ledger-live/commit/2ece647f386e40f261662fc6e4e6624f302ee34f), [`b755e91`](https://github.com/LedgerHQ/ledger-live/commit/b755e916e4c1e7ebd9043dfc959eba2c5081ec5b), [`55c01bc`](https://github.com/LedgerHQ/ledger-live/commit/55c01bcd8e43f9a54e93a41bb383d6d5c633b35f), [`c353f29`](https://github.com/LedgerHQ/ledger-live/commit/c353f29b9174c20c708662c160f55c597020ee58), [`fe0dedb`](https://github.com/LedgerHQ/ledger-live/commit/fe0dedb3d2f67390102b1153b6ee6cb16c22a26a), [`fd2311d`](https://github.com/LedgerHQ/ledger-live/commit/fd2311d643f4002c1441bfa4fe79d7288df04c21)]:
+  - @ledgerhq/types-live@6.104.0-next.0
+  - @ledgerhq/coin-bitcoin@0.37.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.2.0-next.0
+  - @ledgerhq/cryptoassets@13.45.0-next.0
+  - @ledgerhq/hw-app-btc@10.21.0-next.0
+  - @ledgerhq/types-cryptoassets@7.36.0-next.0
+  - @ledgerhq/live-config@3.7.0-next.0
+  - @ledgerhq/live-network@2.5.0-next.0
+  - @ledgerhq/coin-tester@0.19.0
+
+## 1.8.0
+
+### Minor Changes
+
+- [#15610](https://github.com/LedgerHQ/ledger-live/pull/15610) [`d1b1f81`](https://github.com/LedgerHQ/ledger-live/commit/d1b1f816452e2195af8ad9032689ea500cad87ba) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-tester-bitcoin): ensure no remote HTTP calls are possible
+
+### Patch Changes
+
+- Updated dependencies [[`1bf4e7e`](https://github.com/LedgerHQ/ledger-live/commit/1bf4e7efa2fbb310f9c3db8f5d72e68294f0f3fe), [`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20), [`deec161`](https://github.com/LedgerHQ/ledger-live/commit/deec16153656d444336f067970dcda5fff016d95), [`86822b6`](https://github.com/LedgerHQ/ledger-live/commit/86822b6596b97c2a566f903c00596a93f7f6c996), [`e0de96e`](https://github.com/LedgerHQ/ledger-live/commit/e0de96e6311de7e34715784da5941e60ed5c51cc), [`0431655`](https://github.com/LedgerHQ/ledger-live/commit/043165591a3bd650b43a220b23bd952ff82d56a0), [`229df86`](https://github.com/LedgerHQ/ledger-live/commit/229df869458efe7ee2553aaf335f23dc7b87e9ef), [`298c39a`](https://github.com/LedgerHQ/ledger-live/commit/298c39a23f20207d8704dace45361ed2a4e824ba), [`c5c58e4`](https://github.com/LedgerHQ/ledger-live/commit/c5c58e4efab303a5b6bccc463f91241f4e0f72bc), [`d1b1f81`](https://github.com/LedgerHQ/ledger-live/commit/d1b1f816452e2195af8ad9032689ea500cad87ba)]:
+  - @ledgerhq/types-live@6.103.0
+  - @ledgerhq/cryptoassets@13.44.0
+  - @ledgerhq/ledger-wallet-framework@1.1.0
+  - @ledgerhq/coin-bitcoin@0.36.0
+  - @ledgerhq/coin-tester@0.19.0
+  - @ledgerhq/live-network@2.4.3
+
+## 1.8.0-next.0
+
+### Minor Changes
+
+- [#15610](https://github.com/LedgerHQ/ledger-live/pull/15610) [`d1b1f81`](https://github.com/LedgerHQ/ledger-live/commit/d1b1f816452e2195af8ad9032689ea500cad87ba) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-tester-bitcoin): ensure no remote HTTP calls are possible
+
+### Patch Changes
+
+- Updated dependencies [[`1bf4e7e`](https://github.com/LedgerHQ/ledger-live/commit/1bf4e7efa2fbb310f9c3db8f5d72e68294f0f3fe), [`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20), [`deec161`](https://github.com/LedgerHQ/ledger-live/commit/deec16153656d444336f067970dcda5fff016d95), [`86822b6`](https://github.com/LedgerHQ/ledger-live/commit/86822b6596b97c2a566f903c00596a93f7f6c996), [`e0de96e`](https://github.com/LedgerHQ/ledger-live/commit/e0de96e6311de7e34715784da5941e60ed5c51cc), [`0431655`](https://github.com/LedgerHQ/ledger-live/commit/043165591a3bd650b43a220b23bd952ff82d56a0), [`229df86`](https://github.com/LedgerHQ/ledger-live/commit/229df869458efe7ee2553aaf335f23dc7b87e9ef), [`298c39a`](https://github.com/LedgerHQ/ledger-live/commit/298c39a23f20207d8704dace45361ed2a4e824ba), [`c5c58e4`](https://github.com/LedgerHQ/ledger-live/commit/c5c58e4efab303a5b6bccc463f91241f4e0f72bc), [`d1b1f81`](https://github.com/LedgerHQ/ledger-live/commit/d1b1f816452e2195af8ad9032689ea500cad87ba)]:
+  - @ledgerhq/types-live@6.103.0-next.0
+  - @ledgerhq/cryptoassets@13.44.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.1.0-next.0
+  - @ledgerhq/coin-bitcoin@0.36.0-next.0
+  - @ledgerhq/coin-tester@0.19.0-next.0
+  - @ledgerhq/live-network@2.4.3-next.0
+
+## 1.7.0
+
+### Minor Changes
+
+- [#15291](https://github.com/LedgerHQ/ledger-live/pull/15291) [`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - feat: add `ledger-wallet-framework`
+
+- [#14974](https://github.com/LedgerHQ/ledger-live/pull/14974) [`982d4af`](https://github.com/LedgerHQ/ledger-live/commit/982d4afbeb7faf3814c3e96ffb6e3e88b58dfe73) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update to TypeScript 5.9
+
+### Patch Changes
+
+- Updated dependencies [[`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05), [`a270b43`](https://github.com/LedgerHQ/ledger-live/commit/a270b438bf8aca99b795679fecce1b55dc249c12), [`01c81b1`](https://github.com/LedgerHQ/ledger-live/commit/01c81b112ab326eff436f0f3279a1225c073f897), [`3ede91a`](https://github.com/LedgerHQ/ledger-live/commit/3ede91a3674a80c9309d305b871ec3b6e9849b41)]:
+  - @ledgerhq/coin-bitcoin@0.35.0
+  - @ledgerhq/types-live@6.102.0
+  - @ledgerhq/cryptoassets@13.43.0
+  - @ledgerhq/ledger-wallet-framework@1.0.1
+  - @ledgerhq/coin-tester@0.18.0
+  - @ledgerhq/live-network@2.4.2
+  - @ledgerhq/hw-app-btc@10.20.1
+
+## 1.7.0-next.0
+
+### Minor Changes
+
+- [#15291](https://github.com/LedgerHQ/ledger-live/pull/15291) [`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - feat: add `ledger-wallet-framework`
+
+- [#14974](https://github.com/LedgerHQ/ledger-live/pull/14974) [`982d4af`](https://github.com/LedgerHQ/ledger-live/commit/982d4afbeb7faf3814c3e96ffb6e3e88b58dfe73) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update to TypeScript 5.9
+
+### Patch Changes
+
+- Updated dependencies [[`a221ae8`](https://github.com/LedgerHQ/ledger-live/commit/a221ae85b846c6d5dc6efb55ed873942d7720b05), [`a270b43`](https://github.com/LedgerHQ/ledger-live/commit/a270b438bf8aca99b795679fecce1b55dc249c12), [`01c81b1`](https://github.com/LedgerHQ/ledger-live/commit/01c81b112ab326eff436f0f3279a1225c073f897), [`3ede91a`](https://github.com/LedgerHQ/ledger-live/commit/3ede91a3674a80c9309d305b871ec3b6e9849b41)]:
+  - @ledgerhq/coin-bitcoin@0.35.0-next.0
+  - @ledgerhq/types-live@6.102.0-next.0
+  - @ledgerhq/cryptoassets@13.43.0-next.0
+  - @ledgerhq/ledger-wallet-framework@1.0.1-next.0
+  - @ledgerhq/coin-tester@0.18.0
+  - @ledgerhq/live-network@2.4.2-next.0
+  - @ledgerhq/hw-app-btc@10.20.1-next.0
+
+## 1.6.0
+
+### Minor Changes
+
+- [#13835](https://github.com/LedgerHQ/ledger-live/pull/13835) [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d) Thanks [@qperrot](https://github.com/qperrot)! - Feature: Speed up and cancel Bitcoin transactions
+
+### Patch Changes
+
+- Updated dependencies [[`6e63076`](https://github.com/LedgerHQ/ledger-live/commit/6e63076bae52f124d685f2761a6cfabf9a37b7ee), [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025), [`ffb3c46`](https://github.com/LedgerHQ/ledger-live/commit/ffb3c46acd292b9ac0f46a2b84509d02775a5f20), [`7cbfb7d`](https://github.com/LedgerHQ/ledger-live/commit/7cbfb7dd2d52ad8380ab4d37b02f63292699cd68), [`bfa4315`](https://github.com/LedgerHQ/ledger-live/commit/bfa4315d2f3b4b95c5a742ffd6e05272662f4550), [`17e1fb3`](https://github.com/LedgerHQ/ledger-live/commit/17e1fb3fdb92d6dab9af72adcbcde62bdd772a71), [`75dfb86`](https://github.com/LedgerHQ/ledger-live/commit/75dfb86c871a026aa90136d0184637878d484484), [`7038137`](https://github.com/LedgerHQ/ledger-live/commit/703813747349288325fdc661637644d980073b9d), [`e6f26e0`](https://github.com/LedgerHQ/ledger-live/commit/e6f26e0f475763aaf3271e2d4ed6cf36fb1f5060), [`42bf9b7`](https://github.com/LedgerHQ/ledger-live/commit/42bf9b7c40c04c7d2eeffba30b778be0b123bfd0), [`164788e`](https://github.com/LedgerHQ/ledger-live/commit/164788e4a7e9c063d7769d44393708632854cb0a), [`9bae46e`](https://github.com/LedgerHQ/ledger-live/commit/9bae46e33c5693dfa2c8de33ddaf569854f1d508), [`9f559e9`](https://github.com/LedgerHQ/ledger-live/commit/9f559e98a1af37073e0e79ee5bb54b4aaecfb8c4), [`312d92d`](https://github.com/LedgerHQ/ledger-live/commit/312d92dbd9d115a2ec6ad6628445c31d45806aea), [`08ee941`](https://github.com/LedgerHQ/ledger-live/commit/08ee9414908ec1f7489493c98b9a823a20cce550), [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d), [`173946c`](https://github.com/LedgerHQ/ledger-live/commit/173946ce652ffef216f04d82b680b14f5686500e), [`70f6288`](https://github.com/LedgerHQ/ledger-live/commit/70f6288597722a1e8fd6b5884d843f27be87e9d8), [`ad66568`](https://github.com/LedgerHQ/ledger-live/commit/ad66568fd9c96cfa08d11123a711e3fa79705f65), [`79f2f0e`](https://github.com/LedgerHQ/ledger-live/commit/79f2f0e3e8b8089664d2aee7c3dd25c7685aec2c), [`4cc02f3`](https://github.com/LedgerHQ/ledger-live/commit/4cc02f3c1ba0bdb93917b5427a375ab44cd5d208), [`37bc15e`](https://github.com/LedgerHQ/ledger-live/commit/37bc15e245107ce1044f36b57d191552a77329e6)]:
+  - @ledgerhq/coin-bitcoin@0.34.0
+  - @ledgerhq/cryptoassets@13.42.0
+  - @ledgerhq/hw-app-btc@10.20.0
+  - @ledgerhq/types-cryptoassets@7.35.0
+  - @ledgerhq/types-live@6.101.0
+  - @ledgerhq/coin-framework@6.20.0
+  - @ledgerhq/live-network@2.4.1
+  - @ledgerhq/coin-tester@0.18.0
+
+## 1.6.0-next.0
+
+### Minor Changes
+
+- [#13835](https://github.com/LedgerHQ/ledger-live/pull/13835) [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d) Thanks [@qperrot](https://github.com/qperrot)! - Feature: Speed up and cancel Bitcoin transactions
+
+### Patch Changes
+
+- Updated dependencies [[`6e63076`](https://github.com/LedgerHQ/ledger-live/commit/6e63076bae52f124d685f2761a6cfabf9a37b7ee), [`c8d7be6`](https://github.com/LedgerHQ/ledger-live/commit/c8d7be6964aa9d8defd77de0b77ba7d42f472025), [`ffb3c46`](https://github.com/LedgerHQ/ledger-live/commit/ffb3c46acd292b9ac0f46a2b84509d02775a5f20), [`7cbfb7d`](https://github.com/LedgerHQ/ledger-live/commit/7cbfb7dd2d52ad8380ab4d37b02f63292699cd68), [`bfa4315`](https://github.com/LedgerHQ/ledger-live/commit/bfa4315d2f3b4b95c5a742ffd6e05272662f4550), [`17e1fb3`](https://github.com/LedgerHQ/ledger-live/commit/17e1fb3fdb92d6dab9af72adcbcde62bdd772a71), [`75dfb86`](https://github.com/LedgerHQ/ledger-live/commit/75dfb86c871a026aa90136d0184637878d484484), [`7038137`](https://github.com/LedgerHQ/ledger-live/commit/703813747349288325fdc661637644d980073b9d), [`e6f26e0`](https://github.com/LedgerHQ/ledger-live/commit/e6f26e0f475763aaf3271e2d4ed6cf36fb1f5060), [`42bf9b7`](https://github.com/LedgerHQ/ledger-live/commit/42bf9b7c40c04c7d2eeffba30b778be0b123bfd0), [`164788e`](https://github.com/LedgerHQ/ledger-live/commit/164788e4a7e9c063d7769d44393708632854cb0a), [`9bae46e`](https://github.com/LedgerHQ/ledger-live/commit/9bae46e33c5693dfa2c8de33ddaf569854f1d508), [`9f559e9`](https://github.com/LedgerHQ/ledger-live/commit/9f559e98a1af37073e0e79ee5bb54b4aaecfb8c4), [`312d92d`](https://github.com/LedgerHQ/ledger-live/commit/312d92dbd9d115a2ec6ad6628445c31d45806aea), [`08ee941`](https://github.com/LedgerHQ/ledger-live/commit/08ee9414908ec1f7489493c98b9a823a20cce550), [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d), [`173946c`](https://github.com/LedgerHQ/ledger-live/commit/173946ce652ffef216f04d82b680b14f5686500e), [`70f6288`](https://github.com/LedgerHQ/ledger-live/commit/70f6288597722a1e8fd6b5884d843f27be87e9d8), [`ad66568`](https://github.com/LedgerHQ/ledger-live/commit/ad66568fd9c96cfa08d11123a711e3fa79705f65), [`79f2f0e`](https://github.com/LedgerHQ/ledger-live/commit/79f2f0e3e8b8089664d2aee7c3dd25c7685aec2c), [`4cc02f3`](https://github.com/LedgerHQ/ledger-live/commit/4cc02f3c1ba0bdb93917b5427a375ab44cd5d208), [`37bc15e`](https://github.com/LedgerHQ/ledger-live/commit/37bc15e245107ce1044f36b57d191552a77329e6)]:
+  - @ledgerhq/coin-bitcoin@0.34.0-next.0
+  - @ledgerhq/cryptoassets@13.42.0-next.0
+  - @ledgerhq/hw-app-btc@10.20.0-next.0
+  - @ledgerhq/types-cryptoassets@7.35.0-next.0
+  - @ledgerhq/types-live@6.101.0-next.0
+  - @ledgerhq/coin-framework@6.20.0-next.0
+  - @ledgerhq/live-network@2.4.1-next.0
+  - @ledgerhq/coin-tester@0.18.0
+
+## 1.5.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`748b933`](https://github.com/LedgerHQ/ledger-live/commit/748b933f3786e48ec9dd434c76263c2c9a642c99), [`9f9ae16`](https://github.com/LedgerHQ/ledger-live/commit/9f9ae16843e5db339c1d40c844a66f75fff498fb), [`4aa6be3`](https://github.com/LedgerHQ/ledger-live/commit/4aa6be378061d7ce9d445e5e31e12753aa856355), [`ba4d56f`](https://github.com/LedgerHQ/ledger-live/commit/ba4d56fa223b87b89d621de2d1885c5a55922ef4), [`697f2e6`](https://github.com/LedgerHQ/ledger-live/commit/697f2e6f5b24ff023a46cbbbf5c9f85bac90a4c4), [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/types-live@6.100.0
+  - @ledgerhq/coin-framework@6.19.0
+  - @ledgerhq/coin-bitcoin@0.33.0
+  - @ledgerhq/cryptoassets@13.41.0
+  - @ledgerhq/types-cryptoassets@7.34.0
+  - @ledgerhq/hw-app-btc@10.19.0
+  - @ledgerhq/live-network@2.4.0
+  - @ledgerhq/coin-tester@0.18.0
+  - @ledgerhq/live-config@3.6.0
+  - @ledgerhq/psbtv2@0.3.0
+
+## 1.5.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+### Patch Changes
+
+- Updated dependencies [[`748b933`](https://github.com/LedgerHQ/ledger-live/commit/748b933f3786e48ec9dd434c76263c2c9a642c99), [`9f9ae16`](https://github.com/LedgerHQ/ledger-live/commit/9f9ae16843e5db339c1d40c844a66f75fff498fb), [`4aa6be3`](https://github.com/LedgerHQ/ledger-live/commit/4aa6be378061d7ce9d445e5e31e12753aa856355), [`ba4d56f`](https://github.com/LedgerHQ/ledger-live/commit/ba4d56fa223b87b89d621de2d1885c5a55922ef4), [`697f2e6`](https://github.com/LedgerHQ/ledger-live/commit/697f2e6f5b24ff023a46cbbbf5c9f85bac90a4c4), [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f)]:
+  - @ledgerhq/types-live@6.100.0-next.0
+  - @ledgerhq/coin-framework@6.19.0-next.0
+  - @ledgerhq/coin-bitcoin@0.33.0-next.0
+  - @ledgerhq/cryptoassets@13.41.0-next.0
+  - @ledgerhq/types-cryptoassets@7.34.0-next.0
+  - @ledgerhq/hw-app-btc@10.19.0-next.0
+  - @ledgerhq/live-network@2.4.0-next.0
+  - @ledgerhq/coin-tester@0.18.0-next.0
+  - @ledgerhq/live-config@3.6.0-next.0
+  - @ledgerhq/psbtv2@0.3.0-next.0
+
+## 1.4.4
+
+### Patch Changes
+
+- Updated dependencies [[`91450b8`](https://github.com/LedgerHQ/ledger-live/commit/91450b87ab99edf0ebb062802b2f2a21d0a5deb5), [`a96dc83`](https://github.com/LedgerHQ/ledger-live/commit/a96dc83916684e22c041904c479c615a3095303b), [`e954c1e`](https://github.com/LedgerHQ/ledger-live/commit/e954c1e0f0e45efe3b0e8c3fda9e6d5b22b5bc01), [`e292df3`](https://github.com/LedgerHQ/ledger-live/commit/e292df30514168181545d7a572f723e31df78e77), [`17149ee`](https://github.com/LedgerHQ/ledger-live/commit/17149ee26eeef8a600d650a6f4903c52320a0d8d), [`07fdf5a`](https://github.com/LedgerHQ/ledger-live/commit/07fdf5a4bcd12cb0cc5100389c8e355800d3aec0), [`b7dec5c`](https://github.com/LedgerHQ/ledger-live/commit/b7dec5c2a41520114593701c82192ff8ae8ce06f), [`f51402e`](https://github.com/LedgerHQ/ledger-live/commit/f51402ebb8a4f05a933df3c3ef499756fbde5cc8), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d), [`c7ed360`](https://github.com/LedgerHQ/ledger-live/commit/c7ed36086280d60631e235d375cc2db5f60e8aab), [`17149ee`](https://github.com/LedgerHQ/ledger-live/commit/17149ee26eeef8a600d650a6f4903c52320a0d8d), [`cc4c8f5`](https://github.com/LedgerHQ/ledger-live/commit/cc4c8f57e38586d77b89f32d359e65cc700912af)]:
+  - @ledgerhq/coin-bitcoin@0.32.0
+  - @ledgerhq/types-live@6.99.0
+  - @ledgerhq/cryptoassets@13.40.0
+  - @ledgerhq/hw-app-btc@10.18.0
+  - @ledgerhq/psbtv2@0.2.0
+  - @ledgerhq/coin-framework@6.18.0
+  - @ledgerhq/live-network@2.3.0
+  - @ledgerhq/coin-tester@0.17.0
+
+## 1.4.4-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`91450b8`](https://github.com/LedgerHQ/ledger-live/commit/91450b87ab99edf0ebb062802b2f2a21d0a5deb5), [`a96dc83`](https://github.com/LedgerHQ/ledger-live/commit/a96dc83916684e22c041904c479c615a3095303b), [`e954c1e`](https://github.com/LedgerHQ/ledger-live/commit/e954c1e0f0e45efe3b0e8c3fda9e6d5b22b5bc01), [`e292df3`](https://github.com/LedgerHQ/ledger-live/commit/e292df30514168181545d7a572f723e31df78e77), [`17149ee`](https://github.com/LedgerHQ/ledger-live/commit/17149ee26eeef8a600d650a6f4903c52320a0d8d), [`07fdf5a`](https://github.com/LedgerHQ/ledger-live/commit/07fdf5a4bcd12cb0cc5100389c8e355800d3aec0), [`b7dec5c`](https://github.com/LedgerHQ/ledger-live/commit/b7dec5c2a41520114593701c82192ff8ae8ce06f), [`f51402e`](https://github.com/LedgerHQ/ledger-live/commit/f51402ebb8a4f05a933df3c3ef499756fbde5cc8), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d), [`c7ed360`](https://github.com/LedgerHQ/ledger-live/commit/c7ed36086280d60631e235d375cc2db5f60e8aab), [`17149ee`](https://github.com/LedgerHQ/ledger-live/commit/17149ee26eeef8a600d650a6f4903c52320a0d8d), [`cc4c8f5`](https://github.com/LedgerHQ/ledger-live/commit/cc4c8f57e38586d77b89f32d359e65cc700912af)]:
+  - @ledgerhq/coin-bitcoin@0.32.0-next.0
+  - @ledgerhq/types-live@6.99.0-next.0
+  - @ledgerhq/cryptoassets@13.40.0-next.0
+  - @ledgerhq/hw-app-btc@10.18.0-next.0
+  - @ledgerhq/psbtv2@0.2.0-next.0
+  - @ledgerhq/coin-framework@6.18.0-next.0
+  - @ledgerhq/live-network@2.3.0-next.0
+  - @ledgerhq/coin-tester@0.17.0
+
 ## 1.4.3
 
 ### Patch Changes

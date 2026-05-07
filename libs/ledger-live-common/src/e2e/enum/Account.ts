@@ -124,6 +124,19 @@ export class Account {
     "taproot",
   );
 
+  static readonly CCD_TESTNET_1 = new Account(
+    Currency.CCD_TESTNET,
+    "Concordium (Testnet) 1",
+    0,
+    "44'/1'/0'/0'/0'/0'",
+  );
+  static readonly CCD_TESTNET_2 = new Account(
+    Currency.CCD_TESTNET,
+    "Concordium (Testnet) 2",
+    1,
+    "44'/1'/0'/0'/0'/1'",
+  );
+
   static readonly CELO_1 = new Account(Currency.CELO, "Celo 1", 0, "44'/52752'/0'/0/0");
 
   static readonly DOGE_1 = new Account(Currency.DOGE, "Dogecoin 1", 0, "44'/3'/0'/0/1");
@@ -151,10 +164,10 @@ export class Account {
     1,
     "44'/60'/1'/0/0",
     undefined,
-    "speculos.eth",
+    "speculos-qaa.eth",
   );
   static readonly ETH_2_LOWER_CASE = new Account(Currency.ETH, "Ethereum 2", 1, "44'/60'/1'/0/0");
-  static readonly ETH_3 = new Account(Currency.ETH, "Ethereum 3", 3, "44'/60'/2'/0/0");
+  static readonly ETH_3 = new Account(Currency.ETH, "Ethereum 3", 2, "44'/60'/2'/0/0");
   static readonly SANCTIONED_ETH = new Account(Currency.ETH, "Sanctioned Ethereum", 0, "");
 
   // Hedera accounts use pre-configured addresses because account IDs cannot be derived from path
@@ -167,7 +180,7 @@ export class Account {
     undefined,
     undefined,
     undefined,
-    "0.0.10285205",
+    "0.0.10310433",
   );
   static readonly HEDERA_2 = new Account(
     Currency.HBAR,
@@ -178,7 +191,7 @@ export class Account {
     undefined,
     undefined,
     undefined,
-    "0.0.10285245",
+    "0.0.10337251",
   );
 
   static readonly INJ_1 = new Account(Currency.INJ, "Injective 1", 0, "44'/60'/0'/0/0");
@@ -187,6 +200,9 @@ export class Account {
   static readonly KASPA_2 = new Account(Currency.KAS, "KASPA 2", 1, "44'/111111'/1'/0/1");
 
   static readonly LTC_1 = new Account(Currency.LTC, "Litecoin 1", 0, "84'/2'/0'/0/0");
+
+  static readonly MINA_1 = new Account(Currency.MINA, "Mina 1", 0, "44'/12586'/0'/0/0");
+  static readonly MINA_2 = new Account(Currency.MINA, "Mina 2", 1, "44'/12586'/1'/0/0");
 
   static readonly MULTIVERS_X_1 = new Account(
     Currency.MULTIVERS_X,
@@ -256,11 +272,16 @@ export class Account {
   static readonly BASE_1 = new Account(Currency.BASE, "Base 1", 0, "44'/60'/0'/0/0");
   static readonly BASE_2 = new Account(Currency.BASE, "Base 2", 1, "44'/60'/1'/0/0");
 
+  static readonly OP_1 = new Account(Currency.OP, "OP Mainnet 1", 0, "44'/60'/0'/0/0");
+
   static readonly VET_1 = new Account(Currency.VET, "Vechain 1", 0, "44'/818'/0'/0/0");
   static readonly VET_2 = new Account(Currency.VET, "Vechain 2", 1, "44'/818'/0'/0/1");
 
   static readonly ZEC_1 = new Account(Currency.ZEC, "Zcash 1", 0, "44'/133'/0'/0/0");
   static readonly ZEC_2 = new Account(Currency.ZEC, "Zcash 2", 0, "44'/133'/1'/0/0");
+
+  static readonly ICP_1 = new Account(Currency.ICP, "Internet Computer 1", 0, "44'/223'/0'/0/0");
+  static readonly ICP_2 = new Account(Currency.ICP, "Internet Computer 2", 1, "44'/223'/1'/0/0");
 
   static readonly EMPTY = new Account(Currency.BTC, "Empty", 0, "");
 }

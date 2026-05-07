@@ -62,6 +62,7 @@ export const FirmwareNotRecognized = createCustomErrorClass("FirmwareNotRecogniz
 export const HardResetFail = createCustomErrorClass("HardResetFail");
 export const InvalidXRPTag = createCustomErrorClass("InvalidXRPTag");
 export const InvalidAddress = createCustomErrorClass("InvalidAddress");
+export const InvalidTransactionError = createCustomErrorClass("InvalidTransactionError");
 export const InvalidNonce = createCustomErrorClass("InvalidNonce");
 export const InvalidAddressBecauseDestinationIsAlsoSource = createCustomErrorClass(
   "InvalidAddressBecauseDestinationIsAlsoSource",
@@ -101,6 +102,7 @@ export const UnstakeNotEnoughStakedBalanceLeft = createCustomErrorClass(
 export const RestakeNotEnoughStakedBalanceLeft = createCustomErrorClass(
   "RestakeNotEnoughStakedBalanceLeft",
 );
+
 export const NotEnoughToRestake = createCustomErrorClass("NotEnoughToRestake");
 export const NotEnoughToUnstake = createCustomErrorClass("NotEnoughToUnstake");
 export const NotEnoughBalanceInParentAccount = createCustomErrorClass(
@@ -177,6 +179,10 @@ export const FeeNotLoaded = createCustomErrorClass("FeeNotLoaded");
 export const FeeNotLoadedSwap = createCustomErrorClass("FeeNotLoadedSwap");
 export const FeeRequired = createCustomErrorClass("FeeRequired");
 export const FeeTooHigh = createCustomErrorClass("FeeTooHigh");
+export const ValAddressRequired = createCustomErrorClass("ValAddressRequired");
+export const RedelegateDstValAddressRequired = createCustomErrorClass(
+  "RedelegateDstValAddressRequired",
+);
 export const PendingOperation = createCustomErrorClass("PendingOperation");
 export const SyncError = createCustomErrorClass("SyncError");
 export const PairingFailed = createCustomErrorClass("PairingFailed");
@@ -206,6 +212,22 @@ export const ReplacementTransactionUnderpriced = createCustomErrorClass(
 export const OpReturnDataSizeLimit = createCustomErrorClass("OpReturnSizeLimit");
 export const DustLimit = createCustomErrorClass("DustLimit");
 
+// Concordium family
+export const ConcordiumInsufficientFunds = createCustomErrorClass("ConcordiumInsufficientFunds");
+export const ConcordiumMemoTooLong = createCustomErrorClass("ConcordiumMemoTooLong");
+export const ConcordiumPairingExpiredError = createCustomErrorClass(
+  "ConcordiumPairingExpiredError",
+);
+export const ConcordiumSessionExpiredError = createCustomErrorClass(
+  "ConcordiumSessionExpiredError",
+);
+export const ConcordiumTrustedMetadataServiceError = createCustomErrorClass(
+  "ConcordiumTrustedMetadataServiceError",
+);
+export const ConcordiumAddressVerificationFailedError = createCustomErrorClass(
+  "ConcordiumAddressVerificationFailedError",
+);
+
 // Language
 export const LanguageNotFound = createCustomErrorClass("LanguageNotFound");
 
@@ -218,6 +240,8 @@ export const SequenceNumberError = createCustomErrorClass("SequenceNumberError")
 export const DisabledTransactionBroadcastError = createCustomErrorClass(
   "DisabledTransactionBroadcastError",
 );
+
+export const InvalidParameterError = createCustomErrorClass("InvalidParameterError");
 
 // Represents the type of all the classes created with createCustomErrorClass
 export type CustomErrorClassType = ReturnType<typeof createCustomErrorClass>;

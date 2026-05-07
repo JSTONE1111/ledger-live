@@ -9,8 +9,8 @@ import type { Account, AccountLike } from "@ledgerhq/types-live";
 import type { Transaction, TransactionStatus } from "@ledgerhq/live-common/generated/types";
 import { counterValueCurrencySelector, localeSelector } from "~/renderer/reducers/settings";
 import { useMaybeAccountUnit } from "~/renderer/hooks/useAccountUnit";
-import { formatCurrencyUnit } from "@ledgerhq/coin-framework/currencies/formatCurrencyUnit";
-import { getAccountCurrency, getMainAccount } from "@ledgerhq/coin-framework/account/helpers";
+import { formatCurrencyUnit } from "@ledgerhq/coin-module-framework/currencies/formatCurrencyUnit";
+import { getAccountCurrency } from "@ledgerhq/ledger-wallet-framework/account/helpers";
 import {
   formatAmountForInput,
   formatFiatForInput,
@@ -30,7 +30,7 @@ type UseAmountInputParams = Readonly<{
 
 export function useAmountInput({
   account,
-  parentAccount,
+  parentAccount: _parentAccount,
   transaction,
   status,
   onUpdateTransaction,
@@ -38,13 +38,8 @@ export function useAmountInput({
   const counterValueCurrency = useSelector(counterValueCurrencySelector);
   const locale = useSelector(localeSelector);
 
-  const mainAccount = useMemo(
-    () => getMainAccount(account, parentAccount ?? undefined),
-    [account, parentAccount],
-  );
-
-  const accountCurrency = useMemo(() => getAccountCurrency(mainAccount), [mainAccount]);
-  const accountUnit = useMaybeAccountUnit(mainAccount) ?? accountCurrency.units[0];
+  const accountCurrency = useMemo(() => getAccountCurrency(account), [account]);
+  const accountUnit = useMaybeAccountUnit(account) ?? accountCurrency.units[0];
   const fiatUnit = counterValueCurrency.units[0];
 
   // When useAllAmount is true, the bridge calculates the actual amount (balance - fees)

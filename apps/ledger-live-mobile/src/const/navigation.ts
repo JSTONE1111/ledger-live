@@ -1,5 +1,6 @@
 export enum ScreenName {
   Analytics = "Analytics",
+  AnalyticsPreferencesSettings = "AnalyticsPreferencesSettings",
   AboutSettings = "AboutSettings",
   Account = "Account",
   Accounts = "Accounts",
@@ -11,9 +12,11 @@ export enum ScreenName {
   AddAccountsTokenCurrencyDisclaimer = "AddAccountsTokenCurrencyDisclaimer",
   AdvancedLogs = "AdvancedLogs",
   Asset = "Asset",
+  AssetDetail = "AssetDetail",
   Assets = "Assets",
   AccountsList = "AccountsList",
   AssetsList = "AssetsList",
+  CryptoAddresses = "CryptoAddresses",
   BenchmarkQRStream = "BenchmarkQRStream",
   BitcoinEditCustomFees = "BitcoinEditCustomFees",
   CantonEditMemo = "CantonEditMemo",
@@ -23,10 +26,12 @@ export enum ScreenName {
   ClaimRewardsValidationSuccess = "ClaimRewardsValidationSuccess",
   ConfirmPassword = "ConfirmPassword",
   CountervalueSettings = "CountervalueSettings",
+  Crypto = "Crypto",
   CryptoAssetsSettings = "CryptoAssetsSettings",
   CurrencySettings = "CurrencySettings",
   EditCurrencyUnits = "EditCurrencyUnits",
   CustomCALRefInput = "CustomCALRefInput",
+  DebugAnalyticsConsentQA = "DebugAnalyticsConsentQA",
   DebugBLEDevicePairing = "DebugBLEDevicePairing",
   DebugConfiguration = "DebugConfiguration",
   DebugCommandSender = "DebugCommandSender",
@@ -34,6 +39,7 @@ export enum ScreenName {
   DebugCrash = "DebugCrash",
   DebugCustomImageGraphics = "DebugCustomImageGraphics",
   DebugDebugging = "DebugDebugging",
+  DebugDeviceIntentExecutor = "DebugDeviceIntentExecutor",
   DebugQueuedDrawers = "DebugQueuedDrawers",
   DebugQueuedDrawerScreen0 = "DebugQueuedDrawerScreen0",
   DebugQueuedDrawerScreen1 = "DebugQueuedDrawerScreen1",
@@ -54,9 +60,11 @@ export enum ScreenName {
   DebugLumen = "DebugLumen",
   DebugWallet40 = "DebugWallet40",
   DebugWalletV4Tour = "DebugWalletV4Tour",
+  DebugProductTour = "DebugProductTour",
   DebugTermsOfUse = "DebugTermsOfUse",
   DebugVideos = "DebugVideos",
   DebugMockGenerateAccounts = "DebugMockGenerateAccounts",
+  DebugMockGenerateAccountsByType = "DebugMockGenerateAccountsByType",
   DebugModularAssetDrawer = "DebugModularAssetDrawer",
   DebugNetwork = "DebugNetwork",
   DebugPlayground = "DebugPlayground",
@@ -77,9 +85,11 @@ export enum ScreenName {
   DelegationSummary = "DelegationSummary",
   DelegationValidationError = "DelegationValidationError",
   DelegationValidationSuccess = "DelegationValidationSuccess",
+  DeeplinkInstallAppDeviceSelection = "DeeplinkInstallAppDeviceSelection",
   DeveloperCustomManifest = "DeveloperCustomManifest",
   DeveloperSettings = "DeveloperSettings",
   DeviceConnect = "DeviceConnect",
+  PerpsSign = "PerpsSign",
   EditAccountName = "EditAccountName",
   EditDeviceName = "EditDeviceName",
   Card = "Card",
@@ -101,6 +111,8 @@ export enum ScreenName {
   HelpSettings = "HelpSettings",
   MyLedgerChooseDevice = "MyLedgerChooseDevice",
   MyLedgerDevice = "MyLedgerDevice",
+  MyWallet = "MyWallet",
+  MyWalletHelp = "MyWalletHelp",
   NotificationsSettings = "NotificationsSettings",
   OperationDetails = "OperationDetails",
   PasswordAdd = "PasswordAdd",
@@ -155,6 +167,7 @@ export enum ScreenName {
   SwapTab = "SwapTab",
   PerpsTab = "PerpsTab",
   Earn = "Earn",
+  Borrow = "Borrow",
   Transfer = "Transfer",
   UnfreezeAmount = "UnfreezeAmount",
   UnfreezeConnectDevice = "UnfreezeConnectDevice",
@@ -213,6 +226,14 @@ export enum ScreenName {
   CeloWithdrawSelectDevice = "CeloWithdrawSelectDevice",
   CeloWithdrawConnectDevice = "CeloWithdrawConnectDevice",
   CeloWithdrawAmount = "CeloWithdrawAmount",
+
+  // evm staking
+  EvmDelegationStarted = "EvmDelegationStarted",
+  EvmDelegationValidatorSelect = "EvmDelegationValidatorSelect",
+  EvmDelegationSelectDevice = "EvmDelegationSelectDevice",
+  EvmDelegationConnectDevice = "EvmDelegationConnectDevice",
+  EvmDelegationValidationError = "EvmDelegationValidationError",
+  EvmDelegationValidationSuccess = "EvmDelegationValidationSuccess",
 
   // cosmos
   CosmosFamilyEditMemo = "CosmosFamilyEditMemo",
@@ -301,6 +322,9 @@ export enum ScreenName {
   EditTransactionSummary = "EditTransactionSummary",
   EvmEditTransactionMethodSelection = "EvmEditTransactionMethodSelection",
 
+  // Bitcoin
+  BitcoinEditTransactionMethodSelection = "BitcoinEditTransactionMethodSelection",
+
   // Polkadot
   PolkadotBondStarted = "PolkadotBondStarted",
   PolkadotBondAmount = "PolkadotBondAmount",
@@ -341,6 +365,8 @@ export enum ScreenName {
   StellarAddAssetValidationSuccess = "StellarAddAssetValidationSuccess",
   // Canton
   CantonOnboardAccount = "CantonOnboardAccount",
+  // Concordium
+  ConcordiumOnboardAccount = "ConcordiumOnboardAccount",
 
   OnboardingWelcome = "OnboardingWelcome",
   OnboardingPostWelcomeSelection = "OnboardingPostWelcomeSelection",
@@ -561,6 +587,10 @@ export enum ScreenName {
   AddAccountsWarning = "AddAccountsWarning",
   NoAssociatedAccounts = "NoAssociatedAccounts",
   LargeMoverLandingPage = "LargeMoverLandingPage",
+  OperationsList = "OperationsList",
+
+  // Live App generic modal screen (renders an earn/live-app webview as a modal presentation)
+  LiveAppModal = "LiveAppModal",
 }
 
 export enum NavigatorName {
@@ -577,6 +607,7 @@ export enum NavigatorName {
   Base = "Base",
   BaseOnboarding = "BaseOnboarding",
   BuyDevice = "BuyDevice",
+  EvmDelegationFlow = "EvmDelegationFlow",
   CosmosClaimRewardsFlow = "CosmosClaimRewardsFlow",
   CosmosDelegationFlow = "CosmosDelegationFlow",
   CosmosRedelegationFlow = "CosmosRedelegationFlow",
@@ -590,6 +621,7 @@ export enum NavigatorName {
   ClaimRewards = "ClaimRewards",
   Freeze = "Freeze",
   MyLedger = "MyLedger",
+  MyWallet = "MyWalletNavigator",
   Onboarding = "Onboarding",
   OnboardingCarefulWarning = "OnboardingCarefulWarning",
   OnboardingPreQuiz = "OnboardingPreQuiz",
@@ -606,6 +638,7 @@ export enum NavigatorName {
   SwapSubScreens = "SwapSubScreensNavigator",
   Perps = "PerpsNavigator",
   Earn = "EarnNavigator",
+  Borrow = "BorrowNavigator",
   Fees = "FeesNavigator",
   TezosDelegationFlow = "TezosDelegationFlow",
   TronVoteFlow = "TronVoteFlow",
@@ -621,6 +654,9 @@ export enum NavigatorName {
 
   // Evm
   EvmEditTransaction = "EvmEditTransaction",
+
+  // Bitcoin
+  BitcoinEditTransaction = "BitcoinEditTransaction",
 
   // Polkadot
   PolkadotBondFlow = "PolkadotBondFlow",
@@ -662,6 +698,7 @@ export enum NavigatorName {
   SuiUndelegateFlow = "SuiUndelegateFlow",
 
   CantonOnboard = "CantonOnboard",
+  ConcordiumOnboard = "ConcordiumOnboard",
 
   // Tab
   Main = "Main",
@@ -689,6 +726,8 @@ export enum NavigatorName {
   WalletSync = "WalletSync",
   ModularDrawer = "ModularDrawer",
   DeviceSelection = "DeviceSelection",
+  AssetDetail = "AssetDetail",
   Assets = "Assets",
   Analytics = "Analytics",
+  OperationsHistory = "OperationsHistory",
 }

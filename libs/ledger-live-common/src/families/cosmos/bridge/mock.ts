@@ -11,11 +11,11 @@ import type {
   StatusErrorMap,
   Transaction,
 } from "@ledgerhq/coin-cosmos/types/index";
-import { getMainAccount } from "@ledgerhq/coin-framework/account/index";
+import { getMainAccount } from "@ledgerhq/ledger-wallet-framework/account/index";
 import {
   getSerializedAddressParameters,
   updateTransaction,
-} from "@ledgerhq/coin-framework/bridge/jsHelpers";
+} from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
 import {
   AmountRequired,
@@ -36,7 +36,19 @@ import {
   sync,
 } from "../../../bridge/mockHelpers";
 import { getCurrencyConfiguration } from "../../../config";
+import coinConfig, { CosmosCoinConfig } from "@ledgerhq/coin-cosmos/config";
 import { validateAddress } from "../../../bridge/validateAddress";
+
+let isConfigLoaded = false;
+const loadCoinConfig = () => {
+  if (!isConfigLoaded) {
+    isConfigLoaded = true;
+    coinConfig.setCoinConfig(currencyId => {
+      if (!currencyId) throw new Error("No currency provided");
+      return getCurrencyConfiguration<CosmosCoinConfig>(currencyId);
+    });
+  }
+};
 
 const receive = makeAccountBridgeReceive();
 
@@ -138,7 +150,7 @@ const accountBridge: AccountBridge<Transaction> = {
 const currencyBridge: CurrencyBridge = {
   scanAccounts,
   preload: (currency: CryptoCurrency) => {
-    const config = getCurrencyConfiguration(currency);
+    const config = getCurrencyConfiguration(currency.id);
     setCosmosPreloadData("cosmos", mockPreloadedData);
     return Promise.resolve({ validators: mockPreloadedData, config });
   },
@@ -161,4 +173,5 @@ const currencyBridge: CurrencyBridge = {
 export default {
   currencyBridge,
   accountBridge,
+  loadCoinConfig,
 };

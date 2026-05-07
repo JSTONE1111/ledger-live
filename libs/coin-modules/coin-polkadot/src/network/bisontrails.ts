@@ -1,5 +1,5 @@
 import querystring from "querystring";
-import { encodeOperationId } from "@ledgerhq/coin-framework/operation";
+import { encodeOperationId } from "@ledgerhq/ledger-wallet-framework/operation";
 import network from "@ledgerhq/live-network/network";
 import { log } from "@ledgerhq/logs";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
@@ -24,7 +24,7 @@ const LIMIT = 200;
  * @returns {string}
  */
 const getBaseApiUrl = (currency?: CryptoCurrency): string =>
-  coinConfig.getCoinConfig(currency).indexer.url;
+  coinConfig.getCoinConfig(currency?.id).indexer.url;
 
 /**
  * Fetch operation lists from indexer
@@ -74,6 +74,7 @@ const getOperationType = (
     case "transfer":
     case "transferAllowDeath":
     case "transferKeepAlive":
+    case "transferAll":
       return "OUT";
 
     case "bond":
@@ -203,7 +204,10 @@ const extrinsicToOperation = (
 ): PolkadotOperation | null => {
   let type = getOperationType(extrinsic.section, extrinsic.method);
 
-  if (type === "OUT" && extrinsic.affectedAddress1 === addr && extrinsic.signer !== addr) {
+  if (
+    (type === "OUT" && extrinsic.affectedAddress1 === addr && extrinsic.signer !== addr) ||
+    (extrinsic.method === "transferAll" && extrinsic.signer !== addr)
+  ) {
     type = "IN";
   }
 

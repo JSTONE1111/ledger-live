@@ -6,7 +6,6 @@ import FeatureToggle from "@ledgerhq/live-common/featureFlags/FeatureToggle";
 import {
   ListItem,
   ListItemLeading,
-  ListItemSpot,
   ListItemContent,
   ListItemTitle,
   ListItemTrailing,
@@ -14,9 +13,10 @@ import {
   Subheader,
   SubheaderRow,
   SubheaderTitle,
+  Spot,
 } from "@ledgerhq/lumen-ui-react";
 import { track } from "~/renderer/analytics/segment";
-import { PORTFOLIO_TRACKING_PAGE_NAME } from "../../utils/constants";
+import { PORTFOLIO_TRACKING_PAGE_NAME } from "LLD/utils/constants";
 
 export const PerpsEntryPoint = () => {
   const { t } = useTranslation();
@@ -40,7 +40,7 @@ export const PerpsEntryPoint = () => {
         </Subheader>
         <ListItem onClick={handleClick} className="rounded-md bg-surface">
           <ListItemLeading>
-            <ListItemSpot appearance="icon" icon={Infinite} />
+            <Spot appearance="icon" icon={Infinite} />
             <ListItemContent>
               <ListItemTitle>{t("portfolio.perpsEntry.description")}</ListItemTitle>
             </ListItemContent>

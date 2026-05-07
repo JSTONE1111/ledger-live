@@ -8,6 +8,7 @@ import { openModal } from "~/renderer/actions/modals";
 import { track, trackPage } from "~/renderer/analytics/segment";
 import { openURL } from "~/renderer/linking";
 import type { State } from "~/renderer/reducers";
+import { AFTER_ONBOARDING_STATE } from "~/renderer/reducers/settings";
 import { mockDomMeasurements } from "LLD/features/__tests__/shared";
 import ModularDrawerAddAccountFlowManager from "LLD/features/AddAccountDrawer/ModularDrawerAddAccountFlowManager";
 import {
@@ -75,24 +76,26 @@ jest.mock("~/renderer/reducers/devices", () => {
 jest.mock("@ledgerhq/live-common/bridge/index", () => ({
   __esModule: true,
   getCurrencyBridge: () => ({
-    scanAccounts: () => ({
-      pipe: () => ({
-        subscribe: ({
-          next,
-          complete,
-        }: {
-          next: (accounts: Account[]) => void;
-          complete: () => void;
-        }) => {
-          triggerNext = accounts => next(accounts);
-          triggerComplete = () => complete();
-        },
+    scanAccounts: () =>
+      new Observable<{ account: Account }>(subscriber => {
+        triggerNext = accounts => {
+          const account = accounts[accounts.length - 1];
+          if (account) {
+            subscriber.next({ account });
+          }
+        };
+        triggerComplete = () => subscriber.complete();
       }),
-    }),
     preload: () => true,
     hydrate: () => true,
   }),
   getAccountBridge: () => mockAccountBridge,
+}));
+
+jest.mock("~/renderer/bridge/cache", () => ({
+  __esModule: true,
+  ...jest.requireActual("~/renderer/bridge/cache"),
+  prepareCurrency: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock("~/renderer/animations", () => ({
@@ -151,11 +154,12 @@ const mockViewKeyProgressSubscription = async (
 
 const setup = (state?: Partial<State>) => {
   const initialState = {
+    settings: AFTER_ONBOARDING_STATE,
     ...state,
-    modularDrawer: {
+    modularDialog: {
       source: "MADSource",
       flow: "Add account",
-      ...state?.modularDrawer,
+      ...state?.modularDialog,
     },
   };
 
@@ -168,7 +172,7 @@ function expectTrackPage(
   props: { flow?: string; reason?: string } = {},
   source = "MADSource",
 ) {
-  expect(trackPage).toHaveBeenNthCalledWith(n, page, undefined, { ...props, source }, true, true);
+  expect(trackPage).toHaveBeenNthCalledWith(n, page, undefined, { ...props, source }, true, true, false);
 }
 
 describe("ModularDrawerAddAccountFlowManager", () => {
@@ -197,7 +201,7 @@ describe("ModularDrawerAddAccountFlowManager", () => {
     await userEvent.click(learnMoreLink);
 
     expect(openURL).toHaveBeenCalledTimes(1);
-    expect(openURL).toHaveBeenCalledWith(urls.aleo.viewKeyLearnMore);
+    expect(openURL).toHaveBeenCalledWith(urls.aleo.learnMore);
   });
 
   it("should find and add Aleo accounts", async () => {

@@ -1,32 +1,19 @@
 import React from "react";
-import { render, screen, waitFor } from "tests/testSetup";
+import { render, screen, waitFor, withFlagOverrides } from "tests/testSetup";
 import { server, http, HttpResponse } from "tests/server";
 import { MarketMockedResponse } from "tests/handlers/fixtures/market";
 import i18next from "i18next";
 import PortfolioPage from "../index";
-import { DeviceModelId } from "@ledgerhq/devices";
-import type {
-  Portfolio as PortfolioType,
-  DeviceInfo as DeviceInfoType,
-  DeviceModelInfo as DeviceModelInfoType,
-} from "@ledgerhq/types-live";
+import type { Portfolio as PortfolioType } from "@ledgerhq/types-live";
 import { PortfolioView } from "../PortfolioView";
 import * as portfolioReact from "@ledgerhq/live-countervalues-react/portfolio";
 import * as countervaluesReact from "@ledgerhq/live-countervalues-react";
 import { useNavigate } from "react-router";
 import { BTC_ACCOUNT, EMPTY_BTC_ACCOUNT } from "../../__mocks__/accounts.mock";
 import { createMockCategorizedAssets } from "@ledgerhq/asset-aggregation/mocks/categorizedAssets.mock";
-import { INITIAL_STATE } from "~/renderer/reducers/settings";
+import { AFTER_ONBOARDING_STATE } from "~/renderer/reducers/settings";
 import { track } from "~/renderer/analytics/segment";
-import { PORTFOLIO_TRACKING_PAGE_NAME } from "../utils/constants";
-
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-const MOCK_LAST_SEEN_DEVICE: DeviceModelInfoType = {
-  modelId: DeviceModelId.nanoX,
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  deviceInfo: {} as DeviceInfoType,
-  apps: [],
-};
+import { PORTFOLIO_TRACKING_PAGE_NAME } from "LLD/utils/constants";
 
 const MARKET_API_ENDPOINT = "https://countervalues.live.ledger.com/v3/markets";
 
@@ -35,6 +22,13 @@ const mockNavigate = jest.fn();
 jest.mock("~/renderer/analytics/segment", () => ({
   ...jest.requireActual("~/renderer/analytics/segment"),
   track: jest.fn(),
+}));
+
+// Prevent loading ESM-only @braze/web-sdk (pulled in by dynamic content hooks if imported)
+jest.mock("@braze/web-sdk", () => ({
+  getCachedContentCards: jest.fn(() => ({ cards: [] })),
+  logCardDismissal: jest.fn(),
+  logContentCardClick: jest.fn(),
 }));
 
 jest.mock("react-router", () => ({
@@ -92,15 +86,20 @@ jest.mock("LLD/hooks/useCategorizedAssets", () => ({
   useCategorizedAssetsFromPortfolio: () => ({
     categorizedAssets: createMockCategorizedAssets(),
     isLoadingStablecoinTickers: false,
+    stablecoinTickers: new Set<string>(),
   }),
 }));
 
-jest.mock("~/renderer/hooks/usePrice", () => ({
-  usePrice: () => ({
-    counterValue: null,
-    counterValueCurrency: { units: [{ name: "USD", code: "USD", magnitude: 2 }] },
-  }),
-}));
+jest.mock("~/renderer/hooks/usePrice", () => {
+  const { getFiatCurrencyByTicker } = jest.requireActual("@ledgerhq/live-common/currencies/index");
+  const usd = getFiatCurrencyByTicker("USD");
+  return {
+    usePrice: () => ({
+      counterValue: null,
+      counterValueCurrency: usd,
+    }),
+  };
+});
 
 jest.mock("@ledgerhq/live-countervalues-react", () => ({
   ...jest.requireActual("@ledgerhq/live-countervalues-react"),
@@ -136,6 +135,9 @@ describe("PortfolioView", () => {
     shouldDisplayGraphRework: true,
     shouldDisplayQuickActionCtas: true,
     shouldDisplayAssetSection: true,
+    shouldDisplayOperationsList: true,
+    shouldDisplayBorrowSection: false,
+    shouldDisplayBrazePlacement: false,
     isClearCacheBannerVisible: false,
     filterOperations: () => true,
     accounts: [],
@@ -164,11 +166,7 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayGraphRework={true} />, {
         initialState: {
           accounts: [BTC_ACCOUNT],
-          settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-          },
+          settings: AFTER_ONBOARDING_STATE,
         },
       });
 
@@ -185,11 +183,7 @@ describe("PortfolioView", () => {
       const { user } = render(<PortfolioView {...defaultProps} shouldDisplayGraphRework />, {
         initialState: {
           accounts: [BTC_ACCOUNT],
-          settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-          },
+          settings: AFTER_ONBOARDING_STATE,
         },
       });
 
@@ -202,11 +196,7 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayGraphRework={true} />, {
         initialState: {
           accounts: [],
-          settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-          },
+          settings: AFTER_ONBOARDING_STATE,
         },
       });
 
@@ -218,11 +208,7 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayGraphRework={true} />, {
         initialState: {
           accounts: [EMPTY_BTC_ACCOUNT],
-          settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-          },
+          settings: AFTER_ONBOARDING_STATE,
         },
       });
 
@@ -234,8 +220,7 @@ describe("PortfolioView", () => {
         initialState: {
           accounts: [],
           settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
+            ...AFTER_ONBOARDING_STATE,
             lastSeenDevice: null,
           },
         },
@@ -251,8 +236,7 @@ describe("PortfolioView", () => {
         initialState: {
           accounts: [],
           settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
+            ...AFTER_ONBOARDING_STATE,
             lastSeenDevice: null,
           },
         },
@@ -266,9 +250,7 @@ describe("PortfolioView", () => {
         initialState: {
           accounts: [BTC_ACCOUNT],
           settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
+            ...AFTER_ONBOARDING_STATE,
             discreetMode: true,
           },
         },
@@ -284,9 +266,7 @@ describe("PortfolioView", () => {
         initialState: {
           accounts: [BTC_ACCOUNT],
           settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
+            ...AFTER_ONBOARDING_STATE,
             discreetMode: false,
           },
         },
@@ -300,7 +280,7 @@ describe("PortfolioView", () => {
       expect(balanceElement).not.toHaveTextContent("••••"); // Ensure no placeholders
     });
 
-    it("should not show loading when countervalues are polling but balance is already available", () => {
+    it("should display loading state when countervalues are being polled", () => {
       mockUseCountervaluesPolling.mockReturnValue({
         ...defaultPollingMock,
         pending: true,
@@ -310,48 +290,44 @@ describe("PortfolioView", () => {
         initialState: {
           accounts: [BTC_ACCOUNT],
           settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-            overriddenFeatureFlags: {
-              ...INITIAL_STATE.overriddenFeatureFlags,
-              lwdWallet40: {
-                enabled: true,
-                params: { balanceRefreshRework: true },
-              },
-            },
+            ...AFTER_ONBOARDING_STATE,
           },
+          ...withFlagOverrides({
+            lwdWallet40: {
+              enabled: true,
+              params: { balanceRefreshRework: true },
+            },
+          }),
         },
       });
 
       expect(screen.getByTestId("portfolio-balance")).toBeVisible();
     });
 
-    it("should display loading state when balance is not yet available", () => {
+    it("should display placeholder when balance is not yet available", () => {
       mockUsePortfolioThrottled.mockReturnValue({
         ...defaultPortfolioMock,
         balanceAvailable: false,
+        balanceHistory: [],
       });
 
       render(<PortfolioView {...defaultProps} shouldDisplayGraphRework={true} />, {
         initialState: {
           accounts: [BTC_ACCOUNT],
           settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-            overriddenFeatureFlags: {
-              ...INITIAL_STATE.overriddenFeatureFlags,
-              lwdWallet40: {
-                enabled: true,
-                params: { balanceRefreshRework: true },
-              },
-            },
+            ...AFTER_ONBOARDING_STATE,
           },
+          ...withFlagOverrides({
+            lwdWallet40: {
+              enabled: true,
+              params: { balanceRefreshRework: true },
+            },
+          }),
         },
       });
 
       expect(screen.getByTestId("portfolio-balance")).toBeVisible();
+      expect(screen.getByTestId("portfolio-placeholder-balance")).toBeVisible();
       expect(screen.queryByTestId("portfolio-trend")).toBeNull();
     });
   });
@@ -365,11 +341,7 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayGraphRework />, {
         initialState: {
           accounts: [BTC_ACCOUNT],
-          settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-          },
+          settings: AFTER_ONBOARDING_STATE,
         },
       });
 
@@ -386,11 +358,7 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayGraphRework />, {
         initialState: {
           accounts: [BTC_ACCOUNT],
-          settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-          },
+          settings: AFTER_ONBOARDING_STATE,
         },
       });
 
@@ -404,11 +372,7 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayGraphRework />, {
         initialState: {
           accounts: [BTC_ACCOUNT],
-          settings: {
-            ...INITIAL_STATE,
-            hasCompletedOnboarding: true,
-            lastSeenDevice: MOCK_LAST_SEEN_DEVICE,
-          },
+          settings: AFTER_ONBOARDING_STATE,
         },
       });
 
@@ -439,7 +403,7 @@ describe("PortfolioView", () => {
         expect(screen.getByTestId("trending-assets-list")).toBeVisible();
       });
 
-      expect(screen.getByText("Explore market")).toBeVisible();
+      expect(screen.getByText("Explore the market")).toBeVisible();
     });
 
     it("should render MarketBanner skeleton while loading", () => {
@@ -471,7 +435,7 @@ describe("PortfolioView", () => {
 
     it("should not render MarketBanner when shouldDisplayMarketBanner is false", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayMarketBanner={false} />);
-      expect(screen.queryByText("Explore market")).toBeNull();
+      expect(screen.queryByText("Explore the market")).toBeNull();
     });
   });
 
@@ -492,13 +456,13 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} />, {
         initialState: {
           settings: {
-            ...INITIAL_STATE,
-            overriddenFeatureFlags: {
-              ptxPerpsLiveApp: {
-                enabled: true,
-              },
-            },
+            ...AFTER_ONBOARDING_STATE,
           },
+          ...withFlagOverrides({
+            ptxPerpsLiveApp: {
+              enabled: true,
+            },
+          }),
         },
       });
 
@@ -509,13 +473,13 @@ describe("PortfolioView", () => {
       render(<PortfolioView {...defaultProps} />, {
         initialState: {
           settings: {
-            ...INITIAL_STATE,
-            overriddenFeatureFlags: {
-              ptxPerpsLiveApp: {
-                enabled: false,
-              },
-            },
+            ...AFTER_ONBOARDING_STATE,
           },
+          ...withFlagOverrides({
+            ptxPerpsLiveApp: {
+              enabled: false,
+            },
+          }),
         },
       });
 
@@ -526,13 +490,13 @@ describe("PortfolioView", () => {
       const { user } = render(<PortfolioView {...defaultProps} />, {
         initialState: {
           settings: {
-            ...INITIAL_STATE,
-            overriddenFeatureFlags: {
-              ptxPerpsLiveApp: {
-                enabled: true,
-              },
-            },
+            ...AFTER_ONBOARDING_STATE,
           },
+          ...withFlagOverrides({
+            ptxPerpsLiveApp: {
+              enabled: true,
+            },
+          }),
         },
       });
 
@@ -561,20 +525,27 @@ describe("PortfolioView", () => {
         expect(screen.getByText("Bitcoin")).toBeVisible();
       });
 
-      expect(screen.queryByText("Cryptos")).toBeVisible();
+      expect(screen.queryByText("Crypto")).toBeVisible();
       expect(screen.queryByText("Stablecoins")).toBeVisible();
     });
 
     it("should render AssetDistribution when shouldDisplayAssetSection is false", () => {
       render(<PortfolioView {...defaultProps} shouldDisplayAssetSection={false} />);
 
-      expect(screen.queryByText("Cryptos")).not.toBeInTheDocument();
+      expect(screen.queryByText("Crypto")).not.toBeInTheDocument();
     });
   });
 
   describe("AddAccount CTA", () => {
-    it("should render AddAccount CTA when user has zero accounts and Wallet 4.0 is enabled", () => {
-      render(<PortfolioView {...defaultProps} totalAccounts={0} isWallet40Enabled={true} />);
+    it("should render AddAccount CTA when user has zero accounts, Wallet 4.0 is enabled, and asset section is not displayed", () => {
+      render(
+        <PortfolioView
+          {...defaultProps}
+          totalAccounts={0}
+          isWallet40Enabled={true}
+          shouldDisplayAssetSection={false}
+        />,
+      );
 
       expect(screen.getByTestId("portfolio-add-account-button")).toBeVisible();
     });
@@ -586,19 +557,55 @@ describe("PortfolioView", () => {
     });
 
     it("should not render AddAccount CTA when Wallet 4.0 is disabled", () => {
-      render(<PortfolioView {...defaultProps} totalAccounts={0} isWallet40Enabled={false} />);
+      render(
+        <PortfolioView
+          {...defaultProps}
+          totalAccounts={0}
+          isWallet40Enabled={false}
+          shouldDisplayAssetSection={false}
+        />,
+      );
+
+      expect(screen.queryByTestId("portfolio-add-account-button")).toBeNull();
+    });
+
+    it("should not render AddAccount CTA when asset section is displayed", () => {
+      render(
+        <PortfolioView
+          {...defaultProps}
+          totalAccounts={0}
+          isWallet40Enabled={true}
+          shouldDisplayAssetSection={true}
+        />,
+      );
 
       expect(screen.queryByTestId("portfolio-add-account-button")).toBeNull();
     });
   });
+
+  describe("CryptoAddressesBanner", () => {
+    it("should render crypto-addresses-banner when asset section is displayed", async () => {
+      render(<PortfolioView {...defaultProps} shouldDisplayAssetSection={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("crypto-addresses-banner")).toBeVisible();
+      });
+    });
+
+    it("should not render crypto-addresses-banner when asset section is not displayed", () => {
+      render(<PortfolioView {...defaultProps} shouldDisplayAssetSection={false} />);
+
+      expect(screen.queryByTestId("crypto-addresses-banner")).toBeNull();
+    });
+  });
 });
 
-const walletV4TourFlags = {
+const walletV4TourFlagOverrides = withFlagOverrides({
   lwdWallet40: {
     enabled: true,
     params: { tour: true, mainNavigation: true, marketBanner: true },
   },
-};
+});
 
 describe("Portfolio (Wallet V4 Tour)", () => {
   beforeEach(() => {
@@ -613,19 +620,19 @@ describe("Portfolio (Wallet V4 Tour)", () => {
     render(<PortfolioPage />, {
       initialState: {
         settings: {
-          ...INITIAL_STATE,
+          ...AFTER_ONBOARDING_STATE,
           hasSeenWalletV4Tour: false,
-          overriddenFeatureFlags: walletV4TourFlags,
         },
+        ...walletV4TourFlagOverrides,
       },
     });
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: /wallet v4 tour/i })).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
-    expect(track).toHaveBeenCalledWith("Wallet V4 Tour Shown", {
-      platform: "LWD",
-      source: "portfolio",
+    expect(track).toHaveBeenCalledWith("product_tour_card", {
+      page: "Product Tour WV4",
+      card: 1,
     });
   });
 
@@ -633,13 +640,13 @@ describe("Portfolio (Wallet V4 Tour)", () => {
     render(<PortfolioPage />, {
       initialState: {
         settings: {
-          ...INITIAL_STATE,
+          ...AFTER_ONBOARDING_STATE,
           hasSeenWalletV4Tour: true,
-          overriddenFeatureFlags: walletV4TourFlags,
         },
+        ...walletV4TourFlagOverrides,
       },
     });
 
-    expect(screen.queryByRole("dialog", { name: /wallet v4 tour/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

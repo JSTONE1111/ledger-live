@@ -1,5 +1,93 @@
 # @ledgerhq/live-env
 
+## 2.33.0
+
+### Minor Changes
+
+- [#16146](https://github.com/LedgerHQ/ledger-live/pull/16146) [`78acbfa`](https://github.com/LedgerHQ/ledger-live/commit/78acbfae7319c5b3fb1453f8727e2210e895669c) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - feat: switch aleo backend back to prod
+
+- [#16070](https://github.com/LedgerHQ/ledger-live/pull/16070) [`1bd0cac`](https://github.com/LedgerHQ/ledger-live/commit/1bd0cac7957422fa06e18424e9e2706c39072078) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-stellar): remove some `@ledgerhq/` dependencies
+
+- [#16023](https://github.com/LedgerHQ/ledger-live/pull/16023) [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: remove eslint and prettier, replace with with oxlint and oxfmt
+
+- [#16233](https://github.com/LedgerHQ/ledger-live/pull/16233) [`f36e748`](https://github.com/LedgerHQ/ledger-live/commit/f36e74881c03a25164c0eac24b13765bbbbbb440) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - feat: enable aleo encrypted prove + remove jwt management
+
+## 2.33.0-next.0
+
+### Minor Changes
+
+- [#16146](https://github.com/LedgerHQ/ledger-live/pull/16146) [`78acbfa`](https://github.com/LedgerHQ/ledger-live/commit/78acbfae7319c5b3fb1453f8727e2210e895669c) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - feat: switch aleo backend back to prod
+
+- [#16070](https://github.com/LedgerHQ/ledger-live/pull/16070) [`1bd0cac`](https://github.com/LedgerHQ/ledger-live/commit/1bd0cac7957422fa06e18424e9e2706c39072078) Thanks [@francois-guerin-ledger](https://github.com/francois-guerin-ledger)! - chore(coin-stellar): remove some `@ledgerhq/` dependencies
+
+- [#16023](https://github.com/LedgerHQ/ledger-live/pull/16023) [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9) Thanks [@iqbalibrahim-ledger](https://github.com/iqbalibrahim-ledger)! - chore: remove eslint and prettier, replace with with oxlint and oxfmt
+
+- [#16233](https://github.com/LedgerHQ/ledger-live/pull/16233) [`f36e748`](https://github.com/LedgerHQ/ledger-live/commit/f36e74881c03a25164c0eac24b13765bbbbbb440) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - feat: enable aleo encrypted prove + remove jwt management
+
+## 2.32.0
+
+### Minor Changes
+
+- [#15236](https://github.com/LedgerHQ/ledger-live/pull/15236) [`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71) Thanks [@dilaouid](https://github.com/dilaouid)! - feat(libs): prepare lldHideSmallValueTokenOperations FF
+
+## 2.32.0-next.0
+
+### Minor Changes
+
+- [#15236](https://github.com/LedgerHQ/ledger-live/pull/15236) [`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71) Thanks [@dilaouid](https://github.com/dilaouid)! - feat(libs): prepare lldHideSmallValueTokenOperations FF
+
+## 2.31.0
+
+### Minor Changes
+
+- [#15465](https://github.com/LedgerHQ/ledger-live/pull/15465) [`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20) Thanks [@ishaba](https://github.com/ishaba)! - feat(sui): add support for testnet config
+
+## 2.31.0-next.0
+
+### Minor Changes
+
+- [#15465](https://github.com/LedgerHQ/ledger-live/pull/15465) [`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20) Thanks [@ishaba](https://github.com/ishaba)! - feat(sui): add support for testnet config
+
+## 2.30.0
+
+### Minor Changes
+
+- [#14856](https://github.com/LedgerHQ/ledger-live/pull/14856) [`fd24208`](https://github.com/LedgerHQ/ledger-live/commit/fd242082615ef0af25f0f5f96389b7406fc194dc) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Added sell button to all relevant screens on lwd and lwm
+
+- [#13835](https://github.com/LedgerHQ/ledger-live/pull/13835) [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d) Thanks [@qperrot](https://github.com/qperrot)! - Feature: Speed up and cancel Bitcoin transactions
+
+## 2.30.0-next.0
+
+### Minor Changes
+
+- [#14856](https://github.com/LedgerHQ/ledger-live/pull/14856) [`fd24208`](https://github.com/LedgerHQ/ledger-live/commit/fd242082615ef0af25f0f5f96389b7406fc194dc) Thanks [@hhumphrey-ledger](https://github.com/hhumphrey-ledger)! - Added sell button to all relevant screens on lwd and lwm
+
+- [#13835](https://github.com/LedgerHQ/ledger-live/pull/13835) [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d) Thanks [@qperrot](https://github.com/qperrot)! - Feature: Speed up and cancel Bitcoin transactions
+
+## 2.29.0
+
+### Minor Changes
+
+- [#14699](https://github.com/LedgerHQ/ledger-live/pull/14699) [`ec8a2d6`](https://github.com/LedgerHQ/ledger-live/commit/ec8a2d619b85117e2d74c595c6eae5cae6fda433) Thanks [@mateuszpalosz-ext](https://github.com/mateuszpalosz-ext)! - aleo private operations list
+
+- [#14519](https://github.com/LedgerHQ/ledger-live/pull/14519) [`2ca4f6c`](https://github.com/LedgerHQ/ledger-live/commit/2ca4f6c337a29cd81874261c697d74c82a312eee) Thanks [@mcayuelas-ledger](https://github.com/mcayuelas-ledger)! - Extract CoinGecko logic into standalone cg-client module, decoupling it from market feature
+
+- [#14738](https://github.com/LedgerHQ/ledger-live/pull/14738) [`3bb5c2e`](https://github.com/LedgerHQ/ledger-live/commit/3bb5c2e335c05945b1a7bc8c77d19d0ea03156a6) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - feat: hedera new erc20 indexer
+
+- [#14258](https://github.com/LedgerHQ/ledger-live/pull/14258) [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d) Thanks [@lysyi3m](https://github.com/lysyi3m)! - added concordium proxy & grpc client and core functionality implementation; extracted shared concordium-core package with types, serialization, CBOR and address utilities; simplified hw-app-concordium API to single signTransaction method with type-based routing
+
+## 2.29.0-next.0
+
+### Minor Changes
+
+- [#14699](https://github.com/LedgerHQ/ledger-live/pull/14699) [`ec8a2d6`](https://github.com/LedgerHQ/ledger-live/commit/ec8a2d619b85117e2d74c595c6eae5cae6fda433) Thanks [@mateuszpalosz-ext](https://github.com/mateuszpalosz-ext)! - aleo private operations list
+
+- [#14519](https://github.com/LedgerHQ/ledger-live/pull/14519) [`2ca4f6c`](https://github.com/LedgerHQ/ledger-live/commit/2ca4f6c337a29cd81874261c697d74c82a312eee) Thanks [@mcayuelas-ledger](https://github.com/mcayuelas-ledger)! - Extract CoinGecko logic into standalone cg-client module, decoupling it from market feature
+
+- [#14738](https://github.com/LedgerHQ/ledger-live/pull/14738) [`3bb5c2e`](https://github.com/LedgerHQ/ledger-live/commit/3bb5c2e335c05945b1a7bc8c77d19d0ea03156a6) Thanks [@mdomanski-ext-ledger](https://github.com/mdomanski-ext-ledger)! - feat: hedera new erc20 indexer
+
+- [#14258](https://github.com/LedgerHQ/ledger-live/pull/14258) [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d) Thanks [@lysyi3m](https://github.com/lysyi3m)! - added concordium proxy & grpc client and core functionality implementation; extracted shared concordium-core package with types, serialization, CBOR and address utilities; simplified hw-app-concordium API to single signTransaction method with type-based routing
+
 ## 2.28.0
 
 ### Minor Changes

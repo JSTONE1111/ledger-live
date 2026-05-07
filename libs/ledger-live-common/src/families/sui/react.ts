@@ -4,7 +4,7 @@ import { BigNumber } from "bignumber.js";
 import { SuiAccount, SuiResources, SuiValidator, MappedStake } from "./types";
 import { getAccountCurrency } from "../../account";
 import { Unit } from "@ledgerhq/types-cryptoassets";
-import { formatCurrencyUnit } from "@ledgerhq/coin-framework/currencies";
+import { formatCurrencyUnit } from "@ledgerhq/coin-module-framework/currencies";
 import { getCurrentSuiPreloadData } from "@ledgerhq/coin-sui/preload";
 import { getOperationExtra } from "@ledgerhq/coin-sui/getOperationExtra";
 import { OperationType } from "@ledgerhq/types-live";
@@ -30,15 +30,16 @@ export function useGetExtraDetails(account: SuiAccount, type: OperationType, dig
   }
   const cache = account.suiResources.cachedOps;
   const [data, setData] = useState(cache[digest]);
+  const currencyId = getAccountCurrency(account).id;
 
   useEffect(() => {
     if (type !== "DELEGATE" && type !== "UNDELEGATE") return;
     if (data) return;
-    getOperationExtra(digest).then(result => {
+    getOperationExtra(digest, currencyId).then(result => {
       setData(result);
       cache[digest] = result;
     });
-  }, [data, digest, cache, type]);
+  }, [data, digest, cache, type, currencyId]);
 
   return data;
 }

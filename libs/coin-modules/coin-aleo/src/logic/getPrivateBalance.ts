@@ -10,34 +10,56 @@ export async function getPrivateBalance({
   currency,
   viewKey,
   privateRecords,
+  oldUnspentRecords,
+  onProgress,
+  signal,
 }: {
   currency: CryptoCurrency;
   viewKey: string;
   privateRecords: AleoPrivateRecord[];
+  oldUnspentRecords: AleoUnspentRecord[];
+  onProgress?: (completed: number, total: number) => void;
+  signal?: AbortSignal;
 }): Promise<{
   balance: BigNumber;
   unspentRecords: AleoUnspentRecord[];
 }> {
+  const recordByCiphertext = new Map(oldUnspentRecords.map(r => [r.record_ciphertext, r]));
   const unspentCreditsRecords = privateRecords.filter(
     record => record.program_name === PROGRAM_ID.CREDITS && !record.spent,
   );
 
+  let completed = 0;
   const decryptedResults = await promiseAllBatched(2, unspentCreditsRecords, async record => {
-    const decryptedRecord = await sdkClient.decryptRecord({
-      currency,
-      viewKey,
-      ciphertext: record.record_ciphertext,
-    });
-    const microcredits = parseMicrocredits(decryptedRecord.data.microcredits);
+    signal?.throwIfAborted();
+    const cachedRecord = recordByCiphertext.get(record.record_ciphertext);
 
-    return {
-      microcredits,
-      unspentRecord: {
-        ...record,
+    let result: { microcredits: string; unspentRecord: AleoUnspentRecord };
+    if (cachedRecord) {
+      result = {
+        microcredits: cachedRecord.microcredits,
+        unspentRecord: cachedRecord,
+      };
+    } else {
+      const decryptedRecord = await sdkClient.decryptRecord({
+        currency,
+        viewKey,
+        ciphertext: record.record_ciphertext,
+      });
+      const microcredits = parseMicrocredits(decryptedRecord.data.microcredits);
+
+      result = {
         microcredits,
-        decryptedData: decryptedRecord,
-      },
-    };
+        unspentRecord: {
+          ...record,
+          microcredits,
+          decryptedData: decryptedRecord,
+        },
+      };
+    }
+
+    onProgress?.(++completed, unspentCreditsRecords.length);
+    return result;
   });
 
   const balance = decryptedResults.reduce((acc, { microcredits }) => {

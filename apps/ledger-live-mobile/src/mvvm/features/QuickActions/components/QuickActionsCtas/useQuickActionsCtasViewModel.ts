@@ -7,6 +7,8 @@ import {
   Plus,
   LedgerLogo,
   Cart,
+  ArrowUp,
+  ArrowDown,
 } from "@ledgerhq/lumen-ui-rnative/symbols";
 import { NavigatorName, ScreenName } from "~/const";
 import { BaseNavigatorStackParamList } from "~/components/RootNavigator/types/BaseNavigator";
@@ -14,15 +16,21 @@ import {
   RootNavigationComposite,
   StackNavigatorNavigation,
 } from "~/components/RootNavigator/types/helpers";
-import { readOnlyModeEnabledSelector } from "~/reducers/settings";
+import { languageSelector, readOnlyModeEnabledSelector } from "~/reducers/settings";
 import { accountsCountSelector, areAccountsEmptySelector } from "~/reducers/accounts";
 import useFeature from "@ledgerhq/live-common/featureFlags/useFeature";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import { resolveRemoteCopy } from "@ledgerhq/live-common/featureFlags/remoteABTesting/resolveRemoteCopy";
 import { track } from "~/analytics";
 import { useTransferDrawerController } from "../../hooks/useTransferDrawerController";
 import { QuickActionCta, UserQuickActionsState } from "../../types";
 import { QUICK_ACTIONS_TEST_IDS } from "../../testIds";
 import { useTranslation } from "~/context/Locale";
 import useBuyDeviceAction from "LLM/features/Reborn/hooks/useBuyDeviceAction";
+import { useOpenSwap } from "LLM/features/Swap";
+import { useOpenReceiveDrawer } from "LLM/features/Receive";
+
+const BUTTON_LOCATION = "quick_action";
 
 interface UseQuickActionsCtasViewModelProps {
   sourceScreenName?: string;
@@ -30,6 +38,7 @@ interface UseQuickActionsCtasViewModelProps {
 
 interface QuickActionsCtasViewModel {
   quickActions: readonly QuickActionCta[];
+  isVariant: boolean;
 }
 
 export const useQuickActionsCtasViewModel = ({
@@ -48,78 +57,75 @@ export const useQuickActionsCtasViewModel = ({
   const ptxServiceCtaExchangeDrawer = useFeature("ptxServiceCtaExchangeDrawer");
   const isExchangeEnabled = ptxServiceCtaExchangeDrawer?.enabled ?? true;
 
+  const transferCopyFlag = useFeature("llmTransferButtonCopyVariant");
+  const language = useSelector(languageSelector);
+  const isEN = language === "en";
+
+  const { shouldDisplayQuickActionsCtasVariant } = useWalletFeaturesConfig("mobile");
+
   const { openDrawer: openTransferDrawer } = useTransferDrawerController();
   const handleBuyDeviceAction = useBuyDeviceAction();
+  const { handleOpenSwap } = useOpenSwap({ sourceScreenName: pageName });
+  const { handleOpenReceiveDrawer } = useOpenReceiveDrawer({
+    sourceScreenName: pageName,
+    fromMenu: false,
+  });
 
-  // Determine user state
   const userState: UserQuickActionsState = useMemo(() => {
-    if (readOnlyModeEnabled) {
-      return "no_signer";
-    }
-    if (!hasFunds) {
-      return "no_funds";
-    }
+    if (readOnlyModeEnabled) return "no_signer";
+    if (!hasFunds) return "no_funds";
     return "has_funds";
   }, [readOnlyModeEnabled, hasFunds]);
 
-  // Handlers for standard CTAs (Transfer, Swap, Buy)
+  const trackPress = useCallback(
+    (button: string) => {
+      track("button_clicked", { button, buttonLocation: BUTTON_LOCATION, page: pageName });
+    },
+    [pageName],
+  );
+
   const handleTransferPress = useCallback(() => {
-    track("button_clicked", {
-      button: "quick_action",
-      flow: "transfer",
-      page: pageName,
-    });
+    trackPress("transfer");
     openTransferDrawer({ sourceScreenName: pageName });
-  }, [openTransferDrawer, pageName]);
+  }, [trackPress, openTransferDrawer, pageName]);
 
   const handleSwapPress = useCallback(() => {
-    track("button_clicked", {
-      button: "quick_action",
-      flow: "swap",
-      page: pageName,
-    });
-    navigation.navigate(NavigatorName.Swap);
-  }, [navigation, pageName]);
+    trackPress("swap");
+    handleOpenSwap();
+  }, [trackPress, handleOpenSwap]);
 
   const handleBuyPress = useCallback(() => {
-    track("button_clicked", {
-      button: "quick_action",
-      flow: "buy",
-      page: pageName,
-    });
-    navigation.navigate(NavigatorName.Exchange, {
-      screen: ScreenName.ExchangeBuy,
-    });
-  }, [navigation, pageName]);
+    trackPress("buy");
+    navigation.navigate(NavigatorName.Exchange, { screen: ScreenName.ExchangeBuy });
+  }, [trackPress, navigation]);
 
-  // Handlers for no-signer CTAs (Connect, Buy a Ledger)
   const handleConnectPress = useCallback(() => {
-    track("button_clicked", {
-      button: "quick_action",
-      flow: "connect",
-      page: pageName,
-    });
+    trackPress("connect");
     navigation.navigate(NavigatorName.BaseOnboarding, {
       screen: NavigatorName.Onboarding,
       params: {
         screen: ScreenName.OnboardingPostWelcomeSelection,
-        params: {
-          userHasDevice: true,
-        },
+        params: { userHasDevice: true },
       },
     });
-  }, [navigation, pageName]);
+  }, [trackPress, navigation]);
 
   const handleBuyLedgerPress = useCallback(() => {
-    track("button_clicked", {
-      button: "quick_action",
-      flow: "buy_ledger",
-      page: pageName,
-    });
+    trackPress("buy_ledger");
     handleBuyDeviceAction();
-  }, [handleBuyDeviceAction, pageName]);
+  }, [trackPress, handleBuyDeviceAction]);
 
-  // CTAs for no-signer state
+  const handleReceivePress = useCallback(() => {
+    trackPress("receive");
+    handleOpenReceiveDrawer();
+  }, [trackPress, handleOpenReceiveDrawer]);
+
+  const handleSendPress = useCallback(() => {
+    trackPress("send");
+    navigation.navigate(NavigatorName.SendFunds, { screen: ScreenName.SendCoin });
+  }, [trackPress, navigation]);
+
+  // no signer: Connect + Buy Ledger
   const noSignerActions: readonly QuickActionCta[] = useMemo(
     () => [
       {
@@ -142,12 +148,17 @@ export const useQuickActionsCtasViewModel = ({
     [t, handleConnectPress, handleBuyLedgerPress],
   );
 
-  // CTAs for no-funds and has-funds states
+  // standard: Transfer + Swap + Buy
   const standardActions: readonly QuickActionCta[] = useMemo(
     () => [
       {
         id: "transfer",
-        label: t("portfolio.quickActionsCtas.transfer"),
+        label: resolveRemoteCopy(
+          transferCopyFlag?.enabled,
+          isEN,
+          transferCopyFlag?.params?.buttonLabel,
+          t("portfolio.quickActionsCtas.transfer"),
+        ),
         icon: TransferVertical,
         disabled: false,
         onPress: handleTransferPress,
@@ -170,12 +181,76 @@ export const useQuickActionsCtasViewModel = ({
         testID: QUICK_ACTIONS_TEST_IDS.ctas.buy,
       },
     ],
-    [t, isExchangeEnabled, handleTransferPress, handleSwapPress, handleBuyPress],
+    [
+      t,
+      isEN,
+      transferCopyFlag,
+      isExchangeEnabled,
+      handleTransferPress,
+      handleSwapPress,
+      handleBuyPress,
+    ],
   );
 
-  const quickActions = userState === "no_signer" ? noSignerActions : standardActions;
+  // variant: Receive + Swap + Buy + Send (Send omitted when no funds)
+  const variantActions: readonly QuickActionCta[] = useMemo(
+    () => [
+      {
+        id: "receive",
+        label: t("portfolio.quickActionsCtas.receive"),
+        icon: ArrowDown,
+        disabled: false,
+        onPress: handleReceivePress,
+        testID: QUICK_ACTIONS_TEST_IDS.ctas.receive,
+      },
+      {
+        id: "swap",
+        label: t("portfolio.quickActionsCtas.swap"),
+        icon: Exchange,
+        disabled: !isExchangeEnabled,
+        onPress: handleSwapPress,
+        testID: QUICK_ACTIONS_TEST_IDS.ctas.swap,
+      },
+      {
+        id: "buy",
+        label: t("portfolio.quickActionsCtas.buy"),
+        icon: Plus,
+        disabled: !isExchangeEnabled,
+        onPress: handleBuyPress,
+        testID: QUICK_ACTIONS_TEST_IDS.ctas.buy,
+      },
+      ...(shouldDisplayQuickActionsCtasVariant
+        ? [
+            {
+              id: "send" as const,
+              label: t("portfolio.quickActionsCtas.send"),
+              icon: ArrowUp,
+              disabled: userState !== "has_funds",
+              onPress: handleSendPress,
+              testID: QUICK_ACTIONS_TEST_IDS.ctas.send,
+            },
+          ]
+        : []),
+    ],
+    [
+      t,
+      isExchangeEnabled,
+      userState,
+      shouldDisplayQuickActionsCtasVariant,
+      handleReceivePress,
+      handleSwapPress,
+      handleBuyPress,
+      handleSendPress,
+    ],
+  );
 
-  return {
-    quickActions,
-  };
+  const isVariant = shouldDisplayQuickActionsCtasVariant && userState !== "no_signer";
+
+  const quickActions = useMemo(() => {
+    if (userState === "no_signer") return noSignerActions;
+    if (isVariant) return variantActions;
+    return standardActions;
+  }, [userState, isVariant, noSignerActions, variantActions, standardActions]);
+
+  return { quickActions, isVariant };
 };

@@ -1,5 +1,5 @@
 import { createCustomErrorClass } from "@ledgerhq/errors";
-import { LedgerErrorConstructor } from "@ledgerhq/errors/lib/helpers";
+import { LedgerErrorConstructor } from "@ledgerhq/errors/helpers";
 
 export const InvalidAddressBecauseAlreadyDelegated = createCustomErrorClass(
   "InvalidAddressBecauseAlreadyDelegated",
@@ -8,3 +8,6 @@ export const UnsupportedTransactionMode = createCustomErrorClass<
   { mode: string },
   LedgerErrorConstructor<{ mode: string }>
 >("UnsupportedTransactionMode");
+export const MustDelegateBeforeStaking = createCustomErrorClass(
+  "MustDelegateBeforeStaking",
+);

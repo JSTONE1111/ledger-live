@@ -1,10 +1,11 @@
 import React, { Fragment, Component, useMemo, useState } from "react";
 import { ObjectInspector } from "react-inspector";
+// @ts-expect-error react-table v6 types don't export a module
 import ReactTable from "react-table";
 import styled from "styled-components";
 import "react-table/react-table.css";
 import { AccountRaw } from "@ledgerhq/types-live";
-import { decodeAccountId } from "@ledgerhq/coin-framework/lib/account/index";
+import { decodeAccountId } from "@ledgerhq/ledger-wallet-framework/account/index";
 import { findCryptoCurrencyById } from "@ledgerhq/cryptoassets";
 
 type App = {
@@ -558,7 +559,6 @@ class Logs extends Component<{
 }> {
   render() {
     const { logs } = this.props;
-    // @ts-expect-error FIXME
     return <ReactTable defaultPageSize={logs.length} filterable data={logs} columns={columns} />;
   }
 }

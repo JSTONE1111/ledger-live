@@ -1,5 +1,103 @@
 # @ledgerhq/client-ids
 
+## 0.8.3
+
+### Patch Changes
+
+- Updated dependencies [[`78acbfa`](https://github.com/LedgerHQ/ledger-live/commit/78acbfae7319c5b3fb1453f8727e2210e895669c), [`1bd0cac`](https://github.com/LedgerHQ/ledger-live/commit/1bd0cac7957422fa06e18424e9e2706c39072078), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`f36e748`](https://github.com/LedgerHQ/ledger-live/commit/f36e74881c03a25164c0eac24b13765bbbbbb440)]:
+  - @ledgerhq/live-env@2.33.0
+
+## 0.8.3-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`78acbfa`](https://github.com/LedgerHQ/ledger-live/commit/78acbfae7319c5b3fb1453f8727e2210e895669c), [`1bd0cac`](https://github.com/LedgerHQ/ledger-live/commit/1bd0cac7957422fa06e18424e9e2706c39072078), [`c910c1b`](https://github.com/LedgerHQ/ledger-live/commit/c910c1bd9b4f7fbcc0e33fe19b33da44085ab7f9), [`f36e748`](https://github.com/LedgerHQ/ledger-live/commit/f36e74881c03a25164c0eac24b13765bbbbbb440)]:
+  - @ledgerhq/live-env@2.33.0-next.0
+
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [[`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71)]:
+  - @ledgerhq/live-env@2.32.0
+
+## 0.8.2-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`7ffc0c5`](https://github.com/LedgerHQ/ledger-live/commit/7ffc0c5a7623aea32cdff2e093c14fae87352e71)]:
+  - @ledgerhq/live-env@2.32.0-next.0
+
+## 0.8.1
+
+### Patch Changes
+
+- Updated dependencies [[`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20)]:
+  - @ledgerhq/live-env@2.31.0
+
+## 0.8.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`d0559d8`](https://github.com/LedgerHQ/ledger-live/commit/d0559d84e119c844d92dc82c7648d0d9dc6c6e20)]:
+  - @ledgerhq/live-env@2.31.0-next.0
+
+## 0.8.0
+
+### Minor Changes
+
+- [#14990](https://github.com/LedgerHQ/ledger-live/pull/14990) [`5d4d2af`](https://github.com/LedgerHQ/ledger-live/commit/5d4d2af7fb1366c28c962be960917b77798e53dd) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Add UserId and DatadogId ID classes with redaction and export-rules. Extend identities store with userId/datadogId; add initFromPersisted, importFromLegacy, initFromScratch. Persistence and sync middleware use identities state. Trim DeviceId persistence allowlist.
+
+### Patch Changes
+
+- Updated dependencies [[`fd24208`](https://github.com/LedgerHQ/ledger-live/commit/fd242082615ef0af25f0f5f96389b7406fc194dc), [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d)]:
+  - @ledgerhq/live-env@2.30.0
+
+## 0.8.0-next.0
+
+### Minor Changes
+
+- [#14990](https://github.com/LedgerHQ/ledger-live/pull/14990) [`5d4d2af`](https://github.com/LedgerHQ/ledger-live/commit/5d4d2af7fb1366c28c962be960917b77798e53dd) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Add UserId and DatadogId ID classes with redaction and export-rules. Extend identities store with userId/datadogId; add initFromPersisted, importFromLegacy, initFromScratch. Persistence and sync middleware use identities state. Trim DeviceId persistence allowlist.
+
+### Patch Changes
+
+- Updated dependencies [[`fd24208`](https://github.com/LedgerHQ/ledger-live/commit/fd242082615ef0af25f0f5f96389b7406fc194dc), [`8cb2da1`](https://github.com/LedgerHQ/ledger-live/commit/8cb2da1f175f143666abcb66ef94bd230456846d)]:
+  - @ledgerhq/live-env@2.30.0-next.0
+
+## 0.7.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+## 0.7.0-next.0
+
+### Minor Changes
+
+- [#14913](https://github.com/LedgerHQ/ledger-live/pull/14913) [`dceb492`](https://github.com/LedgerHQ/ledger-live/commit/dceb4921a811ffc3cba96ff532ffcb5d1205431f) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Update TypeScript to latest 5.8.x
+
+## 0.6.0
+
+### Minor Changes
+
+- [#14616](https://github.com/LedgerHQ/ledger-live/pull/14616) [`e292df3`](https://github.com/LedgerHQ/ledger-live/commit/e292df30514168181545d7a572f723e31df78e77) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Migrate to React 19.
+
+### Patch Changes
+
+- Updated dependencies [[`ec8a2d6`](https://github.com/LedgerHQ/ledger-live/commit/ec8a2d619b85117e2d74c595c6eae5cae6fda433), [`2ca4f6c`](https://github.com/LedgerHQ/ledger-live/commit/2ca4f6c337a29cd81874261c697d74c82a312eee), [`3bb5c2e`](https://github.com/LedgerHQ/ledger-live/commit/3bb5c2e335c05945b1a7bc8c77d19d0ea03156a6), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d)]:
+  - @ledgerhq/live-env@2.29.0
+
+## 0.6.0-next.0
+
+### Minor Changes
+
+- [#14616](https://github.com/LedgerHQ/ledger-live/pull/14616) [`e292df3`](https://github.com/LedgerHQ/ledger-live/commit/e292df30514168181545d7a572f723e31df78e77) Thanks [@gre-ledger](https://github.com/gre-ledger)! - Migrate to React 19.
+
+### Patch Changes
+
+- Updated dependencies [[`ec8a2d6`](https://github.com/LedgerHQ/ledger-live/commit/ec8a2d619b85117e2d74c595c6eae5cae6fda433), [`2ca4f6c`](https://github.com/LedgerHQ/ledger-live/commit/2ca4f6c337a29cd81874261c697d74c82a312eee), [`3bb5c2e`](https://github.com/LedgerHQ/ledger-live/commit/3bb5c2e335c05945b1a7bc8c77d19d0ea03156a6), [`5f1c644`](https://github.com/LedgerHQ/ledger-live/commit/5f1c644fd5f757f48618b62e976faac274ced40d)]:
+  - @ledgerhq/live-env@2.29.0-next.0
+
 ## 0.5.2
 
 ### Patch Changes

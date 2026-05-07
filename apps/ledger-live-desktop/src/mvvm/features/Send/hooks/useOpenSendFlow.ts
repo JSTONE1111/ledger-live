@@ -1,12 +1,22 @@
 import { useCallback } from "react";
-import { useDispatch } from "LLD/hooks/redux";
+import { useDispatch, useSelector } from "LLD/hooks/redux";
 import { Account, AccountLike } from "@ledgerhq/types-live";
 import { openModal } from "~/renderer/actions/modals";
+import { accountsSelector } from "~/renderer/reducers/accounts";
 import BigNumber from "bignumber.js";
 import { openSendFlowDialog, type SendFlowParams } from "~/renderer/reducers/sendFlow";
 import { useNewSendFlowFeature } from "./useNewSendFlowFeature";
 import type { EnhancedModularDrawerConfiguration } from "@ledgerhq/live-common/wallet-api/ModularDrawer/types";
-import { closeDialog, openDialog } from "~/renderer/reducers/modularDrawer";
+import {
+  closeDialog,
+  openDialog,
+  setFlowValue,
+  setSourceValue,
+} from "~/renderer/reducers/modularDialog";
+import { HOOKS_TRACKING_LOCATIONS } from "~/renderer/analytics/hooks/variables";
+import { setOriginFlow } from "~/renderer/analytics/originFlow";
+import { track } from "~/renderer/analytics/segment";
+import { getSendFlowTrackingProperties } from "../utils/tracking";
 
 const SEND_ACCOUNT_SELECTION_DRAWER_CONFIGURATION: EnhancedModularDrawerConfiguration = {
   assets: { rightElement: "balance" },
@@ -21,26 +31,40 @@ type WorkflowParams = {
   memo?: string;
   fromMAD?: boolean;
   startWithWarning?: boolean;
+  source?: string;
 };
 
 export function useOpenSendFlow() {
   const dispatch = useDispatch();
-  const { isEnabledForFamily, getFamilyFromAccount } = useNewSendFlowFeature();
+  const hasNoAccounts = useSelector(state => accountsSelector(state).length === 0);
+  const { isEnabledForFamily, getFamilyFromAccount, getCurrencyIdFromAccount } =
+    useNewSendFlowFeature();
 
   const openSendFlow = useCallback(
     (params?: WorkflowParams) => {
+      setOriginFlow(HOOKS_TRACKING_LOCATIONS.sendModal);
+
       const openSendFlowImpl = (nextParams?: WorkflowParams) => {
         if (!nextParams?.account) {
-          // Check if feature flag is enabled for opening flow without account
-          const shouldUseNewFlowForNoAccount = isEnabledForFamily();
+          // When there are no accounts, the old modal requires an account and would throw.
+          // Always use the new drawer for account selection (or empty state) in that case.
+          const shouldUseNewFlowForNoAccount = hasNoAccounts || isEnabledForFamily();
           if (shouldUseNewFlowForNoAccount) {
             // Feature flag enabled: use new drawer for account selection
+            dispatch(setFlowValue("send"));
+            dispatch(setSourceValue(nextParams?.source ?? ""));
             dispatch(
               openDialog({
                 currencies: [],
                 dialogConfiguration: SEND_ACCOUNT_SELECTION_DRAWER_CONFIGURATION,
                 onAccountSelected: (account: AccountLike, parentAccount?: Account) => {
                   dispatch(closeDialog());
+                  track("button_clicked", {
+                    button: "send",
+                    buttonLocation: "quick_action",
+                    page: "MAD",
+                    ...getSendFlowTrackingProperties(account, parentAccount),
+                  });
                   openSendFlowImpl({
                     ...nextParams,
                     account,
@@ -52,7 +76,8 @@ export function useOpenSendFlow() {
             return;
           }
 
-          // Feature flag not enabled: use old modal directly
+          // Feature flag not enabled: use old modal. Only reached when accounts.length > 0
+          // (when there are no accounts we use the new drawer above to avoid "account required").
           dispatch(
             openModal("MODAL_SEND", {
               ...nextParams,
@@ -66,7 +91,11 @@ export function useOpenSendFlow() {
         }
 
         const family = getFamilyFromAccount(nextParams.account, nextParams.parentAccount ?? null);
-        const shouldUseNewFlow = isEnabledForFamily(family);
+        const currencyId = getCurrencyIdFromAccount(
+          nextParams.account,
+          nextParams.parentAccount ?? null,
+        );
+        const shouldUseNewFlow = isEnabledForFamily(family, currencyId);
 
         if (shouldUseNewFlow) {
           let normalizedAmount: string | undefined;
@@ -103,7 +132,7 @@ export function useOpenSendFlow() {
 
       openSendFlowImpl(params);
     },
-    [dispatch, isEnabledForFamily, getFamilyFromAccount],
+    [hasNoAccounts, dispatch, isEnabledForFamily, getFamilyFromAccount, getCurrencyIdFromAccount],
   );
 
   return openSendFlow;

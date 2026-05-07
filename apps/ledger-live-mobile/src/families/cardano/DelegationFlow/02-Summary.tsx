@@ -5,7 +5,7 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from "rea
 import { Trans, useTranslation } from "~/context/Locale";
 import { Animated, SafeAreaView, StyleSheet, View } from "react-native";
 import { getAccountCurrency } from "@ledgerhq/live-common/account/index";
-import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
+import { useAccountBridge } from "@ledgerhq/live-common/bridge/useAccountBridge";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
 import { formatCurrencyUnit, getCurrencyColor } from "@ledgerhq/live-common/currencies/index";
 import {
@@ -59,7 +59,7 @@ export default function DelegationSummary({ navigation, route }: Props) {
 
   const { cardanoResources } = account as CardanoAccount;
   const currentDelegation = cardanoResources.delegation;
-  const bridge = getAccountBridge(account, undefined);
+  const bridge = useAccountBridge<Transaction>(account, undefined);
 
   const [isFetchingPoolDetails, setIsFetchingPoolDetails] = useState(false);
   const [ledgerPools, setLedgerPools] = useState<Array<StakePool>>([]);
@@ -78,7 +78,7 @@ export default function DelegationSummary({ navigation, route }: Props) {
         .finally(() => {
           setIsFetchingPoolDetails(false);
         });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const chosenPool = useMemo(() => {
@@ -116,9 +116,8 @@ export default function DelegationSummary({ navigation, route }: Props) {
   const onBridgeErrorRetry = useCallback(() => {
     setBridgeErr(null);
     if (!transaction) return;
-    const bridge = getAccountBridge(account, parentAccount);
     setTransaction(bridge.updateTransaction(transaction, {}));
-  }, [setTransaction, account, parentAccount, transaction]);
+  }, [setTransaction, bridge, transaction]);
 
   invariant(transaction, "transaction must be defined");
   invariant(transaction.family === "cardano", "transaction cardano");
@@ -136,7 +135,7 @@ export default function DelegationSummary({ navigation, route }: Props) {
           poolId: chosenPool.poolId,
         }),
       );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params, updateTransaction, setTransaction, chosenPool]);
 
   const onChangePool = useCallback(() => {
@@ -430,7 +429,7 @@ function SummaryWords({
           },
         ]
       : [];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [chosenPool]);
 
   return (

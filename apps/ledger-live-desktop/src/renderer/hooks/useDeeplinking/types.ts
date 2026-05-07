@@ -4,7 +4,7 @@ import type { AppDispatch } from "~/state-manager/configureStore";
 
 export type NavigateFn = (
   pathname: string,
-  state?: { [k: string]: string | object },
+  state?: { [k: string]: string | number | boolean | object | null | undefined },
   search?: string,
 ) => void;
 
@@ -37,6 +37,14 @@ export interface DeeplinkHandlerContext {
   postOnboardingDeeplinkHandler: PostOnboardingDeeplinkHandlerFn;
   tryRedirectToPostOnboardingOrRecover: TryRedirectToPostOnboardingOrRecoverFn;
   currentPathname: string;
+  /** Current URL search (e.g. `?foo=bar`), used to detect repeated Recover deeplinks. */
+  currentSearch: string;
+  /** Current React Router location state (used to preserve fields when forcing Recover navigation). */
+  currentLocationState: unknown;
+  /** Feature-flag-aware path to the accounts list screen (`/cryptos` or `/accounts`). */
+  accountsPath: string;
+  /** Default Ledger Recover app id (from feature flag) for recover deeplink when no path is given */
+  recoverAppId?: string;
 }
 
 export interface ParsedDeeplink {
@@ -93,6 +101,12 @@ export interface EarnRoute {
   search: string;
 }
 
+export interface BorrowRoute {
+  type: "borrow";
+  path: string;
+  search: string;
+}
+
 export interface ManagerRoute {
   type: "myledger";
   installApp?: string;
@@ -107,6 +121,7 @@ export interface SwapRoute {
   fromPath?: string;
   toCurrency?: string;
   fromCurrency?: string;
+  toAccountId?: string;
 }
 
 export interface BridgeRoute {
@@ -184,6 +199,10 @@ export interface PostOnboardingRoute {
   device?: string;
 }
 
+export interface PerpsRoute {
+  type: "perps";
+}
+
 export interface LedgerSyncRoute {
   type: "ledgersync";
 }
@@ -198,6 +217,7 @@ export type DeeplinkRoute =
   | AddAccountRoute
   | BuyRoute
   | EarnRoute
+  | BorrowRoute
   | ManagerRoute
   | SwapRoute
   | BridgeRoute
@@ -212,6 +232,7 @@ export type DeeplinkRoute =
   | AssetRoute
   | RecoverRoute
   | RecoverRestoreFlowRoute
+  | PerpsRoute
   | PostOnboardingRoute
   | LedgerSyncRoute
   | DefaultRoute;

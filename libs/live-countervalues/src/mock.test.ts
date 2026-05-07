@@ -1,10 +1,9 @@
-import "@ledgerhq/coin-framework/test-helpers/staticTime";
+import "@ledgerhq/ledger-wallet-framework/test-helpers/staticTime";
 import { initialState, loadCountervalues, calculate } from "./logic";
 import CountervaluesAPI from "./api";
 import { setEnv } from "@ledgerhq/live-env";
 import { getFiatCurrencyByTicker, getCryptoCurrencyById } from "@ledgerhq/cryptoassets";
 import { formatCounterValueDay, formatCounterValueHour, parseFormattedDate } from "./helpers";
-import api from "./api";
 import { setCryptoAssetsStore } from "@ledgerhq/cryptoassets/state";
 import type { TokenCurrency } from "@ledgerhq/types-cryptoassets";
 import type { CryptoAssetsStore } from "@ledgerhq/types-live";
@@ -270,6 +269,6 @@ test("missing rate in mock is filled by autofillGaps", async () => {
 });
 
 test("fetchIdsSortedByMarketcap", async () => {
-  const ids = await api.fetchIdsSortedByMarketcap();
+  const ids = await CountervaluesAPI.fetchIdsSortedByMarketcap();
   expect(ids).toContain("bitcoin");
 });

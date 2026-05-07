@@ -1,30 +1,36 @@
+import { rejectBalanceOptions } from "@ledgerhq/coin-module-framework/api/getBalance/rejectBalanceOptions";
 import {
   AlpacaApi,
+  Balance,
+  BalanceOptions,
   CraftedTransaction,
   FeeEstimation,
   TransactionIntent,
-} from "@ledgerhq/coin-framework/api/index";
+  TransactionValidation,
+} from "@ledgerhq/coin-module-framework/api/index";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
+import { validateAddress } from "../bridge/validateAddress";
 import coinConfig, { type SuiConfig } from "../config";
 import {
-  estimateFees,
-  combine,
   broadcast,
+  combine,
+  craftTransaction,
+  estimateFees,
   getBalance,
-  listOperations as logicListOperations,
-  lastBlock,
   getBlock,
   getBlockInfo,
-  craftTransaction,
-  getStakes,
   getRewards,
+  getStakes,
+  lastBlock,
   getValidators as logicGetValidators,
+  listOperations as logicListOperations,
 } from "../logic";
 
 export function createApi(config: SuiConfig): AlpacaApi {
   coinConfig.setCoinConfig(() => ({ ...config, status: { type: "active" } }));
 
   return {
-    broadcast,
+    broadcast: (tx: string) => broadcast(tx),
     combine,
     craftTransaction: craft,
     craftRawTransaction: (
@@ -36,7 +42,8 @@ export function createApi(config: SuiConfig): AlpacaApi {
       throw new Error("craftRawTransaction is not supported");
     },
     estimateFees: estimate,
-    getBalance,
+    getBalance: (address: string, options?: BalanceOptions) =>
+      rejectBalanceOptions(() => getBalance(address), options),
     lastBlock,
     getBlock,
     getBlockInfo,
@@ -44,6 +51,18 @@ export function createApi(config: SuiConfig): AlpacaApi {
     getStakes,
     getRewards,
     getValidators: logicGetValidators,
+    validateIntent: async (
+      _transactionIntent: TransactionIntent,
+      _balances: Balance[],
+      _customFees?: FeeEstimation,
+    ): Promise<TransactionValidation> => {
+      throw new Error("validateIntent is not supported");
+    },
+    getNextSequence: async (_address: string) => {
+      throw new Error("getNextSequence is not supported");
+    },
+    validateAddress,
+    craftTransactionData,
   };
 }
 

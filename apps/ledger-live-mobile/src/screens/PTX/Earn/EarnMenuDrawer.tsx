@@ -1,5 +1,5 @@
 import { Button, Flex, Text } from "@ledgerhq/native-ui";
-import { Theme } from "@ledgerhq/native-ui/lib/styles/theme";
+import { Theme } from "@ledgerhq/native-ui/styles/theme";
 import { useRoute, NavigationProp, ParamListBase } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Linking } from "react-native";
@@ -55,6 +55,7 @@ export function EarnMenuDrawer({ navigation }: { navigation: NavigationProp<Para
           {modal?.options.map(({ label, metadata: { link, live_app, ...tracked } }) =>
             link ? (
               <OptionButton
+                testID={`earn-menu-option-${label.toLowerCase().replace(/\s+/g, "-")}`}
                 key={label}
                 onPress={async () => {
                   await track(BUTTON_CLICKED_TRACK_EVENT, { live_app, ...tracked });

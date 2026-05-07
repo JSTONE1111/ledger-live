@@ -3,6 +3,9 @@
 This folder contains the end-to-end (E2E) tests for the **Ledger Wallet Mobile** app.  
 Dev teams are responsible for **adding/updating tests** for new features.
 
+> **Cursor users:** Run the `/e2e-mobile-onboard` command for an interactive setup wizard.
+> It checks every prerequisite on your machine, validates environment variables, and guides you through fixes step by step.
+
 ---
 
 ## Quick Start
@@ -10,47 +13,59 @@ Dev teams are responsible for **adding/updating tests** for new features.
 ### 1. Prerequisites
 
 - macOS (required for iOS development)
-- Node 22 (via Proto)
-- Android Studio (with AVD: Pixel 6 / API 35 recommended)
+- Android Studio (with AVD: Pixel 9 Pro / API 36 recommended)
 - Xcode ≥ 16.2 (for iOS)
-- Docker Desktop (for Speculos)
-- Clone the repositories:
+- Read the e2e environment [guide](https://ledgerhq.atlassian.net/wiki/spaces/QA/pages/6945013939/Ledger+Wallet+E2E+Environment)❗
+- Docker Desktop installed and running (Speculos runs in Docker)
+- Pull the Speculos image:
 
 ```bash
-git clone https://github.com/LedgerHQ/ledger-live.git
-git clone https://github.com/LedgerHQ/coin-apps.git
-cd ledger-live
+docker pull ghcr.io/ledgerhq/speculos:latest
+```
+
+- Enable Proto for version management:
+
+```bash
 proto use
+```
+
+- Install [mise](https://mise.jdx.dev/getting-started.html#installing-mise-cli) then run:
+
+```bash
+mise install
 ```
 
 ### 2. Environment Variables
 
-Set these before running tests:
+Set these environment variables before you run tests and change the values as per your testing needs:
 
 ```bash
-export COINAPPS="/path/to/coin-apps"
 export MOCK="0"
-export SEED="your 24 word ledger recovery phrase here"
 export SPECULOS_IMAGE_TAG=ghcr.io/ledgerhq/speculos:latest
 export SPECULOS_DEVICE="nanoX"          # Options: nanoSP | nanoX | nanoS | stax | flex | nanoGen5
 ```
 
-> ⚠️ Replace placeholders with your local paths and credentials.
+Consider adding these exports to your profile so they persist.
 
 ### 3. Build
 
-Install dependencies and build the app for testing:
+All build commands below are run from the **repo root** (`ledger-live/`).
 
 ```bash
 pnpm clean
 pnpm i --filter="live-mobile..." --filter="ledger-live" --filter="live-cli..." --filter="ledger-live-mobile-e2e-tests"
 pnpm build:llm:deps
 pnpm build:cli
-# Android debug build
-pnpm mobile e2e:build -c android.emu.debug
+# Android release build
+pnpm mobile e2e:build -c android.emu.release
 # iOS debug build
+pnpm mobile pod
 pnpm mobile e2e:build -c ios.sim.debug
 ```
+
+> **Why release for Android?** Android debug builds are broken locally due to a known
+> Detox/Espresso reflection bug (`NoSuchFieldException: eventInjector`). Only release
+> builds work. Release bundles JS into the APK, so no Metro bundler is needed for Android.
 
 ### 4. Simulators / Emulators
 
@@ -61,25 +76,27 @@ Follow the full wiki if you need setup details.
 
 ### 5. Run Tests
 
-- Run all tests:
+Test commands below are run from the `e2e/mobile/` directory.
+
+**iOS (debug)** -- requires the Metro bundler running in a separate terminal:
 
 ```bash
-# iOS
-pnpm e2e:mobile test:ios:debug
+# Terminal 1: start the bundler (from repo root)
+pnpm mobile start
 
-# Android
-pnpm e2e:mobile test:android:debug
+# Terminal 2: run tests (from e2e/mobile/)
+pnpm test:ios:debug                      # all tests
+pnpm test:ios:debug <testFileName>       # single file
 ```
 
-- Run a single test file:
+**Android (release)** -- no bundler needed, JS is bundled in the APK:
 
 ```bash
-# iOS
-pnpm e2e:mobile test:ios:debug <testFileName>
-
-# Android
-pnpm e2e:mobile test:android:debug <testFileName>
+pnpm test:android                        # all tests
+pnpm test:android <testFileName>         # single file
 ```
+
+> Android debug (`pnpm test:android:debug`) does not work locally due to a known Detox/Espresso bug. Always use the release configuration.
 
 > For CI, sharding, and advanced flags, see [the full wiki](https://github.com/LedgerHQ/ledger-live/wiki/LLM:End-to-end-testing).
 
@@ -104,5 +121,4 @@ myFeature.skip.spec.ts
 
 - Use Page Object Model (POM) for writing tests
 - Keep tests independent and deterministic
-- Store SEED securely; never commit it
 - Bookmark this README for quick reference

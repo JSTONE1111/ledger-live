@@ -1,4 +1,11 @@
 import * as bakers from "./bakers";
-import tzkt, { fetchAllTransactions } from "./tzkt";
 
-export { bakers, tzkt, fetchAllTransactions };
+export { bakers };
+export {
+  default as tzkt,
+  fetchAllTransactions,
+  fetchBlockDelegations,
+  fetchBlockStaking,
+  fetchBlockTokenTransfers,
+  fetchBlockTransactions,
+} from "./tzkt";

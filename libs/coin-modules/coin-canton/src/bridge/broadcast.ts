@@ -1,5 +1,5 @@
+import { patchOperationWithHash } from "@ledgerhq/ledger-wallet-framework/operation";
 import { AccountBridge } from "@ledgerhq/types-live";
-import { patchOperationWithHash } from "@ledgerhq/coin-framework/operation";
 import { broadcast as broadcastLogic } from "../common-logic";
 import { Transaction } from "../types";
 
@@ -9,5 +9,8 @@ export const broadcast: AccountBridge<Transaction>["broadcast"] = async ({
 }) => {
   const { operation, signature } = signedOperation;
   const hash = await broadcastLogic(account.currency, signature);
+  if (!hash) {
+    throw new Error("canton: broadcast returned no transaction id");
+  }
   return patchOperationWithHash(operation, hash);
 };

@@ -1,5 +1,5 @@
 import { isCurrencySupported } from "../../currencies";
-import allSpecs from "../../generated/specs";
+import allSpecs from "../allSpecs";
 import { AppSpec } from "../types";
 import { SpecPerBot } from "./types";
 
@@ -26,7 +26,7 @@ export function getSpecsPerBots(
   const specs: Array<{ spec: AppSpec<any>; family: string; key: string }> = [];
   for (const family in allSpecs) {
     if (filterFamilies.length > 0 && !filterFamilies.includes(family)) continue;
-    const familySpecs = allSpecs[family];
+    const familySpecs = allSpecs[family as keyof typeof allSpecs];
     for (const key in familySpecs) {
       const spec: AppSpec<any> = familySpecs[key];
       if (!isCurrencySupported(spec.currency) || spec.disabled) {
@@ -40,13 +40,12 @@ export function getSpecsPerBots(
   }
 
   // prepare the jobs
-  const specsPerBots = Object.keys(seeds).flatMap((seed, i) => {
-    return specs.map(({ spec, family, key }, j) => {
+  const specsPerBots = Object.keys(seeds).flatMap(seed => {
+    return specs.map(({ spec, family, key }) => {
       return {
         seed,
         env: {
           SEED: seeds[seed],
-          SPECULOS_PID_OFFSET: String(i * specs.length + j),
         },
         spec,
         family,

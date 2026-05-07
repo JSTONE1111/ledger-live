@@ -97,11 +97,9 @@ function loadTimingData(platform, testRootDir) {
 
 function distributeFilesByTiming(files, timingData, shardIndex, shardTotal) {
   if (!timingData.testResults || Object.keys(timingData.testResults).length === 0) {
-    // No timing data available, use simple round-robin distribution
-    const filesPerShard = Math.ceil(files.length / shardTotal);
-    const startIndex = (shardIndex - 1) * filesPerShard;
-    const endIndex = Math.min(startIndex + filesPerShard, files.length);
-    return files.slice(startIndex, endIndex);
+    if (shardTotal <= 0) return [];
+    // Spread tests across shards when timing is unavailable.
+    return files.filter((_, i) => i % shardTotal === shardIndex - 1);
   }
 
   // Sort files by estimated duration (from timing data)

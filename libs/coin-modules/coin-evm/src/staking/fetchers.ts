@@ -1,11 +1,14 @@
-import { Stake } from "@ledgerhq/coin-framework/api/types";
+import { Stake } from "@ledgerhq/coin-module-framework/api/types";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
+import { getCoinConfig } from "../config";
 import { withApi } from "../network/node/rpc.common";
+import { isExternalNodeConfig } from "../network/node/types";
 import type {
   StakeCreate,
   StakingContractConfig,
   StakingStrategy,
   StakingExtractor,
+  StakingValidatorItem,
 } from "../types/staking";
 import { extractSeiDelegation, getSeiDelegationAmount, getCeloAmount } from "../utils";
 import { encodeStakingData, decodeStakingResult } from "./encoder";
@@ -16,7 +19,10 @@ import { getValidators } from "./validators";
  * Generic staking fetcher that adapts to different blockchain requirements
  */
 const createStakingFetcher = (
-  getValidatorsFn: (config: StakingContractConfig, currency: CryptoCurrency) => Promise<string[]>,
+  getValidatorsFn: (
+    config: StakingContractConfig,
+    currency: CryptoCurrency,
+  ) => Promise<StakingValidatorItem[]>,
 ) => {
   return async (
     address: string,
@@ -24,8 +30,9 @@ const createStakingFetcher = (
     currency: CryptoCurrency,
   ): Promise<Stake[]> => {
     const validators = await getValidatorsFn(config, currency);
+    const validatorAddresses = validators.map(v => v.validatorAddress);
     const logPrefix = currency.id === "sei_evm" ? "SEI" : "CELO";
-    return getStakesForValidators(address, config, currency, validators, logPrefix);
+    return getStakesForValidators(address, config, currency, validatorAddresses, logPrefix);
   };
 };
 
@@ -36,7 +43,16 @@ export const STAKING_CONFIG: Record<string, StakingStrategy> = {
     ),
   },
   celo: {
-    fetcher: createStakingFetcher(async config => [config.contractAddress]),
+    fetcher: createStakingFetcher(async config => [
+      {
+        validatorAddress: config.contractAddress,
+        name: "",
+        commission: 0,
+        tokens: 0,
+        votingPower: 0,
+        estimatedYearlyRewardsRate: 0,
+      },
+    ]),
   },
 };
 
@@ -53,60 +69,92 @@ const getAmountFromDecoded = (currencyId: string, decoded: unknown): bigint => {
   return extractor ? extractor(decoded) : 0n;
 };
 
+const isMissingRevertDataCallException = (error: unknown): boolean => {
+  if (!(error instanceof Error) || !("code" in error)) {
+    return false;
+  }
+
+  const message =
+    "shortMessage" in error && typeof error.shortMessage === "string"
+      ? error.shortMessage
+      : error.message;
+
+  return (
+    error.code === "CALL_EXCEPTION" &&
+    (!("data" in error) || error.data === null) &&
+    (!("reason" in error) || error.reason === null) &&
+    (!("revert" in error) || error.revert === null) &&
+    message.includes("missing revert data")
+  );
+};
+
+const isSeiMissingDelegationError = (currencyId: string, error: unknown): boolean =>
+  currencyId === "sei_evm" && isMissingRevertDataCallException(error);
+
+// TODO: tech debt: the call should be implemented in the node API as an optional function (like traceBlock)
 const createStakeFromContract = async (stakingContract: StakeCreate): Promise<Stake | null> => {
   const { currency, config, address, currencyId, validatorAddress } = stakingContract;
+  const node = getCoinConfig(currency.id).info.node;
+  if (!isExternalNodeConfig(node)) {
+    throw new Error("Currency doesn't have an RPC node provided");
+  }
 
-  return withApi(currency, async rpcProvider => {
-    try {
-      const params = buildTransactionParams(
-        currencyId,
-        "getStakedBalance",
-        address,
-        0n,
-        validatorAddress,
-        address,
-      );
+  return withApi(
+    currency,
+    async rpcProvider => {
+      try {
+        const params = buildTransactionParams(
+          currencyId,
+          "getStakedBalance",
+          address,
+          0n,
+          validatorAddress,
+          address,
+        );
+        const encodedData = encodeStakingData({
+          currencyId,
+          operation: "getStakedBalance",
+          config,
+          params,
+        });
+        const result = await rpcProvider.call({
+          to: config.contractAddress,
+          data: encodedData,
+        });
+        const decoded = decodeStakingResult(currencyId, "getStakedBalance", config, result);
+        const amount = getAmountFromDecoded(currencyId, decoded);
 
-      const encodedData = encodeStakingData({
-        currencyId,
-        operation: "getStakedBalance",
-        config,
-        params,
-      });
+        if (amount === 0n) {
+          return null;
+        }
 
-      const result = await rpcProvider.call({
-        to: config.contractAddress,
-        data: encodedData,
-      });
+        return {
+          uid: `${config.contractAddress}-${validatorAddress}-${address}`,
+          address,
+          delegate: validatorAddress,
+          state: "active",
+          asset: {
+            type: "native",
+            name: currency.name,
+            unit: currency.units[0],
+          },
+          amount,
+          details: {
+            contractAddress: config.contractAddress,
+            validator: validatorAddress,
+          },
+        };
+      } catch (error) {
+        if (isSeiMissingDelegationError(currencyId, error)) {
+          return null;
+        }
 
-      const decoded = decodeStakingResult(currencyId, "getStakedBalance", config, result);
-      const amount = getAmountFromDecoded(currencyId, decoded);
-
-      if (amount === 0n) {
+        console.error("Staking fetch failed", error);
         return null;
       }
-
-      return {
-        uid: `${config.contractAddress}-${validatorAddress}-${address}`,
-        address,
-        delegate: validatorAddress,
-        state: "active",
-        asset: {
-          type: "native",
-          name: currency.name,
-          unit: currency.units[0],
-        },
-        amount,
-        details: {
-          contractAddress: config.contractAddress,
-          validator: validatorAddress,
-        },
-      };
-    } catch (error) {
-      console.error("Staking fetch failed", error);
-      return null;
-    }
-  });
+    },
+    node,
+  );
 };
 
 const getStakesForValidators = async (

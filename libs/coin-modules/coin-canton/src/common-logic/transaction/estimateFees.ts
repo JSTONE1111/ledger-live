@@ -1,5 +1,5 @@
-import coinConfig from "../../config";
 import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
+import coinConfig from "../../config";
 
 const magnitude: bigint = 10n ** 38n;
 
@@ -17,7 +17,7 @@ const cantonCoinTiers: FeeTier[] = [
   { limit: null, rateNumerator: 1n, rateDenominator: 100_000n }, // 0.001%
 ];
 
-const feeValue = (currency: CryptoCurrency) => coinConfig.getCoinConfig(currency).fee;
+const feeValue = (currency: CryptoCurrency) => coinConfig.getCoinConfig(currency.id).fee;
 
 export async function estimateFees(currency: CryptoCurrency, amount: bigint): Promise<bigint> {
   const forcedValue = feeValue(currency);

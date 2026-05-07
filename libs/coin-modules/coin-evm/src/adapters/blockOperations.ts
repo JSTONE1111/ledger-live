@@ -2,10 +2,11 @@ import type {
   AssetInfo,
   BlockOperation,
   TransferBlockOperation,
-} from "@ledgerhq/coin-framework/api/index";
-import { TransactionInfo } from "../network/node/types";
+} from "@ledgerhq/coin-module-framework/api/index";
+import { TransactionInfo, TraceBlockItem, isTraceBlockCallAction } from "../network/node/types";
 import { LedgerExplorerOperation } from "../types";
 import { safeEncodeEIP55 } from "../utils";
+import { NON_VALUE_TRANSFER_CALL_TYPES } from "./nonValueTransferCallTypes";
 
 /**
  * Helper function to add transfer operations for a from/to pair.
@@ -71,6 +72,68 @@ export function rpcTransactionToBlockOperations(
   }
 
   return operations;
+}
+
+function extractActionFields(
+  item: TraceBlockItem,
+): { from: string; to: string; value: bigint; hash: string } | null {
+  const { action, result } = item;
+  if (result?.error || item.error) return null;
+  if (!item.transactionHash) return null;
+  if (!isTraceBlockCallAction(action)) return null;
+
+  // The trace_block RPC returns ALL execution traces, including the top-level call (traceAddress: []).
+  // This top-level call's native value transfer is identical to the RPC transaction's value field,
+  // which rpcTransactionToBlockOperations already converts to BlockOperations.
+  // When traceBlockItemsToOperationsByHash processed the top-level trace without filtering it out,
+  // the same native transfer appeared twice after merging.
+  if (item.traceAddress.length === 0) return null;
+
+  // `delegatecall`, `staticcall`, and `callcode` cannot move native ETH; the `value` field here
+  // is msg.value inherited from the enclosing frame. Converting them into operations would
+  // double-count the transfer.
+  if (NON_VALUE_TRANSFER_CALL_TYPES.has(action.callType.toLowerCase())) return null;
+
+  const value = BigInt(action.value);
+  if (value === 0n) return null;
+
+  const from = action.from;
+  const to = action.to;
+  if (!from && !to) return null;
+
+  return { from, to, value, hash: item.transactionHash };
+}
+/**
+ * Converts trace_block items to BlockOperations grouped by transaction hash.
+ * Only includes internal calls with native value transfer (value > 0) and no error.
+ */
+export function traceBlockItemsToOperationsByHash(
+  items: TraceBlockItem[],
+): Map<string, BlockOperation[]> {
+  const byHash = new Map<string, BlockOperation[]>();
+
+  for (const item of items) {
+    const actionFields = extractActionFields(item);
+    if (actionFields) {
+      const ops: BlockOperation[] = [];
+      addTransferOperations(
+        ops,
+        actionFields.from,
+        actionFields.to,
+        { type: "native" },
+        actionFields.value,
+      );
+      const hash = actionFields.hash;
+      let arr = byHash.get(hash);
+      if (arr === undefined) {
+        arr = [];
+        byHash.set(hash, arr);
+      }
+      arr.push(...ops);
+    }
+  }
+
+  return byHash;
 }
 
 export function ledgerTransactionToBlockOperations(

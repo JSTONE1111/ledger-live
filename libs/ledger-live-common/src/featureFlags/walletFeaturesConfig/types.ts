@@ -4,12 +4,19 @@ export type Wallet40Params = {
   readonly marketBanner?: boolean;
   readonly graphRework?: boolean;
   readonly quickActionCtas?: boolean;
+  readonly quickActionsCtasVariant?: boolean;
   readonly newReceiveDialog?: boolean;
   readonly mainNavigation?: boolean;
   readonly lazyOnboarding?: boolean;
   readonly balanceRefreshRework?: boolean;
   readonly tour?: boolean;
   readonly assetSection?: boolean;
+  readonly onboardingWidget?: boolean;
+  readonly brazePlacement?: boolean;
+  readonly operationsList?: boolean;
+  readonly aggregatedAssets?: boolean;
+  readonly myWallet?: boolean;
+  readonly finishOnboardingWidget?: boolean;
 };
 
 export const FEATURE_FLAG_KEYS = {
@@ -27,6 +34,8 @@ export interface WalletFeaturesConfig {
   readonly shouldDisplayGraphRework: boolean;
   /** Whether to show quick action CTAs */
   readonly shouldDisplayQuickActionCtas: boolean;
+  /** Whether to show the quick actions CTAs variant */
+  readonly shouldDisplayQuickActionsCtasVariant: boolean;
   /** Whether to show the new receive options dialog (Lumen) */
   readonly shouldDisplayNewReceiveDialog: boolean;
   /** Whether to show the wallet 4.0 main navigation */
@@ -39,4 +48,16 @@ export interface WalletFeaturesConfig {
   readonly shouldDisplayTour: boolean;
   /** Whether to show the asset section */
   readonly shouldDisplayAssetSection: boolean;
+  /** Whether to show the onboarding widget (mobile only) */
+  readonly shouldDisplayOnboardingWidget: boolean;
+  /** Whether to show Braze content cards as ContentBanner (e.g. action cards on portfolio, mobile only) */
+  readonly shouldDisplayBrazePlacement: boolean;
+  /** Whether to show the TX History section */
+  readonly shouldDisplayOperationsList: boolean;
+  /** Whether to show the aggregated assets */
+  readonly shouldDisplayAggregatedAssets: boolean;
+  /** Whether to show the My Wallet component */
+  readonly shouldDisplayMyWallet: boolean;
+  /** Whether to show the Finish Onboarding widget on Portfolio (desktop / lwdWallet40) */
+  readonly shouldDisplayFinishOnboardingWidget: boolean;
 }

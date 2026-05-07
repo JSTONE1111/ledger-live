@@ -18,15 +18,15 @@ const Linking = {
   openURL: jest.fn(),
 };
 
-const openLinkMock = jest.fn((card: LandingPageStickyCtaContentCard) => {
-  trackContentCardEvent("contentcard_clicked", {
+const openLinkMock = jest.fn(async (card: LandingPageStickyCtaContentCard) => {
+  await trackContentCardEvent("contentcard_clicked", {
     ...card.extras,
     campaign: card.id,
     contentcard: card.cta,
     landingPage: useCase,
   });
   logClickCard(card.id);
-  Linking.openURL(card.link);
+  await Linking.openURL(card.link);
 });
 
 jest.mock("~/dynamicContent/useDynamicContent", () => ({
@@ -54,7 +54,10 @@ describe("GenericLandingPage", () => {
           settings: {
             ...state.settings,
             readOnlyModeEnabled: false,
-            overriddenFeatureFlags: {
+          },
+          featureFlags: {
+            ...state.featureFlags,
+            overrides: {
               flexibleContentCards: {
                 enabled: true,
               },

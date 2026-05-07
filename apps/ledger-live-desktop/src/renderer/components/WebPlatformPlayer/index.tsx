@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { useSelector } from "LLD/hooks/redux";
+import { usePerpsHandlers } from "LLD/features/Perps/hooks/usePerpsHandlers";
 import { WalletAPICustomHandlers } from "@ledgerhq/live-common/wallet-api/types";
 import { CurrentAccountHistDB } from "@ledgerhq/live-common/wallet-api/react";
 import { handlers as loggerHandlers } from "@ledgerhq/live-common/wallet-api/CustomLogger/server";
@@ -13,7 +14,11 @@ import { usePTXCustomHandlers } from "../WebPTXPlayer/CustomHandlers";
 import { useCurrentAccountHistDB } from "~/renderer/screens/platform/v2/hooks";
 import { useMobileView, WebViewWrapperProps } from "~/renderer/hooks/useMobileView";
 import { flattenAccountsSelector } from "~/renderer/reducers/accounts";
-import { useACRECustomHandlers, useDeeplinkCustomHandlers } from "./CustomHandlers";
+import {
+  useACRECustomHandlers,
+  useDeeplinkCustomHandlers,
+  useLiveAppModalCustomHandlers,
+} from "./CustomHandlers";
 
 export const Container = styled.div`
   display: flex;
@@ -61,7 +66,10 @@ export default function WebPlatformPlayer({
   const customACREHandlers = useACRECustomHandlers(manifest, accounts);
   const customPTXHandlers = usePTXCustomHandlers(manifest, accounts);
   const customDeeplinkHandlers = useDeeplinkCustomHandlers();
+  const customLiveAppModalHandlers = useLiveAppModalCustomHandlers(manifest);
   const { mobileView, setMobileView } = useMobileView();
+
+  const customPerpsHandlers = usePerpsHandlers(accounts);
 
   const customHandlers = useMemo<WalletAPICustomHandlers>(() => {
     return {
@@ -69,16 +77,26 @@ export default function WebPlatformPlayer({
       ...customACREHandlers,
       ...customPTXHandlers,
       ...customDeeplinkHandlers,
+      ...customLiveAppModalHandlers,
       ...props.customHandlers,
+      ...customPerpsHandlers,
     };
-  }, [customACREHandlers, customPTXHandlers, props.customHandlers, customDeeplinkHandlers]);
+  }, [
+    customACREHandlers,
+    customPTXHandlers,
+    props.customHandlers,
+    customDeeplinkHandlers,
+    customLiveAppModalHandlers,
+    customPerpsHandlers,
+  ]);
 
   const onStateChange: WebviewProps["onStateChange"] = state => {
     setWebviewState(state);
     props.onStateChange?.(state);
   };
 
-  const currentAccountHistDb: CurrentAccountHistDB = useCurrentAccountHistDB();
+  const [currentAccountHistDb, setCurrentAccountHistDb, currentAccountHistDbLoaded]:
+    CurrentAccountHistDB = useCurrentAccountHistDB();
 
   return (
     <Container>
@@ -89,7 +107,7 @@ export default function WebPlatformPlayer({
           webviewAPIRef={webviewAPIRef}
           webviewState={webviewState}
           config={config?.topBarConfig}
-          currentAccountHistDb={currentAccountHistDb}
+          setCurrentAccountHistDb={setCurrentAccountHistDb}
           mobileView={mobileView}
           setMobileView={setMobileView}
         />
@@ -101,6 +119,8 @@ export default function WebPlatformPlayer({
             ref={webviewAPIRef}
             customHandlers={customHandlers}
             currentAccountHistDb={currentAccountHistDb}
+            setCurrentAccountHistDb={setCurrentAccountHistDb}
+            currentAccountHistDbLoaded={currentAccountHistDbLoaded}
             Loader={Loader}
           />
         </WebViewWrapper>

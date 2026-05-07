@@ -1,41 +1,50 @@
 import Braze from "@braze/react-native-sdk";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "~/context/hooks";
 import { track } from "~/analytics";
 import { setDismissedContentCard } from "~/actions/settings";
 import { trackingEnabledSelector } from "~/reducers/settings";
-import { localMobileCardsSelector } from "~/reducers/dynamicContent";
+import { localMobileCardsSelector, localWalletCardsSelector } from "~/reducers/dynamicContent";
+import { sanitizeExtras } from "~/dynamicContent/utils";
 
-const isLocalCard = (cardId: string, localMobileCards: Braze.ContentCard[]) =>
-  localMobileCards.some(c => c.id === cardId);
+const isLocalCard = (
+  cardId: string,
+  localMobileCards: Braze.ContentCard[],
+  localWalletCardIds: Set<string>,
+) => localMobileCards.some(c => c.id === cardId) || localWalletCardIds.has(cardId);
 
 export const useBrazeContentCard = (mobileCards: Braze.ContentCard[]) => {
   const isTrackedUser = useSelector(trackingEnabledSelector);
   const localMobileCards = useSelector(localMobileCardsSelector);
+  const localWalletCards = useSelector(localWalletCardsSelector);
+  const localWalletCardIds = useMemo(
+    () => new Set(localWalletCards.map(c => c.id)),
+    [localWalletCards],
+  );
   const mobileCardRef = useRef(mobileCards);
   const dispatch = useDispatch();
 
   const logDismissCard = useCallback(
     (cardId: string) => {
       if (isTrackedUser) {
-        const isLocal = isLocalCard(cardId, localMobileCards);
+        const isLocal = isLocalCard(cardId, localMobileCards, localWalletCardIds);
         if (isLocal) return;
         Braze.logContentCardDismissed(cardId);
       } else {
         dispatch(setDismissedContentCard({ [cardId]: Date.now() }));
       }
     },
-    [isTrackedUser, dispatch, localMobileCards],
+    [isTrackedUser, dispatch, localMobileCards, localWalletCardIds],
   );
 
   const logClickCard = useCallback(
     (cardId: string) => {
       if (!isTrackedUser) return;
-      const isLocal = isLocalCard(cardId, localMobileCards);
+      const isLocal = isLocalCard(cardId, localMobileCards, localWalletCardIds);
       if (isLocal) return;
       Braze.logContentCardClicked(cardId);
     },
-    [isTrackedUser, localMobileCards],
+    [isTrackedUser, localMobileCards, localWalletCardIds],
   );
 
   const logImpressionCard = useCallback(
@@ -44,7 +53,7 @@ export const useBrazeContentCard = (mobileCards: Braze.ContentCard[]) => {
 
       const card = mobileCardRef.current.find(card => card.id === cardId);
 
-      const isLocal = isLocalCard(cardId, localMobileCards);
+      const isLocal = isLocalCard(cardId, localMobileCards, localWalletCardIds);
 
       if (isLocal) return;
 
@@ -52,12 +61,12 @@ export const useBrazeContentCard = (mobileCards: Braze.ContentCard[]) => {
 
       if (!card) return;
       track("contentcard_impression", {
-        ...card.extras,
+        ...sanitizeExtras(card.extras),
         page: card.extras.location,
         displayedPosition,
       });
     },
-    [isTrackedUser, localMobileCards],
+    [isTrackedUser, localMobileCards, localWalletCardIds],
   );
 
   const refreshDynamicContent = () => Braze.requestContentCardsRefresh();

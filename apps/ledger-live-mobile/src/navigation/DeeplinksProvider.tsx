@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "~/context/hooks";
-import { Platform, Linking, View, StyleSheet } from "react-native";
+import { Linking, View, StyleSheet } from "react-native";
 import {
   getStateFromPath,
   LinkingOptions,
@@ -28,6 +28,8 @@ import {
 } from "~/actions/earn";
 import { blockPasswordLock } from "../actions/appstate";
 import { handleModularDrawerDeeplink } from "LLM/features/ModularDrawer";
+import { isValidInstallApp } from "LLM/features/DeeplinkInstallApp";
+import { openDeeplinkInstallAppDrawer } from "~/actions/deeplinkInstallApp";
 import { logLastStartupEvents } from "LLM/utils/logLastStartupEvents";
 import { logStartupEvent } from "LLM/utils/logStartupTime";
 import { STARTUP_EVENTS } from "LLM/utils/resolveStartupEvents";
@@ -46,7 +48,6 @@ import {
 } from "./deeplinks/validation";
 import { handleWallet40Deeplink } from "./deeplinks/handleWallet40Deeplink";
 import { handleMarketBannerDeeplink } from "./deeplinks/handleMarketBannerDeeplink";
-import { AppLoadingManager } from "LLM/features/LaunchScreen";
 import { SplashScreenHandle } from "LLM/features/LaunchScreen/SplashScreenHandle";
 import { useDeeplinkDrawerCleanup } from "./deeplinks/useDeeplinkDrawerCleanup";
 
@@ -178,11 +179,6 @@ const linkingOptions = () => ({
 
           [ScreenName.RedirectToOnboardingRecoverFlow]: "recover-restore-flow",
 
-          /**
-           * @params ?platform: string
-           * ie: "ledgerlive://discover/paraswap?theme=light" will open the catalog and the paraswap dapp with a light theme as parameter
-           */
-          [ScreenName.PlatformApp]: "discover/:platform",
           [NavigatorName.Card]: {
             initialRouteName: ScreenName.Card,
             screens: {
@@ -204,16 +200,6 @@ const linkingOptions = () => ({
                *
                */
               [ScreenName.PostOnboardingDeeplinkHandler]: "post-onboarding",
-            },
-          },
-          /**
-           * ie: "ledgerlive://swap" -> will redirect to the main swap page
-           * @params ?affiliate: string, ?fromToken: string, ?toToken: string, ?amountFrom: string, ?amountTo: string
-           * ie: "ledgerlive://swap?refererId=lol&fromToken=bitcoin&toToken=ethereum&amountFrom=100&affiliate=partner123"
-           */
-          [NavigatorName.Swap]: {
-            screens: {
-              [ScreenName.SwapTab]: "swap",
             },
           },
 
@@ -361,8 +347,9 @@ export const DeeplinksProvider = ({
   const userAcceptedTerms = useGeneralTermsAccepted();
   const buySellUiFlag = useFeature("buySellUi");
   const llmAccountListUI = useFeature("llmAccountListUI");
-  const { shouldDisplayMarketBanner, shouldDisplayWallet40MainNav } =
+  const { shouldDisplayMarketBanner, shouldDisplayWallet40MainNav, shouldDisplayAssetSection } =
     useWalletFeaturesConfig("mobile");
+  const web3hubFlag = useFeature("web3hub");
 
   const buySellUiManifestId = buySellUiFlag?.params?.manifestId;
 
@@ -373,20 +360,37 @@ export const DeeplinksProvider = ({
     : ScreenName.Accounts;
 
   const linking = useMemo<LinkingOptions<ReactNavigation.RootParamList>>(() => {
+    const options = linkingOptions();
     return (
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       {
         ...(hasCompletedOnboarding
           ? {
-              ...linkingOptions(),
+              ...options,
               config: {
-                ...linkingOptions().config,
+                ...options.config,
                 screens: {
-                  ...linkingOptions().config.screens,
+                  ...options.config.screens,
                   [NavigatorName.Base]: {
-                    ...linkingOptions().config.screens[NavigatorName.Base],
+                    ...options.config.screens[NavigatorName.Base],
                     screens: {
-                      ...linkingOptions().config.screens[NavigatorName.Base].screens,
+                      ...options.config.screens[NavigatorName.Base].screens,
+
+                      /**
+                       * @params ?platform: string
+                       * ie: "ledgerlive://discover/paraswap?theme=light" will open the catalog and the paraswap dapp with a light theme as parameter
+                       */
+                      ...(!web3hubFlag?.enabled
+                        ? {
+                            [ScreenName.PlatformApp]: "discover/:platform",
+                          }
+                        : {
+                            [NavigatorName.Web3Hub]: {
+                              screens: {
+                                [ScreenName.Web3HubApp]: "discover/:manifestId",
+                              },
+                            },
+                          }),
 
                       /** "ledgerlive://assets will open assets screen. */
                       ...(llmAccountListUI?.enabled && {
@@ -404,6 +408,26 @@ export const DeeplinksProvider = ({
                           },
                         },
                       }),
+                      /**
+                       * ie: "ledgerlive://swap" -> will redirect to the main swap page
+                       * @params ?affiliate: string, ?fromToken: string, ?toToken: string, ?amountFrom: string, ?amountTo: string, ?fromCurrency: string, ?toCurrency: string
+                       * ie: "ledgerlive://swap?refererId=lol&fromToken=bitcoin&toToken=ethereum&amountFrom=100&affiliate=partner123"
+                       */
+                      ...(!shouldDisplayWallet40MainNav && {
+                        [NavigatorName.Swap]: {
+                          screens: {
+                            [ScreenName.SwapTab]: "swap",
+                          },
+                        },
+                      }),
+                      /**
+                       * ie: "ledgerlive://perps" -> will redirect to the perps page
+                       */
+                      [NavigatorName.Perps]: {
+                        screens: {
+                          [ScreenName.PerpsTab]: "perps",
+                        },
+                      },
                       [NavigatorName.Main]: {
                         initialRouteName: ScreenName.Portfolio,
                         screens: {
@@ -438,6 +462,19 @@ export const DeeplinksProvider = ({
                               },
                             },
                           },
+
+                          /**
+                           * ie: "ledgerlive://swap" -> will redirect to the main swap page
+                           * @params ?affiliate: string, ?fromToken: string, ?toToken: string, ?amountFrom: string, ?amountTo: string, ?fromCurrency: string, ?toCurrency: string
+                           * ie: "ledgerlive://swap?refererId=lol&fromToken=bitcoin&toToken=ethereum&amountFrom=100&affiliate=partner123"
+                           */
+                          ...(shouldDisplayWallet40MainNav && {
+                            [NavigatorName.Swap]: {
+                              screens: {
+                                [ScreenName.SwapTab]: "swap",
+                              },
+                            },
+                          }),
                           [NavigatorName.Earn]: {
                             screens: {
                               /**
@@ -458,12 +495,30 @@ export const DeeplinksProvider = ({
                               [ScreenName.Earn]: "earn",
                             },
                           },
-                          [NavigatorName.Discover]: {
+                          ...(!web3hubFlag?.enabled
+                            ? {
+                                [NavigatorName.Discover]: {
+                                  screens: {
+                                    /**
+                                     * ie: "ledgerlive://discover" will open the catalog
+                                     */
+                                    [ScreenName.PlatformCatalog]: "discover",
+                                  },
+                                },
+                              }
+                            : {
+                                [NavigatorName.Web3HubTab]: {
+                                  screens: {
+                                    [ScreenName.Web3HubMain]: "discover",
+                                  },
+                                },
+                              }),
+                          [NavigatorName.Borrow]: {
                             screens: {
                               /**
-                               * ie: "ledgerlive://discover" will open the catalog
+                               * ie: "ledgerlive://borrow" will open the borrow screen
                                */
-                              [ScreenName.PlatformCatalog]: "discover",
+                              [ScreenName.Borrow]: "borrow",
                             },
                           },
                           [NavigatorName.MyLedger]: {
@@ -511,6 +566,15 @@ export const DeeplinksProvider = ({
                            * ie: "ledgerlive://asset/bitcoin" will open the Bitcoin Asset screen.
                            */
                           [ScreenName.Asset]: "asset/:currencyId",
+                          /**
+                           * if shouldDisplayWallet40MainNav and shouldDisplayAssetSection are enabled
+                           * @params ?sourceScreenName: string
+                           * ie: "ledgerlive://crypto-addresses" will open the crypto addresses screen.
+                           */
+                          ...(shouldDisplayWallet40MainNav &&
+                            shouldDisplayAssetSection && {
+                              [ScreenName.CryptoAddresses]: "crypto-addresses",
+                            }),
                         },
                       },
                     },
@@ -741,7 +805,6 @@ export const DeeplinksProvider = ({
               return getStateFromPath(url.href?.split("://")[1], config);
             }
           }
-
           if (hostname === "swap") {
             const swapParams = new URLSearchParams();
             const fromPath = searchParams.get("fromPath");
@@ -751,6 +814,7 @@ export const DeeplinksProvider = ({
             const affiliate = searchParams.get("affiliate");
             const fromCurrency = searchParams.get("fromCurrency");
             const toCurrency = searchParams.get("toCurrency");
+            const toAccountId = searchParams.get("toAccountId");
             if (fromPath) swapParams.set("fromPath", fromPath);
             if (fromToken) swapParams.set("fromTokenId", fromToken);
             if (toToken) swapParams.set("toTokenId", toToken);
@@ -758,9 +822,20 @@ export const DeeplinksProvider = ({
             if (toCurrency) swapParams.set("toCurrencyId", toCurrency);
             if (amountFrom) swapParams.set("amountFrom", amountFrom);
             if (affiliate) swapParams.set("affiliate", affiliate);
+            if (toAccountId) swapParams.set("toAccountId", toAccountId);
             const swapSearch = swapParams.toString();
             const pathWithParams = swapSearch ? `swap?${swapSearch}` : "swap";
             return getStateFromPath(pathWithParams, config);
+          }
+          // Handle wallet deeplink with installApp param
+          // ledgerlive://wallet?installApp=RecoveryKeyUpdater
+          if (
+            (hostname === "wallet" || hostname === "portfolio") &&
+            installApp &&
+            isValidInstallApp(installApp)
+          ) {
+            dispatch(openDeeplinkInstallAppDrawer({ appToInstall: installApp }));
+            return getStateFromPath("portfolio", config);
           }
 
           if ((hostname === "discover" || hostname === "recover") && platform) {
@@ -807,8 +882,10 @@ export const DeeplinksProvider = ({
     dispatch,
     shouldDisplayMarketBanner,
     shouldDisplayWallet40MainNav,
+    shouldDisplayAssetSection,
     liveAppProviderInitialized,
     manifests,
+    web3hubFlag?.enabled,
   ]);
   const [isReady, setIsReady] = React.useState(false);
   const [isNavigationContainerReady, setIsNavigationContainerReady] = React.useState(false);
@@ -827,17 +904,9 @@ export const DeeplinksProvider = ({
     [],
   );
 
-  const animSplash = useFeature("llmAnimatedSplashScreen");
-  const showAnimatedSplashScreen = useRef(
-    (animSplash?.enabled && animSplash.params?.[Platform.OS]) ?? true,
-  );
-  const SplashScreenComponent = useRef(
-    showAnimatedSplashScreen.current ? AppLoadingManager : SplashScreenHandle,
-  );
-
   return (
     <View style={styles.appBackground}>
-      <SplashScreenComponent.current
+      <SplashScreenHandle
         isNavigationReady={isReady && isNavigationContainerReady}
         onAppReady={handleStartComplete}
       >
@@ -854,7 +923,7 @@ export const DeeplinksProvider = ({
             {children}
           </NavigationContainer>
         ) : null}
-      </SplashScreenComponent.current>
+      </SplashScreenHandle>
     </View>
   );
 };

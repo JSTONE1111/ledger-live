@@ -1,3 +1,8 @@
+import { registerAllCoins } from "@ledgerhq/live-common/coin-modules/load-all-coins";
+import { LiveConfig } from "@ledgerhq/live-config/LiveConfig";
+import { liveConfig } from "@ledgerhq/live-common/config/sharedConfig";
+registerAllCoins();
+LiveConfig.setConfig(liveConfig);
 import "react-native-gesture-handler/jestSetup";
 import "@shopify/flash-list/jestSetup";
 import "@mocks/console";
@@ -41,7 +46,24 @@ afterAll(() => server.close());
 
 NativeModules.RNAnalytics = {};
 
-const mockAnalytics = jest.createMockFromModule("@segment/analytics-react-native");
+jest.mock("@segment/analytics-react-native", () => {
+  const actual = jest.requireActual("@segment/analytics-react-native");
+  const mockSegmentIdentify = jest.fn();
+  const mockSegmentTrack = jest.fn();
+  const mockSegmentClient = {
+    add: jest.fn(),
+    identify: mockSegmentIdentify,
+    track: mockSegmentTrack,
+    flush: jest.fn(),
+    reset: jest.fn(),
+  };
+  return {
+    ...actual,
+    createClient: jest.fn(() => mockSegmentClient),
+    _identifyMock: mockSegmentIdentify,
+    _trackMock: mockSegmentTrack,
+  };
+});
 
 // Overriding the default RNGH mocks
 // to replace TouchableNativeFeedback with TouchableOpacity
@@ -73,12 +95,32 @@ jest.mock("react-native-haptic-feedback", () => ({
   },
 }));
 
-jest.mock("@segment/analytics-react-native", () => mockAnalytics);
+jest.mock("expo-haptics", () => ({
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  ImpactFeedbackStyle: {
+    Light: "light",
+    Medium: "medium",
+    Heavy: "heavy",
+    Soft: "soft",
+    Rigid: "rigid",
+  },
+  NotificationFeedbackType: {
+    Success: "success",
+    Warning: "warning",
+    Error: "error",
+  },
+}));
 
 jest.mock("react-native-launch-arguments", () => ({}));
 
 NativeModules.BluetoothHelperModule = {
   E_BLE_CANCELLED: "BLE_UNKNOWN_STATE",
+};
+
+NativeModules.ReduceTransparencyModule = {
+  getReduceTransparencyEnabled: () => Promise.resolve(false),
 };
 
 jest.mock("react-native-share", () => ({
@@ -98,17 +140,7 @@ jest.mock("lottie-react-native", () => {
   return MockLottie;
 });
 
-// Mirror runtime: react-native-config exposes env as strings (e.g. "1"/"true" for DETOX).
-// Use undefined so (1) DETOX_ENABLED stays false and (2) truthiness checks (Config.DETOX) are falsy in unit tests.
-jest.mock("react-native-config", () => {
-  const config = { DETOX: undefined };
-  return {
-    __esModule: true,
-    get default() {
-      return config;
-    },
-  };
-});
+jest.mock("react-native-config");
 
 export const mockSimulateBarcodeScanned = jest.fn();
 export const mockGetCameraPermissionStatus = jest.fn(() => "granted");
@@ -201,6 +233,13 @@ jest.mock("~/analytics", () => ({
 }));
 
 jest.mock("@react-native-firebase/messaging", () => ({
+  AuthorizationStatus: {
+    AUTHORIZED: 1,
+    DENIED: 0,
+    NOT_DETERMINED: -1,
+    PROVISIONAL: 2,
+    EPHEMERAL: 3,
+  },
   getMessaging: jest.fn(() => ({
     hasPermission: jest.fn(() => Promise.resolve(true)),
     subscribeToTopic: jest.fn(),
@@ -294,8 +333,8 @@ console.log = (...args) => {
 };
 
 // Mock isCurrencySupported globally for tests
-jest.mock("@ledgerhq/coin-framework/currencies/support", () => {
-  const actual = jest.requireActual("@ledgerhq/coin-framework/currencies/support");
+jest.mock("@ledgerhq/ledger-wallet-framework/currencies/support", () => {
+  const actual = jest.requireActual("@ledgerhq/ledger-wallet-framework/currencies/support");
   return {
     ...actual,
     isCurrencySupported: jest.fn(() => true),

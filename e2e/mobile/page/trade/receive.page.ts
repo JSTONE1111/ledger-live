@@ -1,13 +1,13 @@
 import { Step } from "jest-allure2-reporter/api";
 import { currencyParam, openDeeplink } from "../../helpers/commonHelpers";
-import { TokenType } from "@ledgerhq/live-common/lib/e2e/enum/TokenType";
+import { TokenType } from "@ledgerhq/live-common/e2e/enum/TokenType";
 import { ReceiveFundsOptionsType } from "@ledgerhq/live-common/e2e/enum/ReceiveFundsOptions";
 
 export default class ReceivePage {
   accountAddress = "receive-fresh-address";
   accountFreshAddress = "receive-verifyAddress-freshAdress";
   baseLink = "receive";
-  buttonContinueId = "add-accounts-continue-button";
+  buttonContinueId = "enabled-add-accounts-continue-button";
   buttonVerifyAddressId = "button-verify-my-address";
   networkBasedStep2HeaderTitleId = "addAccounts-header-step2-title";
   noVerifyAddressButton = "button-DontVerify-my-address";
@@ -23,6 +23,7 @@ export default class ReceivePage {
     `option-button-content-${receiveFundsOption}`;
   receiveQrCodeContainerId = (t: string) => `receive-qr-code-container-${t}`;
   titleReceiveConfirmationPageId = (t: string) => `receive-confirmation-title-${t}`;
+  private readonly receiveNetworkWarningId = "receive-network-warning";
 
   @Step("Open receive via deeplink")
   async openViaDeeplink(): Promise<void> {
@@ -97,16 +98,32 @@ export default class ReceivePage {
     await tapById(this.noVerifyValidateButton);
   }
 
-  @Step("Expect account receive page is displayed")
-  async expectReceivePageIsDisplayed(tickerName: string, accountName: string): Promise<void> {
+  @Step("Expect receive page header")
+  private async expectReceivePageHeader(tickerName: string, accountName: string): Promise<void> {
     const titleID = this.titleReceiveConfirmationPageId(tickerName);
     const accountNameID = this.accountNameReceiveId(accountName);
-    const qrCodeContainerID = this.receiveQrCodeContainerId(accountName);
+
     await waitForElementById(this.accountAddress);
     await waitForElementById(titleID);
     await detoxExpect(getElementById(titleID)).toBeVisible();
     await detoxExpect(getElementById(accountNameID)).toBeVisible();
+  }
+
+  @Step("Expect account receive page is displayed")
+  async expectReceivePageIsDisplayed(tickerName: string, accountName: string): Promise<void> {
+    const qrCodeContainerID = this.receiveQrCodeContainerId(accountName);
+
+    await this.expectReceivePageHeader(tickerName, accountName);
+    await scrollToId(qrCodeContainerID, this.receivePageScrollViewId);
     await detoxExpect(getElementById(qrCodeContainerID)).toBeVisible();
+  }
+
+  @Step("Expect receive warning page is displayed")
+  async expectReceiveWarningPageIsDisplayed(
+    tickerName: string,
+    accountName: string,
+  ): Promise<void> {
+    await this.expectReceivePageHeader(tickerName, accountName);
   }
 
   @Step("Verify address")
@@ -129,6 +146,15 @@ export default class ReceivePage {
     await detoxExpect(getElementById(warnId)).toBeVisible();
     await detoxExpect(getElementById(descId)).toHaveText(
       "You first need to send at least 0.1 TRX to this address to activate it.",
+    );
+  }
+
+  @Step("Expect receive network warning message for $0")
+  async expectSendCurrencyTokensWarningMessage(expectedWarningMessage: string): Promise<void> {
+    await scrollToId(this.receiveNetworkWarningId, this.receivePageScrollViewId);
+    await detoxExpect(getElementById(this.receiveNetworkWarningId)).toBeVisible();
+    await detoxExpect(getElementById(this.receiveNetworkWarningId)).toHaveText(
+      expectedWarningMessage,
     );
   }
 

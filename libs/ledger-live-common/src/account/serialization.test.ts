@@ -1,5 +1,5 @@
 import { getCryptoCurrencyById, setSupportedCurrencies } from "../currencies";
-import { genAccount, genTokenAccount } from "@ledgerhq/coin-framework/mocks/account";
+import { genAccount, genTokenAccount } from "@ledgerhq/ledger-wallet-framework/mocks/account";
 import { toAccountRaw, fromAccountRaw } from "./serialization";
 import { setWalletAPIVersion } from "../wallet-api/version";
 import { WALLET_API_VERSION } from "../wallet-api/constants";
@@ -36,7 +36,7 @@ describe("serialization", () => {
     tokenAcc.state = "initialized";
     acc.subAccounts = [tokenAcc];
 
-    const accRaw: any = toAccountRaw(acc);
+    const accRaw: any = await toAccountRaw(acc);
     expect(accRaw.subAccounts?.[0]?.state).toBe("initialized");
 
     const deserializedAcc: any = await fromAccountRaw(accRaw);

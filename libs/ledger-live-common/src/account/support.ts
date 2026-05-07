@@ -1,15 +1,18 @@
-import { getMainAccount } from "@ledgerhq/coin-framework/account/index";
+import { getMainAccount } from "@ledgerhq/ledger-wallet-framework/account/index";
 import { getAccountBridge } from "../bridge";
 import type { Account, AccountLike } from "@ledgerhq/types-live";
 
 export {
   getReceiveFlowError,
   checkAccountSupported,
-} from "@ledgerhq/coin-framework/account/support";
+} from "@ledgerhq/ledger-wallet-framework/account/support";
 
-export function canSend(account: AccountLike, parentAccount: Account | null | undefined): boolean {
+export async function canSend(
+  account: AccountLike,
+  parentAccount: Account | null | undefined,
+): Promise<boolean> {
   try {
-    getAccountBridge(account, parentAccount).createTransaction(
+    (await getAccountBridge(account, parentAccount)).createTransaction(
       getMainAccount(account, parentAccount),
     );
     return true;

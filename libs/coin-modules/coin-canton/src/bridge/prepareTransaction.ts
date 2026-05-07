@@ -1,10 +1,10 @@
 import { AccountBridge, TokenAccount } from "@ledgerhq/types-live";
-import { Transaction } from "../types";
-import { estimateFees } from "../common-logic";
 import BigNumber from "bignumber.js";
-import { updateTransaction } from "./updateTransaction";
+import { estimateFees } from "../common-logic";
 import coinConfig from "../config";
 import { getCalTokensCached } from "../network/gateway";
+import { Transaction } from "../types";
+import { updateTransaction } from "./updateTransaction";
 
 type CantonTokenAccount = TokenAccount & {
   cantonResources: { instrumentAdmin: string };
@@ -35,12 +35,12 @@ export const prepareTransaction: AccountBridge<Transaction>["prepareTransaction"
 
   // Default to native instrument if no tokenId set
   if (!tokenId) {
-    tokenId = coinConfig.getCoinConfig(account.currency).nativeInstrumentId;
+    tokenId = coinConfig.getCoinConfig(account.currency.id).nativeInstrumentId;
   }
 
   return updateTransaction(transaction, {
     fee,
     tokenId,
-    ...(instrumentAdmin !== undefined && { instrumentAdmin }),
+    ...(instrumentAdmin ? { instrumentAdmin } : {}),
   });
 };

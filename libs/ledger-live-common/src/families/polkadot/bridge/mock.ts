@@ -1,4 +1,4 @@
-// TODO: update path by moving mockHelpers to coin-framework
+// TODO: update path by moving mockHelpers to ledger-wallet-framework
 
 import { BigNumber } from "bignumber.js";
 import { NotEnoughBalance, RecipientRequired, InvalidAddress, FeeTooHigh } from "@ledgerhq/errors";
@@ -13,8 +13,8 @@ import {
   sync,
   isInvalidRecipient,
 } from "../../../bridge/mockHelpers";
-import { getMainAccount } from "@ledgerhq/coin-framework/account/index";
-import { getSerializedAddressParameters } from "@ledgerhq/coin-framework/bridge/jsHelpers";
+import { getMainAccount } from "@ledgerhq/ledger-wallet-framework/account/index";
+import { getSerializedAddressParameters } from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
 import { assignToAccountRaw, assignFromAccountRaw } from "@ledgerhq/coin-polkadot/serialization";
 import { hydrate } from "@ledgerhq/coin-polkadot/preload";
 import { validateAddress } from "../../../bridge/validateAddress";

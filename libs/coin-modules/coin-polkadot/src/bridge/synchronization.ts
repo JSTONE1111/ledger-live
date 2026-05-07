@@ -1,7 +1,7 @@
-import { encodeAccountId } from "@ledgerhq/coin-framework/account/index";
-import { makeSync, mergeOps } from "@ledgerhq/coin-framework/bridge/jsHelpers";
-import type { GetAccountShape } from "@ledgerhq/coin-framework/bridge/jsHelpers";
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
+import { encodeAccountId } from "@ledgerhq/ledger-wallet-framework/account/index";
+import { makeSync, mergeOps } from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
+import type { GetAccountShape } from "@ledgerhq/ledger-wallet-framework/bridge/jsHelpers";
 import coinConfig from "../config";
 import { loadPolkadotCrypto } from "../logic/polkadot-crypto";
 import polkadotAPI from "../network";
@@ -13,7 +13,7 @@ export const getAccountShape: GetAccountShape<PolkadotAccount> = async info => {
   const { address, initialAccount, currency, derivationMode } = info;
 
   const assethubCurrency = getCryptoCurrencyById("assethub_polkadot");
-  const assethubConfig = coinConfig.getCoinConfig(assethubCurrency);
+  const assethubConfig = coinConfig.getCoinConfig(assethubCurrency?.id);
 
   const shouldMigrate = currency.id === "polkadot" && assethubConfig.hasBeenMigrated;
   const currencyToUse = shouldMigrate ? assethubCurrency : currency;

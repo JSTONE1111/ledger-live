@@ -1,6 +1,20 @@
 import { takeSpeculosScreenshot } from "./utils/speculosUtils";
+import {
+  attachTestExecutionConsoleToAllure,
+  attachFailureLogsToAllure,
+  attachSpeculosStartupErrorToAllure,
+  resetStderrCaptureForCurrentTest,
+  installConsoleCapture,
+  uninstallConsoleCapture,
+} from "./utils/loggingUtils";
+import { getLogs } from "./bridge/server";
 import { Circus } from "@jest/types";
-import { logMemoryUsage, takeAppScreenshot, setupEnvironment } from "./helpers/commonHelpers";
+import {
+  logMemoryUsage,
+  takeAppScreenshot,
+  captureNativeViewHierarchy,
+  setupEnvironment,
+} from "./helpers/commonHelpers";
 import { config as detoxConfig } from "detox/internals";
 import { Subject } from "rxjs";
 import { sanitizeError } from "@ledgerhq/live-common/e2e/index";
@@ -12,6 +26,7 @@ import { Fee } from "@ledgerhq/live-common/e2e/enum/Fee";
 import { AppInfos } from "@ledgerhq/live-common/e2e/enum/AppInfos";
 import { Swap } from "@ledgerhq/live-common/e2e/models/Swap";
 import { CLI } from "./utils/cliUtils";
+import * as cliCommandsUtils from "@ledgerhq/live-common/e2e/cliCommandsUtils";
 import { NativeElementHelpers, WebElementHelpers } from "./helpers/elementHelpers";
 import expect from "expect";
 import { Application } from "./page/index";
@@ -31,7 +46,6 @@ export default class TestEnvironment extends DetoxEnvironment {
     setupEnvironment();
 
     const speculosDevicesMap = new Map<string, number>();
-    const proxySubscriptionsMap = new Map<number, { port: number; subscription: any }>();
     const webSocketObj = {
       wss: undefined,
       ws: undefined,
@@ -44,14 +58,12 @@ export default class TestEnvironment extends DetoxEnvironment {
     this.global.app = appInstance;
     this.global.IS_FAILED = false;
     this.global.speculosDevices = speculosDevicesMap;
-    this.global.proxySubscriptions = proxySubscriptionsMap;
     this.global.webSocket = webSocketObj;
     this.global.pendingCallbacks = pendingCallbacksMap;
 
     globalThis.app = appInstance;
     globalThis.IS_FAILED = false;
     globalThis.speculosDevices = speculosDevicesMap;
-    globalThis.proxySubscriptions = proxySubscriptionsMap;
     globalThis.webSocket = webSocketObj;
     globalThis.pendingCallbacks = pendingCallbacksMap;
 
@@ -75,16 +87,19 @@ export default class TestEnvironment extends DetoxEnvironment {
       getAttributesOfElement: NativeElementHelpers.getAttributesOfElement,
       getElementById: NativeElementHelpers.getElementById,
       getElementByIdAndText: NativeElementHelpers.getElementByIdAndText,
+      getElementByIdWithDescendantTexts: NativeElementHelpers.getElementByIdWithDescendantTexts,
       getElementByText: NativeElementHelpers.getElementByText,
       getElementsById: NativeElementHelpers.getElementsById,
       getIdByRegexp: NativeElementHelpers.getIdByRegexp,
       getIdOfElement: NativeElementHelpers.getIdOfElement,
       getTextOfElement: NativeElementHelpers.getTextOfElement,
+      IsIdPresent: NativeElementHelpers.isIdPresent,
       IsIdVisible: NativeElementHelpers.isIdVisible,
       scrollToId: NativeElementHelpers.scrollToId,
       scrollToText: NativeElementHelpers.scrollToText,
       tapByElement: NativeElementHelpers.tapByElement,
       tapById: NativeElementHelpers.tapById,
+      tapByIdAndExpectToDisappear: NativeElementHelpers.tapByIdAndExpectToDisappear,
       tapByText: NativeElementHelpers.tapByText,
       typeTextByElement: NativeElementHelpers.typeTextByElement,
       typeTextById: NativeElementHelpers.typeTextById,
@@ -95,13 +110,14 @@ export default class TestEnvironment extends DetoxEnvironment {
     };
 
     const webHelpers = {
+      expectWebElementNotVisible: WebElementHelpers.expectWebElementNotVisible,
       getCurrentWebviewUrl: WebElementHelpers.getCurrentWebviewUrl,
       getValueByWebTestId: WebElementHelpers.getValueByWebTestId,
       getWebElementByCssSelector: WebElementHelpers.getWebElementByCssSelector,
       getWebElementById: WebElementHelpers.getWebElementById,
       getWebElementByTag: WebElementHelpers.getWebElementByTag,
       getWebElementByTestId: WebElementHelpers.getWebElementByTestId,
-      getWebElementsByCssSelector: WebElementHelpers.getWebElementsByCssSelector,
+      getWebElementByXpath: WebElementHelpers.getWebElementByXpath,
       getWebElementsByIdAndText: WebElementHelpers.getWebElementsByIdAndText,
       getWebElementsText: WebElementHelpers.getWebElementsText,
       getWebElementText: WebElementHelpers.getWebElementText,
@@ -112,16 +128,19 @@ export default class TestEnvironment extends DetoxEnvironment {
       waitForCurrentWebviewUrlToContain: WebElementHelpers.waitForCurrentWebviewUrlToContain,
       waitForWebElementToBeEnabled: WebElementHelpers.waitForWebElementToBeEnabled,
       waitForWebElementToMatchRegex: WebElementHelpers.waitForWebElementToMatchRegex,
+      waitWebElement: WebElementHelpers.waitWebElement,
       waitWebElementByTestId: WebElementHelpers.waitWebElementByTestId,
     };
 
     Object.assign(this.global, enums);
     Object.assign(this.global, nativeHelpers);
     Object.assign(this.global, webHelpers);
+    Object.assign(this.global, cliCommandsUtils);
 
     Object.assign(globalThis, enums);
     Object.assign(globalThis, nativeHelpers);
     Object.assign(globalThis, webHelpers);
+    Object.assign(globalThis, cliCommandsUtils);
   }
 
   private setupDeviceForSecondaryWorker(workerId: number) {
@@ -145,6 +164,7 @@ export default class TestEnvironment extends DetoxEnvironment {
 
   async teardown() {
     try {
+      uninstallConsoleCapture();
       if (this.global.webSocket?.wss) {
         this.global.webSocket.wss.close();
         this.global.webSocket.wss = undefined;
@@ -158,28 +178,10 @@ export default class TestEnvironment extends DetoxEnvironment {
         this.global.webSocket.e2eBridgeServer.complete();
       }
 
-      if (this.global.proxySubscriptions) {
-        for (const [_, { subscription }] of this.global.proxySubscriptions) {
-          if (subscription?.unsubscribe && !subscription.closed) {
-            subscription.unsubscribe();
-          }
-        }
-        this.global.proxySubscriptions.clear();
-      }
-
-      // Clean up DeviceManagementKit transport connections to prevent TLS socket errors
-      // The static byBase Map can hold stale connections that cause "Cannot read properties of null"
-      // Using dynamic import to avoid module loading side effects during environment initialization
       try {
-        const { DeviceManagementKitTransportSpeculos } = await import(
-          "@ledgerhq/live-dmk-speculos"
-        );
-        for (const [_baseUrl, entry] of DeviceManagementKitTransportSpeculos.byBase) {
-          if (entry.sessionId && entry.dmk?.disconnect) {
-            await entry.dmk.disconnect({ sessionId: entry.sessionId }).catch(() => {});
-          }
-        }
-        DeviceManagementKitTransportSpeculos.byBase.clear();
+        const { DeviceManagementKitTransportSpeculos } =
+          await import("@ledgerhq/live-dmk-speculos");
+        await DeviceManagementKitTransportSpeculos.disconnectAll();
       } catch {
         // Ignore cleanup errors
       }
@@ -197,14 +199,23 @@ export default class TestEnvironment extends DetoxEnvironment {
 
     if (["hook_failure", "test_fn_failure"].includes(event.name)) {
       this.global.IS_FAILED = true;
-    }
-
-    if (this.global.IS_FAILED && ["test_fn_start", "test_fn_failure"].includes(event.name)) {
       await takeSpeculosScreenshot();
       await takeAppScreenshot("Test Failure");
+      try {
+        await attachTestExecutionConsoleToAllure();
+        await attachSpeculosStartupErrorToAllure();
+        const logsPayload = await getLogs();
+        await attachFailureLogsToAllure(logsPayload);
+        await captureNativeViewHierarchy();
+        console.info("Failure logs attached to Allure report");
+      } catch (err) {
+        console.warn("Failed to attach failure logs to Allure:", err);
+      }
     }
 
     if (event.name === "run_start") {
+      resetStderrCaptureForCurrentTest();
+      installConsoleCapture();
       await logMemoryUsage();
     }
   }

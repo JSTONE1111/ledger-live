@@ -1,13 +1,13 @@
+import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
+import { SignedOperation } from "@ledgerhq/types-live";
 import { BigNumber } from "bignumber.js";
 import IconService from "icon-sdk-js";
 import type { IcxTransaction, SignedTransaction } from "icon-sdk-js";
-import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
-import { isTestnet } from "../logic";
-import { GOVERNANCE_SCORE_ADDRESS, IISS_SCORE_ADDRESS } from "../constants";
-import { IconAccount } from "../types/index";
-import { SignedOperation } from "@ledgerhq/types-live";
-import { IconDelegationType } from "./api-type";
 import { getCoinConfig } from "../config";
+import { GOVERNANCE_SCORE_ADDRESS, IISS_SCORE_ADDRESS } from "../constants";
+import { isTestnet } from "../logic";
+import { IconAccount } from "../types/index";
+import { IconDelegationType } from "./api-type";
 
 const { HttpProvider } = IconService;
 const { IconBuilder } = IconService;
@@ -56,12 +56,19 @@ export const submit = async (signedOperation: SignedOperation, currency: CryptoC
     getSignature: () => signedOperation.signature,
   };
 
-  const response = await iconService
-    .sendTransaction(signedTransaction as SignedTransaction)
-    .execute();
-  return {
-    hash: response,
-  };
+  /**
+   * `icon-sdk-js` throw plain strings (cf https://github.com/icon-project/icon-sdk-js/blob/0415489dc0c295de4bed84b0187f7659e528823b/lib/transport/http/client/HttpCall.ts#L31-L48)
+   */
+  try {
+    const response = await iconService
+      .sendTransaction(signedTransaction as SignedTransaction)
+      .execute();
+    return {
+      hash: response,
+    };
+  } catch (err) {
+    throw typeof err === "string" ? new Error(err) : err;
+  }
 };
 
 /**

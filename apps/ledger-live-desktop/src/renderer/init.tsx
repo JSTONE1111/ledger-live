@@ -38,9 +38,11 @@ import { lock, setOSDarkMode } from "~/renderer/actions/application";
 import {
   languageSelector,
   sentryLogsSelector,
+  trackingEnabledSelector,
   hideEmptyTokenAccountsSelector,
   filterTokenOperationsZeroAmountSelector,
 } from "~/renderer/reducers/settings";
+import { liveBlindSigningReporter } from "@ledgerhq/live-dmk-shared";
 import ReactRoot from "~/renderer/ReactRoot";
 import AppError from "~/renderer/AppError";
 import { expectOperatingSystemSupportStatus } from "~/support/os";
@@ -53,7 +55,9 @@ import { fetchWallet } from "./actions/wallet";
 import { fetchTrustchain } from "./actions/trustchain";
 import { setupRecentAddressesStore } from "./recentAddresses";
 import { startAnalytics } from "./analytics/segment";
-import { identitiesSlice } from "@ledgerhq/client-ids/store";
+import { initIdentities } from "~/renderer/helpers/identities";
+import { setAllOverrides, setBannerVisible } from "@shared/feature-flags";
+import { initHistory } from "~/renderer/reducers/history";
 
 const rootNode = document.getElementById("react-root");
 
@@ -149,7 +153,9 @@ async function init() {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     (window as Window & { __STORE__?: ReduxStore }).__STORE__ = store;
   }
-  sentry(() => sentryLogsSelector(store.getState()));
+  // Initialize identities before Sentry so Sentry user id (datadogId) is set correctly
+  await initIdentities(store);
+  sentry(() => sentryLogsSelector(store.getState()), store);
   let notifiedSentryLogs = false;
   store.subscribe(() => {
     const next = sentryLogsSelector(store.getState());
@@ -168,9 +174,9 @@ async function init() {
     deepLinkUrl = url;
   });
   const initialSettings = (await getKey("app", "settings")) || {};
-  // Make sure startAnalytics is always called after a first getKey() because otherwise
-  // will run into issues where shareAnalytics state will not reflect the user's preferences and always be set to true...
   startAnalytics(store);
+
+  liveBlindSigningReporter.setConsentSource(() => trackingEnabledSelector(store.getState()));
 
   // Build settings to load, ensuring hasCompletedOnboarding is false after a hard reset
   const settingsToLoad = { ...initialSettings };
@@ -209,10 +215,45 @@ async function init() {
     store.dispatch(lock());
   }
 
-  // Load persisted identities
-  const persistedIdentities = await getKey("app", "identities");
-  if (persistedIdentities) {
-    store.dispatch(identitiesSlice.actions.initFromPersisted(persistedIdentities));
+  const persistedFeatureFlags = await getKey("app", "featureFlags");
+  if (persistedFeatureFlags) {
+    store.dispatch(setAllOverrides(persistedFeatureFlags.overrides));
+    store.dispatch(setBannerVisible(persistedFeatureFlags.bannerVisible));
+  } else if (initialSettings) {
+    // One-time migration from legacy settings fields.
+    // These fields have been removed from SettingsState but may still exist in old persisted payloads.
+    const rawOverrides =
+      "overriddenFeatureFlags" in initialSettings &&
+      typeof initialSettings["overriddenFeatureFlags"] === "object" &&
+      initialSettings["overriddenFeatureFlags"] !== null
+        ? (initialSettings["overriddenFeatureFlags"] as Record<string, unknown>)
+        : undefined;
+
+    if (rawOverrides && Object.keys(rawOverrides).length > 0) {
+      const filteredOverrides: Parameters<typeof setAllOverrides>[0] = Object.fromEntries(
+        Object.entries(rawOverrides).filter(
+          ([, v]) =>
+            v !== undefined &&
+            typeof v === "object" &&
+            v !== null &&
+            "enabled" in v &&
+            typeof (v as Record<string, unknown>)["enabled"] === "boolean",
+        ),
+      );
+      store.dispatch(setAllOverrides(filteredOverrides));
+    }
+
+    if (
+      "featureFlagsButtonVisible" in initialSettings &&
+      typeof initialSettings["featureFlagsButtonVisible"] === "boolean"
+    ) {
+      store.dispatch(setBannerVisible(initialSettings["featureFlagsButtonVisible"]));
+    }
+  }
+
+  const historyState = await getKey("app", "history");
+  if (historyState) {
+    store.dispatch(initHistory(historyState));
   }
 
   const initialCountervalues = await getKey("app", "countervalues");

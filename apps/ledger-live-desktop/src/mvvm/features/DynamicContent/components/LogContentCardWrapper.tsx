@@ -5,11 +5,13 @@ import {
   anonymousUserNotificationsSelector,
   trackingEnabledSelector,
 } from "~/renderer/reducers/settings";
+import { desktopContentCardSelector } from "~/renderer/reducers/dynamicContent";
 import { track } from "~/renderer/analytics/segment";
 import { Box } from "@ledgerhq/react-ui";
 import { updateAnonymousUserNotifications } from "~/renderer/actions/settings";
 import { OFFLINE_SEEN_DELAY } from "../utils/constants";
 import { currentRouteNameRef } from "~/renderer/analytics/screenRefs";
+import { sanitizeExtras } from "~/renderer/hooks/useBraze";
 
 interface LogContentCardWrapperProps {
   id: string;
@@ -30,6 +32,7 @@ const LogContentCardWrapper: React.FC<LogContentCardWrapperProps> = ({
   location,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const desktopCards = useSelector(desktopContentCardSelector);
   const isTrackedUser = useSelector(trackingEnabledSelector);
   const anonymousUserNotifications = useSelector(anonymousUserNotificationsSelector);
   const dispatch = useDispatch();
@@ -38,38 +41,40 @@ const LogContentCardWrapper: React.FC<LogContentCardWrapperProps> = ({
   const notificationTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const currentCard = useMemo(() => {
-    const cards = braze.getCachedContentCards()?.cards ?? [];
-    return cards.find(card => card.id === id);
-  }, [id]);
+    return desktopCards.find(card => card.id === id);
+  }, [desktopCards, id]);
 
   useEffect(() => {
     if (!currentCard) return;
 
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
+        if (!currentCard) return;
+
         const isContentCardNowVisible = entry.intersectionRatio > PERCENTAGE_OF_CARD_VISIBLE;
         if (isContentCardNowVisible && !isContentCardVisibleRef.current) {
           if (isTrackedUser) {
             braze.logContentCardImpressions([currentCard]);
             track("contentcard_impression", {
               id: currentCard.id,
-              ...currentCard.extras,
+              ...sanitizeExtras(currentCard.extras),
               ...additionalProps,
               displayedPosition,
             });
-          } else if (
-            anonymousUserNotifications[currentCard.id as string] !==
-            currentCard?.expiresAt?.getTime()
-          ) {
-            notificationTimerRef.current = setTimeout(() => {
-              dispatch(
-                updateAnonymousUserNotifications({
-                  notifications: {
-                    [currentCard.id as string]: currentCard?.expiresAt?.getTime() as number,
-                  },
-                }),
-              );
-            }, OFFLINE_SEEN_DELAY);
+          } else {
+            const cardId = currentCard.id;
+            if (!cardId) return;
+
+            const expiresAt = currentCard.expiresAt?.getTime();
+            if (expiresAt !== undefined && anonymousUserNotifications[cardId] !== expiresAt) {
+              notificationTimerRef.current = setTimeout(() => {
+                dispatch(
+                  updateAnonymousUserNotifications({
+                    notifications: { [cardId]: expiresAt },
+                  }),
+                );
+              }, OFFLINE_SEEN_DELAY);
+            }
           }
         }
         isContentCardVisibleRef.current = isContentCardNowVisible;

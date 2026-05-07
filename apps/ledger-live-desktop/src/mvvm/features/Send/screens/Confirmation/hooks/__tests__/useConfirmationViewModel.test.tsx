@@ -4,11 +4,11 @@ import { act } from "tests/testSetup";
 import { useConfirmationViewModel } from "../useConfirmationViewModel";
 import { setDrawer } from "~/renderer/drawers/Provider";
 import { OperationDetails } from "~/renderer/drawers/OperationDetails";
-import { sendFeatures } from "@ledgerhq/live-common/bridge/descriptor";
+import { sendFeatures } from "@ledgerhq/live-common/bridge/descriptor/send/features";
 
 jest.mock("~/renderer/drawers/Provider", () => ({ setDrawer: jest.fn() }));
 jest.mock("~/renderer/drawers/OperationDetails", () => ({ OperationDetails: {} }));
-jest.mock("@ledgerhq/live-common/bridge/descriptor", () => ({
+jest.mock("@ledgerhq/live-common/bridge/descriptor/send/features", () => ({
   sendFeatures: { isUserRefusedTransactionError: jest.fn() },
 }));
 jest.mock("../../../../../FlowWizard/FlowWizardContext", () => ({
@@ -21,6 +21,7 @@ jest.mock("../../../../context/SendFlowContext", () => ({
 
 import { useFlowWizard } from "../../../../../FlowWizard/FlowWizardContext";
 import { useSendFlowActions, useSendFlowData } from "../../../../context/SendFlowContext";
+import { track, trackPage } from "~/renderer/analytics/segment";
 
 type VM = ReturnType<typeof useConfirmationViewModel>;
 let container: HTMLElement;
@@ -173,6 +174,13 @@ describe("useConfirmationViewModel", () => {
       root.render(<HookProbe onResult={vm => (latestVM = vm)} />);
     });
 
+    expect(trackPage).toHaveBeenCalledWith("Modal send - action rejected", null, {
+      flow: "send",
+      blockchain: "",
+      currency: "",
+      currency_id: "",
+    });
+
     expect(latestVM?.status).toBe("IDLE");
   });
 
@@ -199,6 +207,14 @@ describe("useConfirmationViewModel", () => {
     latestVM?.onViewDetails();
 
     expect(close).toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith("send_modal", {
+      button: "view details",
+      page: "step confirmation",
+      flow: "send",
+      blockchain: "",
+      currency: "",
+      currency_id: "",
+    });
     expect(setDrawer).toHaveBeenCalledWith(OperationDetails, {
       operationId: "child1",
       accountId: "acc1",
@@ -310,6 +326,12 @@ describe("useConfirmationViewModel", () => {
     });
     latestVM?.onClose();
 
+    expect(trackPage).toHaveBeenCalledWith("Modal send - transaction sent", null, {
+      flow: "send",
+      blockchain: "",
+      currency: "",
+      currency_id: "",
+    });
     expect(close).toHaveBeenCalled();
   });
 });

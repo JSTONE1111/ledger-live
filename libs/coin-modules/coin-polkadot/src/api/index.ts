@@ -1,19 +1,24 @@
-import {
+import { rejectBalanceOptions } from "@ledgerhq/coin-module-framework/api/getBalance/rejectBalanceOptions";
+import type {
   AlpacaApi,
+  Balance,
   Block,
   BlockInfo,
+  BroadcastConfig,
+  CraftedTransaction,
   Cursor,
-  ListOperationsOptions,
-  Page,
-  Validator,
   FeeEstimation,
+  ListOperationsOptions,
   Operation,
+  Page,
   Reward,
   Stake,
   TransactionIntent,
-  CraftedTransaction,
-} from "@ledgerhq/coin-framework/api/index";
-import type { BroadcastConfig } from "@ledgerhq/types-live";
+  TransactionValidation,
+  Validator,
+  BalanceOptions,
+} from "@ledgerhq/coin-module-framework/api/index";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
 import coinConfig, { type PolkadotConfig } from "../config";
 import {
   broadcast,
@@ -25,6 +30,7 @@ import {
   lastBlock,
   listOperations,
 } from "../logic";
+import { validateAddress } from "../logic/validateAddress";
 
 export function createApi(config: PolkadotConfig): AlpacaApi {
   coinConfig.setCoinConfig(() => ({ ...config, status: { type: "active" } }));
@@ -45,7 +51,8 @@ export function createApi(config: PolkadotConfig): AlpacaApi {
       throw new Error("craftRawTransaction is not supported");
     },
     estimateFees: estimate,
-    getBalance,
+    getBalance: (address: string, options?: BalanceOptions) =>
+      rejectBalanceOptions(() => getBalance(address), options),
     lastBlock,
     listOperations: operations,
     getBlock(_height): Promise<Block> {
@@ -63,6 +70,18 @@ export function createApi(config: PolkadotConfig): AlpacaApi {
     getValidators(_cursor?: Cursor): Promise<Page<Validator>> {
       throw new Error("getValidators is not supported");
     },
+    validateIntent: async (
+      _transactionIntent: TransactionIntent,
+      _balances: Balance[],
+      _customFees?: FeeEstimation,
+    ): Promise<TransactionValidation> => {
+      throw new Error("validateIntent is not supported");
+    },
+    getNextSequence: async (_address: string) => {
+      throw new Error("getNextSequence is not supported");
+    },
+    validateAddress,
+    craftTransactionData,
   };
 }
 

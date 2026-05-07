@@ -200,6 +200,8 @@ export class Currency {
     Network.VECHAIN,
   ]);
 
+  static readonly MINA = new Currency("Mina", "MINA", "mina", AppInfos.MINA, [Network.MINA]);
+
   static readonly SUI_USDC = new Currency(
     "USD Coin",
     "USDC",
@@ -207,5 +209,23 @@ export class Currency {
     AppInfos.SUI,
     [Network.SUI],
     "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7",
+  );
+
+  static readonly ALEO = new Currency("Aleo", "ALEO", "aleo", AppInfos.ALEO, [Network.ALEO]);
+
+  static readonly ICP = new Currency(
+    "Internet Computer",
+    "ICP",
+    "internet_computer",
+    AppInfos.INTERNET_COMPUTER,
+    [Network.INTERNET_COMPUTER],
+  );
+
+  static readonly CCD_TESTNET = new Currency(
+    "Concordium (Testnet)",
+    "CCD",
+    "concordium_testnet",
+    AppInfos.CONCORDIUM,
+    [Network.CONCORDIUM],
   );
 }

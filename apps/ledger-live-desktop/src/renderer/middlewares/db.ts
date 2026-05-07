@@ -126,6 +126,20 @@ const DBMiddleware: Middleware<object, State> = store => next => action => {
     setKey("app", "identities", persisted);
   }
 
+  if (oldState.history !== newState.history) {
+    setKey("app", "history", newState.history);
+  }
+
+  if (
+    oldState.featureFlags.overrides !== newState.featureFlags.overrides ||
+    oldState.featureFlags.bannerVisible !== newState.featureFlags.bannerVisible
+  ) {
+    setKey("app", "featureFlags", {
+      overrides: newState.featureFlags.overrides,
+      bannerVisible: newState.featureFlags.bannerVisible,
+    });
+  }
+
   return res;
 };
 

@@ -24,6 +24,8 @@ import { SwapNavigatorParamList } from "./types/SwapNavigator";
 import { NavigationHeaderBackButton } from "../NavigationHeaderBackButton";
 import SwapCustomError from "~/screens/Swap/SubScreens/SwapCustomError";
 import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import { useNotificationsContext } from "LLM/features/NotificationsPrompt";
+import { isGoingToSwapHistory } from "~/screens/Swap/navigation/navigateBackToSwapTab";
 
 // Constants for tracking sources
 const TRACKING_SOURCES = {
@@ -85,6 +87,7 @@ export default function SwapNavigator(
   const noNanoBuyNanoWallScreenOptions = useNoNanoBuyNanoWallScreenOptions();
   const track = useTrack();
   const navigation = useNavigation<StackNavigatorNavigation<SwapNavigatorParamList>>();
+  const { notifyFlowCompleted } = useNotificationsContext();
   const { isEnabled: isLwm40Enabled, shouldDisplayWallet40MainNav } =
     useWalletFeaturesConfig("mobile");
 
@@ -155,18 +158,24 @@ export default function SwapNavigator(
     [noNanoBuyNanoWallScreenOptions],
   );
 
-  const swapComponent = isLwm40Enabled ? SwapLiveAppWallet40 : SwapLiveApp;
-  const swapOptions = isLwm40Enabled ? wallet40Options : oldDesignOptions;
-
   return (
     <Stack.Navigator screenOptions={{ ...stackNavigationConfig, headerShown: shouldDisplayHeader }}>
-      <Stack.Screen
-        name={ScreenName.SwapTab}
-        component={swapComponent}
-        {...noNanoBuyNanoWallScreenOptions}
-        options={swapOptions}
-        initialParams={initialSwapParams}
-      />
+      {isLwm40Enabled ? (
+        <Stack.Screen
+          name={ScreenName.SwapTab}
+          component={SwapLiveAppWallet40}
+          options={wallet40Options}
+          initialParams={initialSwapParams}
+        />
+      ) : (
+        <Stack.Screen
+          name={ScreenName.SwapTab}
+          component={SwapLiveApp}
+          {...noNanoBuyNanoWallScreenOptions}
+          options={oldDesignOptions}
+          initialParams={initialSwapParams}
+        />
+      )}
 
       <Stack.Screen
         name={ScreenName.SwapPendingOperation}
@@ -174,6 +183,14 @@ export default function SwapNavigator(
         options={{
           headerTitle: t("transfer.swap.title"),
           headerLeft: NullHeader,
+        }}
+        listeners={{
+          beforeRemove: ({ data }) => {
+            if (isGoingToSwapHistory(data.action.payload)) {
+              return;
+            }
+            notifyFlowCompleted("swap");
+          },
         }}
       />
 
@@ -210,6 +227,11 @@ export default function SwapNavigator(
         options={{
           headerTitle: t("transfer.swap2.history.title"),
           headerRight: NullHeader,
+        }}
+        listeners={{
+          beforeRemove: () => {
+            notifyFlowCompleted("swap");
+          },
         }}
       />
     </Stack.Navigator>

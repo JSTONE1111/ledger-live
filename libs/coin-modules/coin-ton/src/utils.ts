@@ -1,4 +1,4 @@
-import { decodeAccountId } from "@ledgerhq/coin-framework/account/index";
+import { decodeAccountId } from "@ledgerhq/ledger-wallet-framework/account/index";
 import {
   Builder,
   SendMode,
@@ -35,7 +35,7 @@ export const isAddressValid = (recipient: string) => {
   try {
     return Boolean(
       (TonAddress.isRaw(recipient) || TonAddress.isFriendly(recipient)) &&
-        TonAddress.parse(recipient),
+      TonAddress.parse(recipient),
     );
   } catch {
     return false;

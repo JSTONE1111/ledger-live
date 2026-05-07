@@ -1,12 +1,14 @@
 import { test } from "tests/fixtures/common";
+import { Team } from "@ledgerhq/live-common/e2e/enum/Team";
 import { addTmsLink } from "tests/utils/allureUtils";
 import { getDescription } from "tests/utils/customJsonReporter";
 import { Account, TokenAccount } from "@ledgerhq/live-common/e2e/enum/Account";
 import { FileUtils } from "tests/utils/fileUtils";
-import { liveDataCommand } from "tests/utils/cliCommandsUtils";
+import { liveDataCommand } from "@ledgerhq/live-common/e2e/cliCommandsUtils";
 
 test.describe("Settings", () => {
   test.use({
+    teamOwner: Team.WALLET_XP,
     userdata: "erc20-0-balance",
   });
 
@@ -19,20 +21,14 @@ test.describe("Settings", () => {
     async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.layout.goToAccounts();
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
       await app.accounts.showParentAccountTokens(Account.ETH_1.accountName);
-      await app.accounts.verifyTokenVisibility(
-        Account.ETH_1.accountName,
-        TokenAccount.ETH_USDT_1.currency,
-      );
-      await app.accounts.expectTokenBalanceToBeNull(
-        Account.ETH_1.accountName,
-        TokenAccount.ETH_USDT_1.currency,
-      );
-      await app.layout.goToSettings();
+      await app.accounts.verifyTokenVisibility(TokenAccount.ETH_USDT_1.currency);
+      await app.accounts.expectTokenBalanceToBeNull(TokenAccount.ETH_USDT_1.currency);
+      await app.mainNavigation.openSettings();
       await app.settings.goToAccountsTab();
       await app.settings.clickHideEmptyTokenAccountsToggle();
-      await app.layout.goToAccounts();
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
       await app.accounts.verifyChildrenTokensAreNotVisible(
         Account.ETH_1.accountName,
         TokenAccount.ETH_USDT_1.currency,
@@ -44,7 +40,8 @@ test.describe("Settings", () => {
 test.describe("Password", () => {
   const account = Account.ETH_1;
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.WALLET_XP,
+    userdata: "skip-onboarding-with-last-seen-device",
     cliCommands: [liveDataCommand(account)],
     speculosApp: account.currency.speculosApp,
   });
@@ -61,9 +58,9 @@ test.describe("Password", () => {
     async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.layout.goToAccounts();
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
       const countBeforeLock = await app.accounts.countAccounts();
-      await app.layout.goToSettings();
+      await app.mainNavigation.openSettings();
       await app.password.toggle();
       await app.password.enablePassword("SpeculosPassword", "SpeculosPassword");
       await app.settings.goToHelpTab();
@@ -71,7 +68,7 @@ test.describe("Password", () => {
       await app.LockscreenPage.login("bad password");
       await app.LockscreenPage.checkInputErrorVisibility("visible");
       await app.LockscreenPage.login("SpeculosPassword");
-      await app.layout.goToAccounts();
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
       const countAfterLock = await app.accounts.countAccounts();
       await app.accounts.compareAccountsCountFromJson(countBeforeLock, countAfterLock);
       await app.accounts.navigateToAccountByName(account.accountName);
@@ -82,7 +79,8 @@ test.describe("Password", () => {
 test.describe("counter value selection", () => {
   const account = Account.BTC_NATIVE_SEGWIT_1;
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.WALLET_XP,
+    userdata: "skip-onboarding-with-last-seen-device",
     cliCommands: [liveDataCommand(account)],
     speculosApp: account.currency.speculosApp,
   });
@@ -108,14 +106,16 @@ test.describe("counter value selection", () => {
     async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.layout.goToSettings();
+      await app.mainNavigation.openSettings();
       await app.settings.changeCounterValue("euro");
       await app.settings.expectCounterValue("Euro - EUR");
-      await app.layout.goToPortfolio();
+      await app.mainNavigation.openTargetFromMainNavigation("home");
 
       await app.layout.waitForAccountsSyncToBeDone();
       await app.portfolio.expectTotalBalanceCounterValue("€");
-      await app.portfolio.expectBalanceDiffCounterValue("€");
+
+      await app.portfolio.expectBalanceDiffCounterValue("%");
+
       await app.portfolio.expectAssetRowCounterValue(account.currency.name, "€");
       await app.portfolio.expectOperationCounterValue("€");
     },
@@ -124,7 +124,8 @@ test.describe("counter value selection", () => {
 
 test.describe("Ledger Support (web link)", () => {
   test.use({
-    userdata: "skip-onboarding",
+    teamOwner: Team.WALLET_XP,
+    userdata: "skip-onboarding-with-last-seen-device",
   });
 
   test(
@@ -139,7 +140,7 @@ test.describe("Ledger Support (web link)", () => {
     async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.layout.goToSettings();
+      await app.mainNavigation.openSettings();
       await app.settings.goToHelpTab();
 
       await app.settings.expectLedgerSupportUrlToBeCorrect();
@@ -149,6 +150,7 @@ test.describe("Ledger Support (web link)", () => {
 
 test.describe("Reset app", () => {
   test.use({
+    teamOwner: Team.WALLET_XP,
     userdata: "1AccountBTC1AccountETH",
   });
 
@@ -164,7 +166,7 @@ test.describe("Reset app", () => {
     async ({ app, userdataFile }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.layout.goToSettings();
+      await app.mainNavigation.openSettings();
       const appJsonBefore = await FileUtils.getAppJsonSize(userdataFile);
       await app.settings.goToHelpTab();
       await app.settings.resetApp();
@@ -179,6 +181,7 @@ test.describe("Reset app", () => {
 
 test.describe("Settings - Help tab", () => {
   test.use({
+    teamOwner: Team.WALLET_XP,
     userdata: "1AccountBTC1AccountETH",
   });
 
@@ -194,10 +197,66 @@ test.describe("Settings - Help tab", () => {
     async ({ app }) => {
       await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
 
-      await app.layout.goToSettings();
+      await app.mainNavigation.openSettings();
       await app.settings.goToHelpTab();
       await app.settings.checkViewUserDataButtonIsEnabled();
       await app.settings.clickExportLogs();
     },
   );
+});
+
+const languageTestData = [
+  {
+    lang: "Français",
+    generalTabLabel: "Général",
+    characterSet: /[\u00C0-\u024F]/,
+    languageLabel: "Langue d\u2019affichage",
+    counterValueLabel: "Monnaie pr\u00e9f\u00e9r\u00e9e",
+    themeLabel: "Mode",
+  },
+  {
+    lang: "Русский",
+    generalTabLabel: "Общие",
+    characterSet: /[\u0400-\u04FF]/,
+    languageLabel: "Язык",
+    counterValueLabel: "Предпочтительная валюта",
+    themeLabel: "Тема оформления",
+  },
+  {
+    lang: "日本語",
+    generalTabLabel: "一般",
+    characterSet: /[\u4E00-\u9FFF]/,
+    languageLabel: "表示言語",
+    counterValueLabel: "優先する通貨",
+    themeLabel: "テーマ",
+  },
+];
+
+test.describe("Language change", () => {
+  test.use({
+    teamOwner: Team.WALLET_XP,
+    userdata: "skip-onboarding-with-last-seen-device",
+  });
+
+  for (const l10n of languageTestData) {
+    test(
+      `Settings — change app language to ${l10n.lang}`,
+      {
+        tag: ["@NanoSP", "@LNS", "@NanoX", "@Stax", "@Flex", "@NanoGen5"],
+        annotation: { type: "TMS", description: "B2CQA-2344" },
+      },
+      async ({ app }) => {
+        await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
+
+        await app.mainNavigation.openSettings();
+        await app.settings.changeLanguage(l10n.lang);
+        await app.settings.expectLanguageSelected(l10n.lang);
+        await app.settings.expectGeneralTabLabel(l10n.generalTabLabel);
+        await app.settings.expectCounterValueRowCharacterSet(l10n.characterSet);
+        await app.settings.expectLanguageRowTranslation(l10n.languageLabel);
+        await app.settings.expectCounterValueRowTranslation(l10n.counterValueLabel);
+        await app.settings.expectThemeRowTranslation(l10n.themeLabel);
+      },
+    );
+  }
 });

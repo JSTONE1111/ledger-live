@@ -6,17 +6,23 @@ import merge from "lodash/merge";
 
 import { NavigatorName } from "../../src/const";
 import { BleState, DeviceLike } from "../../src/reducers/types";
-import { Account, AccountRaw, FeatureId } from "@ledgerhq/types-live";
+import { Account, AccountRaw } from "@ledgerhq/types-live";
 import { DeviceUSB, nanoSP_USB, nanoS_USB, nanoX_USB } from "../models/devices";
 import { MessageData, MockDeviceEvent, ServerData } from "./types";
 import { getDeviceModel } from "@ledgerhq/devices";
 import { log as detoxLog } from "detox";
-import {
-  SettingsSetOverriddenFeatureFlagPlayload,
-  SettingsSetOverriddenFeatureFlagsPlayload,
-} from "~/actions/types";
+import type { PartialFeatures, FeatureId, Feature } from "@shared/feature-flags";
+import { FeatureIdSchema } from "@shared/feature-flags";
+import { v4 as uuid } from "uuid";
+
+type OverrideFeatureFlagPayload = { id: FeatureId; value: Feature | undefined };
 
 let clientResponse: (data: string) => void;
+type PendingAck = {
+  resolve: () => void;
+  timeoutId: ReturnType<typeof setTimeout>;
+};
+const pendingAcks = new Map<string, PendingAck>();
 const RESPONSE_TIMEOUT = 10000;
 
 export async function findFreePort(): Promise<number> {
@@ -45,16 +51,11 @@ export async function findFreePort(): Promise<number> {
 }
 
 function uniqueId(): string {
-  const timestamp = Date.now().toString(36); // Convert timestamp to base36 string
-  const randomString = Math.random().toString(36).slice(2, 7); // Generate random string
-  return timestamp + randomString; // Concatenate timestamp and random string
+  return uuid();
 }
 
-function isFeatureId(
-  key: string,
-  flags: SettingsSetOverriddenFeatureFlagsPlayload,
-): key is FeatureId {
-  return key in flags;
+function isFeatureId(key: string): key is FeatureId {
+  return FeatureIdSchema.safeParse(key).success;
 }
 
 export function init(port = 8099, onConnection?: () => void) {
@@ -119,10 +120,14 @@ export async function loadConfig(fileName: string, agreed: true = true): Promise
   if (data.accounts?.length) {
     await postMessage({ type: "importAccounts", id: uniqueId(), payload: data.accounts });
   }
+
+  if (data.featureFlags?.overrides) {
+    await setFeatureFlags(data.featureFlags.overrides);
+  }
 }
 
 export async function loadBleState(bleState: BleState) {
-  await postMessage({ type: "importBle", id: uniqueId(), payload: bleState });
+  await postMessageAndWaitForAck({ type: "importBle", id: uniqueId(), payload: bleState });
 }
 
 export async function loadAccountsRaw(
@@ -144,10 +149,12 @@ export async function loadAccounts(accounts: Account[]) {
   await postMessage({
     type: "importAccounts",
     id: uniqueId(),
-    payload: accounts.map(account => ({
-      version: 1,
-      data: toAccountRaw(account),
-    })),
+    payload: await Promise.all(
+      accounts.map(async account => ({
+        version: 1,
+        data: await toAccountRaw(account),
+      })),
+    ),
   });
 }
 
@@ -169,8 +176,8 @@ export async function mockDeviceEvent(...args: MockDeviceEvent[]) {
 
 export async function addDevicesBT(devices: DeviceLike | DeviceLike[]) {
   const devicesList = Array.isArray(devices) ? devices : [devices];
-  devicesList.forEach(device => {
-    postMessage({
+  for (const device of devicesList) {
+    await postMessageAndWaitForAck({
       type: "add",
       id: uniqueId(),
       payload: {
@@ -179,7 +186,7 @@ export async function addDevicesBT(devices: DeviceLike | DeviceLike[]) {
         serviceUUID: getDeviceModel(device.modelId).bluetoothSpec![0].serviceUuid,
       },
     });
-  });
+  }
 }
 
 export async function addDevicesUSB(
@@ -200,15 +207,15 @@ export async function getLogs() {
   return fetchData({ type: "getLogs", id: uniqueId() });
 }
 
-export async function setFeatureFlags(flags: SettingsSetOverriddenFeatureFlagsPlayload) {
+export async function setFeatureFlags(flags: PartialFeatures) {
   for (const id in flags) {
-    if (isFeatureId(id, flags)) {
+    if (isFeatureId(id)) {
       await setFeatureFlag({ id, value: flags[id] });
     }
   }
 }
 
-export async function setFeatureFlag(flag: SettingsSetOverriddenFeatureFlagPlayload) {
+export async function setFeatureFlag(flag: OverrideFeatureFlagPayload) {
   postMessage({ type: "overrideFeatureFlag", id: uniqueId(), payload: flag });
 }
 
@@ -227,6 +234,22 @@ function fetchData(message: MessageData, timeout = RESPONSE_TIMEOUT): Promise<st
   });
 }
 
+function postMessageAndWaitForAck(message: MessageData, timeout = RESPONSE_TIMEOUT): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      pendingAcks.delete(message.id);
+      reject(new Error(`Timeout while waiting for ACK for ${message.type} (${message.id})`));
+    }, timeout);
+
+    pendingAcks.set(message.id, {
+      resolve,
+      timeoutId,
+    });
+
+    postMessage(message);
+  });
+}
+
 function onMessage(messageStr: string) {
   const msg: ServerData = JSON.parse(messageStr);
   log(`Message received ${msg.type}`);
@@ -235,6 +258,14 @@ function onMessage(messageStr: string) {
     case "ACK":
       log(`${msg.id}`);
       delete webSocket.messages[msg.id];
+      {
+        const pendingAck = pendingAcks.get(msg.id);
+        if (pendingAck) {
+          clearTimeout(pendingAck.timeoutId);
+          pendingAcks.delete(msg.id);
+          pendingAck.resolve();
+        }
+      }
       break;
     case "walletAPIResponse":
       webSocket.e2eBridgeServer.next(msg);

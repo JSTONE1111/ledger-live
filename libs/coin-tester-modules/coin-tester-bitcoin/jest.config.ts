@@ -7,20 +7,14 @@ const config: Config = {
       "@swc/jest",
       {
         jsc: {
-          target: "es2022",
-          parser: {
-            syntax: "typescript",
-            tsx: false,
-            decorators: false,
-            dynamicImport: true,
-          },
+          target: "esnext",
         },
       },
     ],
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
-  testMatch: ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
-  setupFilesAfterEnv: ["dotenv/config"],
+  testMatch: ["**/?(*.)+(spec|test).[jt]s?(x)"],
+  reporters: ["default", ...(process.env.CI ? ["github-actions"] : [])],
 };
 
 export default config;

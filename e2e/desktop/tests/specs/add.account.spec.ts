@@ -1,15 +1,15 @@
 import { test } from "tests/fixtures/common";
+import { Team } from "@ledgerhq/live-common/e2e/enum/Team";
 import { Currency } from "@ledgerhq/live-common/e2e/enum/Currency";
 import { addTmsLink } from "tests/utils/allureUtils";
 import { getDescription } from "tests/utils/customJsonReporter";
-import invariant from "invariant";
 import { getFamilyByCurrencyId } from "@ledgerhq/live-common/currencies/helpers";
 import { getModularSelector } from "tests/utils/modularSelectorUtils";
 
 const currencies = [
   {
     currency: Currency.BTC,
-    xrayTicket: "B2CQA-2499, B2CQA-2644, B2CQA-2672, B2CQA-2073",
+    xrayTicket: "B2CQA-2499, B2CQA-2644, B2CQA-2672, B2CQA-2073, B2CQA-786",
   },
   { currency: Currency.ETH, xrayTicket: "B2CQA-2503, B2CQA-929, B2CQA-2645, B2CQA-2673" },
   { currency: Currency.ETC, xrayTicket: "B2CQA-2502, B2CQA-2646, B2CQA-2674" },
@@ -32,7 +32,8 @@ const currencies = [
 for (const currency of currencies) {
   test.describe("Add Accounts", () => {
     test.use({
-      userdata: "skip-onboarding",
+      teamOwner: Team.WALLET_XP,
+      userdata: "skip-onboarding-with-last-seen-device",
       speculosApp: currency.currency.speculosApp,
     });
 
@@ -61,7 +62,8 @@ for (const currency of currencies) {
         await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
         const firstAccountName = `${currency.currency.name} 1`;
 
-        await app.portfolio.openAddAccountModal();
+        await app.portfolio.waitForPortfolioEmptyState();
+        await app.portfolio.clickAddAccountButton();
 
         const selector = await getModularSelector(app, "ASSET");
         if (selector) {
@@ -77,17 +79,13 @@ for (const currency of currencies) {
           await app.addAccount.done();
         }
 
-        await app.portfolio.expectBalanceVisibility();
         await app.portfolio.checkOperationHistory();
+        await app.portfolio.expectBalanceVisibility();
         await app.portfolio.expectAccountsPersistedInAppJson(userdataFile, 1, 5000);
 
-        await app.layout.goToAccounts();
+        await app.mainNavigation.openTargetFromMainNavigation("accounts");
         await app.accounts.navigateToAccountByName(firstAccountName);
-        await app.account.expectAccountVisibility(firstAccountName);
-        await app.account.expectAccountBalance();
-        await app.account.expectLastOperationsVisibility();
-        const operationStatus = await app.account.clickOnLastOperationAndReturnStatus();
-        invariant(operationStatus, "Expected operationStatus to be defined");
+        const operationStatus = await app.account.expectFundedAccountDetails(firstAccountName);
         await app.operationDrawer.expectDrawerInfos(firstAccountName, operationStatus);
         await app.operationDrawer.closeDrawer();
         await app.account.expectAddressIndex(0);
@@ -96,3 +94,72 @@ for (const currency of currencies) {
     );
   });
 }
+
+test.describe("Add Accounts - Aleo", () => {
+  test.use({
+    teamOwner: Team.WALLET_XP,
+    userdata: "skip-onboarding-with-last-seen-device",
+    speculosApp: Currency.ALEO.speculosApp,
+    featureFlags: {
+      // TODO: this can be removed once Aleo is released on production
+      currencyAleo: {
+        enabled: true,
+      },
+    },
+  });
+
+  const family = getFamilyByCurrencyId(Currency.ALEO.id);
+
+  test(
+    `[${Currency.ALEO.name}] Add account`,
+    {
+      tag: [
+        "@NanoSP",
+        "@Flex",
+        "@NanoGen5",
+        "@NanoX",
+        "@Stax",
+        `@${Currency.ALEO.id}`,
+        ...(family ? [`@family-${family}`] : []),
+      ],
+      annotation: {
+        type: "TMS",
+        description: "B2CQA-4450, B2CQA-4451, B2CQA-4452",
+      },
+    },
+    async ({ app, userdataFile }) => {
+      await addTmsLink(getDescription(test.info().annotations, "TMS").split(", "));
+      const firstAccountName = `${Currency.ALEO.name} 1`;
+
+      await app.portfolio.waitForPortfolioEmptyState();
+      await app.portfolio.clickAddAccountButton();
+
+      const selector = await getModularSelector(app, "ASSET");
+      if (!selector) {
+        throw new Error("Expected modular selector for Aleo add-account flow");
+      }
+
+      await selector.validateItems();
+      await selector.selectAssetByTicker(Currency.ALEO);
+      await selector.selectNetwork(Currency.ALEO);
+      await app.scanAccountsDrawer.expectViewKeyWarningVisibility();
+      await app.scanAccountsDrawer.clickAllowButton();
+      await app.scanAccountsDrawer.selectFirstAccountAndGoToViewKeyConfirmation();
+      await app.speculos.shareViewKey();
+      await app.scanAccountsDrawer.expectSuccessStepVisibility();
+      await app.scanAccountsDrawer.clickCloseButton();
+
+      await app.portfolio.checkOperationHistory();
+      await app.portfolio.expectBalanceVisibility();
+      await app.portfolio.expectAccountsPersistedInAppJson(userdataFile, 1, 5000);
+
+      await app.mainNavigation.openTargetFromMainNavigation("accounts");
+      await app.accounts.navigateToAccountByName(firstAccountName);
+      const operationStatus = await app.account.expectFundedAccountDetails(firstAccountName);
+      await app.operationDrawer.expectDrawerInfos(firstAccountName, operationStatus);
+      await app.operationDrawer.closeDrawer();
+      await app.account.expectAddressIndex(0);
+      await app.account.expectShowMoreButton();
+    },
+  );
+});

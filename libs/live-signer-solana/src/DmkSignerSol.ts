@@ -14,10 +14,15 @@ import {
   SignTransactionDAError,
   SignerSolana,
   TransactionResolutionContext,
+  SignMessageVersion,
 } from "@ledgerhq/device-signer-kit-solana";
 import { DeviceActionStatus, DeviceManagementKit } from "@ledgerhq/device-management-kit";
 import bs58 from "bs58";
-import { SolAppPleaseEnableContractData, UserRefusedOnDevice } from "@ledgerhq/errors";
+import {
+  LockedDeviceError,
+  SolAppPleaseEnableContractData,
+  UserRefusedOnDevice,
+} from "@ledgerhq/errors";
 
 export type DAError =
   | GetAddressDAError
@@ -62,6 +67,8 @@ export class DmkSignerSol implements SolanaSigner {
       typeof error.originalError.errorCode === "string"
     ) {
       switch (error.originalError.errorCode) {
+        case "5515":
+          return new LockedDeviceError();
         case "6985":
           return new UserRefusedOnDevice();
         case "6808":
@@ -157,12 +164,14 @@ export class DmkSignerSol implements SolanaSigner {
     txBuffer: Uint8Array,
     resolution?: Resolution | undefined,
   ): Promise<SolanaSignature> {
-    const transactionResolutionContext = resolution
-      ? this._toTransactionResolutionContext(resolution)
-      : undefined;
     const { observable } = this.dmkSigner.signTransaction(path, txBuffer, {
-      transactionResolutionContext,
       skipOpenApp: true,
+      transactionResolutionContext: resolution
+        ? this._toTransactionResolutionContext(resolution)
+        : undefined,
+      delayed: resolution?.delayed,
+      solanaRPCURL: resolution?.solanaRPCURL,
+      fetchBlockhash: resolution?.fetchBlockhash,
     });
     return new Promise<SolanaSignature>((resolve, reject) => {
       observable.subscribe({
@@ -188,9 +197,11 @@ export class DmkSignerSol implements SolanaSigner {
    * @param messageHex - message to sign in hexadecimal format
    */
   async signMessage(path: string, messageHex: string): Promise<SolanaSignature> {
-    const { observable } = this.dmkSigner.signMessage(path, messageHex, {
-      skipOpenApp: true,
-    });
+    const { observable } = this.dmkSigner.signMessage(
+      path,
+      new Uint8Array(Buffer.from(messageHex, "hex")),
+      { skipOpenApp: true, version: SignMessageVersion.Raw },
+    );
     return new Promise<SolanaSignature>((resolve, reject) => {
       observable.subscribe({
         next: state => {
@@ -198,7 +209,7 @@ export class DmkSignerSol implements SolanaSigner {
             reject(this._mapError<SignMessageDAError>(state.error));
           }
           if (state.status === DeviceActionStatus.Completed) {
-            const signatureBuffer = Buffer.from(state.output.signature);
+            const signatureBuffer = Buffer.from(bs58.decode(state.output.signature));
             resolve({ signature: signatureBuffer });
           }
         },

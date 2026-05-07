@@ -23,12 +23,13 @@ export const PageView = memo(function PageView({
   isScrollAtUpperBound,
   isWallet40Enabled,
   shouldDisplayWallet40MainNav,
+  shouldDisplayBrazePlacement,
   pathname,
   onClickScrollUp,
   shouldRenderRightPanel,
 }: PageViewProps) {
   return (
-    <div className="relative flex flex-1 flex-col">
+    <div className="relative flex flex-1 flex-col min-w-0">
       {shouldDisplayWallet40MainNav ? <Wallet40TopBar /> : <ClassicTopBar />}
       {isWallet40Enabled ? (
         <Wallet40Layout
@@ -45,8 +46,10 @@ export const PageView = memo(function PageView({
       {!shouldDisplayWallet40MainNav && (
         <ScrollUpButton isVisible={isScrollUpButtonVisible} onClick={onClickScrollUp} />
       )}
-      {/* Only on dashboard page */}
-      {pathname === "/" && <ActionContentCards variant={ABTestingVariants.variantB} />}
+      {/* Only on dashboard; hide sticky variant when Braze placement (cards shown in banner only) */}
+      {pathname === "/" && !shouldDisplayBrazePlacement && (
+        <ActionContentCards variant={ABTestingVariants.variantB} />
+      )}
     </div>
   );
 });

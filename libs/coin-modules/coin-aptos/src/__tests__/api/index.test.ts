@@ -1,5 +1,5 @@
 import { Aptos } from "@aptos-labs/ts-sdk";
-import type { AlpacaApi } from "@ledgerhq/coin-framework/api/types";
+import type { AlpacaApi } from "@ledgerhq/coin-module-framework/api/types";
 import { createApi } from "../../api";
 import type { AptosConfig } from "../../config";
 import coinConfig from "../../config";
@@ -46,9 +46,13 @@ describe("createApi", () => {
       craftRawTransaction: expect.any(Function),
       getBlock: expect.any(Function),
       getBlockInfo: expect.any(Function),
+      getNextSequence: expect.any(Function),
       getRewards: expect.any(Function),
       getStakes: expect.any(Function),
       getValidators: expect.any(Function),
+      validateAddress: expect.any(Function),
+      validateIntent: expect.any(Function),
+      craftTransactionData: expect.any(Function),
     });
   });
 });

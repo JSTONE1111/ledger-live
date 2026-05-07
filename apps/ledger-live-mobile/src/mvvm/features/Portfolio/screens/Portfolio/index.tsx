@@ -11,26 +11,33 @@ import { renderItem } from "LLM/utils/renderItem";
 import { ScreenName } from "~/const";
 import { BaseComposite, StackNavigatorProps } from "~/components/RootNavigator/types/helpers";
 import { WalletTabNavigatorStackParamList } from "~/components/RootNavigator/types/WalletTabNavigator";
+import { AnalyticsConsentDrawer } from "LLM/features/AnalyticsConsentDrawer";
+import TrackScreen from "~/analytics/TrackScreen";
+import { usePortfolioBorrowSectionViewModel } from "../../components/PortfolioBorrowSection/usePortfolioBorrowSectionViewModel";
 import {
   PROGRESS_VIEW_OFFSET_LEGACY_ANDROID,
   PROGRESS_VIEW_OFFSET_LEGACY_IOS,
 } from "../../constants";
 import { getProgressViewOffset } from "../../utils/getProgressViewOffset";
 import usePortfolioViewModel from "./usePortfolioViewModel";
+import { useScrollToTop } from "./useScrollToTop";
 
-import { Box } from "@ledgerhq/native-ui";
 import { QuickActionsCtas, TransferDrawer } from "LLM/features/QuickActions";
+import MarketBanner from "LLM/features/MarketBanner";
 
 import {
   PortfolioAllocationsSection,
   PortfolioAssetsSection,
+  WalletAssetsView,
   PortfolioCarouselSection,
   PortfolioEmptySection,
   PortfolioHeaderSection,
   PortfolioOperationsSection,
   PortfolioBannersSection,
+  PortfolioPerpsEntryPoint,
+  PortfolioBorrowSection,
 } from "../../components";
-
+import { Box } from "@ledgerhq/native-ui";
 type NavigationProps = BaseComposite<
   StackNavigatorProps<WalletTabNavigatorStackParamList, ScreenName.Portfolio>
 >;
@@ -48,20 +55,29 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
     isAWalletCardDisplayed,
     isAccountListUIEnabled,
     shouldDisplayQuickActionCtas,
+    shouldDisplayAssetSection,
+    shouldDisplayBorrowSection,
+    shouldDisplayMarketBanner,
     showAssets,
     isLNSUpsellBannerShown,
     isAddModalOpened,
     shouldDisplayGraphRework,
     backgroundColor,
+    isSyncError,
     openAddModal,
     closeAddModal,
     handleHeightChange,
     onBackFromUpdate,
     goToAnalyticsAllocations,
     shouldDisplayWallet40MainNav,
+    shouldDisplayOperationsList,
+    shouldAddBottomPaddingForLegacyAssets,
   } = usePortfolioViewModel(navigation);
 
   const progressViewOffset = getProgressViewOffset(Platform.OS, shouldDisplayWallet40MainNav);
+
+  const { handleFlatListRef } = useScrollToTop();
+  const { onPress: onPortfolioBorrowPress } = usePortfolioBorrowSectionViewModel();
 
   const { isDrawerOpen, handleCloseDrawer, closeDrawer, onSlideChange, slides } =
     useWalletV4TourDrawer();
@@ -94,6 +110,8 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
       return sections;
     }
 
+    sections.push(<TrackScreen key="trackWallet" category="Wallet" />);
+
     if (shouldDisplayQuickActionCtas && !shouldDisplayGraphRework) {
       sections.push(
         <Box px={6} pt={6} key="quickActions">
@@ -112,15 +130,30 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
       />,
     );
 
-    sections.push(
-      <PortfolioAssetsSection
-        key="assets"
-        isAccountListUIEnabled={isAccountListUIEnabled}
-        hideEmptyTokenAccount={hideEmptyTokenAccount}
-        openAddModal={openAddModal}
-        onHeightChange={handleHeightChange}
-      />,
-    );
+    if (shouldDisplayMarketBanner) {
+      sections.push(
+        <Box key="marketBanner" px={6}>
+          <MarketBanner />
+        </Box>,
+      );
+    }
+
+    sections.push(<PortfolioPerpsEntryPoint key="perpsEntryPoint" />);
+
+    if (shouldDisplayAssetSection) {
+      sections.push(<WalletAssetsView key="categorizedAssets" />);
+    } else {
+      sections.push(
+        <PortfolioAssetsSection
+          key="assets"
+          isAccountListUIEnabled={isAccountListUIEnabled}
+          hideEmptyTokenAccount={hideEmptyTokenAccount}
+          openAddModal={openAddModal}
+          onHeightChange={handleHeightChange}
+          shouldAddBottomPadding={shouldAddBottomPaddingForLegacyAssets}
+        />,
+      );
+    }
 
     if (isAWalletCardDisplayed) {
       sections.push(<PortfolioCarouselSection key="carousel" backgroundColor={backgroundColor} />);
@@ -136,12 +169,21 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
       );
     }
 
-    sections.push(<PortfolioOperationsSection key="operations" />);
+    if (shouldDisplayBorrowSection) {
+      sections.push(<PortfolioBorrowSection key="borrow" onPress={onPortfolioBorrowPress} />);
+    }
+
+    if (!shouldDisplayOperationsList) {
+      sections.push(<PortfolioOperationsSection key="operations" />);
+    }
 
     return sections;
   }, [
     showAssets,
     shouldDisplayGraphRework,
+    shouldDisplayAssetSection,
+    shouldDisplayBorrowSection,
+    shouldDisplayMarketBanner,
     onBackFromUpdate,
     isLNSUpsellBannerShown,
     shouldDisplayQuickActionCtas,
@@ -152,14 +194,18 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
     isAWalletCardDisplayed,
     backgroundColor,
     goToAnalyticsAllocations,
+    shouldDisplayOperationsList,
+    shouldAddBottomPaddingForLegacyAssets,
+    onPortfolioBorrowPress,
   ]);
 
   return (
     <>
       <CheckLanguageAvailability />
       <CheckTermOfUseUpdate />
-      <Animated.View style={{ flex: 1 }}>
+      <Animated.View testID="portfolio-screen" style={{ flex: 1 }}>
         <RefreshableCollapsibleHeaderFlatList
+          onFlatListRef={handleFlatListRef}
           data={data}
           renderItem={renderItem<React.JSX.Element>}
           keyExtractor={(_: unknown, index: number) => String(index)}
@@ -167,6 +213,7 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
           testID={showAssets ? "PortfolioAccountsList" : "PortfolioEmptyList"}
           useSafeArea={!shouldDisplayWallet40MainNav}
           overrideRefreshControlProps={{ progressViewOffset }}
+          isError={isSyncError}
         />
         <AddAccountDrawer
           isOpened={isAddModalOpened}
@@ -181,6 +228,7 @@ export const PortfolioScreen = ({ navigation }: NavigationProps) => {
         onSlideChange={onSlideChange}
         slides={slides}
       />
+      <AnalyticsConsentDrawer />
     </>
   );
 };

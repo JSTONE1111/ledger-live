@@ -1,72 +1,47 @@
-import React, { useCallback, useState } from "react";
-import { Trans } from "~/context/Locale";
-import { Text } from "@ledgerhq/native-ui";
+import React from "react";
 import { AppManifest } from "@ledgerhq/live-common/wallet-api/types";
-import { CurrentAccountHistDB } from "@ledgerhq/live-common/wallet-api/react";
-import { useDappCurrentAccount } from "@ledgerhq/live-common/wallet-api/useDappLogic";
+import { SetCurrentAccountHistDb } from "@ledgerhq/live-common/wallet-api/react";
+import { CryptoIcon } from "@ledgerhq/native-ui/pre-ldls";
 import Button from "~/components/Button";
-import CircleCurrencyIcon from "~/components/CircleCurrencyIcon";
-import { useMaybeAccountName } from "~/reducers/wallet";
-import SelectAccountModal from "./SelectAccountModal";
+import { useSelectAccount } from "~/components/Web3AppWebview/helpers";
 
 type SelectAccountButtonProps = {
   manifest: AppManifest;
-  currentAccountHistDb: CurrentAccountHistDB;
+  setCurrentAccountHistDb: SetCurrentAccountHistDb;
 };
 
 export default function SelectAccountButton({
   manifest,
-  currentAccountHistDb,
+  setCurrentAccountHistDb,
 }: SelectAccountButtonProps) {
-  const { currentAccount } = useDappCurrentAccount(manifest.id, currentAccountHistDb);
+  const { handleAddAccountPress, currentAccount } = useSelectAccount({
+    manifest,
+    setCurrentAccountHistDb,
+  });
+  const currency =
+    currentAccount?.type === "TokenAccount" ? currentAccount.token : currentAccount?.currency;
+  const ledgerId = currency?.id;
+  const tickerProp = currency?.ticker;
+  const network = currency?.type === "TokenCurrency" ? currency.parentCurrency.id : undefined;
 
-  const currentAccountName = useMaybeAccountName(currentAccount);
-
-  const [modalOpened, setModalOpened] = useState(false);
-
-  const onSelectAccount = useCallback(() => {
-    setModalOpened(true);
-  }, []);
-
-  const onClose = useCallback(() => {
-    setModalOpened(false);
-  }, []);
+  const canRenderIcon = !!currentAccount && !!ledgerId && !!tickerProp;
 
   return (
-    <>
-      <SelectAccountModal
-        manifest={manifest}
-        currentAccountHistDb={currentAccountHistDb}
-        isOpened={modalOpened}
-        onSelectAccount={onSelectAccount}
-        onClose={onClose}
-      />
-      <Button
-        Icon={
-          !currentAccount ? undefined : (
-            <CircleCurrencyIcon
-              size={24}
-              currency={
-                currentAccount.type === "TokenAccount"
-                  ? currentAccount.token
-                  : currentAccount.currency
-              }
-            />
-          )
-        }
-        iconPosition={"left"}
-        type="primary"
-        onPress={onSelectAccount}
-        isNewIcon
-      >
-        {!currentAccount ? (
-          <Text>
-            <Trans i18nKey="common.selectAccount" />
-          </Text>
-        ) : (
-          <Text color={"neutral.c20"}>{currentAccountName}</Text>
-        )}
-      </Button>
-    </>
+    <Button
+      Icon={
+        canRenderIcon ? (
+          <CryptoIcon
+            ledgerId={ledgerId}
+            ticker={tickerProp}
+            size={32}
+            shape="square"
+            {...(network && { network })}
+          />
+        ) : undefined
+      }
+      onPress={handleAddAccountPress}
+      accessibilityLabel="Select Account"
+      isNewIcon
+    />
   );
 }

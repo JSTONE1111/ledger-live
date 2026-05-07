@@ -209,7 +209,11 @@
       "BURN" : "محروق",
       "ASSOCIATE_TOKEN" : "ربط رمز التوكن",
       "CONTRACT_CALL" : "استدعاء عقد",
-      "UPDATE_ACCOUNT" : "الحساب المحدث"
+      "UPDATE_ACCOUNT" : "الحساب المحدث",
+      "SHIELDED_TX_SAPLING_IN" : "تم التلقي",
+      "SHIELDED_TX_SAPLING_OUT" : "تم الإرسال",
+      "SHIELDED_TX_ORCHARD_IN" : "تم التلقي",
+      "SHIELDED_TX_ORCHARD_OUT" : "تم الإرسال"
     },
     "edit" : {
       "title" : "التسريع أو الإلغاء",
@@ -233,7 +237,7 @@
       },
       "cancel" : {
         "title" : "إلغاء",
-        "description" : "إرسال 0 {{ticker}} إلى عنوانك."
+        "description" : "إرسال {{ticker}} 0 إلى عنوانك. الإلغاء غير مضمون. إذا قامت الشبكة بمعالجة معاملتك الأصلية قبل طلب الإلغاء هذا، فسيتم إرسال الأموال إلى المستلم."
       },
       "steps" : {
         "method" : {
@@ -268,6 +272,8 @@
     "minute" : "دقيقة",
     "minute_other" : "دقائق",
     "minute_short" : "دقيقة",
+    "second" : "ثانية",
+    "second_other" : "ثانية",
     "second_short" : "ثانية",
     "hour" : "ساعة",
     "hour_other" : "ساعات",
@@ -302,6 +308,7 @@
     "exchange" : "شراء / بيع",
     "swap" : "مبادلة",
     "perps" : "العقود الدائمة",
+    "home" : "الصفحة الرئيسية",
     "refer" : "ترشيح صديق",
     "lend" : "إقراض",
     "catalog" : "Discover",
@@ -412,7 +419,8 @@
     "webviewErrorDrawer" : {
       "title" : "عذراً، حاول مرة أخرى.",
       "description" : "لم يتمكن الخادم من معالجة طلبك. يرجى إعادة المحاولة مرة أخرى لاحقاً أو التواصل مع دعم Ledger.",
-      "code" : "الكود: {{errorCode}}"
+      "code" : "الكود",
+      "correlationId" : "المُعرّف المرجعي"
     }
   },
   "swap" : {
@@ -816,10 +824,10 @@
     "title" : "البطاقة",
     "imageAlt" : "صورة البطاقة",
     "spendYourCrypto" : "أنفِق أصولك المشفرة",
-    "payDescription" : "ادفع عبر الإنترنت أو في المتاجر الفعلية باستخدام بطاقة أصول مشفرة",
+    "payDescription" : "ادفع عبر الإنترنت أو في المتاجر الفعلية عن طريق بطاقة أصول مشفرة.",
     "exploreCards" : "استكشف البطاقات",
-    "iAlreadyHaveACard" : "لديّ بطاقة بالفعل",
-    "unlockLiquidity" : "إلغاء قفل السيولة",
+    "iAlreadyHaveACard" : "لديّ بطاقة",
+    "unlockLiquidity" : "أنفق الأصول المشفرة في الحياة الفعلية",
     "exploreCryptoCardsDescription" : "استكشف بطاقات الأصول المشفرة لدينا واعثر على البطاقة الأكثر ملاءمةً لك"
   },
   "lend" : {
@@ -1492,6 +1500,25 @@
       }
     }
   },
+  "deviceDeprecation" : {
+    "warning" : {
+      "title" : "™{{device}} لا يستطيع التوقيع بوضوح لهذه المعاملة",
+      "subtitle" : "استخدم أي جهاز Ledger آخر للتحقق من تفاصيل هذه المعاملة قبل التوقيع. بدون التوقيع بوضوح، أنت تخاطر بفقدان كل أصولك.",
+      "continue" : "تابع على مسؤوليتك الخاصة"
+    },
+    "info" : {
+      "title" : "اعتباراً من {{date}}، سينتهي دعم {{coinName}} على ™{{device}} عبر ™Ledger Live",
+      "subtitle" : "قم بالترقية إلى جهاز Ledger أحدث اليوم حتى تضمن الوصول إلى كل مزودي خدمات Ledger Live ودعم العملاء الأمثل",
+      "reminder" : "لا تُذكرني مرة أخرى"
+    },
+    "error" : {
+      "title" : "™{{device}} لا يدعم هذه الميزة",
+      "subtitle" : "قم بالترقية إلى جهاز Ledger أحدث اليوم حتى تضمن الوصول إلى كل ميزات Ledger Live الحديثة."
+    },
+    "update" : "اكتشف برنامج الترقية المناسب لك",
+    "learnMore" : "تعرّف على المزيد",
+    "continue" : "متابعة"
+  },
   "currentAddress" : {
     "title" : "العنوان الحالي",
     "for" : "عنوان <1><0>{{name}}</0></1>",
@@ -1745,7 +1772,8 @@
       "previousStakingNodeId" : "مُعرّف العقدة السابقة",
       "gasConsumed" : "الغاز المستهلَك",
       "gasUsed" : "الغاز المستخدَم",
-      "gasLimit" : "حد الغاز"
+      "gasLimit" : "حد الغاز",
+      "functionId" : "مُعرّف الوظيفة"
     }
   },
   "operationList" : {
@@ -1933,6 +1961,13 @@
       "updateBtn" : "قم بتحديث البرنامج الثابت",
       "installUpdate" : "تثبيت التحديث",
       "banner" : {
+        "wallet40" : {
+          "warning" : {
+            "default" : "تحديث نظام التشغيل متاح",
+            "manager" : "تحديث نظام تشغيل Ledger OS متاح"
+          },
+          "cta" : "تحديث"
+        },
         "warning" : "تحديث نظام التشغيل متاح",
         "version" : "إصدار {{latestFirmware}}",
         "cta" : "انتقل إلى My Ledger",
@@ -2139,6 +2174,24 @@
       }
     }
   },
+  "buyDeviceModal" : {
+    "title" : "توصيل جهاز Ledger",
+    "subtitle" : "لفتح الإمكانات الكاملة لـ Ledger Wallet لديك، قم بتوصيل جهاز Ledger.",
+    "0" : {
+      "title" : "ملكية كاملة",
+      "desc" : "لديك سيطرة على مفاتيحك الخاصة."
+    },
+    "1" : {
+      "title" : "تداول بأمان",
+      "desc" : "تحقق من المعاملات على شاشة آمنة."
+    },
+    "2" : {
+      "title" : "قم بالوصول إلى المحفظة الأكثر قوةً",
+      "desc" : "قم بإدارة آلاف الأصول في مكان واحد."
+    },
+    "connectCTA" : "اتصال",
+    "buyCTA" : "قم بشراء جهازك Ledger"
+  },
   "fund" : {
     "title" : "تمويل",
     "titleCrypto" : "تمويل {{currency}}",
@@ -2221,11 +2274,11 @@
     "steps" : {
       "options" : {
         "fromBank" : {
-          "title" : "تحويل بنكي",
-          "description" : "تلقي العملات المستقرة بواسطة إرسال النقود"
+          "title" : "عبر التحويل البنكي",
+          "description" : "تلقى العملات المستقرة ببساطة من خلال إرسال النقود."
         },
         "fromCrypto" : {
-          "title" : "تلقي الأصول المشفرة"
+          "title" : "عبر عنوان أصل مشفر"
         }
       }
     }
@@ -2356,6 +2409,24 @@
     "addressNotFound" : "لم يتم العثور على العنوان",
     "alreadyUsed" : "تم استخدامه بالفعل · {{date}}",
     "recentSendWillAppear" : "سيظهر ما أرسلته مؤخراً هنا",
+    "securityInfo" : {
+      "title" : "كيف ترسل بأمان؟",
+      "items" : {
+        "compatibility" : "تأكد من أن عنوان المستلم متوافق مع الشبكة التي تم اختيارها",
+        "review" : "راجع تفاصيل معاملتك على شاشة جهازك Ledger الآمنة",
+        "smallAmount" : "في حالة الشك، جرّب إرسال مبلغ صغير أولاً"
+      }
+    },
+    "recentHistory" : {
+      "banner" : {
+        "description" : "هذا العنوان ليس في سجلك الحديث. في حالة الشك، جرّب مبلغاً صغيراً أولاً."
+      },
+      "dialog" : {
+        "title" : "سِجل الإرسال الحديث",
+        "description" : "السِجل الحديث لديك يسمح لك بالتحقق على الفور مما إذا كنت قد أرسلت إلى عنوان معين من قبل أم لا. قد يمنع هذا أخطاء النسخ/اللصق المحتملة أو الاختراقات. يحتوي السجل الخاص بك على آخر 12 عنواناً أرسلت إليها الأصول المشفرة باستخدام Ledger Wallet.",
+        "cta" : "فهمت ذلك"
+      }
+    },
     "relativeDate" : {
       "justNow" : "الآن",
       "minutesAgo_one" : "منذ 1 دقيقة",
@@ -2419,11 +2490,39 @@
     "gasOptionsSync" : {
       "warningTitle" : "تعذر تحديث رسوم الشبكة",
       "warningDescription" : "الإعدادات المسبقة للرسوم قد تكون غير حديثة."
+    },
+    "customFees" : {
+      "title" : "رسوم مخصصة",
+      "confirm" : "تأكيد",
+      "maxFee" : "الحد الأقصى للرسوم ({{unit}})",
+      "maxPriorityFee" : "الحد الأقصى لرسوم الأولوية ({{unit}})",
+      "feePerByte" : "مبلغ الرسوم ({{unit}})",
+      "suggested" : "مُقترح",
+      "nextBlock" : "الكتلة التالية",
+      "networkFeesInFiat" : "رسوم الشبكة بعملة {{currency}}",
+      "invalidValue" : "أدخل رقم صالح",
+      "belowMinimum" : "الحد الأدنى هو {{min}}",
+      "maxFeeBelowPriorityFee" : "يجب أن يكون الحد الأقصى للرسوم أكبر من أو يساوي الحد الأقصى لرسوم الأولوية",
+      "feeAsset" : "الأصل الخاص بالرسوم",
+      "feesAmount" : "مبلغ الرسوم ({{unit}})",
+      "payFeesIn" : "ادفع الرسوم بـ"
+    },
+    "coinControl" : {
+      "title" : "التحكم في العملات",
+      "strategy" : "الاستراتيجية",
+      "learnMore" : "تعرّف على المزيد",
+      "coinToSend" : "العملة المراد إرسالها",
+      "changeToReturn" : "المتبقي المراد إرجاعه",
+      "enterAmount" : "أدخل المبلغ",
+      "selectSufficientCoins" : "اختر ما يكفي من العملات",
+      "amountToSendInCurrency" : "المبلغ المراد إرساله بعملة {{ticker}}",
+      "amountInputLabel" : "المبلغ المطلوب إرساله"
     }
   },
   "releaseNotes" : {
-    "title" : "ملاحظات الإصدار",
-    "version" : "Ledger Wallet {{versionNb}}"
+    "title" : "ملحوظة الإصدار",
+    "version" : "Ledger Wallet {{versionNb}}",
+    "gotIt" : "فهمت ذلك"
   },
   "troubleshootNetwork" : {
     "title" : "استكشاف أخطاء الشبكة وإصلاحها",
@@ -2863,7 +2962,8 @@
     "pickingStrategyLabels" : {
       "DEEP_OUTPUTS_FIRST" : "أقدم العملات أولاً (الأول دخولاً هو الأوّل خروجاً)",
       "OPTIMIZE_SIZE" : "تقليل الرسوم (تحقيق الحجم الأمثل)",
-      "MERGE_OUTPUTS" : "تقليل الرسوم المستقبلية (دمج العملات)"
+      "MERGE_OUTPUTS" : "تقليل الرسوم المستقبلية (دمج العملات)",
+      "CUSTOM" : "اختيار عملات مخصص"
     }
   },
   "celo" : {
@@ -4517,7 +4617,8 @@
           "fields" : {
             "notification" : "بطاقة محتوى الإشعار",
             "action" : "بطاقة محتوى الإجراء",
-            "portfolio" : "Portfolio Content Card",
+            "portfolio" : "المحفظة الاستثمارية",
+            "bottomPortfolio" : "Bottom Portfolio",
             "title" : "العنوان",
             "description" : "الوصف",
             "order" : "الطلب",
@@ -4527,6 +4628,7 @@
             "secondaryCta" : "CTA الثانوي",
             "cta" : "CTA",
             "tag" : "علامة",
+            "picto" : "بيكتو (دفتر الأستاذ الموزع id)",
             "url" : "عنوان URL",
             "path" : "المسار"
           }
@@ -4547,6 +4649,10 @@
           "title" : "إنشاء فارغ",
           "desc" : "إنشاء حساب فارغ"
         },
+        "stablecoinGenerate" : {
+          "title" : "إعداد مسبق للعملات المستقرة",
+          "desc" : "إنشاء حسابات إيثريوم و Arbitrum و Optimism و Base وسولانا (Solana) و ترون (Tron) و ألجوراند (Algorand) عن طريق أهم العملات المستقرة (بحد أقصى 5 عملات لكل شبكة)"
+        },
         "currencySelector" : {
           "placeholder" : "اختيار العملات...",
           "searchPlaceholder" : "بحث",
@@ -4563,7 +4669,9 @@
           "generateAccounts" : "إنشاء {{count}} حساب",
           "generateAccounts_other" : "إنشاء {{count}} حساب",
           "generateAccountsQuick" : "إنشاء {{count}} حساب",
-          "generateEmptyAccount" : "إنشاء حساب فارغ"
+          "generateEmptyAccount" : "إنشاء حساب فارغ",
+          "generateStablecoinAccounts" : "إنشاء {{count}} حساب عملة مستقرة",
+          "generateStablecoinAccounts_other" : "إنشاء {{count}} حساب عملة مستقرة"
         },
         "alerts" : {
           "selectCurrency" : "يُرجى اختيار عملة واحدة على الأقل",
@@ -4992,7 +5100,7 @@
     }
   },
   "theme" : {
-    "system" : "اختر سمة النظام",
+    "system" : "النظام",
     "light" : "فاتح",
     "dusk" : "غسق",
     "dark" : "داكن"
@@ -5950,6 +6058,68 @@
         }
       }
     },
+    "concordium" : {
+      "addAccount" : {
+        "title" : "إضافة حساب Concordium",
+        "acknowledge" : {
+          "title" : "إقرار",
+          "description" : "Concordium يتطلب تحقق خارجي من الهويّة. يُرجى قراءة تحذيرات الأمان الهامة هذه:",
+          "list" : {
+            "1" : "<0>لا تأكيد صحة العنوان</0> – جهازك Ledger لا يمكنه تأكيد صحة عناوين تلقي Concordium. تأكد من صحة العناوين يدوياً قبل تلقي الأموال.",
+            "2" : "<0>تطبيق Concordium ID يستخدم بذرةً منفصلةً</0> – ستقوم بإنشاء 24 كلمة جديدة في تطبيق Concordium. لا تستخدم بذرة Ledger الخاصة بك أبداً.",
+            "3" : "<0>سيعاد توجيهك خارج Ledger Wallet</0> – التحقق من الهويّة يحدث في تطبيق محفظة Concordium الخارجي. هذا مطلوب بواسطة بروتوكول سلسلة الكتل (بلوكتشين) الخاص بـ Concordium.",
+            "4" : "<0>توقيع المعاملة يظل آمناً</0> – فقط جهازك Ledger يمكنه توقيع المعاملات وإنشاء الحسابات."
+          },
+          "allow" : "موافقة"
+        },
+        "identity" : {
+          "title" : "اتصال",
+          "account" : "الحساب",
+          "newAccount" : "حساب جديد",
+          "init" : "الضغط على Allow (سماح) يعني أنك مُستعد للمتابعة إلى تحقق هويّة اعرف عميلك (KYC) المطلوب للتحقق من حسابك.",
+          "scanQRCode" : "امسح كود QR ضوئياً عن طريق جهازك الجوّال للاتصال بتطبيق Concordium ID الخاص بك. <0>تعرّف على المزيد</0>",
+          "ledgerSeedWarning" : "<0>لا</0> تستخدم بذرة Ledger الخاصة بك في تطبيق Concordium ID.",
+          "downloadApp" : "تنزيل تطبيق Concordium ID",
+          "connecting" : "جارٍ الاتصال بتطبيق Concordium ID...",
+          "onboarded" : "حسابات مُهيّأة",
+          "success" : "تم الاتصال بتطبيق Concordium ID بنجاح.",
+          "error" : "فشلت تهيئة الحساب الجديد. يُرجى إعادة المحاولة.",
+          "status" : {
+            "prepare" : "جارٍ إعداد تهيئة الحساب...",
+            "submit" : "جارٍ تهيئة الحساب...",
+            "default" : "جارٍ المعالجة..."
+          }
+        },
+        "create" : {
+          "title" : "إنشاء حساب",
+          "init" : {
+            "title" : "تم الاتصال بتطبيق Concordium ID بنجاح"
+          },
+          "prepare" : {
+            "title" : "لإنشاء حساب، طابق الكود أدناه في تطبيق Concordium ID",
+            "resendButton" : "إعادة إرسال التأكيد",
+            "resendDescription" : "يمكن إعادة إرسال التأكيد خلال <0>{{count}}</0> {{unit}}"
+          },
+          "success" : "تمّ إنشاء حساب Concordium الخاص بك بنجاح.",
+          "error" : "فشل إنشاء الحساب. يُرجى إعادة المحاولة.",
+          "error429" : "طلبات كثيرة جداً. يُرجى الانتظار وإعادة المحاولة لاحقاً.",
+          "button" : "إنشاء",
+          "processing" : "جارٍ المعالجة...",
+          "status" : {
+            "prepare" : "جارٍ إعداد إنشاء الحساب...",
+            "submit" : "جارٍ إنشاء حساب...",
+            "default" : "جارٍ المعالجة..."
+          }
+        },
+        "finish" : {
+          "title" : "تأكيد"
+        }
+      },
+      "receive" : {
+        "messageIfSkipped" : "لا يمكن تأكيد صحة عنوان Concordium الخاص بك في الوقت الحالي. يُرجى التأكد جيداً من خلال لصق عنوانك في مستكشف Concordium.",
+        "verifyLink" : "تحقق"
+      }
+    },
     "stellar" : {
       "memo" : "ملاحظة (تسمية الوجهة)",
       "memoType" : {
@@ -6535,6 +6705,10 @@
       "title" : "لا يمكن تسريعها أو إلغائها",
       "description" : "هذه المعاملة تم تأكيدها بالفعل"
     },
+    "InvalidTransactionError" : {
+      "title" : "معاملة غير صالحة",
+      "description" : "لم تعد المعاملة تتطابق مع حالة سلسلة الكتل (بلوكتشين). يرجى بدء التدفق مرة أخرى."
+    },
     "SequenceNumberError" : {
       "title" : "خطأ في رقم التسلسل",
       "description" : "يُرجى إغلاق النافذة وإعادة المحاولة لاحقاً"
@@ -6776,6 +6950,9 @@
     "SolanaAccountNotFunded" : {
       "title" : "الحساب غير ممول"
     },
+    "SolanaRecipientAccountNotFunded" : {
+      "title" : "المبلغ منخفض جداً. أرسل على الأقل {{minimumAmount}}."
+    },
     "SolanaTokenAccountHoldsAnotherToken" : {
       "title" : "حساب رمز التوكن المرتبط هذا يحتفظ برمز توكن آخر"
     },
@@ -6846,6 +7023,21 @@
     "CardanoMemoExceededSizeError" : {
       "title" : "حجم ملاحظة غير صالح، الحد الأقصى المسموح هو 64 حرفاً",
       "description" : "ملاحظة Cardano لها حد أقصى محدود للحجم. يُرجى تقليل حجم الملاحظة"
+    },
+    "ConcordiumMemoTooLong" : {
+      "title" : "الملاحظة (تسمية الوجهة) تتجاوز الحد الأقصى للطول",
+      "description" : "ملاحظتك يبلغ طولها {{memoLength}} بايت، لكن الحد الأقصى المسموح به هو {{maxLength}} بايت. يُرجى تقليل حجم الملاحظة."
+    },
+    "ConcordiumInsufficientFunds" : {
+      "title" : "عفواً، الأموال المتوفرة غير كافية"
+    },
+    "ConcordiumPairingExpiredError" : {
+      "title" : "انتهت مدة الإقران",
+      "description" : "انتهت مهلة الاتصال بتطبيق Concordium ID. يُرجى إعادة المحاولة."
+    },
+    "ConcordiumSessionExpiredError" : {
+      "title" : "انتهت مدة الجلسة",
+      "description" : "لم تعد جلسة تطبيق Concordium ID نشطة. يُرجى الإقران مرةً أخرى."
     },
     "StacksMemoTooLong" : {
       "title" : "الملاحظة (تسمية الوجهة) طويلة جداً"
@@ -7031,6 +7223,12 @@
     },
     "TonMinimumRequired" : {
       "title" : "الأموال المتوفرة غير كافية. الحد الأدنى المطلوب للرصيد هو 0.2 TON."
+    },
+    "AleoAmountRecordRequired" : {
+      "title" : "اختر سجلاً خاصاً صالحاً للمبلغ."
+    },
+    "AleoFeeRecordRequired" : {
+      "title" : "اختر سجلاً خاصاً صالحاً للرسوم."
     },
     "BackupAppDataError" : {
       "title" : "خطأ أثناء النسخ الاحتياطي لبيانات التطبيق"
@@ -7435,7 +7633,8 @@
     },
     "selectAccount" : {
       "title" : "اختر حساب",
-      "addAccount" : "إضافة حساب جديد أو قائم"
+      "addAccount" : "إضافة حساب جديد أو قائم",
+      "perpetualsBanner" : "حالياً مدعوم فقط مع USDC على سلسلة Arbitrum."
     }
   },
   "customImage" : {
@@ -7590,13 +7789,22 @@
     },
     "profileSettings" : {
       "personalizedExp" : "تجربة مخصصة",
-      "analytics" : "التحليلات",
-      "personalizedExpDesc" : "قم بتمكين Ledger من جمع بيانات استخدام التطبيق لتقديم توصيات مخصصة ومحتوى يطابق تفضيلاتك وللمساعدة في قياس أداء حملاتنا التسويقية.",
-      "analyticsDesc" : "قم بتمكين Ledger من جمع بيانات استخدام التطبيق للمساعدة في قياس أداء Ledger Wallet وتحسين كلٍ من التطبيق وتجربتك."
+      "analytics" : "أداء التطبيق",
+      "personalizedExpDesc" : "قم بتمكين Ledger من جمع بيانات استخدام التطبيق لتوفير محتويات مخصصة",
+      "analyticsDesc" : "قم بتمكين Ledger من جمع بيانات استخدام التطبيق لتحسين تجربة المستخدم"
     }
   },
   "analytics" : {
-    "title" : "التحليلات"
+    "title" : "التحليلات",
+    "allocation" : {
+      "title" : "توزيع الأصول",
+      "columns" : {
+        "name" : "الاسم",
+        "balance" : "الرصيد",
+        "value" : "القيمة",
+        "allocation" : "التخصيص"
+      }
+    }
   },
   "walletSync" : {
     "title" : "مزامنة Ledger",
@@ -7789,6 +7997,16 @@
       "cta" : "تعرّف على المزيد"
     }
   },
+  "lnsUpsellMediaBanner" : {
+    "opted_in" : {
+      "title" : "قم بترقية جهازك ™Ledger Nano S",
+      "description" : "احصل على خصم %20 حصري على أحدث أجهزة توقيع Ledger."
+    },
+    "opted_out" : {
+      "title" : "قم بترقية جهازك ™Ledger Nano S",
+      "description" : "الذاكرة المحدودة في Ledger Nano S الخاصة بك تُقيد وصولك إلى أحدث الميزات، ومتغيّرات سلاسل الكتل (بلوكتشين)، وتحسينات الأمان."
+    }
+  },
   "modularAssetDrawer" : {
     "addAccounts" : {
       "title" : "اختر الحسابات التي ترغب في إضافتها",
@@ -7885,34 +8103,39 @@
   "portfolio" : {
     "title" : "الصفحة الرئيسية",
     "today" : "اليوم",
+    "carousel" : {
+      "title" : "من أجلك"
+    },
     "addAccountCta" : "إضافة حساب أصل مشفر",
-    "noBalanceTitle" : "تأمين أصولك المشفرة",
+    "noBalanceTitle" : "ابدأ بتمويل محفظتك",
     "perpsEntry" : {
       "title" : "العقود الدائمة",
       "description" : "تداول باستخدام رافعة مالية",
       "cta" : "اكتشف"
     },
-    "noDeviceTitle" : "المحفظة الأكثر أماناً"
+    "noDeviceTitle" : "محفظة الأصول المشفرة الآمنة الخاصة بك"
   },
   "marketBanner" : {
     "title" : "استكشف السوق",
     "genericError" : "فشل الاتصال",
     "cta" : "عرض الكل",
+    "scrollLeft" : "التمرير لليسار",
+    "scrollRight" : "التمرير لليمين",
     "fearAndGreed" : {
       "title" : "الحالة المزاجية"
     }
   },
   "fearAndGreed" : {
     "levels" : {
-      "extremeFear" : "خوف+",
       "fear" : "خوف",
+      "cautious" : "حَذِر",
       "neutral" : "محايد",
-      "greed" : "طمع",
-      "extremeGreed" : "طمع+"
+      "optimistic" : "متفائل",
+      "greedy" : "طمّاع"
     },
     "dialog" : {
       "title" : "مؤشر الحالة المزاجية",
-      "content" : "مؤشر الحالة المزاجية يشير إلى الحالة العاطفية للسوق. يتراوح بين 0 و 100، حيث تشير القيمة الأقل إلى الخوف الشديد، والقيمة الأعلى إلى الطمع الشديد.",
+      "content" : "يُظهر شعور السوق الإجمالي من 0 إلى 100، بناءً على الاتجاهات والنشاط. استخدمه لفهم كيف يتصرف السوق: القيَّم الأقل تشير إلى الخوف، والقيَّم الأعلى تشير إلى الطمع.",
       "cta" : "فهمت ذلك"
     }
   },
@@ -7924,6 +8147,53 @@
     "connect" : "اتصال",
     "buyALedger" : "شراء Ledger"
   },
+  "assets" : {
+    "cryptos" : "الأصول المشفرة",
+    "stablecoins" : "العملات المستقرة",
+    "cryptoAccounts" : "حسابات الأصول المشفرة",
+    "accountsCount_one" : "{{count}} حساب",
+    "accountsCount_other" : "{{count}} حساب",
+    "noCryptoAccounts" : "لا توجد حسابات بعد",
+    "add" : "إضافة",
+    "columns" : {
+      "name" : "الاسم",
+      "price" : "السعر",
+      "balance" : "الرصيد",
+      "value" : "القيمة",
+      "trend" : "اتجاه يوم 1",
+      "trendTooltip" : "التعديلات على رصيدك خلال آخر 24 ساعة."
+    }
+  },
+  "cryptoAddresses" : {
+    "title" : "الحسابات",
+    "tableActions" : {
+      "searchAddress" : "ابحث عن طريق الاسم، العنوان",
+      "addAddress" : "إضافة عنوان"
+    },
+    "table" : {
+      "columns" : {
+        "name" : "الاسم",
+        "address" : "عنوان",
+        "value" : "القيمة"
+      },
+      "editName" : "تعديل الاسم",
+      "emptyState" : "لا يوجد عنوان أصول مشفرة بعد",
+      "emptySearchState" : "لا توجد حسابات تطابق بحثك"
+    },
+    "editName" : {
+      "title" : "تعديل اسم العنوان",
+      "input" : "اسم العنوان",
+      "suggestions" : {
+        "trading" : "تداول {{asset}}",
+        "savings" : "مدخرات {{asset}}"
+      },
+      "cta" : "تأكيد",
+      "syncingTooltip" : "جارٍ المزامنة، يُرجى الانتظار"
+    }
+  },
+  "cryptoAssets" : {
+    "title" : "الأصول المشفرة"
+  },
   "nftEntryPoint" : {
     "title" : "الرموز غير القابلة للاستبدال (NFT)",
     "entry" : {
@@ -7932,16 +8202,16 @@
     }
   },
   "topBar" : {
+    "history" : {
+      "cta" : "السجل",
+      "tooltip" : "السجل"
+    },
     "activityIndicator" : {
-      "errorToolTip" : "كانت هناك مشكلة مؤقتة في الشبكة. أصولك آمنة. قائمة الحسابات المتأثرة: {{accounts}}. انقر لإعادة المحاولة",
-      "emptyErrorToolTip" : "كانت هناك مشكلة مؤقتة في الشبكة. أصولك آمنة. انقر لإعادة المحاولة",
-      "upToDate" : "أنت على أحدث إصدار",
-      "minutesAgo_one" : "آخر مزامنة: منذ {{count}} دقيقة. انقر للتحديث",
-      "minutesAgo_other" : "آخر مزامنة: منذ {{count}} دقيقة. انقر للتحديث",
-      "hoursAgo_one" : "آخر مزامنة: منذ {{count}} ساعة. انقر للتحديث",
-      "hoursAgo_other" : "آخر مزامنة: منذ {{count}} ساعة. انقر للتحديث",
-      "daysAgo_one" : "آخر مزامنة: منذ {{count}} يوم. انقر للتحديث",
-      "daysAgo_other" : "آخر مزامنة: منذ {{count}} يوم. انقر للتحديث"
+      "errorToolTip" : "أصولك آمنة. هذه مشكلة مزامنة مؤقتة.\n الحسابات المتأثرة: {{accounts}}. انقر لإعادة المحاولة",
+      "emptyErrorToolTip" : "أصولك آمنة. هذه مشكلة مزامنة مؤقتة.\n انقر لإعادة المحاولة",
+      "upToDate" : "المحفظة الاستثمارية مُحدّثة",
+      "lastSync" : "آخر مزامنة: {{timeAgo}} انقر للتحديث",
+      "refreshing" : "جارٍ التحديث..."
     },
     "notificationIndicator" : {
       "tooltip" : "الإشعارات"
@@ -7976,8 +8246,15 @@
     "shielded" : {
       "state" : {
         "showBalance" : "عرض الرصيد",
-        "pausedAt" : "تم الإيقاف مؤقتاً في ",
-        "lastSync" : "آخر مزامنة: {{date}}"
+        "startSync" : "بدء المزامنة",
+        "stopSync" : "إيقاف المزامنة",
+        "lastProcessedBlock" : "آخر كتلة تمت معالجتها: {{block}}. {{missing}} كتلة مفقودة.",
+        "lastSync" : "آخر مزامنة: {{date}}",
+        "estimatedTimeRemaining" : "الوقت المقدر المتبقي: {{minutes}}:{{hours}}"
+      },
+      "datepicker" : {
+        "label" : "طول يوم الميلاد",
+        "tooltip" : "طول يوم الميلاد هو النقطة على سلسلة الكتل (بلوكتشين) التي تبدأ فيها محفظتك المسح بحثاً عن أموالك."
       },
       "flows" : {
         "export" : {
@@ -8016,12 +8293,13 @@
             }
           }
         }
-      },
-      "startSync" : "بدء المزامنة",
-      "datepicker" : {
-        "label" : "طول يوم الميلاد",
-        "tooltip" : "طول يوم الميلاد هو النقطة على سلسلة الكتل (بلوكتشين) التي تبدأ فيها محفظتك المسح بحثاً عن أموالك."
       }
+    },
+    "operationDetails" : {
+      "txType" : "نوع المعاملة",
+      "transparentTx" : "شفاف",
+      "shieldedSaplingTx" : "🛡 خاص (شتلة)",
+      "shieldedOrchardTx" : "🛡 خاص (أوركارد)"
     }
   },
   "aleo" : {
@@ -8054,13 +8332,128 @@
         }
       }
     },
+    "selfTransfer" : {
+      "headerAction" : "تحويل ذاتي",
+      "headerActionTooltip" : "ليس لديك أي أموال لإجراء تحويل ذاتي",
+      "modal" : {
+        "title" : "تحويل ذاتي",
+        "stepRecipient" : {
+          "selectLabel" : "تحويل من"
+        }
+      }
+    },
+    "shared" : {
+      "sponsoredByProvable" : "برعاية Provable",
+      "balanceSelector" : {
+        "private" : "الرصيد الخاص",
+        "public" : "الرصيد العام",
+        "lastUpdate" : "آخر تحديث: {{label}}",
+        "recently" : "مؤخراً",
+        "switchBalance" : "تغيير مصدر الرصيد"
+      },
+      "recordPicker" : {
+        "label" : "السجلات المتاحة",
+        "noRecords" : "لا توجد سجلات متاحة",
+        "noRecordsAlert" : "ليس لديك أي سجلات متاحة. قم بإجراء تحويل ذاتي أو تلقى أموال خاصة للبدء.",
+        "alert" : "يعتمد الحد الأقصى للمبلغ الذي يمكن إنفاقه على القيمة القصوى للسجل الذي اخترته. الرسوم تحت رعاية Provable لمستخدمي Ledger.",
+        "recordsLimit" : "يتم عرض {{max}} سجل كحد أقصى"
+      }
+    },
     "account" : {
       "availableBalance" : "الرصيد المتاح",
       "availableBalanceTooltip" : "الرصيد الذي يمكن تحويله",
       "transparentBalance" : "الرصيد الشفاف",
       "transparentBalanceTooltip" : "الرصيد المرئي للعامة",
       "privateBalance" : "الرصيد الخاص",
-      "privateBalanceTooltip" : "الرصيد المخفي عن العامة"
+      "privateBalanceTooltip" : "الرصيد المخفي عن العامة",
+      "syncButton" : {
+        "startSync" : "بدء المزامنة",
+        "stopSync" : "إيقاف المزامنة",
+        "syncAgain" : "المزامنة مرة أخرى",
+        "lastSync" : "آخر مزامنة: {{date}}"
+      }
+    },
+    "operations" : {
+      "type" : {
+        "public" : "عام",
+        "private" : "خاص"
+      }
+    },
+    "send" : {
+      "stepRecipient" : {
+        "selectLabel" : "الإرسال من"
+      },
+      "summary" : {
+        "proofGenerationWarning" : "معاملة Aleo تتطلب إنشاء إثبات. هذا قد يستغرق بعض الوقت."
+      },
+      "mandatoryPrivateSync" : {
+        "title" : "مزامنة رصيدك الخاص (%{{percentage}})",
+        "desc" : "يُرجى الانتظار",
+        "error" : "فشلت المزامنة الخاصة. يُرجى إعادة المحاولة لاحقاً."
+      }
+    }
+  },
+  "updater" : {
+    "newUpdateAvailable" : "متاح تحديث جديد",
+    "downloadProgress" : "%{{progress}}",
+    "errorTryAgain" : "حدث خطأ أثناء التحديث. يرجى إعادة المحاولة",
+    "installAndRelaunch" : "تحديث جديد. قم بالتثبيت وإعادة الإطلاق"
+  },
+  "walletV4Tour" : {
+    "slides" : {
+      "portfolio" : {
+        "title" : "عرض أوضح لمحفظتك الاستثمارية",
+        "description" : "اطلع على رصيدك الإجمالي بلمحة، وانقر على ”Today (اليوم)“ للتعمق أكثر."
+      },
+      "navigation" : {
+        "title" : "قم بالوصول إلى الإجراءات الرئيسية بشكل أسرع",
+        "description" : "قم بالوصول إلى إجراءات Receive (تلقي) و Buy (شراء) و Sell (بيع) و Send (إرسال) على الفور."
+      },
+      "actions" : {
+        "title" : "اطلع على اتجاهات السوق فوراً",
+        "description" : "شاهد سريعاً ما الرائج مباشرةً في محفظتك الاستثمارية، وتحرك من الرؤى إلى الإجراءات."
+      }
+    },
+    "cta" : {
+      "continue" : "متابعة",
+      "explore" : "استكشاف محفظتي الاستثمارية الجديدة"
+    }
+  },
+  "history" : {
+    "title" : "المعاملات",
+    "pending" : "معاملة مُعلَّقة",
+    "pending_other" : "معاملات مُعلَّقة",
+    "columns" : {
+      "type" : "النوع",
+      "address" : "عنوان",
+      "amount" : "المبلغ",
+      "value" : "القيمة"
+    },
+    "address" : {
+      "from" : "من",
+      "to" : "إلى"
+    },
+    "emptyState" : {
+      "title" : "لا توجد معاملات بعد",
+      "description" : "عد لاحقاً لرؤية معاملاتك."
+    },
+    "actionsBar" : {
+      "csv" : "CSV"
+    },
+    "exportDialog" : {
+      "title" : "سجل المعاملات",
+      "description" : "اختر الحسابات المراد تضمينها في التصدير",
+      "disclaimer" : "القيّم التقديرية فقط. القيم المقابلة مقدمة بواسطة Kaiko لأغراض المعلومات. لا تستخدم هذه البيانات للأغراض الضريبية أو القانونية أو المحاسبية.",
+      "accountsToInclude" : "الحسابات التي يجب تضمينها",
+      "selectAll" : "اختر الكل ({{count}})",
+      "deselectAll" : "إلغاء اختيار الكل ({{count}})",
+      "export" : "تصدير السجل",
+      "successTitle" : "تم حفظ سجل المعاملات بنجاح",
+      "successDescription" : "تم حفظ ملف CSV الخاص بسجل عملياتك في المجلد المحدد بنجاح",
+      "done" : "تم",
+      "errorTitle" : "حدث خطأ ما",
+      "errorDescription" : "حدث خطأ أثناء تصدير سجل المعاملات الخاص بك. يُرجى إعادة المحاولة.",
+      "tryAgain" : "يرجى إعادة المحاولة"
     }
   }
 }

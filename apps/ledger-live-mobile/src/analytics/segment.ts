@@ -26,7 +26,7 @@ import {
 import { getTokensWithFunds } from "@ledgerhq/live-common/domain/getTokensWithFunds";
 import { getEnv } from "@ledgerhq/live-env";
 import { getAndroidArchitecture, getAndroidVersionCode } from "../logic/cleanBuildVersion";
-import getOrCreateUser from "../user";
+import { userIdSelector, isDummyUserId } from "@ledgerhq/client-ids/store";
 import {
   analyticsEnabledSelector,
   trackingEnabledSelector,
@@ -41,10 +41,12 @@ import {
   personalizedRecommendationsEnabledSelector,
   hasSeenAnalyticsOptInPromptSelector,
   mevProtectionSelector,
+  readOnlyModeEnabledSelector,
   seenDevicesSelector,
   isRebornSelector,
   isOnboardingFlowSelector,
   isPostOnboardingFlowSelector,
+  analyticsConsentInfoSelector,
 } from "../reducers/settings";
 import { bleDevicesSelector } from "../reducers/ble";
 import { DeviceLike, State } from "../reducers/types";
@@ -64,6 +66,7 @@ import { getVersionedRedirects } from "LLM/hooks/useStake/useVersionedStakeProgr
 import { resolveStartupEvents, STARTUP_EVENTS } from "LLM/utils/resolveStartupEvents";
 import { getTotalStakeableAssets } from "@ledgerhq/live-common/domain/getTotalStakeableAssets";
 import { getWallet40Attributes } from "@ledgerhq/live-common/analytics/featureFlagHelpers/wallet40";
+import { getRemoteABTestingAttributes } from "@ledgerhq/live-common/featureFlags/remoteABTesting/remoteABTestingAnalytics";
 import { notificationsPermissionStatusSelector } from "~/reducers/notifications";
 import { AuthorizationStatus } from "@react-native-firebase/messaging";
 
@@ -178,21 +181,26 @@ const getMEVAttributes = (state: State) => {
   };
 };
 
-const getMandatoryProperties = async (store: AppStore) => {
+const getMandatoryProperties = (store: AppStore) => {
   const state: State = store.getState();
-  const { user } = await getOrCreateUser();
+  const userId = userIdSelector(state);
+  const userIdStr = isDummyUserId(userId) ? undefined : userId.exportUserIdForAnalytics();
   const analyticsEnabled = analyticsEnabledSelector(state);
   const personalizedRecommendationsEnabled = personalizedRecommendationsEnabledSelector(state);
   const hasSeenAnalyticsOptInPrompt = hasSeenAnalyticsOptInPromptSelector(state);
+  const readOnlyMode = readOnlyModeEnabledSelector(state);
   const devModeEnabled = getEnv("MANAGER_DEV_MODE");
+  const analyticsInfo = analyticsConsentInfoSelector(state);
 
   return {
-    userId: user?.id,
-    braze_external_id: user?.id, // Needed for braze with this exact name
+    userId: userIdStr,
+    braze_external_id: userIdStr, // Needed for braze with this exact name
     devModeEnabled,
     optInAnalytics: analyticsEnabled,
     optInPersonalRecommendations: personalizedRecommendationsEnabled,
     hasSeenAnalyticsOptInPrompt,
+    readOnlyMode,
+    analyticsInfo,
   };
 };
 
@@ -228,10 +236,51 @@ const getOptimiseOptInNotificationsNewWordingAttributes = (): Record<string, unk
   };
 };
 
+const getLdmkAndSyncFlags = () => ({
+  ldmkTransport: analyticsFeatureFlagMethod?.("ldmkTransport") ?? { enabled: false },
+  ldmkConnectApp: analyticsFeatureFlagMethod?.("ldmkConnectApp") ?? { enabled: false },
+  llmSyncOnboardingIncr1: analyticsFeatureFlagMethod?.("llmSyncOnboardingIncr1") ?? {
+    enabled: false,
+  },
+  ldmkSolanaSigner: analyticsFeatureFlagMethod?.("ldmkSolanaSigner") ?? { enabled: false },
+  ldmkCosmosSigner: analyticsFeatureFlagMethod?.("ldmkCosmosSigner") ?? { enabled: false },
+});
+
+const getAccountsWithFunds = (accounts: ReturnType<typeof accountsSelector>) =>
+  accounts
+    ? [
+        ...new Set(
+          accounts
+            .filter(account => account?.balance.isGreaterThan(0))
+            .map(account => account?.currency?.ticker),
+        ),
+      ]
+    : [];
+
+const getStakingCurrenciesFromFlags = () => {
+  const stakePrograms = analyticsFeatureFlagMethod?.("stakePrograms");
+  const stakingCurrenciesEnabled =
+    stakePrograms?.enabled && stakePrograms?.params?.list?.length ? stakePrograms.params.list : [];
+  const partnerStakingCurrenciesEnabled =
+    stakePrograms?.enabled && stakePrograms?.params?.redirects
+      ? Object.keys(stakePrograms.params.redirects)
+      : [];
+  return { stakePrograms, stakingCurrenciesEnabled, partnerStakingCurrenciesEnabled };
+};
+
+const getFlowAndSatisfactionProps = (
+  state: State,
+  satisfaction: ReturnType<typeof satisfactionSelector>,
+) => ({
+  ...(isOnboardingFlowSelector(state) ? { flow: "onboarding" as const } : {}),
+  ...(isPostOnboardingFlowSelector(state) ? { flow: "post-onboarding" as const } : {}),
+  ...(satisfaction ? { satisfaction } : {}),
+});
+
 const extraProperties = async (store: AppStore) => {
   const state: State = store.getState();
   const madAttributes = getMADAttributes();
-  const mandatoryProperties = await getMandatoryProperties(store);
+  const mandatoryProperties = getMandatoryProperties(store);
   const sensitiveAnalytics = sensitiveAnalyticsSelector(state);
   const systemLanguage = sensitiveAnalytics ? null : RNLocalize.getLocales()[0]?.languageTag;
   const knownDeviceModelIds = knownDeviceModelIdsSelector(state);
@@ -243,32 +292,25 @@ const extraProperties = async (store: AppStore) => {
   const satisfaction = satisfactionSelector(state);
   const accounts = accountsSelector(state);
   const lastDevice = devices.at(-1) || bleDevices.at(-1);
-  const ldmkTransport = analyticsFeatureFlagMethod
-    ? analyticsFeatureFlagMethod("ldmkTransport")
-    : { enabled: false };
-  const ldmkConnectApp = analyticsFeatureFlagMethod
-    ? analyticsFeatureFlagMethod("ldmkConnectApp")
-    : { enabled: false };
-  const llmSyncOnboardingIncr1 = analyticsFeatureFlagMethod
-    ? analyticsFeatureFlagMethod("llmSyncOnboardingIncr1")
-    : { enabled: false };
-  const ldmkSolanaSigner = analyticsFeatureFlagMethod
-    ? analyticsFeatureFlagMethod("ldmkSolanaSigner")
-    : { enabled: false };
+  const {
+    ldmkTransport,
+    ldmkConnectApp,
+    llmSyncOnboardingIncr1,
+    ldmkSolanaSigner,
+    ldmkCosmosSigner,
+  } = getLdmkAndSyncFlags();
   const deviceInfo = lastDevice
     ? {
         deviceVersion: lastDevice.deviceInfo?.version,
         deviceLanguage:
-          lastDevice.deviceInfo?.languageId !== undefined
-            ? idsToLanguage[lastDevice.deviceInfo.languageId]
-            : undefined,
+          lastDevice.deviceInfo?.languageId === undefined
+            ? undefined
+            : idsToLanguage[lastDevice.deviceInfo.languageId],
         appLength: (lastDevice as DeviceLike)?.appsInstalled,
         modelId: lastDevice.modelId,
       }
     : {};
 
-  const isOnboardingFlow = isOnboardingFlowSelector(state);
-  const isPostOnboardingFlow = isPostOnboardingFlowSelector(state);
   const onboardingHasDevice = onboardingHasDeviceSelector(state);
   const isReborn = isRebornSelector(state);
 
@@ -281,36 +323,24 @@ const extraProperties = async (store: AppStore) => {
     optInAnnouncements: notifications.announcementsCategory,
     optInLargeMovers: notifications.largeMoverCategory,
     optInTxAlerts: notifications.transactionsAlertsCategory,
+    optInTotalMarketCap: notifications.totalMarketCap,
+    optInTopGainersLosers: notifications.topGainersLosers,
     hasEnabledOsNotifications,
   };
   const notificationsBlacklisted = Object.entries(notifications)
     .filter(([key, value]) => key !== "areNotificationsAllowed" && value === false)
     .map(([key]) => key);
 
-  const accountsWithFunds = accounts
-    ? [
-        ...new Set(
-          accounts
-            .filter(account => account?.balance.isGreaterThan(0))
-            .map(account => account?.currency?.ticker),
-        ),
-      ]
-    : [];
+  const accountsWithFunds = getAccountsWithFunds(accounts);
 
   const nps = userNpsSelector(state);
 
-  const stakingProviders =
-    analyticsFeatureFlagMethod && analyticsFeatureFlagMethod("ethStakingProviders");
+  const stakingProviders = analyticsFeatureFlagMethod?.("ethStakingProviders");
   const stakingProvidersCount =
     stakingProviders?.enabled && stakingProviders?.params?.listProvider.length;
 
-  const stakePrograms = analyticsFeatureFlagMethod && analyticsFeatureFlagMethod("stakePrograms");
-  const stakingCurrenciesEnabled =
-    stakePrograms?.enabled && stakePrograms?.params?.list?.length ? stakePrograms.params.list : [];
-  const partnerStakingCurrenciesEnabled =
-    stakePrograms?.enabled && stakePrograms?.params?.redirects
-      ? Object.keys(stakePrograms.params.redirects)
-      : [];
+  const { stakePrograms, stakingCurrenciesEnabled, partnerStakingCurrenciesEnabled } =
+    getStakingCurrenciesFromFlags();
 
   // Currency or token ids from all stakeable accounts & subAccounts with positive balance
   const { combinedIds, stakeableAssets } = getTotalStakeableAssets(
@@ -323,20 +353,21 @@ const extraProperties = async (store: AppStore) => {
     asset => `${asset.ticker} on ${asset.networkName}`,
   );
 
-  const stablecoinYield = getStablecoinYieldSetting(stakePrograms);
-  const bitcoinYield = getBitcoinYieldSetting(stakePrograms);
-  const ethDepositScreen = getEthDepositScreenSetting(stakePrograms);
+  const stablecoinYield = getStablecoinYieldSetting(stakePrograms ?? null);
+  const bitcoinYield = getBitcoinYieldSetting(stakePrograms ?? null);
+  const ethDepositScreen = getEthDepositScreenSetting(stakePrograms ?? null);
   const ledgerSyncAtributes = getLedgerSyncAttributes(state);
   const rebornAttributes = getRebornAttributes();
   const mevProtectionAttributes = getMEVAttributes(state);
   const tokenWithFunds = getTokensWithFunds(accounts);
   const migrationToMMKV = getMigrationUserProps();
   const wallet40Attributes = getWallet40Attributes(analyticsFeatureFlagMethod, "lwm");
+  const remoteABTestingAttributes = getRemoteABTestingAttributes(analyticsFeatureFlagMethod);
   // NOTE: Currently there no reliable way to uniquely identify devices from DeviceModelInfo.
   // So device counts is approximated as follows:
   // Each model of device seen which was not connected in Bluetooth is counted as a 1 device.
-  const seenBleModels = bleDevices.map(d => d.modelId);
-  const usbDeviceModelSeen = devices.filter(d => !seenBleModels.includes(d.modelId));
+  const seenBleModels = new Set(bleDevices.map(d => d.modelId));
+  const usbDeviceModelSeen = devices.filter(d => !seenBleModels.has(d.modelId));
   const devicesCount = bleDevices.length + usbDeviceModelSeen.length;
   const modelIdQtyList = { ...aggregateData(bleDevices), ...aggregateData(usbDeviceModelSeen) };
 
@@ -367,14 +398,7 @@ const extraProperties = async (store: AppStore) => {
     modelIdList: getUniqueModelIdList(devices),
     isReborn,
     onboardingHasDevice,
-    // For tracking receive flow events during onboarding
-    ...(isOnboardingFlow ? { flow: "onboarding" } : {}),
-    ...(isPostOnboardingFlow ? { flow: "post-onboarding" } : {}),
-    ...(satisfaction
-      ? {
-          satisfaction,
-        }
-      : {}),
+    ...getFlowAndSatisfactionProps(state, satisfaction),
     ...deviceInfo,
     notificationsBlacklisted,
     ...notificationsOptedIn,
@@ -396,6 +420,7 @@ const extraProperties = async (store: AppStore) => {
     isLDMKConnectAppEnabled: ldmkConnectApp?.enabled,
     llmSyncOnboardingIncr1: llmSyncOnboardingIncr1?.enabled,
     isLDMKSolanaSignerEnabled: ldmkSolanaSigner?.enabled,
+    isLDMKCosmosSignerEnabled: ldmkCosmosSigner?.enabled,
     stakingCurrenciesEnabled,
     partnerStakingCurrenciesEnabled,
     madAttributes,
@@ -403,19 +428,23 @@ const extraProperties = async (store: AppStore) => {
     stakeableAssets: stakeableAssetsList,
     wallet40Attributes,
     ...optimiseOptInNotificationsNewWordingAttributes,
+    ...remoteABTestingAttributes,
   };
 };
 
 const token = ANALYTICS_TOKEN;
 export const start = async (store: AppStore): Promise<SegmentClient | undefined> => {
-  const { user, created } = await getOrCreateUser();
   storeInstance = store;
 
   const initialUrl = await Linking.getInitialURL();
   const isDeeplinkSession = !!initialUrl;
 
-  if (created && ANALYTICS_LOGS) {
-    console.log("analytics:identify", user.id);
+  if (ANALYTICS_LOGS) {
+    const state = store.getState();
+    const userId = userIdSelector(state);
+    if (!isDummyUserId(userId)) {
+      console.log("analytics:identify", userId.exportUserIdForAnalytics());
+    }
   }
 
   console.log("START ANALYTICS", ANALYTICS_LOGS);
@@ -427,13 +456,10 @@ export const start = async (store: AppStore): Promise<SegmentClient | undefined>
     // This allows us to not retrieve users ip addresses for privacy reasons
     segmentClient.add({ plugin: new AnonymousIpPlugin() });
     // This allows us to make sure we are adding the userId to the event
-    segmentClient.add({ plugin: new UserIdPlugin() });
+    segmentClient.add({ plugin: new UserIdPlugin(store) });
     // This allows us to debounce identify events for Braze and save data points
     segmentClient.add({ plugin: new BrazePlugin() });
 
-    if (created) {
-      segmentClient.reset();
-    }
     await updateIdentify();
   }
   await track("Start", { isDeeplinkSession });
@@ -442,18 +468,18 @@ export const start = async (store: AppStore): Promise<SegmentClient | undefined>
 };
 
 export const updateIdentify = async (additionalProperties?: UserTraits, mandatory?: boolean) => {
-  const state = storeInstance && storeInstance.getState();
+  const state = storeInstance?.getState();
   const isTracking = getIsTracking(state, mandatory);
   if (!storeInstance || !isTracking.enabled) {
     return;
   }
 
   const userExtraProperties = await extraProperties(storeInstance);
-  const mandatoryProperties = await getMandatoryProperties(storeInstance);
-  const allProperties = {
-    ...(mandatory ? mandatoryProperties : userExtraProperties),
-    ...(additionalProperties || {}),
-  };
+  const mandatoryProperties = getMandatoryProperties(storeInstance);
+  const baseProperties = mandatory ? mandatoryProperties : userExtraProperties;
+  const allProperties = additionalProperties
+    ? { ...baseProperties, ...additionalProperties }
+    : baseProperties;
   if (ANALYTICS_LOGS) console.log("analytics:identify", allProperties);
   if (!token) return;
   await segmentClient?.identify(userExtraProperties.userId, allProperties);
@@ -468,14 +494,14 @@ export type LoggableEvent = {
 };
 export const trackSubject = new ReplaySubject<LoggableEvent>(30);
 
-type EventType = string | "button_clicked" | "error_message";
+type EventType = (string & {}) | "button_clicked" | "error_message";
 
 export function getIsTracking(
   state: State | null | undefined,
   mandatory?: boolean | null | undefined,
 ): { enabled: true } | { enabled: false; reason?: string } {
   if (!state) return { enabled: false, reason: "store not initialised" };
-  const trackingEnabled = state && trackingEnabledSelector(state);
+  const trackingEnabled = trackingEnabledSelector(state);
 
   if (!mandatory && !trackingEnabled) {
     return {
@@ -491,7 +517,7 @@ export const track = async (
   eventProperties?: Error | Record<string, unknown> | null,
   mandatory?: boolean | null,
 ) => {
-  const state = storeInstance && storeInstance.getState();
+  const state = storeInstance?.getState();
 
   const isTracking = getIsTracking(state, mandatory);
   if (!isTracking.enabled) {
@@ -502,7 +528,7 @@ export const track = async (
   const page = currentRouteNameRef.current;
 
   const userExtraProperties = await extraProperties(storeInstance as AppStore);
-  const mandatoryProperties = await getMandatoryProperties(storeInstance as AppStore);
+  const mandatoryProperties = getMandatoryProperties(storeInstance as AppStore);
   const propertiesWithoutExtra = {
     page,
     ...eventProperties,
@@ -519,7 +545,10 @@ export const track = async (
     date: new Date(),
   });
   if (!token) return;
-  segmentClient?.track(event, allProperties);
+  segmentClient?.track(
+    event,
+    allProperties as Parameters<NonNullable<typeof segmentClient>["track"]>[1],
+  );
 };
 export const getPageNameFromRoute = (route: RouteProp<ParamListBase>) => {
   const routeName = getFocusedRouteNameFromRoute(route) || NavigatorName.Portfolio;
@@ -531,17 +560,13 @@ export const trackWithRoute = (
   properties?: Record<string, unknown> | null,
   mandatory?: boolean | null,
 ) => {
-  const newProperties = {
-    page: getPageNameFromRoute(route),
-    // don't override page if it's already set
-    ...(properties || {}),
-  };
+  const newProperties = properties
+    ? { page: getPageNameFromRoute(route), ...properties }
+    : { page: getPageNameFromRoute(route) };
   track(event, newProperties, mandatory);
 };
 
-export const flush = () => {
-  segmentClient?.flush();
-};
+export const flush = async () => segmentClient?.flush();
 
 export const useTrack = () => {
   const route = useRoute();
@@ -624,7 +649,7 @@ export const screen = async (
     }
   }
 
-  const state = storeInstance && storeInstance.getState();
+  const state = storeInstance?.getState();
 
   const isTracking = getIsTracking(state, mandatory);
   if (!isTracking.enabled) {
@@ -635,11 +660,8 @@ export const screen = async (
   const source = previousRouteNameRef.current;
 
   const userExtraProperties = await extraProperties(storeInstance as AppStore);
-  const mandatoryProperties = await getMandatoryProperties(storeInstance as AppStore);
-  const eventPropertiesWithoutExtra = {
-    source,
-    ...properties,
-  };
+  const mandatoryProperties = getMandatoryProperties(storeInstance as AppStore);
+  const eventPropertiesWithoutExtra = properties ? { source, ...properties } : { source };
   const allProperties = {
     ...eventPropertiesWithoutExtra,
     ...(mandatory ? mandatoryProperties : userExtraProperties),
@@ -652,5 +674,8 @@ export const screen = async (
     date: new Date(),
   });
   if (!token) return;
-  segmentClient?.track(eventName, allProperties);
+  segmentClient?.track(
+    eventName,
+    allProperties as Parameters<NonNullable<typeof segmentClient>["track"]>[1],
+  );
 };

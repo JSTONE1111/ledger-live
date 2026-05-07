@@ -42,7 +42,7 @@ const appConfig: Record<string, ConfigInfo> = {
   config_nanoapp_celo: {
     type: "object",
     default: {
-      minVersion: "1.5.0",
+      minVersion: "1.7.0",
       nanosMinVersion: "1.3.2",
     },
   },
@@ -87,6 +87,12 @@ const appConfig: Record<string, ConfigInfo> = {
     default: {
       minVersion: "0.7.4",
       nanosMinVersion: "0.7.0",
+    },
+  },
+  config_nanoapp_concordium: {
+    type: "object",
+    default: {
+      minVersion: "5.6.0",
     },
   },
 };

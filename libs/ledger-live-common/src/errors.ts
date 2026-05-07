@@ -98,7 +98,6 @@ export const UnexpectedError = createCustomErrorClass("UnexpectedError");
 export const NotImplementedError = createCustomErrorClass("NotImplementedError");
 export const ValidationError = createCustomErrorClass("ValidationError");
 export const AccessDeniedError = createCustomErrorClass("AccessDeniedError");
-
 export const OutdatedApp = createCustomErrorClass("OutdatedApp");
 
 export const BluetoothNotSupportedError = createCustomErrorClass("FwUpdateBluetoothNotSupported");
@@ -106,7 +105,7 @@ export const BluetoothNotSupportedError = createCustomErrorClass("FwUpdateBlueto
 export const EConnResetError = createCustomErrorClass("EConnReset");
 
 export { ClaimRewardsFeesWarning } from "@ledgerhq/errors";
-export * from "@ledgerhq/coin-framework/errors";
+export * from "@ledgerhq/coin-module-framework/errors";
 export * from "@ledgerhq/coin-algorand/errors";
 export * from "@ledgerhq/coin-aptos/errors";
 export * from "@ledgerhq/coin-bitcoin/errors";

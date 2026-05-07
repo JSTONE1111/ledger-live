@@ -65,14 +65,12 @@ import {
   setOnboardingSyncFlow,
 } from "~/renderer/reducers/onboarding";
 import { useOpenAssetFlow } from "LLD/features/ModularDialog/hooks/useOpenAssetFlow";
-import { ModularDrawerLocation } from "LLD/features/ModularDrawer";
+import { ModularDrawerLocation } from "@ledgerhq/live-common/modularDrawer/enums";
 import { DeviceModelId } from "@ledgerhq/devices";
 import { EnableSync } from "~/renderer/components/Onboarding/Screens/Tutorial/screens/EnableSync";
 import { trustchainSelector } from "@ledgerhq/ledger-key-ring-protocol/store";
 import useLedgerSyncEntryPointViewModel from "LLD/features/LedgerSyncEntryPoints/useLedgerSyncEntryPointViewModel";
 import { EntryPoint } from "LLD/features/LedgerSyncEntryPoints/types";
-import WalletSyncDrawer from "LLD/features/WalletSync/components/Drawer";
-import { AnalyticsPage } from "LLD/features/WalletSync/hooks/useLedgerSyncAnalytics";
 import { walletSyncDrawerVisibilitySelector } from "~/renderer/reducers/walletSync";
 
 const FlowStepperContainer = styled(Flex)`
@@ -285,8 +283,10 @@ function useRedirectToPortfolio({
   useCase: OnboardingUseCase;
 }) {
   const redirectToPostOnboarding = useRedirectToPostOnboardingCallback();
+  const hasRedirected = useRef(false);
   useEffect(() => {
-    if (enabled) {
+    if (enabled && !hasRedirected.current) {
+      hasRedirected.current = true;
       /**
        * There is a lag if we call navigate("/") directly.
        * To improve the UX in that situation, we have to first commit a "loading"
@@ -344,6 +344,7 @@ export default function Tutorial({ useCase, deviceModelId }: Props) {
   const [userChosePinCodeHimself, setUserChosePinCodeHimself] = useState(false);
 
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
+  const [genuineCheckPassed, setGenuineCheckPassed] = useState(false);
 
   const [onboardingDone, setOnboardingDone] = useState(false);
 
@@ -379,7 +380,7 @@ export default function Tutorial({ useCase, deviceModelId }: Props) {
     "MODAL_RECEIVE",
   );
 
-  const { openDrawer, closeDrawer } = useLedgerSyncEntryPointViewModel({
+  const { openDrawer } = useLedgerSyncEntryPointViewModel({
     entryPoint: EntryPoint.onboarding,
     needEligibleDevice: true,
     onboardingNewDevice: true,
@@ -658,8 +659,9 @@ export default function Tutorial({ useCase, deviceModelId }: Props) {
         props: {
           connectedDevice,
           setConnectedDevice,
+          onGenuineCheckPassed: () => setGenuineCheckPassed(true),
         },
-        canContinue: !!connectedDevice,
+        canContinue: !!connectedDevice && genuineCheckPassed,
         next: () => {
           if (useCase === OnboardingUseCase.setupDevice) {
             if (nanoOnboardingFundWalletFeature) {
@@ -779,6 +781,7 @@ export default function Tutorial({ useCase, deviceModelId }: Props) {
     userChosePinCodeHimself,
     userUnderstandConsequences,
     hasSyncStep,
+    genuineCheckPassed,
   ]);
 
   const steps = useMemo(() => {
@@ -1016,13 +1019,6 @@ export default function Tutorial({ useCase, deviceModelId }: Props) {
           <RecoveryWarning />
         </Flex>
       </Drawer>
-
-      <WalletSyncDrawer
-        currentPage={AnalyticsPage.Onboarding}
-        onClose={() => {
-          closeDrawer();
-        }}
-      />
 
       <FlowStepper
         illustration={CurrentScreen.Illustration}

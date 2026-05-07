@@ -1,5 +1,12 @@
+import {
+  FEATURE_FLAGS_DEFAULTS,
+  FEATURE_FLAGS_INITIAL_STATE,
+  Feature,
+  FeatureId,
+  Features,
+  PartialFeatures,
+} from "@shared/feature-flags";
 import { CountervaluesProvider } from "@ledgerhq/live-countervalues-react";
-import { CountervaluesMarketcapProvider } from "@ledgerhq/live-countervalues-react/CountervaluesMarketcapProvider";
 import { CounterValuesStateRaw } from "@ledgerhq/live-countervalues/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -15,7 +22,6 @@ import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router";
 import { config } from "react-transition-group";
 import ContextMenuWrapper from "~/renderer/components/ContextMenu/ContextMenuWrapper";
-import { useCountervaluesMarketcapBridge } from "~/renderer/components/CountervaluesMarketcapProvider";
 import { useCountervaluesBridge } from "~/renderer/components/CountervaluesProvider";
 import { FirebaseFeatureFlagsProvider } from "~/renderer/components/FirebaseFeatureFlags";
 import type { ReduxStore } from "~/state-manager/configureStore";
@@ -24,7 +30,9 @@ import DrawerProvider from "~/renderer/drawers/Provider";
 import i18n from "~/renderer/i18n/init";
 import dbMiddleware from "~/renderer/middlewares/db";
 import { type State } from "~/renderer/reducers";
+import LiveStyleSheetManager from "~/renderer/styles/LiveStyleSheetManager";
 import StyleProvider from "~/renderer/styles/StyleProvider";
+import { RampCatalogProvider } from "@ledgerhq/live-common/platform/providers/RampCatalogProvider/index";
 import CustomLiveAppProvider from "./CustomLiveAppProvider";
 import { getFeature } from "./featureFlags";
 import { initialCountervaluesMock } from "./mocks/countervalues.mock";
@@ -40,6 +48,7 @@ interface ExtraOptions {
   initialRoute?: string;
   userEventOptions?: Parameters<typeof userEvent.setup>[0];
   skipRouter?: boolean;
+  withRampCatalog?: boolean;
 }
 
 interface RenderReturn {
@@ -48,6 +57,7 @@ interface RenderReturn {
   container: HTMLElement;
   i18n: typeof i18n;
   rerender: (ui: React.ReactElement) => void;
+  unmount: () => void;
 }
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function
@@ -58,7 +68,36 @@ type DeepPartial<T> = T extends Function
       ? { [P in keyof T]?: DeepPartial<T[P]> }
       : T;
 
-config.disabled = true;
+type LooseFlagOverrides = {
+  [K in FeatureId]?: {
+    enabled?: boolean;
+    params?: Features[K] extends { params?: infer P } ? Partial<NonNullable<P>> : never;
+  };
+};
+
+export function withFlagOverrides(flags: LooseFlagOverrides): DeepPartial<State> {
+  const merged: Record<string, Feature> = {};
+  for (const key of Object.keys(flags) as FeatureId[]) {
+    const override = flags[key];
+    const def = FEATURE_FLAGS_DEFAULTS[key] ?? { enabled: false };
+    merged[key] = {
+      ...def,
+      ...(override?.enabled !== undefined && { enabled: override.enabled }),
+      ...(override?.params !== undefined && {
+        params: {
+          ...((def as Record<string, unknown>)["params"] as Record<string, unknown> | undefined),
+          ...override.params,
+        },
+      }),
+    };
+  }
+  return {
+    featureFlags: {
+      ...FEATURE_FLAGS_INITIAL_STATE,
+      overrides: merged as unknown as PartialFeatures,
+    },
+  };
+}
 
 function CountervaluesProviders({
   children,
@@ -67,15 +106,12 @@ function CountervaluesProviders({
   children: React.ReactNode;
   savedState?: CounterValuesStateRaw | undefined;
 }) {
-  const marketcapBridge = useCountervaluesMarketcapBridge();
   const bridge = useCountervaluesBridge();
 
   return (
-    <CountervaluesMarketcapProvider bridge={marketcapBridge}>
-      <CountervaluesProvider bridge={bridge} savedState={savedState}>
-        {children}
-      </CountervaluesProvider>
-    </CountervaluesMarketcapProvider>
+    <CountervaluesProvider bridge={bridge} savedState={savedState}>
+      {children}
+    </CountervaluesProvider>
   );
 }
 
@@ -97,6 +133,7 @@ function Providers({
   store,
   minimal = false,
   withLiveApp = false,
+  withRampCatalog = false,
   initialCountervalues,
   skipRouter = false,
   initialRoute,
@@ -105,6 +142,7 @@ function Providers({
   store: ReduxStore;
   minimal?: boolean;
   withLiveApp?: boolean;
+  withRampCatalog?: boolean;
   initialCountervalues?: CounterValuesStateRaw;
   skipRouter?: boolean;
   initialRoute?: string;
@@ -113,9 +151,21 @@ function Providers({
 
   const content = minimal ? <>{children}</> : <EnhancedProviders>{children}</EnhancedProviders>;
 
+  const liveAppContent = withLiveApp ? (
+    <CustomLiveAppProvider>{content}</CustomLiveAppProvider>
+  ) : (
+    content
+  );
+
+  const rampCatalogContent = withRampCatalog ? (
+    <RampCatalogProvider updateFrequency={999999}>{liveAppContent}</RampCatalogProvider>
+  ) : (
+    liveAppContent
+  );
+
   const routerContent = (
     <CountervaluesProviders savedState={initialCountervalues}>
-      {withLiveApp ? <CustomLiveAppProvider>{content}</CustomLiveAppProvider> : content}
+      {rampCatalogContent}
     </CountervaluesProviders>
   );
 
@@ -141,7 +191,9 @@ function EnhancedProviders({ children }: { children: React.ReactNode }): React.J
     <I18nextProvider i18n={i18n}>
       <DrawerProvider>
         <StyleProvider selectedPalette="dark">
-          <ContextMenuWrapper>{children}</ContextMenuWrapper>
+          <LiveStyleSheetManager>
+            <ContextMenuWrapper>{children}</ContextMenuWrapper>
+          </LiveStyleSheetManager>
         </StyleProvider>
       </DrawerProvider>
     </I18nextProvider>
@@ -206,6 +258,7 @@ function render(ui: React.JSX.Element, options: ExtraOptions = {}): RenderReturn
     userEventOptions = {},
     skipRouter = false,
     initialRoute,
+    withRampCatalog = false,
     ...renderOptions
   } = options;
 
@@ -215,7 +268,12 @@ function render(ui: React.JSX.Element, options: ExtraOptions = {}): RenderReturn
     user: userEvent.setup(userEventOptions),
     ...rtlRender(ui, {
       wrapper: ({ children }) => (
-        <Providers store={store} skipRouter={skipRouter} initialRoute={initialRoute}>
+        <Providers
+          store={store}
+          skipRouter={skipRouter}
+          initialRoute={initialRoute}
+          withRampCatalog={withRampCatalog}
+        >
           {children}
         </Providers>
       ),

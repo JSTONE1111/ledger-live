@@ -10,7 +10,7 @@ import {
   LandingPageUseCase,
 } from "~/dynamicContent/types";
 import useDynamicContent from "~/dynamicContent/useDynamicContent";
-import { filterCategoriesByLocation } from "~/dynamicContent/utils";
+import { filterCategoriesByLocation, sanitizeExtras } from "~/dynamicContent/utils";
 import { isDynamicContentLoadingSelector } from "~/reducers/dynamicContent";
 
 export type NavigationProps = BaseComposite<
@@ -19,7 +19,7 @@ export type NavigationProps = BaseComposite<
 
 export type HookResult = {
   isLoading: boolean;
-  openLink: (card: LandingPageStickyCtaContentCard) => void;
+  openLink: (card: LandingPageStickyCtaContentCard) => Promise<void>;
   categoriesCards: CategoryContentCard[];
   landingStickyCTA?: LandingPageStickyCtaContentCard;
   useCase: LandingPageUseCase;
@@ -33,15 +33,16 @@ export const useGeneralLandingPage = (props: NavigationProps) => {
 
   const landingStickyCTA = getStickyCtaCardByLandingPage(useCase);
 
-  const openLink = (card: LandingPageStickyCtaContentCard) => {
-    trackContentCardEvent("contentcard_clicked", {
-      ...card.extras,
+  const openLink = async (card: LandingPageStickyCtaContentCard) => {
+    await trackContentCardEvent("contentcard_clicked", {
+      ...sanitizeExtras(card.extras),
       campaign: card.id,
       contentcard: card.cta,
       landingPage: useCase,
     });
     logClickCard(card.id);
-    Linking.openURL(card.link);
+    if (!card.link) return;
+    await Linking.openURL(card.link);
   };
 
   useEffect(() => {

@@ -11,6 +11,8 @@ export type TransactionSource = {
   type: "dApp" | "live-app" | "coin-module" | "swap";
   // Name/identifier of the source (e.g., manifestId, provider name)
   name: string;
+  // Feature flags enabled at broadcast
+  flags?: Record<string, boolean>;
 };
 
 /**
@@ -162,6 +164,8 @@ export type TransactionStatusCommon = {
   totalSpent: BigNumber;
   // should the recipient be non editable
   recipientIsReadOnly?: boolean | undefined;
+  // Account (sub-account) responsible for paying fees
+  feeCurrencyAccountId?: string | null | undefined;
 };
 /**
  *
@@ -174,4 +178,8 @@ export type TransactionStatusCommonRaw = {
   totalSpent: string;
   useAllAmount?: boolean;
   recipientIsReadOnly?: boolean | undefined;
+  // Account (sub-account) responsible for paying fees
+  feeCurrencyAccountId?: string | null | undefined;
 };
+
+export type TransactionEditType = "cancel" | "speedup";

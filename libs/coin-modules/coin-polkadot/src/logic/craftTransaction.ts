@@ -34,7 +34,7 @@ export type CreateExtrinsicArg = {
 type ExtrinsicParams = {
   name: PalletMethodName;
   pallet: "staking" | "balances";
-  args: Record<string, string | string[] | number | null | undefined>;
+  args: Record<string, string | string[] | number | null | undefined | boolean>;
 };
 
 const getExtrinsicParams = ({
@@ -53,10 +53,10 @@ const getExtrinsicParams = ({
       // Construct a balance transfer transaction offline.
       return {
         pallet: "balances",
-        name: useAllAmount ? "transferAllowDeath" : "transferKeepAlive",
+        name: useAllAmount ? "transferAll" : "transferKeepAlive",
         args: {
           dest: recipient,
-          value: amount.toString(),
+          ...(useAllAmount ? { keepAlive: false } : { value: amount.toString() }),
         },
       };
 
@@ -173,13 +173,15 @@ export async function craftTransaction(
   address: string,
   nonceToUse: number,
   extractExtrinsicArg: CreateExtrinsicArg,
-  forceLatestParams: boolean = false,
   currency?: CryptoCurrency,
 ): Promise<CoreTransaction> {
   await loadPolkadotCrypto();
   const { extrinsics, registry } = await polkadotAPI.getRegistry(currency);
+  // Embedding outdated params inside transactions results in `Transaction has a bad signature`.
+  // We bypass the cache to fetch fresh parameters and avoid the issue, especially since the endpoint
+  // POST /transaction/material?noMeta=true returns a pretty small payload (content-length=284)
   const info = await polkadotAPI.getTransactionParams(currency, {
-    force: forceLatestParams,
+    force: true,
   });
   // Get the correct extrinsics params depending on transaction
   const extrinsicParams = getExtrinsicParams(extractExtrinsicArg);

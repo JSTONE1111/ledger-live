@@ -3,7 +3,7 @@ import { toAccountRaw } from "@ledgerhq/live-common/account/index";
 import { toTransactionRaw, toSignedOperationRaw } from "@ledgerhq/live-common/transaction/index";
 import { listen } from "@ledgerhq/logs";
 import { from, defer, concat, EMPTY, Observable } from "rxjs";
-import { map, reduce, filter, switchMap, concatMap } from "rxjs/operators";
+import { map, reduce, filter, switchMap, concatMap, mergeMap } from "rxjs/operators";
 import { scan, scanCommonOpts } from "../../scan";
 import type { ScanCommonOpts } from "../../scan";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
@@ -60,43 +60,43 @@ export default {
               (acc, [t]) =>
                 concat(
                   acc,
-                  from(
-                    defer(() => {
-                      const apdus: string[] = [];
-                      const unsubscribe = listen(log => {
-                        if (log.type === "apdu" && log.message) {
-                          apdus.push(log.message);
-                        }
-                      });
-                      const bridge = getAccountBridge(account);
-                      return bridge
-                        .signOperation({
-                          account,
-                          transaction: t,
-                          deviceId: opts.device || "",
-                        })
-                        .pipe(
-                          filter(e => e.type === "signed"),
-                          map(e => {
-                            // FIXME: will always be true because of filter above
-                            // but ts can't infer the right type for SignOperationEvent
-                            if (e.type === "signed") {
-                              return e.signedOperation;
-                            }
-                          }),
-                          concatMap(signedOperation =>
-                            from(
-                              bridge
-                                .getTransactionStatus(account, t)
-                                .then(s => [signedOperation, s]),
+                  defer(() => {
+                    const apdus: string[] = [];
+                    const unsubscribe = listen(log => {
+                      if (log.type === "apdu" && log.message) {
+                        apdus.push(log.message);
+                      }
+                    });
+                    return defer(() => Promise.resolve(getAccountBridge(account))).pipe(
+                      mergeMap(bridge =>
+                        bridge
+                          .signOperation({
+                            account,
+                            transaction: t,
+                            deviceId: opts.device || "",
+                          })
+                          .pipe(
+                            filter(e => e.type === "signed"),
+                            map(e => {
+                              // FIXME: will always be true because of filter above
+                              // but ts can't infer the right type for SignOperationEvent
+                              if (e.type === "signed") {
+                                return e.signedOperation;
+                              }
+                            }),
+                            concatMap(signedOperation =>
+                              from(
+                                bridge
+                                  .getTransactionStatus(account, t)
+                                  .then(s => [signedOperation, s]),
+                              ),
                             ),
-                          ),
-                          map(([signedOperation, status]) => {
-                            unsubscribe();
-                            return `
+                            mergeMap(async ([signedOperation, status]) => {
+                              unsubscribe();
+                              return `
 {
   name: "NO_NAME",
-  transaction: fromTransactionRaw(${JSON.stringify(toTransactionRaw(t))}),
+  transaction: fromTransactionRaw(${JSON.stringify(await toTransactionRaw(t))}),
   expectedStatus: (account, transaction) => (
     // you can use account and transaction for smart logic. drop the =>fn otherwise
     ${toTransactionStatusJS(status)}
@@ -111,29 +111,29 @@ export default {
 ${apdus.map(a => "  " + a).join("\n")}
   \`
 }`;
-                          }),
-                        );
-                    }),
-                  ),
+                            }),
+                          ),
+                      ),
+                    );
+                  }),
                 ),
               EMPTY as Observable<any>,
             ),
           ),
           reduce((jsCodes, code) => jsCodes.concat(code), []),
-          map(
-            codes => `{
+          switchMap(async codes => {
+            const raw = await toAccountRaw({
+              ...account,
+              operations: [],
+            });
+            return `{
   name: "${getDefaultAccountNameForCurrencyIndex(account)}",
-  raw: ${JSON.stringify(
-    toAccountRaw({
-      ...account,
-      operations: [],
-    }),
-  )},
+  raw: ${JSON.stringify(raw)},
   transactions: [
     ${codes.join(",")}
   ]
-  }`,
-          ),
+  }`;
+          }),
         ),
       ),
     ),

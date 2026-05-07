@@ -141,7 +141,7 @@ const mockAccount: Account = {
   nfts: [],
 };
 
-jest.mock("@ledgerhq/coin-framework/account/index", () => ({
+jest.mock("@ledgerhq/ledger-wallet-framework/account/index", () => ({
   getParentAccount: jest.fn(),
   getMainAccount: jest.fn(),
   makeEmptyTokenAccount: jest.fn(),
@@ -177,7 +177,7 @@ describe("ACRE Server Handlers", () => {
 
     // Mock the account functions
     const { makeEmptyTokenAccount, getMainAccount, getParentAccount } = jest.requireMock(
-      "@ledgerhq/coin-framework/account/index",
+      "@ledgerhq/ledger-wallet-framework/account/index",
     );
     makeEmptyTokenAccount.mockReturnValue({
       type: "TokenAccount",
@@ -206,7 +206,7 @@ describe("ACRE Server Handlers", () => {
     getAccountIdFromWalletAccountId.mockReturnValue(
       "js:2:ethereum:0x1234567890123456789012345678901234567890:ethereum",
     );
-    getWalletAPITransactionSignFlowInfos.mockReturnValue({
+    getWalletAPITransactionSignFlowInfos.mockResolvedValue({
       canEditFees: true,
       liveTx: { family: "evm" },
       hasFeesProvided: true,
@@ -214,7 +214,7 @@ describe("ACRE Server Handlers", () => {
 
     // Mock the bridge
     const { getAccountBridge } = jest.requireMock("../../bridge");
-    getAccountBridge.mockReturnValue({
+    getAccountBridge.mockResolvedValue({
       broadcast: jest.fn().mockResolvedValue({ hash: "0x1234567890abcdef" }),
     });
 

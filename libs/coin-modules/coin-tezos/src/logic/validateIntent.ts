@@ -1,4 +1,7 @@
-import type { TransactionIntent, TransactionValidation } from "@ledgerhq/coin-framework/api/types";
+import type {
+  TransactionIntent,
+  TransactionValidation,
+} from "@ledgerhq/coin-module-framework/api/types";
 import {
   InvalidAddress,
   RecipientRequired,
@@ -10,9 +13,36 @@ import {
 } from "@ledgerhq/errors";
 import { validateAddress, ValidationResult } from "@taquito/utils";
 import api from "../network/tzkt";
-import { InvalidAddressBecauseAlreadyDelegated } from "../types/errors";
-import { mapIntentTypeToTezosMode } from "../utils";
+import type { APIAccount } from "../network/types";
+import { InvalidAddressBecauseAlreadyDelegated, MustDelegateBeforeStaking } from "../types/errors";
+import { parseTezosTokenAsset, resolveTezosOperationMode } from "../utils";
 import { estimateFees } from "./estimateFees";
+import type { TezosOperationMode } from "../types/model";
+
+type APIUserAccount = Extract<APIAccount, { type: "user" }>;
+
+function resolveValidationOperationMode(intent: TransactionIntent): TezosOperationMode {
+  switch (intent.type) {
+    case "stake":
+    case "unstake":
+    case "finalize_unstake":
+      return intent.type;
+    default:
+      return resolveTezosOperationMode(intent.type, intent.asset);
+  }
+}
+
+function validateStrictlyPositiveAmount(amount: bigint): Error | undefined {
+  if (amount === 0n) {
+    return new AmountRequired();
+  }
+
+  if (amount < 0n) {
+    return new NotEnoughBalance();
+  }
+
+  return undefined;
+}
 
 /**
  * Validates basic recipient and amount for send transactions
@@ -46,22 +76,54 @@ function validateBasicSendParams(intent: TransactionIntent): Record<string, Erro
  */
 function validateTransactionConstraints(
   intent: TransactionIntent,
-  senderInfo: any,
+  senderInfo: APIUserAccount,
 ): Record<string, Error> {
   const errors: Record<string, Error> = {};
 
-  // send max not allowed on delegated accounts (must undelegate acc first)
-  if (intent.type === "send" && intent.useAllAmount) {
-    if (senderInfo.type === "user" && senderInfo.delegate?.address) {
-      errors.amount = new RecommendUndelegation();
+  // send max not allowed on delegated accounts (must undelegate acc first); native XTZ only
+  if (
+    intent.type === "send" &&
+    intent.useAllAmount &&
+    resolveValidationOperationMode(intent) === "send" &&
+    senderInfo.delegate?.address
+  ) {
+    errors.amount = new RecommendUndelegation();
+  }
+
+  if (intent.type === "stake") {
+    if (!senderInfo.delegate?.address) {
+      errors.amount = new MustDelegateBeforeStaking();
+      return errors;
+    }
+
+    const amountError = validateStrictlyPositiveAmount(intent.amount);
+    if (amountError) {
+      errors.amount = amountError;
     }
   }
 
-  // stake requires non-zero balance
-  if (intent.type === "stake") {
-    const balance = BigInt(senderInfo.balance || "0");
-    if (balance === 0n) {
-      errors.amount = new NotEnoughBalanceToDelegate();
+  if (intent.type === "unstake") {
+    const stakedBalance = BigInt(senderInfo.stakedBalance ?? 0);
+    if (stakedBalance <= 0n) {
+      errors.amount = new NotEnoughBalance();
+      return errors;
+    }
+
+    const amountError = validateStrictlyPositiveAmount(intent.amount);
+    if (amountError) {
+      errors.amount = amountError;
+      return errors;
+    }
+
+    if (intent.amount > stakedBalance) {
+      errors.amount = new NotEnoughBalance();
+    }
+  }
+
+  if (intent.type === "finalize_unstake") {
+    const unstakedFinalizable = BigInt(senderInfo.unstakedFinalizable ?? 0);
+    if (unstakedFinalizable <= 0n) {
+      errors.amount = new NotEnoughBalance();
     }
   }
 
@@ -80,10 +142,16 @@ function mapTaquitoErrors(taquitoError: string, intentType: string): Record<stri
     } else {
       errors.amount = new NotEnoughBalance();
     }
+  } else if (taquitoError.endsWith("staking.too_much_unstaked")) {
+    errors.amount = new NotEnoughBalance();
+  } else if (taquitoError.endsWith("contract.must_be_delegated_to_stake")) {
+    errors.amount = new MustDelegateBeforeStaking();
   } else if (taquitoError.endsWith("delegate.unchanged") && intentType === "stake") {
     errors.recipient = new InvalidAddressBecauseAlreadyDelegated();
   } else if (taquitoError.includes("empty_implicit_contract")) {
     errors.amount = new NotEnoughBalanceToDelegate();
+  } else if (taquitoError.includes("script_rejected")) {
+    errors.amount = new NotEnoughBalance();
   } else {
     errors.amount = new Error(taquitoError);
   }
@@ -91,26 +159,49 @@ function mapTaquitoErrors(taquitoError: string, intentType: string): Record<stri
   return errors;
 }
 
-/**
- * Calculates final amounts based on transaction type
- */
-function calculateAmounts(
-  intent: TransactionIntent,
-  senderInfo: any,
+function calculateNativeSendMaxAmountForUser(
+  balance: bigint,
   estimatedFees: bigint,
   estimatedAmount: bigint | undefined,
 ): { amount: bigint; totalSpent: bigint } {
-  if (intent.type === "stake" || intent.type === "unstake") {
+  const amountFallback = balance > estimatedFees ? balance - estimatedFees : 0n;
+  const hasPositiveEstimatedAmount = estimatedAmount !== undefined && estimatedAmount > 0n;
+  const amount = hasPositiveEstimatedAmount ? estimatedAmount : amountFallback;
+  return { amount, totalSpent: amount + estimatedFees };
+}
+
+/**
+ * Calculates final amounts based on transaction type
+ * @param tokenBalanceForSendMax When set, FA2 send-max: full token amount; fees are paid in XTZ only
+ */
+function calculateAmounts(
+  intent: TransactionIntent,
+  senderInfo: APIUserAccount,
+  estimatedFees: bigint,
+  estimatedAmount: bigint | undefined,
+  tokenBalanceForSendMax?: bigint,
+): { amount: bigint; totalSpent: bigint } {
+  if (intent.type === "stake") {
+    return { amount: intent.amount, totalSpent: intent.amount + estimatedFees };
+  }
+
+  if (intent.type === "unstake") {
+    return { amount: intent.amount, totalSpent: estimatedFees };
+  }
+
+  if (intent.type === "finalize_unstake") {
     return { amount: 0n, totalSpent: estimatedFees };
   }
 
   if (intent.type === "send" && intent.useAllAmount) {
-    if (senderInfo.type === "user") {
-      const balance = BigInt(senderInfo.balance);
-      const amount = estimatedAmount ?? (balance > estimatedFees ? balance - estimatedFees : 0n);
-      return { amount, totalSpent: amount + estimatedFees };
+    if (tokenBalanceForSendMax !== undefined) {
+      return { amount: tokenBalanceForSendMax, totalSpent: estimatedFees };
     }
-    return { amount: 0n, totalSpent: 0n };
+    return calculateNativeSendMaxAmountForUser(
+      BigInt(senderInfo.balance),
+      estimatedFees,
+      estimatedAmount,
+    );
   }
 
   const amount = intent.amount;
@@ -120,17 +211,90 @@ function calculateAmounts(
 /**
  * Validates balance coverage for the transaction
  */
-function validateBalanceCoverage(senderInfo: any, totalSpent: bigint): Record<string, Error> {
+function validateBalanceCoverage(
+  senderInfo: APIUserAccount,
+  totalSpent: bigint,
+): Record<string, Error> {
   const errors: Record<string, Error> = {};
+  const accountBalance = BigInt(senderInfo.balance);
+  if (totalSpent > accountBalance) {
+    errors.amount = new NotEnoughBalance();
+  }
+  return errors;
+}
 
-  if (senderInfo.type === "user") {
-    const accountBalance = BigInt(senderInfo.balance);
-    if (totalSpent > accountBalance) {
-      errors.amount = new NotEnoughBalance();
-    }
+async function estimateFeesForIntent(
+  intent: TransactionIntent,
+  senderInfo: APIUserAccount,
+): Promise<{
+  estimatedFees: bigint;
+  estimatedAmount: bigint | undefined;
+  errors: Record<string, Error>;
+}> {
+  if (!senderInfo.revealed) {
+    return { estimatedFees: 2000n, estimatedAmount: undefined, errors: {} };
   }
 
-  return errors;
+  const tezosMode = resolveValidationOperationMode(intent);
+  const tokenInfo = tezosMode === "send_token" ? parseTezosTokenAsset(intent.asset)! : undefined;
+  const estimation = await estimateFees({
+    account: {
+      address: intent.sender,
+      revealed: senderInfo.revealed,
+      balance: BigInt(senderInfo.balance),
+      xpub: intent.senderPublicKey ?? senderInfo.publicKey,
+    },
+    transaction: {
+      mode: tezosMode,
+      recipient: intent.recipient,
+      // finalize_unstake is a parameter-less operation; normalize amount to 0n so
+      // fee estimation and the returned validation amount stay consistent.
+      amount: intent.type === "finalize_unstake" ? 0n : intent.amount,
+      useAllAmount: !!intent.useAllAmount,
+      ...(tokenInfo && {
+        contractAddress: tokenInfo.contractAddress,
+        tokenId: tokenInfo.tokenId,
+      }),
+    },
+  });
+
+  const errors: Record<string, Error> = {};
+  if (estimation.taquitoError) {
+    Object.assign(errors, mapTaquitoErrors(estimation.taquitoError, intent.type));
+  }
+
+  return {
+    estimatedFees: estimation.estimatedFees,
+    estimatedAmount: estimation.amount,
+    errors,
+  };
+}
+
+async function fetchTokenBalanceForSendMax(intent: TransactionIntent): Promise<bigint | undefined> {
+  if (intent.type !== "send" || !intent.useAllAmount) {
+    return undefined;
+  }
+
+  const tezosMode = resolveTezosOperationMode(intent.type, intent.asset);
+  if (tezosMode !== "send_token") {
+    return undefined;
+  }
+
+  const tokenInfo = parseTezosTokenAsset(intent.asset);
+  if (!tokenInfo) {
+    return undefined;
+  }
+
+  const tokenBalances = await api.getTokensBalances(intent.sender, {
+    contractAddress: tokenInfo.contractAddress,
+    tokenId: tokenInfo.tokenId,
+  });
+  const row = tokenBalances.find(
+    b =>
+      b.token.contract.address === tokenInfo.contractAddress &&
+      Number(b.token.tokenId) === tokenInfo.tokenId,
+  );
+  return row ? BigInt(row.balance) : 0n;
 }
 
 export async function validateIntent(intent: TransactionIntent): Promise<TransactionValidation> {
@@ -141,7 +305,6 @@ export async function validateIntent(intent: TransactionIntent): Promise<Transac
   let amount: bigint;
   let totalSpent: bigint;
 
-  // Basic validation for send transactions
   const basicErrors = validateBasicSendParams(intent);
   Object.assign(errors, basicErrors);
 
@@ -150,11 +313,9 @@ export async function validateIntent(intent: TransactionIntent): Promise<Transac
   }
 
   try {
-    // Get sender account information
     const senderInfo = await api.getAccountByAddress(intent.sender);
     if (senderInfo.type !== "user") throw new Error("unexpected account type");
 
-    // Validate transaction-specific constraints
     const constraintErrors = validateTransactionConstraints(intent, senderInfo);
     Object.assign(errors, constraintErrors);
 
@@ -162,40 +323,23 @@ export async function validateIntent(intent: TransactionIntent): Promise<Transac
       return { errors, warnings, estimatedFees: 0n, amount: 0n, totalSpent: 0n };
     }
 
-    // Estimate fees
-    if (senderInfo.revealed) {
-      const estimation = await estimateFees({
-        account: {
-          address: intent.sender,
-          revealed: senderInfo.revealed,
-          balance: BigInt(senderInfo.balance),
-          xpub: intent.senderPublicKey ?? senderInfo.publicKey,
-        },
-        transaction: {
-          mode: mapIntentTypeToTezosMode(intent.type),
-          recipient: intent.recipient,
-          amount: intent.amount,
-          useAllAmount: !!intent.useAllAmount,
-        },
-      });
-      estimatedFees = estimation.estimatedFees;
-      estimatedAmount = estimation.amount;
+    const feeResult = await estimateFeesForIntent(intent, senderInfo);
+    estimatedFees = feeResult.estimatedFees;
+    estimatedAmount = feeResult.estimatedAmount;
+    Object.assign(errors, feeResult.errors);
 
-      // Handle Taquito errors
-      if (estimation.taquitoError) {
-        const taquitoErrors = mapTaquitoErrors(estimation.taquitoError, intent.type);
-        Object.assign(errors, taquitoErrors);
-      }
-    } else {
-      estimatedFees = 2000n;
-    }
+    const tokenBalanceForSendMax = await fetchTokenBalanceForSendMax(intent);
 
-    // Calculate final amounts
-    const amounts = calculateAmounts(intent, senderInfo, estimatedFees, estimatedAmount);
+    const amounts = calculateAmounts(
+      intent,
+      senderInfo,
+      estimatedFees,
+      estimatedAmount,
+      tokenBalanceForSendMax,
+    );
     amount = amounts.amount;
     totalSpent = amounts.totalSpent;
 
-    // Final balance validation
     const balanceErrors = validateBalanceCoverage(senderInfo, totalSpent);
     Object.assign(errors, balanceErrors);
   } catch (e) {

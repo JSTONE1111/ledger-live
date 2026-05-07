@@ -23,6 +23,12 @@ export type AdditionalProviderConfig = SwapProviderConfig & { type: "DEX" | "CEX
 
 export type ProviderConfig = CEXProviderConfig | DEXProviderConfig;
 
+/**
+ * Shape actually produced by `fetchAndMergeProviderData` (CAL base config merged with
+ * CDN extras). Callers should prefer this alias over re-spelling the intersection.
+ */
+export type MergedProviderConfig = ProviderConfig & Partial<AdditionalProviderConfig>;
+
 const DEFAULT_SWAP_PROVIDERS: Record<string, ProviderConfig & Partial<AdditionalProviderConfig>> = {
   changelly: {
     name: "Changelly",
@@ -211,6 +217,27 @@ const DEFAULT_SWAP_PROVIDERS: Record<string, ProviderConfig & Partial<Additional
     },
     signature: Buffer.from(
       "30440220331fca95bc6b8cf2264d72a0da9d791888c4ead9ed02bee4f6525f7e512911ca02204a78d416baa7b3fc8d6a82abbadda2e096abcbfa9a57769a8a20260d3e553b7d",
+      "hex",
+    ),
+  },
+  swapsxyz: {
+    type: "CEX",
+    name: "Swaps.xyz",
+    needsBearerToken: false,
+    termsOfUseUrl: "https://docs.swaps.xyz/resources/terms-of-service",
+    supportUrl: "https://scan.swaps.xyz/",
+    mainUrl: "https://swaps.xyz/",
+    needsKYC: false,
+    version: 2,
+    publicKey: {
+      curve: "secp256k1",
+      data: Buffer.from(
+        "04e6f96d95d770cab9cc1c45037fe6be92675ed6f2eba405c984b61043a76f0cebdf1ad46fcf2cdcc624a018b6287d6db72138cded3bd0f190eb799d7b071e21c9",
+        "hex",
+      ),
+    },
+    signature: Buffer.from(
+      "3045022074a307a01df16c69c5d4497619d8d78ad872a0e53b28871b17f1843f47d98ca9022100c2c2c96d0ad81aa0127f85805e783aa8ebd3546ceba3815adf613d3a5057903d",
       "hex",
     ),
   },

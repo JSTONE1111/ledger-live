@@ -25,8 +25,10 @@ import { AppType, SortOptions } from "@ledgerhq/live-common/apps/filtering";
 import NoResults from "~/renderer/icons/NoResults";
 import { CryptoOrTokenCurrency } from "@ledgerhq/types-cryptoassets";
 import { getEnv } from "@ledgerhq/live-env";
-import { ModularDrawerLocation } from "LLD/features/ModularDrawer";
+import { ModularDrawerLocation } from "@ledgerhq/live-common/modularDrawer/enums";
 import { useOpenAssetFlow } from "LLD/features/ModularDialog/hooks/useOpenAssetFlow";
+import { useWalletFeaturesConfig } from "@ledgerhq/live-common/featureFlags/index";
+import { getAccountsSidebarPath } from "LLD/components/SideBar/utils";
 
 // sticky top bar with extra width to cover card boxshadow underneath
 export const StickyTabBar = styled.div`
@@ -98,6 +100,9 @@ const AppsList = ({
     "manager",
   );
 
+  const { shouldDisplayAssetSection } = useWalletFeaturesConfig("desktop");
+  const accountsPath = getAccountsSidebarPath(shouldDisplayAssetSection);
+
   /** clear search field on tab change */
   useEffect(() => {
     setQuery("");
@@ -109,15 +114,15 @@ const AppsList = ({
     const params = new URLSearchParams(search);
     const q = params.get("q");
     if (q) setQuery(q);
-    if (inputRef.current && inputRef.current && inputRef.current.focus) inputRef.current.focus();
+    if (inputRef.current?.focus) inputRef.current.focus();
   }, [search]);
   const { installed: installedApps, uninstallQueue } = state;
   const addAccount = useCallback(
     (currency: CryptoOrTokenCurrency) => {
-      navigate("/accounts");
+      navigate(accountsPath);
       openAddAccountFlow(currency, true);
     },
-    [navigate, openAddAccountFlow],
+    [accountsPath, navigate, openAddAccountFlow],
   );
   const { update, device, catalog } = useAppsSections(state, {
     query,

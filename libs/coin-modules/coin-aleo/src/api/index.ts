@@ -1,24 +1,32 @@
 import type {
-  Api,
+  AlpacaApi,
+  Balance,
   Block,
   BlockInfo,
-  Cursor,
-  Page,
-  Stake,
-  Reward,
-  Validator,
   CraftedTransaction,
-  Balance,
+  Cursor,
   FeeEstimation,
+  MemoNotSupported,
+  Page,
+  Reward,
+  Stake,
   TransactionIntent,
   TransactionValidation,
-} from "@ledgerhq/coin-framework/api/index";
+  Validator,
+  BalanceOptions,
+} from "@ledgerhq/coin-module-framework/api/index";
+import { craftTransactionData } from "@ledgerhq/coin-module-framework/logic/craftTransactionData";
+import { rejectBalanceOptions } from "@ledgerhq/coin-module-framework/api/getBalance/rejectBalanceOptions";
 import { getCryptoCurrencyById } from "@ledgerhq/cryptoassets/currencies";
-import coinConfig, { type AleoCoinConfig, type AleoConfig } from "../config";
-import { estimateFees, getBalance, lastBlock, listOperations } from "../logic";
+import coinConfig from "../config";
+import { estimateFees, getBalance, lastBlock, listOperations, validateAddress } from "../logic";
 import { getTransactionType } from "../logic/utils";
+import type { AleoCoinConfig, AleoConfig, AleoTransactionIntentData } from "../types";
 
-export function createApi(config: AleoConfig, currencyId: string): Api {
+export function createApi(
+  config: AleoConfig,
+  currencyId: string,
+): AlpacaApi<MemoNotSupported, AleoTransactionIntentData> {
   const aleoCoinConfig: AleoCoinConfig = { ...config, status: { type: "active" } };
   coinConfig.setCoinConfig(() => aleoCoinConfig);
   const currency = getCryptoCurrencyById(currencyId);
@@ -31,8 +39,8 @@ export function createApi(config: AleoConfig, currencyId: string): Api {
       throw new Error("combine is not supported");
     },
     craftTransaction: async (
-      _account: unknown,
-      _transaction: unknown,
+      _txIntent: TransactionIntent<MemoNotSupported, AleoTransactionIntentData>,
+      _customFees?: FeeEstimation,
     ): Promise<CraftedTransaction> => {
       throw new Error("craftTransaction is not supported");
     },
@@ -48,8 +56,8 @@ export function createApi(config: AleoConfig, currencyId: string): Api {
       const transactionType = getTransactionType(intent);
       return estimateFees({ configOrCurrencyId: aleoCoinConfig, transactionType });
     },
-    getBalance: (address: string): Promise<Balance[]> => {
-      return getBalance(currency, address);
+    getBalance: (address: string, options?: BalanceOptions): Promise<Balance[]> => {
+      return rejectBalanceOptions(() => getBalance(currency, address), options);
     },
     lastBlock: async (): Promise<BlockInfo> => {
       return lastBlock(currency);
@@ -86,8 +94,10 @@ export function createApi(config: AleoConfig, currencyId: string): Api {
     ): Promise<TransactionValidation> => {
       throw new Error("validateIntent is not supported");
     },
-    getSequence: async (_address: string) => {
-      throw new Error("getSequence is not supported");
+    getNextSequence: async (_address: string) => {
+      throw new Error("getNextSequence is not supported");
     },
+    validateAddress,
+    craftTransactionData,
   };
 }

@@ -1,4 +1,4 @@
-import { AddressValidationCurrencyParameters } from "@ledgerhq/types-live";
+import type { AddressValidationCurrencyParameters } from "@ledgerhq/coin-module-framework/api/types";
 import { validateAddress } from "./validateAddress";
 
 describe("validateAddress", () => {
